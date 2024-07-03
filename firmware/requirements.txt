@@ -1,0 +1,6 @@
+pyelftools
+click
+cryptography
+cbor
+intelhex
+pyocd

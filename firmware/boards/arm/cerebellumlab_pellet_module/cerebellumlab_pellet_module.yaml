@@ -1,0 +1,5 @@
+identifier: cerebellumlab_pellet_module
+name: cerebellumlab_pellet_module
+vendor: cerebellumlab
+socs:
+  - name: stm32g474xx

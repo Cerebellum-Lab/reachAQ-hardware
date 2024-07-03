@@ -1,0 +1,3 @@
+mainmenu "Autotrainer Pellet Module Firmware"
+
+source "Kconfig.zephyr"

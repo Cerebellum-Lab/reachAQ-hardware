@@ -1,0 +1,17 @@
+manifest:
+  defaults:
+    remote: zephyrproject
+  remotes:
+    - name: zephyrproject
+      url-base: https://github.com/zephyrproject-rtos
+  group-filter: [+optional]
+  projects:
+    - name: zephyr
+      repo-path: zephyr
+      revision: v3.7.0-rc2
+      clone-depth: 1
+      import:
+        path-prefix: deps
+        name-allowlist:
+          - cmsis
+          - hal_stm32

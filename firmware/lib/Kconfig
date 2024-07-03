@@ -1,0 +1,5 @@
+menuconfig LIB_PLACEHOLDER
+    bool "Enable lib placeholder"
+    default n
+    help
+      Enable lib placeholder
