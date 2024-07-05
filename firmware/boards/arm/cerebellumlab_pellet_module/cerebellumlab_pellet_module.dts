@@ -62,12 +62,13 @@
 };
 
 &clk_hse {
-    clock-frequency = <DT_FREQ_M(24)>;
+    clock-frequency = <DT_FREQ_M(8)>;
     status = "okay";
+    hse-bypass;
 };
 
 &pll {
-    div-m = <6>;
+    div-m = <2>;
     mul-n = <85>;
     div-p = <7>;
     div-q = <2>;
