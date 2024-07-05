@@ -1,0 +1,14 @@
+description: |
+  Simple collection of GPIOs that describe a device type and the node id
+
+compatible: "ll,device-id-gpios"
+
+include: base.yaml
+
+properties:
+  device-type-gpios:
+    type: phandle-array
+    required: true
+  node-number-gpios:
+    type: phandle-array
+    required: true
