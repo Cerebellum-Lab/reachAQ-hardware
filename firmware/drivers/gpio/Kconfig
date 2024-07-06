@@ -1,0 +1,6 @@
+menuconfig LL_GENERIC_GPIO
+        bool "Support LeafLabs generic GPIO driver"
+        default y
+        depends on DT_HAS_LL_GENERIC_GPIOS_ENABLED
+        help
+            Enable support the simple generic gpio driver

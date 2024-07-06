@@ -1,0 +1,12 @@
+description: |
+  Simple collection of GPIOs for simple things
+
+compatible: "ll,generic-gpios"
+
+include: base.yaml
+
+properties:
+  input-gpios:
+    type: phandle-array
+  output-gpios:
+    type: phandle-array

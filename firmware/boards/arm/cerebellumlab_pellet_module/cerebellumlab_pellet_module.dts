@@ -59,22 +59,17 @@
 		};
 	};
 
-	device-id-gpios {
+	general-gpios {
 		status = "okay";
-		compatible = "ll,device-id-gpios";
-		device-type-gpios = <&gpiob 0 GPIO_ACTIVE_HIGH>,
-							<&gpiob 1 GPIO_ACTIVE_HIGH>;
-		node-number-gpios = <&gpioc 4 GPIO_ACTIVE_HIGH>,
-							<&gpioc 5 GPIO_ACTIVE_HIGH>;
-	};
-
-	stim-gpios {
-		status = "okay";
-		compatible = "ll,stim-gpios";
-		stim-gpios = <&gpiob 11 GPIO_ACTIVE_HIGH>,
-					 <&gpiob 12 GPIO_ACTIVE_HIGH>,
-					 <&gpiob 13 GPIO_ACTIVE_HIGH>,
-					 <&gpiob 14 GPIO_ACTIVE_HIGH>;
+		compatible = "ll,generic-gpios";
+		input-gpios = <&gpiob 0 GPIO_ACTIVE_HIGH>,
+					  <&gpiob 1 GPIO_ACTIVE_HIGH>,
+					  <&gpioc 4 GPIO_ACTIVE_HIGH>,
+					  <&gpioc 5 GPIO_ACTIVE_HIGH>;
+		output-gpios = <&gpiob 11 GPIO_ACTIVE_HIGH>,
+					   <&gpiob 12 GPIO_ACTIVE_HIGH>,
+					   <&gpiob 13 GPIO_ACTIVE_HIGH>,
+					   <&gpiob 14 GPIO_ACTIVE_HIGH>;
 	};
 
 	aliases {

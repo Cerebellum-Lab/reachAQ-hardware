@@ -51,15 +51,6 @@
 		};
 	};
 
-	device-id-gpios {
-		status = "okay";
-		compatible = "ll,device-id-gpios";
-		device-type-gpios = <&gpiob 0 GPIO_ACTIVE_HIGH>,
-							<&gpiob 1 GPIO_ACTIVE_HIGH>;
-		node-number-gpios = <&gpioc 4 GPIO_ACTIVE_HIGH>,
-							<&gpioc 5 GPIO_ACTIVE_HIGH>;
-	};
-
 	stim-gpios {
 		status = "okay";
 		compatible = "ll,stim-gpios";
@@ -67,6 +58,19 @@
 					 <&gpiob 12 GPIO_ACTIVE_HIGH>,
 					 <&gpiob 13 GPIO_ACTIVE_HIGH>,
 					 <&gpiob 14 GPIO_ACTIVE_HIGH>;
+	};
+
+	generic-gpios {
+		status = "okay";
+		compatible = "ll,generic-gpios";
+		input-gpios = <&gpiob 0 GPIO_ACTIVE_HIGH>, // CAN_ID[0] / DeviceType[0]
+					  <&gpiob 1 GPIO_ACTIVE_HIGH>, // CAN_ID[1] / DeviceType[1]
+					  <&gpioc 4 GPIO_ACTIVE_HIGH>, // CAN_ID[2] / NodeNumber[0]
+					  <&gpioc 5 GPIO_ACTIVE_HIGH>; // CAN_ID[3] / NodeNumber[1]
+		output-gpios = <&gpiob 11 GPIO_ACTIVE_HIGH>, // Stim[0]
+					   <&gpiob 12 GPIO_ACTIVE_HIGH>, // Stim[1]
+					   <&gpiob 13 GPIO_ACTIVE_HIGH>, // Stim[2]
+					   <&gpiob 14 GPIO_ACTIVE_HIGH>; // Stim[3]
 	};
 };
 
