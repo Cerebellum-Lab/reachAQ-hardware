@@ -1,5 +1,6 @@
 #include <app_version.h>
 #include <zephyr/device.h>
+#include <zephyr/input/input.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
@@ -9,6 +10,12 @@
 LOG_MODULE_REGISTER(app);
 
 const struct device *gpio_dev = DEVICE_DT_GET_ANY(ll_generic_gpios);
+
+static void on_input_func(struct input_event *evt) {
+    LOG_INF("Input event: type=%d, code=%d, value=%d", evt->type, evt->code, evt->value);
+}
+
+INPUT_CALLBACK_DEFINE(NULL, on_input_func);
 
 int main() {
     LOG_INF("Autotrainer Pellet Module v%s", APP_VERSION_STRING);
