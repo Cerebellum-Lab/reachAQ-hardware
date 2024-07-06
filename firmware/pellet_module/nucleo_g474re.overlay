@@ -20,19 +20,9 @@
 		step-timer = <&timers1 3>;
 	};
 
-	// FIXME: Needs to be implemented and the bindings made - I'm just brainstorming how to define it
-	servo0: servo0 {
-		compatible = "ll,servo";
-		status = "okay";
-
-		pinctrl-0 = <&tim5_ch2_pc12>;
-		pinctrl-names = "default";
-
-		pwm-timer = <&timers5 2>;
-	};
-
 	gpio_keys {
 		status = "okay";
+
 		limit_switch0: limit_switch0 {
 			label = "Limit Switch 0";
 			gpios = <&gpioa 8 GPIO_ACTIVE_LOW>;
@@ -63,6 +53,32 @@
 					   <&gpiob 12 GPIO_ACTIVE_HIGH>, // Stim[1]
 					   <&gpiob 13 GPIO_ACTIVE_HIGH>, // Stim[2]
 					   <&gpiob 14 GPIO_ACTIVE_HIGH>; // Stim[3]
+	};
+};
+
+&dma1 {
+	status = "okay";
+};
+
+&dmamux1 {
+	status = "okay";
+};
+
+&timers5 {
+	status = "okay";
+	st,prescaler = <84>; // 170 MHz / (84 + 1) = 2 MHz
+
+	servo0: servo0 {
+		compatible = "ll,servo";
+		status = "okay";
+
+		pinctrl-0 = <&tim5_ch2_pc12>;
+		pinctrl-names = "default";
+
+		pwm-channels = <2>;
+
+		dmas = <&dmamux1 0 76 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
 	};
 };
 

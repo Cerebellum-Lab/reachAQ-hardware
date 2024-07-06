@@ -1,0 +1,18 @@
+description: |
+  Servo motor controller using STM32 timer peripheral
+
+compatible: ll,servo
+
+include:
+  - name: base.yaml
+  - name: pinctrl-device.yaml
+
+properties:
+  pinctrl-0:
+    required: true
+
+  pinctrl-names:
+    required: true
+
+  pwm-channels:
+    type: array
