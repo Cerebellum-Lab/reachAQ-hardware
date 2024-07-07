@@ -16,6 +16,8 @@ const struct device *gpio_dev = DEVICE_DT_GET_ANY(ll_generic_gpios);
 const struct device *servo_dev = DEVICE_DT_GET_ANY(ll_servo);
 const struct device *stepper_dev = DEVICE_DT_GET_ANY(ll_stepper);
 
+K_SEM_DEFINE(thread_startup_sem, 0, 1);
+
 static void on_input_func(struct input_event *evt) {
     LOG_INF("Input event: type=%d, code=%d, value=%d", evt->type, evt->code, evt->value);
 }
@@ -48,6 +50,18 @@ int main() {
     }
     sys_cache_data_flush_range(triangle_wave, sizeof(triangle_wave));
 
+    k_sem_give(&thread_startup_sem);
+
+    while (true) {
+        k_msleep(500);
+    }
+}
+
+void servo_thread_entry(void *p1, void *p2, void *p3) {
+    // Wait for the main thread to populate the data buffers before using them
+    k_sem_take(&thread_startup_sem, K_FOREVER);
+    k_sem_give(&thread_startup_sem);
+
     while (true) {
         int ret;
         LOG_INF("Queueing servo positions");
@@ -55,19 +69,26 @@ int main() {
         ret |= ll_queue_servo_positions(servo_dev, zero_wave, sizeof(zero_wave), K_FOREVER);
         if (ret < 0) {
             LOG_ERR("Failed to start servo DMA: %d", ret);
-            goto error;
+            break;
         }
+    }
+}
 
+void stepper_thread_entry(void *p1, void *p2, void *p3) {
+    // Wait for the main thread to populate the data buffers before using them
+    k_sem_take(&thread_startup_sem, K_FOREVER);
+    k_sem_give(&thread_startup_sem);
+
+    while (true) {
+        int ret;
         LOG_INF("Queueing stepper positions");
         ret = ll_queue_stepper_positions(stepper_dev, triangle_wave, sizeof(triangle_wave), K_FOREVER);
         if (ret < 0) {
             LOG_ERR("Failed to start stepper DMA: %d", ret);
-            goto error;
+            break;
         }
     }
-
-error:
-    while (true) {
-        k_msleep(500);
-    }
 }
+
+K_THREAD_DEFINE(servo_tid, 1024, servo_thread_entry, NULL, NULL, NULL, 5, 0, 0);
+K_THREAD_DEFINE(stepper_tid, 1024, stepper_thread_entry, NULL, NULL, NULL, 5, 0, 0);
