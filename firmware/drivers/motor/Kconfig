@@ -1,22 +1,2 @@
-menuconfig LL_SERVO
-        bool "Support LeafLabs servo driver"
-        default y
-        depends on DT_HAS_LL_SERVO_ENABLED
-        select USE_STM32_LL_TIM
-        select DMA
-        help
-            Enable support for the servo driver
-
-config LL_SERVO_LOG_LEVEL
-        int "Log level (0-4)"
-        default 3
-        depends on LL_SERVO
-        help
-            Set the log level for the servo driver
-
-config LL_SERVO_INIT_PRIORITY
-        int "Initialization priority"
-        default 90
-        depends on LL_SERVO
-        help
-            Set the initialization priority for the servo driver
+rsource "Kconfig.servo"
+rsource "Kconfig.stepper"

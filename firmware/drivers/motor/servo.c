@@ -1,7 +1,6 @@
 #include "servo.h"
 
 #include <stm32_ll_tim.h>
-#include <zephyr/cache.h>
 #include <zephyr/drivers/clock_control/stm32_clock_control.h>
 #include <zephyr/drivers/dma.h>
 #include <zephyr/drivers/dma/dma_stm32.h>
@@ -9,6 +8,8 @@
 #include <zephyr/dt-bindings/dma/stm32_dma.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+
+#include "motor_common.h"
 
 #define DT_DRV_COMPAT ll_servo
 
@@ -18,7 +19,7 @@ typedef struct {
     int16_t position;
     uint32_t clock_rate;
     struct dma_config dma_cfg;
-    uint8_t dma_channel;
+    int dma_channel;
 } ll_servo_data_t;
 
 typedef struct {
@@ -26,18 +27,10 @@ typedef struct {
     const struct pinctrl_dev_config *pcfg;
     struct stm32_pclken clk;
     uint32_t prescaler;
-    uint8_t channel;
+    uint32_t channel;
     const struct device *dma_dev;
     struct k_msgq *msgq;
 } ll_servo_cfg_t;
-
-typedef struct {
-    uint32_t *positions;
-    size_t num_positions;
-} ll_servo_positions_msg_t;
-
-static const uint32_t channel_to_ll_map[] = {LL_TIM_CHANNEL_CH1, LL_TIM_CHANNEL_CH2, LL_TIM_CHANNEL_CH3,
-                                             LL_TIM_CHANNEL_CH4, LL_TIM_CHANNEL_CH5, LL_TIM_CHANNEL_CH6};
 
 static int ll_servo_start_dma(const struct device *dev);
 
@@ -47,26 +40,30 @@ static void dma_tx_callback(const struct device *dma_dev, void *arg, uint32_t ch
     ll_servo_data_t *data = dev->data;
 
     // Check the msgq to see if there are any more position blocks to send
-    ll_servo_positions_msg_t msg;
+    ll_motorq_msg_t msg;
     if (k_msgq_get(cfg->msgq, &msg, K_NO_WAIT) == 0) {
         // Set up the next block
-        int ret = dma_reload(cfg->dma_dev, data->dma_channel, (uint32_t)msg.positions, (uint32_t)&cfg->timer->DMAR,
-                   msg.num_positions * sizeof(msg.positions[0]));
+        int ret =
+            dma_reload(cfg->dma_dev, data->dma_channel, (uint32_t)msg.buf, (uint32_t)&cfg->timer->DMAR, msg.buf_size);
 
         if (ret < 0) {
             LOG_ERR("Failed to reload DMA: %d", ret);
             return;
         }
+    } else {
+        // If there are no more blocks, stop the timer
+        // FIXME: Do we want to continue to hold the last position? Or just stop sending pulses?
+        // LL_TIM_DisableCounter(cfg->timer);
     }
 }
 
-int ll_queue_servo_positions(const struct device *dev, uint32_t *positions, size_t num_positions, k_timeout_t timeout) {
+int ll_queue_servo_positions(const struct device *dev, uint32_t *positions, size_t len, k_timeout_t timeout) {
     const ll_servo_cfg_t *cfg = dev->config;
     ll_servo_data_t *data = dev->data;
 
-    ll_servo_positions_msg_t msg = {
-        .positions = positions,
-        .num_positions = num_positions,
+    ll_motorq_msg_t msg = {
+        .buf = positions,
+        .buf_size = len,
     };
 
     // Queue the memory block for sending
@@ -87,7 +84,7 @@ static int ll_servo_start_dma(const struct device *dev) {
     ll_servo_data_t *data = dev->data;
 
     // Grab the initial block of positions from the msgq
-    ll_servo_positions_msg_t msg;
+    ll_motorq_msg_t msg;
     if (k_msgq_get(cfg->msgq, &msg, K_NO_WAIT) < 0) {
         LOG_ERR("Failed to get initial position block");
         return -EIO;
@@ -96,8 +93,8 @@ static int ll_servo_start_dma(const struct device *dev) {
     static struct dma_block_config blk_cfg;
 
     memset(&blk_cfg, 0, sizeof(blk_cfg));
-    blk_cfg.block_size = msg.num_positions * sizeof(msg.positions[0]);
-    blk_cfg.source_address = (uint32_t)msg.positions;
+    blk_cfg.block_size = msg.buf_size;
+    blk_cfg.source_address = (uint32_t)msg.buf;
     blk_cfg.dest_address = (uint32_t)&cfg->timer->DMAR;
     blk_cfg.source_addr_adj = DMA_ADDR_ADJ_INCREMENT;
     blk_cfg.dest_addr_adj = DMA_ADDR_ADJ_NO_CHANGE;
@@ -131,16 +128,9 @@ static int ll_servo_init(const struct device *dev) {
     const ll_servo_cfg_t *cfg = dev->config;
     ll_servo_data_t *data = dev->data;
 
-    // Enable the timer clock
-    const struct device *clk = DEVICE_DT_GET(STM32_CLOCK_CONTROL_NODE);
-    if (!device_is_ready(clk)) {
-        LOG_ERR("Clock controller not ready");
-        return -ENODEV;
-    }
-
-    int ret = clock_control_on(clk, (clock_control_subsys_t *)&cfg->clk);
+    int ret = ll_motor_timer_enable_clock(&cfg->clk);
     if (ret < 0) {
-        LOG_ERR("Failed to enable clock: %d", ret);
+        LOG_ERR("Failed to enable timer clock: %d", ret);
         return ret;
     }
 
@@ -169,7 +159,6 @@ static int ll_servo_init(const struct device *dev) {
     output_chan_init.OCMode = LL_TIM_OCMODE_PWM1;
     output_chan_init.CompareValue = data->position;
 
-
     if (LL_TIM_OC_Init(cfg->timer, cfg->channel, &output_chan_init) != SUCCESS) {
         LOG_ERR("Failed to initialize output channel");
         return -EIO;
@@ -183,17 +172,10 @@ static int ll_servo_init(const struct device *dev) {
     return 0;
 }
 
-// Helpers for getting the timer instance from the DT into STM32 LL HAL friendly format
-#define TIMER(idx) DT_INST_PARENT(idx)
-#define TIM(idx) ((TIM_TypeDef *)DT_REG_ADDR(TIMER(idx)))
-
-#define DT_INST_CLK(index, inst) \
-    { .bus = DT_CLOCKS_CELL(TIMER(index), bus), .enr = DT_CLOCKS_CELL(TIMER(index), bits) }
-
 #define SERVO_INST(idx)                                                                             \
     PINCTRL_DT_INST_DEFINE(idx);                                                                    \
                                                                                                     \
-    K_MSGQ_DEFINE(servo_msgq##idx, sizeof(ll_servo_positions_msg_t), 16, 4);                        \
+    K_MSGQ_DEFINE(servo_msgq##idx, sizeof(ll_motorq_msg_t), 16, 4);                                 \
                                                                                                     \
     static const ll_servo_cfg_t servo_cfg##idx = {                                                  \
         .timer = TIM(idx),                                                                          \

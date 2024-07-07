@@ -4,22 +4,6 @@
 		button = &user_button;
 	};
 
-	// FIXME: Needs to be implemented and the bindings made - I'm just brainstorming how to define it
-	stepper0: stepper0 {
-		compatible = "adi,tmc2209";
-		status = "okay";
-
-		// Set the pin alternate function to be timer pulse output
-		pinctrl-0 = <&tim1_ch3_pc2>;
-		pinctrl-names = "default";
-
-		// Direction Pin
-		dir-gpios = <&gpioc 1 GPIO_ACTIVE_HIGH>;
-
-		// Timer and channel to use for step output
-		step-timer = <&timers1 3>;
-	};
-
 	gpio_keys {
 		status = "okay";
 
@@ -78,6 +62,28 @@
 		pwm-channels = <2>;
 
 		dmas = <&dmamux1 0 76 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
+	};
+};
+
+&timers1 {
+	status = "okay";
+	st,prescaler = <849>; // 170 MHz / (849 + 1) = 200 kHz
+
+	stepper0: stepper0 {
+		compatible = "ll,stepper";
+		status = "okay";
+
+		pinctrl-0 = <&tim1_ch3_pc2>;
+		pinctrl-names = "default";
+
+		// Direction Pin
+		dir-gpios = <&gpioc 1 GPIO_ACTIVE_HIGH>;
+
+		// PWM Channel to use
+		pwm-channel = <3>;
+
+		dmas = <&dmamux1 1 46 STM32_DMA_PRIORITY_MEDIUM>;
 		dma-names = "tx";
 	};
 };

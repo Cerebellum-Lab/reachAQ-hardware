@@ -1,0 +1,17 @@
+description: |
+  Stepper motor controller using STM32 timer peripheral
+
+compatible: ll,stepper
+
+include:
+  - name: base.yaml
+  - name: pinctrl-device.yaml
+
+
+properties:
+  dir-gpios:
+    type: phandle-array
+    required: true
+  pwm-channel:
+    type: int
+    required: true

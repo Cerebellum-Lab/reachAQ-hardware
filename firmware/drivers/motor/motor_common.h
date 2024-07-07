@@ -1,0 +1,31 @@
+#pragma once
+
+#include <stdint.h>
+#include <stm32_ll_tim.h>
+#include <zephyr/drivers/clock_control/stm32_clock_control.h>
+
+typedef struct {
+    uint32_t *buf;
+    size_t buf_size;
+} ll_motorq_msg_t;
+
+// Helpers for getting the timer instance from the DT into STM32 LL HAL friendly format
+#define TIMER(idx) DT_INST_PARENT(idx)
+#define TIM(idx) ((TIM_TypeDef *)DT_REG_ADDR(TIMER(idx)))
+
+#define DT_INST_CLK(index, inst) \
+    { .bus = DT_CLOCKS_CELL(TIMER(index), bus), .enr = DT_CLOCKS_CELL(TIMER(index), bits) }
+
+static const uint32_t channel_to_ll_map[] = {LL_TIM_CHANNEL_CH1, LL_TIM_CHANNEL_CH2, LL_TIM_CHANNEL_CH3,
+                                             LL_TIM_CHANNEL_CH4, LL_TIM_CHANNEL_CH5, LL_TIM_CHANNEL_CH6};
+
+
+static inline int ll_motor_timer_enable_clock(const struct stm32_pclken *timer_clk) {
+    // Enable the timer clock
+    const struct device *clk = DEVICE_DT_GET(STM32_CLOCK_CONTROL_NODE);
+    if (!device_is_ready(clk)) {
+        return -ENODEV;
+    }
+
+    return clock_control_on(clk, (clock_control_subsys_t *)timer_clk);
+}
