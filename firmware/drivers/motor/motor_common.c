@@ -26,7 +26,7 @@ void ll_motor_dma_tx_callback(const struct device *dma_dev, void *arg, uint32_t 
     } else {
         // If there are no more blocks, stop the timer
         // FIXME: Do we want to continue to hold the last position? Or just stop sending pulses?
-        // LL_TIM_DisableCounter(cfg->timer);
+        LL_TIM_DisableCounter(cfg->timer);
     }
 }
 
@@ -41,7 +41,7 @@ int ll_motor_start_dma(const struct device *dev) {
         return -EIO;
     }
 
-    static struct dma_block_config blk_cfg;
+    struct dma_block_config blk_cfg;
 
     memset(&blk_cfg, 0, sizeof(blk_cfg));
     blk_cfg.block_size = msg.buf_size;

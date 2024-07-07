@@ -88,6 +88,51 @@
 	};
 };
 
+&timers8 {
+	status = "okay";
+	st,prescaler = <849>; // 170 MHz / (849 + 1) = 200 kHz
+
+	stepper1: stepper1 {
+		compatible = "ll,stepper";
+		status = "okay";
+
+		pinctrl-0 = <&tim8_ch4_pc9>;
+		pinctrl-names = "default";
+
+		// Direction Pin
+		dir-gpios = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+
+		// PWM Channel to use
+		pwm-channel = <4>;
+
+		dmas = <&dmamux1 2 53 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
+	};
+};
+
+&timers20 {
+	status = "okay";
+	st,prescaler = <849>; // 170 MHz / (849 + 1) = 200 kHz
+
+	stepper2: stepper2 {
+		compatible = "ll,stepper";
+		status = "okay";
+
+		pinctrl-0 = <&tim20_ch3_pc8>;
+		pinctrl-names = "default";
+
+		// Direction Pin
+		dir-gpios = <&gpioc 7 GPIO_ACTIVE_HIGH>;
+
+		// PWM Channel to use
+		pwm-channel = <3>;
+
+		dmas = <&dmamux1 3 90 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
+	};
+};
+
+
 &uart4 {
 	pinctrl-0 = <&uart4_rx_pc11 &uart4_tx_pc10>;
 	pinctrl-names = "default";

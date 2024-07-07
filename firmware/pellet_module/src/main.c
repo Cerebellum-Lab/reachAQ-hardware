@@ -14,7 +14,12 @@ LOG_MODULE_REGISTER(app);
 
 const struct device *gpio_dev = DEVICE_DT_GET_ANY(ll_generic_gpios);
 const struct device *servo_dev = DEVICE_DT_GET_ANY(ll_servo);
-const struct device *stepper_dev = DEVICE_DT_GET_ANY(ll_stepper);
+
+#define STEPPER_DEF(id) DEVICE_DT_GET(id),
+
+const struct device *stepper_devs[] = {
+    DT_FOREACH_STATUS_OKAY(ll_stepper, STEPPER_DEF)
+};
 
 K_SEM_DEFINE(thread_startup_sem, 0, 1);
 
@@ -82,10 +87,12 @@ void stepper_thread_entry(void *p1, void *p2, void *p3) {
     while (true) {
         int ret;
         LOG_INF("Queueing stepper positions");
-        ret = ll_queue_stepper_positions(stepper_dev, triangle_wave, sizeof(triangle_wave), K_FOREVER);
-        if (ret < 0) {
-            LOG_ERR("Failed to start stepper DMA: %d", ret);
-            break;
+        for (int i = 0; i < ARRAY_SIZE(stepper_devs); i++) {
+            ret = ll_queue_stepper_positions(stepper_devs[i], triangle_wave, sizeof(triangle_wave), K_FOREVER);
+            if (ret < 0) {
+                LOG_ERR("Failed to start stepper DMA: %d", ret);
+                break;
+            }
         }
     }
 }
