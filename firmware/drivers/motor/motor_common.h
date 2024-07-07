@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stm32_ll_tim.h>
 #include <zephyr/drivers/clock_control/stm32_clock_control.h>
+#include <zephyr/drivers/dma.h>
 
 typedef struct {
     uint32_t *buf;
@@ -19,6 +20,22 @@ typedef struct {
 static const uint32_t channel_to_ll_map[] = {LL_TIM_CHANNEL_CH1, LL_TIM_CHANNEL_CH2, LL_TIM_CHANNEL_CH3,
                                              LL_TIM_CHANNEL_CH4, LL_TIM_CHANNEL_CH5, LL_TIM_CHANNEL_CH6};
 
+typedef struct {
+    int32_t position;
+    struct dma_config dma_cfg;
+    int dma_channel;
+} ll_motor_data_t;
+
+typedef struct {
+    TIM_TypeDef *timer;
+    const struct pinctrl_dev_config *pcfg;
+    struct stm32_pclken clk;
+    uint32_t prescaler;
+    uint32_t channel;
+    const struct device *dma_dev;
+    struct k_msgq *msgq;
+    uint32_t timer_dma_reg;
+} ll_motor_cfg_t;
 
 static inline int ll_motor_timer_enable_clock(const struct stm32_pclken *timer_clk) {
     // Enable the timer clock
@@ -29,3 +46,9 @@ static inline int ll_motor_timer_enable_clock(const struct stm32_pclken *timer_c
 
     return clock_control_on(clk, (clock_control_subsys_t *)timer_clk);
 }
+
+int ll_common_start_dma(struct dma_config *dma_cfg);
+void ll_motor_dma_tx_callback(const struct device *dma_dev, void *arg, uint32_t channel, int status);
+int ll_motor_queue_data(const struct device *dev, uint32_t *buf, size_t len, k_timeout_t timeout);
+int ll_motor_start_dma(const struct device *dev);
+int ll_motor_init(const struct device *dev);

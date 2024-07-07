@@ -6,17 +6,3 @@ menuconfig LL_STEPPER
         select DMA
         help
             Enable support for the stepper driver
-
-config LL_STEPPER_LOG_LEVEL
-        int "Log level (0-4)"
-        default 3
-        depends on LL_STEPPER
-        help
-            Set the log level for the stepper driver
-
-config LL_STEPPER_INIT_PRIORITY
-        int "Initialization priority"
-        default 90
-        depends on LL_STEPPER
-        help
-            Set the initialization priority for the stepper driver

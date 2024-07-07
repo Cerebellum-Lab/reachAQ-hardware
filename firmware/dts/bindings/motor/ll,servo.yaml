@@ -14,5 +14,6 @@ properties:
   pinctrl-names:
     required: true
 
-  pwm-channels:
-    type: array
+  pwm-channel:
+    type: int
+    required: true

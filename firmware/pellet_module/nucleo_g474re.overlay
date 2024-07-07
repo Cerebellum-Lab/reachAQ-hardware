@@ -59,7 +59,7 @@
 		pinctrl-0 = <&tim5_ch2_pc12>;
 		pinctrl-names = "default";
 
-		pwm-channels = <2>;
+		pwm-channel = <2>;
 
 		dmas = <&dmamux1 0 76 STM32_DMA_PRIORITY_MEDIUM>;
 		dma-names = "tx";

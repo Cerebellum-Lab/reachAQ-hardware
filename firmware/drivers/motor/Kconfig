@@ -1,2 +1,14 @@
+config LL_MOTOR_LOG_LEVEL
+        int "Log level (0-4)"
+        default 3
+        help
+            Set the log level for the servo driver
+
+config LL_MOTOR_INIT_PRIORITY
+        int "Initialization priority"
+        default 90
+        help
+            Set the initialization priority for the servo driver
+
 rsource "Kconfig.servo"
 rsource "Kconfig.stepper"
