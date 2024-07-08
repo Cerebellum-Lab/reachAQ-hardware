@@ -46,6 +46,11 @@ static int ll_stepper_init(const struct device *dev) {
 }
 
 #define STEPPER_INST(idx)                                                                                 \
+    BUILD_ASSERT(IS_TIM_PULSEONCOMPARE_INSTANCE(TIM(idx)),                                                \
+                 "Stepper driver requires a timer with pulse-on-compare mode");                           \
+    BUILD_ASSERT(IS_TIM_PULSEONCOMPARE_CHANNEL(CHANNEL_NUM_TO_LL_MAP(DT_INST_PROP(idx, pwm_channel))),    \
+                 "Stepper driver requires a timer channel that supports pulse-on-compare mode");          \
+                                                                                                          \
     PINCTRL_DT_INST_DEFINE(idx);                                                                          \
                                                                                                           \
     K_MSGQ_DEFINE(stepper_msgq##idx, sizeof(ll_motorq_msg_t), 16, 4);                                     \

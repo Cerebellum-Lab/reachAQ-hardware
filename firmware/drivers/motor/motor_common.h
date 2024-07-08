@@ -20,6 +20,16 @@ typedef struct {
 static const uint32_t channel_to_ll_map[] = {LL_TIM_CHANNEL_CH1, LL_TIM_CHANNEL_CH2, LL_TIM_CHANNEL_CH3,
                                              LL_TIM_CHANNEL_CH4, LL_TIM_CHANNEL_CH5, LL_TIM_CHANNEL_CH6};
 
+// This macro is odd, but how the LL HAL defines the channels is a bit odd...
+#define CHANNEL_NUM_TO_LL_MAP(__CHANNEL__)                      \
+    ((__CHANNEL__ == 1)   ? TIM_CHANNEL_1   \
+    : ((__CHANNEL__ == 2) ? TIM_CHANNEL_2   \
+    : ((__CHANNEL__ == 3) ? TIM_CHANNEL_3   \
+    : ((__CHANNEL__ == 4) ? TIM_CHANNEL_4   \
+    : ((__CHANNEL__ == 5) ? TIM_CHANNEL_5   \
+    : ((__CHANNEL__ == 6) ? TIM_CHANNEL_6   \
+                         : -1))))))
+
 typedef struct {
     int32_t position;
     struct dma_config dma_cfg;
