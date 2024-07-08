@@ -126,6 +126,9 @@ void stepper_thread_entry(void *p1, void *p2, void *p3) {
         ll_stepper_register_callback(stepper_devs[i], &stepper_cb);
     }
 
+    ll_stepper_set_direction(stepper_devs[0], LL_STEPPER_DIR_FORWARD);
+    ll_stepper_set_direction(stepper_devs[1], LL_STEPPER_DIR_BACKWARD);
+
     while (true) {
         int ret;
         LOG_INF("Queueing stepper positions");

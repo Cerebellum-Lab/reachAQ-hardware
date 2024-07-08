@@ -20,11 +20,46 @@ int ll_stepper_register_callback(const struct device *dev, ll_stepper_cb_t *cb) 
     return ll_motor_register_callback(dev, cb);
 }
 
+
+int ll_stepper_set_direction(const struct device *dev, ll_stepper_dir_t dir) {
+const ll_motor_cfg_t *cfg = dev->config;
+    int ret;
+
+    if (cfg->dir_pin.port == NULL) {
+        return -ENOTSUP;
+    }
+
+    // FIXME: Not sure on the polarity for the DIR pin, but can be changed in the device tree if needed.
+    // Should we make this a setting? Maybe punt that to higher level logic?
+    switch (dir) {
+        case LL_STEPPER_DIR_FORWARD:
+            ret = gpio_pin_set(cfg->dir_pin.port, cfg->dir_pin.pin, 0);
+            break;
+        case LL_STEPPER_DIR_BACKWARD:
+            ret = gpio_pin_set(cfg->dir_pin.port, cfg->dir_pin.pin, 1);
+            break;
+        default:
+            return -EINVAL;
+    }
+
+    return ret;
+}
+
 static int ll_stepper_init(const struct device *dev) {
     const ll_motor_cfg_t *cfg = dev->config;
+    int ret;
+
+    // Configure the DIR pin
+    if (cfg->dir_pin.port != NULL) {
+        ret = gpio_pin_configure_dt(&cfg->dir_pin, GPIO_OUTPUT_INACTIVE);
+        if (ret < 0) {
+            LOG_ERR("Failed to configure DIR pin: %d", ret);
+            return ret;
+        }
+    }
 
     // Perform common motor initialization stuff
-    int ret = ll_motor_init(dev);
+    ret = ll_motor_init(dev);
     if (ret < 0) {
         LOG_ERR("Failed to initialize stepper: %d", ret);
         return ret;
@@ -69,6 +104,7 @@ static int ll_stepper_init(const struct device *dev) {
         .msgq = &stepper_msgq##idx,                                                                       \
         .timer_dma_reg = LL_TIM_DMABURST_BASEADDR_ARR,                                                    \
         .stop_on_dma_complete = true,                                                                     \
+        .dir_pin = GPIO_DT_SPEC_INST_GET(idx, dir_gpios),                                                 \
     };                                                                                                    \
                                                                                                           \
     static ll_motor_data_t stepper_data##idx = {                                                          \

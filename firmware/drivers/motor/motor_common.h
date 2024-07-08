@@ -4,6 +4,7 @@
 #include <stm32_ll_tim.h>
 #include <zephyr/drivers/clock_control/stm32_clock_control.h>
 #include <zephyr/drivers/dma.h>
+#include <zephyr/drivers/gpio.h>
 
 #include "motor_callbacks.h"
 
@@ -51,6 +52,7 @@ typedef struct {
     struct k_msgq *msgq;
     uint32_t timer_dma_reg;
     bool stop_on_dma_complete;
+    struct gpio_dt_spec dir_pin; // Used for the stepper driver
 } ll_motor_cfg_t;
 
 static inline int ll_motor_timer_enable_clock(const struct stm32_pclken *timer_clk) {
