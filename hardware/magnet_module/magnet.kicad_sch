@@ -259,23 +259,15 @@
 			)
 		)
 	)
-	(bus_entry
-		(at 176.53 104.14)
-		(size -2.54 2.54)
+	(bus
+		(pts
+			(xy 168.91 91.44) (xy 193.04 91.44)
+		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "1a558b88-4cfe-4f2c-8580-664fc3bad1c5")
-	)
-	(bus_entry
-		(at 176.53 91.44)
-		(size -2.54 2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "40f111f3-1572-4a45-a29a-917e989ab3d6")
+		(uuid "01ff9fc3-1495-46f6-826f-4430e21a8ec4")
 	)
 	(wire
 		(pts
@@ -326,26 +318,6 @@
 			(type default)
 		)
 		(uuid "75d51dea-126d-408e-bbcf-1cad2e5a481c")
-	)
-	(bus
-		(pts
-			(xy 173.99 93.98) (xy 173.99 106.68)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7f0faf1e-6d45-468f-8317-40d1b66da784")
-	)
-	(wire
-		(pts
-			(xy 176.53 104.14) (xy 193.04 104.14)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "82ab19b1-3866-4957-82c2-888a3bf0f565")
 	)
 	(bus
 		(pts
@@ -417,16 +389,6 @@
 		)
 		(uuid "c317f4e6-2cc8-4d96-90bc-daa7ee88be17")
 	)
-	(bus
-		(pts
-			(xy 173.99 91.44) (xy 173.99 93.98)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c7ce7ca1-974c-48e2-8842-c0d95be9e4f9")
-	)
 	(wire
 		(pts
 			(xy 168.91 123.19) (xy 220.98 123.19)
@@ -449,16 +411,6 @@
 	)
 	(bus
 		(pts
-			(xy 168.91 91.44) (xy 173.99 91.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ee7d4a3a-14c9-4b93-aff1-3142bdcbd825")
-	)
-	(bus
-		(pts
 			(xy 101.6 76.2) (xy 127 76.2)
 		)
 		(stroke
@@ -466,16 +418,6 @@
 			(type default)
 		)
 		(uuid "ef22306f-26ef-4bf9-bc08-1fed20230e9a")
-	)
-	(wire
-		(pts
-			(xy 176.53 91.44) (xy 193.04 91.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f44fd78c-6c63-4cfe-afd5-84825245d049")
 	)
 	(wire
 		(pts
@@ -541,19 +483,8 @@
 		)
 		(uuid "1d4cb258-dbe7-44fe-99f8-787ba20f1a97")
 	)
-	(label "5V_SERVO0"
-		(at 176.53 91.44 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "1e805ab3-ffba-4dfd-9076-70f6f2e34f27")
-	)
 	(label "5V"
-		(at 214.63 91.44 0)
+		(at 214.63 92.71 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -596,6 +527,17 @@
 		)
 		(uuid "5ec149ec-b66b-413a-a410-67c6688df7e5")
 	)
+	(label "3V3"
+		(at 214.63 90.17 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "6189bd1e-6136-4555-94a7-0f3bc4957280")
+	)
 	(label "5V"
 		(at 68.58 77.47 180)
 		(fields_autoplaced yes)
@@ -629,17 +571,6 @@
 		)
 		(uuid "837d85a6-f144-4dc1-b03b-44bbd1c03761")
 	)
-	(label "5V_SERVO1"
-		(at 176.53 104.14 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "9d08007a-2a0c-431e-9761-9941c27f562f")
-	)
 	(label "3V3"
 		(at 71.12 101.6 180)
 		(fields_autoplaced yes)
@@ -650,17 +581,6 @@
 			(justify right bottom)
 		)
 		(uuid "b74ea3fe-1013-425d-91cd-64aa1e5e0542")
-	)
-	(label "5V"
-		(at 214.63 104.14 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e20fe6c6-16b6-44de-866e-44ce813ab99a")
 	)
 	(label "3V3"
 		(at 247.65 118.11 0)
@@ -1544,7 +1464,6 @@
 	(sheet
 		(at 97.79 40.64)
 		(size 77.47 11.43)
-		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
 			(type solid)
@@ -1563,7 +1482,7 @@
 			)
 		)
 		(property "Sheetfile" "power.kicad_sch"
-			(at 97.79 51.6386 0)
+			(at 97.79 52.832 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1679,7 +1598,7 @@
 	)
 	(sheet
 		(at 193.04 87.63)
-		(size 21.59 6.35)
+		(size 21.59 8.636)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -1689,7 +1608,7 @@
 			(color 0 0 0 0.0000)
 		)
 		(uuid "9ed0a7f3-2e3c-4052-98bb-a77cfb577752")
-		(property "Sheetname" "Servo"
+		(property "Sheetname" "Servos"
 			(at 193.04 86.9184 0)
 			(effects
 				(font
@@ -1699,7 +1618,7 @@
 			)
 		)
 		(property "Sheetfile" "servo.kicad_sch"
-			(at 193.04 94.8186 0)
+			(at 193.04 96.8506 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1708,7 +1627,7 @@
 			)
 		)
 		(pin "5V" input
-			(at 214.63 91.44 0)
+			(at 214.63 92.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1717,7 +1636,17 @@
 			)
 			(uuid "d39c1a8b-552b-4338-8292-2e966edb0297")
 		)
-		(pin "PWM" input
+		(pin "3V3" input
+			(at 214.63 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "4e390398-bfbc-4c29-850d-0959869e4cb0")
+		)
+		(pin "SERVO[0..1]" input
 			(at 193.04 91.44 180)
 			(effects
 				(font
@@ -1725,7 +1654,7 @@
 				)
 				(justify left)
 			)
-			(uuid "236f45df-5caa-4790-a9c5-273ab42cc8fc")
+			(uuid "6c11e0b2-07ac-4a45-b74b-9c01d8d56473")
 		)
 		(instances
 			(project "magnet"
@@ -1799,63 +1728,6 @@
 			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095"
 					(page "7")
-				)
-			)
-		)
-	)
-	(sheet
-		(at 193.04 100.33)
-		(size 21.59 7.62)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(fill
-			(color 0 0 0 0.0000)
-		)
-		(uuid "e1271236-020e-4be9-8230-a8c7544f1881")
-		(property "Sheetname" "Servo1"
-			(at 193.04 99.6184 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Sheetfile" "servo.kicad_sch"
-			(at 193.04 108.712 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-			)
-		)
-		(pin "5V" input
-			(at 214.63 104.14 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "03f1b01e-2c02-49ca-b894-f20062e16192")
-		)
-		(pin "PWM" input
-			(at 193.04 104.14 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "c501b282-073d-470d-92d7-6b4377653c61")
-		)
-		(instances
-			(project "magnet"
-				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095"
-					(page "5")
 				)
 			)
 		)

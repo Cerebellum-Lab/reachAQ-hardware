@@ -2105,6 +2105,7 @@
 	)
 	(label "SPARE0.SCL"
 		(at 241.3 41.91 0)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2313,6 +2314,7 @@
 	)
 	(label "SPARE0.SDA"
 		(at 241.3 39.37 0)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)

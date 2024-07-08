@@ -2082,7 +2082,7 @@
 		)
 		(uuid "d5306b13-cba8-41cd-8ced-204b6803171e")
 	)
-	(text "Vf = 3.2V\nIf = 20mA"
+	(text "Vf = 3.2V\nIf = 4mA"
 		(exclude_from_sim no)
 		(at 76.2 45.212 0)
 		(effects
@@ -3461,7 +3461,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "442"
+		(property "Value" "2.2k"
 			(at 63.5 46.9899 0)
 			(effects
 				(font

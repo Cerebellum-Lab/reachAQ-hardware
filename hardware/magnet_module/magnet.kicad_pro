@@ -289,7 +289,6 @@
       "/MCU/3V3": "Power",
       "/Power & Data Connections/12V": "Power",
       "/Power/12V": "Power",
-      "/Power/3V3": "Power",
       "Net-(D1-A)": "Power"
     },
     "netclass_patterns": []
@@ -422,11 +421,7 @@
     ],
     [
       "9ed0a7f3-2e3c-4052-98bb-a77cfb577752",
-      "Servo"
-    ],
-    [
-      "e1271236-020e-4be9-8230-a8c7544f1881",
-      "Servo1"
+      "Servos"
     ],
     [
       "7846e2cb-93ba-4d8e-9136-73b0c490a979",
