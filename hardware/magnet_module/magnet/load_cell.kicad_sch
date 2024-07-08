@@ -1651,6 +1651,16 @@
 		)
 		(uuid c3465136-9a73-478a-afb6-262b5aac8e78)
 	)
+	(text "Load Cell Input"
+		(exclude_from_sim no)
+		(at 53.086 72.136 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "15723393-4f57-481f-a06d-7c7ec7d8c137")
+	)
 	(text "AVDD programmable output from chip"
 		(exclude_from_sim no)
 		(at 192.278 68.072 0)
@@ -1683,6 +1693,7 @@
 	)
 	(label "CELL.SCL"
 		(at 156.21 85.09 0)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1715,6 +1726,7 @@
 	)
 	(label "CELL.SDA"
 		(at 156.21 87.63 0)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2671,7 +2683,7 @@
 				)
 			)
 		)
-		(property "Value" "Conn_01x04_Pin"
+		(property "Value" "691137710004"
 			(at 64.262 64.77 0)
 			(effects
 				(font
@@ -2698,6 +2710,15 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 63.5 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" ""
 			(at 63.5 71.12 0)
 			(effects
 				(font

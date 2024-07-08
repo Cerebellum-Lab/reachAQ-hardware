@@ -259,6 +259,194 @@
 			)
 		)
 	)
+	(bus_entry
+		(at 176.53 104.14)
+		(size -2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1a558b88-4cfe-4f2c-8580-664fc3bad1c5")
+	)
+	(bus_entry
+		(at 176.53 91.44)
+		(size -2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "40f111f3-1572-4a45-a29a-917e989ab3d6")
+	)
+	(wire
+		(pts
+			(xy 101.6 102.87) (xy 127 102.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0b05d2e6-d98c-43a2-9e35-728cff78252f")
+	)
+	(bus
+		(pts
+			(xy 101.6 80.01) (xy 127 80.01)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "14c9a81a-a6ac-49c1-9347-fbe2fd4cd157")
+	)
+	(bus
+		(pts
+			(xy 101.6 106.68) (xy 127 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "370da7b9-3a48-4fcd-ada4-76c392c497e8")
+	)
+	(wire
+		(pts
+			(xy 168.91 76.2) (xy 193.04 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3d0a1da9-2b8e-43b7-971a-b8e56c26ef51")
+	)
+	(bus
+		(pts
+			(xy 168.91 115.57) (xy 220.98 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "75d51dea-126d-408e-bbcf-1cad2e5a481c")
+	)
+	(bus
+		(pts
+			(xy 173.99 93.98) (xy 173.99 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7f0faf1e-6d45-468f-8317-40d1b66da784")
+	)
+	(wire
+		(pts
+			(xy 176.53 104.14) (xy 193.04 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "82ab19b1-3866-4957-82c2-888a3bf0f565")
+	)
+	(bus
+		(pts
+			(xy 168.91 113.03) (xy 220.98 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "928e4202-5aa2-48e2-84ad-f0103ad59291")
+	)
+	(bus
+		(pts
+			(xy 168.91 120.65) (xy 220.98 120.65)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "939e6a26-d101-41db-a0d4-e50971dfadb6")
+	)
+	(wire
+		(pts
+			(xy 168.91 125.73) (xy 220.98 125.73)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9593f029-afe7-433f-90a5-db729d7c0f20")
+	)
+	(bus
+		(pts
+			(xy 168.91 78.74) (xy 193.04 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9c777d38-1922-4b28-8b07-4545011577c3")
+	)
+	(bus
+		(pts
+			(xy 168.91 118.11) (xy 220.98 118.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b7e86377-397d-47c8-bbb5-5f75364606fa")
+	)
+	(bus
+		(pts
+			(xy 173.99 91.44) (xy 173.99 93.98)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c7ce7ca1-974c-48e2-8842-c0d95be9e4f9")
+	)
+	(wire
+		(pts
+			(xy 168.91 123.19) (xy 220.98 123.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e36e5031-8617-48e2-befc-b17c11459aec")
+	)
+	(bus
+		(pts
+			(xy 168.91 91.44) (xy 173.99 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ee7d4a3a-14c9-4b93-aff1-3142bdcbd825")
+	)
+	(bus
+		(pts
+			(xy 101.6 76.2) (xy 127 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ef22306f-26ef-4bf9-bc08-1fed20230e9a")
+	)
+	(wire
+		(pts
+			(xy 176.53 91.44) (xy 193.04 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f44fd78c-6c63-4cfe-afd5-84825245d049")
+	)
 	(rectangle
 		(start 15.24 154.94)
 		(end 71.12 194.31)
@@ -273,7 +461,7 @@
 	)
 	(text "Chassis GND connection"
 		(exclude_from_sim no)
-		(at 57.404 166.878 0)
+		(at 57.15 166.37 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -283,13 +471,35 @@
 	)
 	(text "Mechanical"
 		(exclude_from_sim no)
-		(at 20.32 153.162 0)
+		(at 20.32 153.67 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 		)
 		(uuid "6d6c3d9d-85b1-4260-b768-3126b1664637")
+	)
+	(label "SERVO0"
+		(at 176.53 91.44 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "1e805ab3-ffba-4dfd-9076-70f6f2e34f27")
+	)
+	(label "SERVO1"
+		(at 176.53 104.14 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "9d08007a-2a0c-431e-9761-9941c27f562f")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -884,8 +1094,8 @@
 		)
 	)
 	(sheet
-		(at 68.326 68.072)
-		(size 33.782 16.256)
+		(at 68.58 68.58)
+		(size 33.02 15.24)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -896,7 +1106,7 @@
 		)
 		(uuid "06f3621d-3ec0-4d63-9ba9-06465b135ad7")
 		(property "Sheetname" "Power & Data Connections"
-			(at 68.326 67.3604 0)
+			(at 68.58 67.8684 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -905,13 +1115,63 @@
 			)
 		)
 		(property "Sheetfile" "conn.kicad_sch"
-			(at 68.326 84.9126 0)
+			(at 68.58 85.4206 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left top)
 			)
+		)
+		(pin "12V" output
+			(at 68.58 72.39 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "7b662d20-14a1-4ec2-9ea5-a8ea9812256d")
+		)
+		(pin "{USB2}" bidirectional
+			(at 101.6 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "0fe51622-b901-4d8d-9d7b-8e16d2d87318")
+		)
+		(pin "3V3" input
+			(at 68.58 74.93 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "bc37e8c4-82ea-49d4-9efa-4d6f2f0cb97f")
+		)
+		(pin "{FDCAN}" bidirectional
+			(at 101.6 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "fe505b7f-65dd-48b2-a1b9-ac63388b805a")
+		)
+		(pin "5V" input
+			(at 68.58 77.47 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "31ae076b-73e8-49da-806c-2b3d0b64f9c8")
 		)
 		(instances
 			(project "magnet"
@@ -922,8 +1182,8 @@
 		)
 	)
 	(sheet
-		(at 127.254 68.58)
-		(size 41.402 40.64)
+		(at 127 68.58)
+		(size 41.91 63.5)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -934,7 +1194,7 @@
 		)
 		(uuid "286cc8bf-34fd-48cd-9d6c-58653d0694aa")
 		(property "Sheetname" "MCU"
-			(at 127.254 67.8684 0)
+			(at 127 67.8684 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -943,13 +1203,163 @@
 			)
 		)
 		(property "Sheetfile" "mcu.kicad_sch"
-			(at 127.254 109.8046 0)
+			(at 127 132.6646 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left top)
 			)
+		)
+		(pin "{FDCAN}" bidirectional
+			(at 127 76.2 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "80af077e-5035-4b0e-9108-30fa99978d5c")
+		)
+		(pin "PRESSURE_IN" input
+			(at 127 102.87 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "da916d6b-404b-49f6-a5d1-f217715ac8fa")
+		)
+		(pin "CELL{I2C}" bidirectional
+			(at 168.91 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "fd33f215-f299-4368-bcf1-16fd16398720")
+		)
+		(pin "{USB2}" bidirectional
+			(at 127 80.01 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "ca93bfa1-d66e-44fa-a535-14efb5fd8190")
+		)
+		(pin "TEMP{I2C}" bidirectional
+			(at 127 106.68 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "36c99736-8a5b-4f28-aa33-b2ced1086931")
+		)
+		(pin "DRDY" input
+			(at 168.91 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "f6684994-04d1-41cc-951c-1e6a50ad223f")
+		)
+		(pin "3V3" input
+			(at 144.78 68.58 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "8be11804-0fe0-40cc-b747-5d71fb952933")
+		)
+		(pin "5V_SERVO[0..1]" output
+			(at 168.91 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "00d3b9f8-f74e-4ab3-83b7-c76ca012cd45")
+		)
+		(pin "5V" input
+			(at 148.59 68.58 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "5c3dffd6-0694-46f2-a7de-209cb7dadf0a")
+		)
+		(pin "BUTTON[0..1]" input
+			(at 168.91 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "775a31e6-2b66-4021-86f0-7016f7d45789")
+		)
+		(pin "STIM[0..3]" bidirectional
+			(at 168.91 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "fcc8cb01-838d-4eab-88ff-abe1edc81084")
+		)
+		(pin "SPARE0{I2C}" bidirectional
+			(at 168.91 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "fc49ba61-248f-40a8-a343-7577e0ae745a")
+		)
+		(pin "SPARE1{I2C}" bidirectional
+			(at 168.91 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "a2a14290-d80e-4256-b703-e9b012915917")
+		)
+		(pin "GPIO0" bidirectional
+			(at 168.91 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "e1fc7af8-c30c-4950-a88d-1134c451761d")
+		)
+		(pin "GPIO1" bidirectional
+			(at 168.91 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "aa9855a0-b61d-4a6e-9419-a5de887cb6ad")
 		)
 		(instances
 			(project "magnet"
@@ -960,8 +1370,8 @@
 		)
 	)
 	(sheet
-		(at 97.536 41.148)
-		(size 77.216 10.414)
+		(at 97.79 40.64)
+		(size 77.47 11.43)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -972,7 +1382,7 @@
 		)
 		(uuid "2d556af5-2e8e-4584-962b-364bdedf6f87")
 		(property "Sheetname" "Power"
-			(at 97.536 40.4364 0)
+			(at 97.79 39.9284 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -981,7 +1391,7 @@
 			)
 		)
 		(property "Sheetfile" "power.kicad_sch"
-			(at 97.536 52.1466 0)
+			(at 97.79 51.6386 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -998,8 +1408,8 @@
 		)
 	)
 	(sheet
-		(at 193.294 73.152)
-		(size 21.59 7.874)
+		(at 193.04 73.66)
+		(size 21.59 7.62)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -1010,7 +1420,7 @@
 		)
 		(uuid "7846e2cb-93ba-4d8e-9136-73b0c490a979")
 		(property "Sheetname" "Load Cell"
-			(at 193.294 72.4404 0)
+			(at 193.04 72.9484 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1019,13 +1429,43 @@
 			)
 		)
 		(property "Sheetfile" "load_cell.kicad_sch"
-			(at 193.294 81.6106 0)
+			(at 193.04 82.1186 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left top)
 			)
+		)
+		(pin "DRDY" output
+			(at 193.04 76.2 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "097d5e46-b7d6-4636-bc00-e0cdbfe8fc96")
+		)
+		(pin "CELL{I2C}" bidirectional
+			(at 193.04 78.74 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "6285d51b-cc8a-4a8b-babc-a5296b8ffe0e")
+		)
+		(pin "3V3" input
+			(at 214.63 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "26d26b62-3a2e-443b-ade7-0706d937f4e1")
 		)
 		(instances
 			(project "magnet"
@@ -1036,8 +1476,8 @@
 		)
 	)
 	(sheet
-		(at 193.294 87.376)
-		(size 21.59 6.604)
+		(at 193.04 87.63)
+		(size 21.59 6.35)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -1048,7 +1488,7 @@
 		)
 		(uuid "9ed0a7f3-2e3c-4052-98bb-a77cfb577752")
 		(property "Sheetname" "Servo"
-			(at 193.294 86.6644 0)
+			(at 193.04 86.9184 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1057,7 +1497,7 @@
 			)
 		)
 		(property "Sheetfile" "servo.kicad_sch"
-			(at 193.294 94.5646 0)
+			(at 193.04 94.8186 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1066,7 +1506,7 @@
 			)
 		)
 		(pin "5V" input
-			(at 214.884 91.44 0)
+			(at 214.63 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1076,7 +1516,7 @@
 			(uuid "d39c1a8b-552b-4338-8292-2e966edb0297")
 		)
 		(pin "PWM" input
-			(at 193.294 91.44 180)
+			(at 193.04 91.44 180)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1094,8 +1534,8 @@
 		)
 	)
 	(sheet
-		(at 70.612 109.22)
-		(size 31.242 5.842)
+		(at 71.12 99.06)
+		(size 30.48 12.7)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -1106,7 +1546,7 @@
 		)
 		(uuid "e000c084-d810-4b09-99a2-5de4c8100884")
 		(property "Sheetname" "Sensors"
-			(at 70.612 108.5084 0)
+			(at 71.12 98.3484 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1115,13 +1555,43 @@
 			)
 		)
 		(property "Sheetfile" "sensors.kicad_sch"
-			(at 70.612 115.6466 0)
+			(at 71.12 112.0906 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left top)
 			)
+		)
+		(pin "3V3" input
+			(at 71.12 101.6 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "e072b5ec-3bf6-4f76-9258-ba2f086f250d")
+		)
+		(pin "PRESSURE_OUT" output
+			(at 101.6 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "5e8d352d-9f0e-4d37-9c4f-4a15e77a3b73")
+		)
+		(pin "TEMP{I2C}" bidirectional
+			(at 101.6 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "c4f81352-ac01-4415-9f6d-ea27f2d9fc73")
 		)
 		(instances
 			(project "magnet"
@@ -1132,9 +1602,8 @@
 		)
 	)
 	(sheet
-		(at 193.548 100.838)
-		(size 21.59 6.604)
-		(fields_autoplaced yes)
+		(at 193.04 100.33)
+		(size 21.59 7.62)
 		(stroke
 			(width 0.1524)
 			(type solid)
@@ -1144,7 +1613,7 @@
 		)
 		(uuid "e1271236-020e-4be9-8230-a8c7544f1881")
 		(property "Sheetname" "Servo1"
-			(at 193.548 100.1264 0)
+			(at 193.04 99.6184 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1153,7 +1622,7 @@
 			)
 		)
 		(property "Sheetfile" "servo.kicad_sch"
-			(at 193.548 108.0266 0)
+			(at 193.04 108.712 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1162,7 +1631,7 @@
 			)
 		)
 		(pin "5V" input
-			(at 215.138 104.14 0)
+			(at 214.63 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1172,7 +1641,7 @@
 			(uuid "03f1b01e-2c02-49ca-b894-f20062e16192")
 		)
 		(pin "PWM" input
-			(at 193.548 104.14 180)
+			(at 193.04 104.14 180)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1185,6 +1654,124 @@
 			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095"
 					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 220.98 109.22)
+		(size 26.67 23.368)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "f6a6e864-0822-4ae4-be84-ceba396b8425")
+		(property "Sheetname" "Extra IO"
+			(at 220.98 108.5084 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "io.kicad_sch"
+			(at 220.98 133.1726 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "BUTTON[0..1]" output
+			(at 220.98 113.03 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "8054b4ab-936b-4017-825a-71cfdd31f1e9")
+		)
+		(pin "5V" input
+			(at 247.65 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "1a10ecdc-ed30-403c-b3cb-a6ad7f10c6a7")
+		)
+		(pin "STIM[0..3]" input
+			(at 220.98 115.57 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "694a505d-ea5c-44c6-96f5-fe559dd15c99")
+		)
+		(pin "3V3" input
+			(at 247.65 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "5ce6a356-6ba6-4802-b82e-7bd1b3eca4dc")
+		)
+		(pin "SPARE1{I2C}" bidirectional
+			(at 220.98 118.11 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "8d9fdeb4-32ad-4963-a5ee-7955dd95d504")
+		)
+		(pin "SPARE0{I2C}" bidirectional
+			(at 220.98 120.65 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "f156a022-5d8e-4b2f-b9cb-8ebc2943e48a")
+		)
+		(pin "GPIO0" bidirectional
+			(at 220.98 123.19 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "3de5aa98-4d2f-4c2d-92f4-a48cae4ba0b0")
+		)
+		(pin "GPIO1" bidirectional
+			(at 220.98 125.73 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "d642bbe0-d136-4d7a-869c-aab3be596c7b")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095"
+					(page "9")
 				)
 			)
 		)
