@@ -16,13 +16,9 @@ const struct device *gpio_dev = DEVICE_DT_GET_ANY(ll_generic_gpios);
 
 #define DEV_GET_COMMA(id) DEVICE_DT_GET(id),
 
-const struct device *stepper_devs[] = {
-    DT_FOREACH_STATUS_OKAY(ll_stepper, DEV_GET_COMMA)
-};
+const struct device *stepper_devs[] = {DT_FOREACH_STATUS_OKAY(ll_stepper, DEV_GET_COMMA)};
 
-const struct device *servo_devs[] = {
-    DT_FOREACH_STATUS_OKAY(ll_servo, DEV_GET_COMMA)
-};
+const struct device *servo_devs[] = {DT_FOREACH_STATUS_OKAY(ll_servo, DEV_GET_COMMA)};
 
 K_SEM_DEFINE(thread_startup_sem, 0, 1);
 
@@ -34,6 +30,9 @@ INPUT_CALLBACK_DEFINE(NULL, on_input_func);
 
 static uint32_t triangle_wave[101];
 static uint32_t zero_wave[10] = {0};
+
+static uint32_t fast_steps[4096];
+static uint32_t step_range[8192];
 
 int main() {
     LOG_INF("Autotrainer Pellet Module v%s", APP_VERSION_STRING);
@@ -57,6 +56,18 @@ int main() {
         triangle_wave[i] = (i * (2000 / (ARRAY_SIZE(triangle_wave) - 1))) + 2000;
     }
     sys_cache_data_flush_range(triangle_wave, sizeof(triangle_wave));
+
+    // Create a pattern of fast steps
+    for (int i = 0; i < ARRAY_SIZE(fast_steps); i++) {
+        fast_steps[i] = 1;
+    }
+    sys_cache_data_flush_range(fast_steps, sizeof(fast_steps));
+
+    // Create a wide range of steps
+    for (int i = 0; i < ARRAY_SIZE(step_range); i++) {
+        step_range[i] = 0xFFFF / (i + 1);
+    }
+    sys_cache_data_flush_range(step_range, sizeof(step_range));
 
     k_sem_give(&thread_startup_sem);
 
@@ -94,7 +105,9 @@ void stepper_thread_entry(void *p1, void *p2, void *p3) {
         int ret;
         LOG_INF("Queueing stepper positions");
         for (int i = 0; i < ARRAY_SIZE(stepper_devs); i++) {
-            ret = ll_queue_stepper_positions(stepper_devs[i], triangle_wave, sizeof(triangle_wave), K_FOREVER);
+            // ret = ll_queue_stepper_positions(stepper_devs[i], triangle_wave, sizeof(triangle_wave), K_FOREVER);
+            // ret = ll_queue_stepper_positions(stepper_devs[i], fast_steps, sizeof(fast_steps), K_FOREVER);
+            ret = ll_queue_stepper_positions(stepper_devs[i], step_range, sizeof(step_range), K_FOREVER);
             if (ret < 0) {
                 LOG_ERR("Failed to start stepper DMA: %d", ret);
                 break;
@@ -103,5 +116,10 @@ void stepper_thread_entry(void *p1, void *p2, void *p3) {
     }
 }
 
+#if DT_HAS_COMPAT_STATUS_OKAY(ll_servo)
 K_THREAD_DEFINE(servo_tid, 1024, servo_thread_entry, NULL, NULL, NULL, 5, 0, 0);
+#endif
+
+#if DT_HAS_COMPAT_STATUS_OKAY(ll_stepper)
 K_THREAD_DEFINE(stepper_tid, 1024, stepper_thread_entry, NULL, NULL, NULL, 5, 0, 0);
+#endif

@@ -30,7 +30,7 @@ static int ll_stepper_init(const struct device *dev) {
     LL_TIM_OC_InitTypeDef output_chan_init;
     LL_TIM_OC_StructInit(&output_chan_init);
     output_chan_init.OCMode = LL_TIM_OCMODE_PULSE_ON_COMPARE;
-    output_chan_init.CompareValue = 100;
+    output_chan_init.CompareValue = 0;
 
     if (LL_TIM_OC_Init(cfg->timer, cfg->channel, &output_chan_init) != SUCCESS) {
         LOG_ERR("Failed to initialize output channel");
