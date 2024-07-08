@@ -1,0 +1,28 @@
+(kicad_sch
+	(version 20231120)
+	(generator "eeschema")
+	(generator_version "8.0")
+	(uuid "abcec51a-71c2-4c97-a195-c3393209159c")
+	(paper "A4")
+	(lib_symbols)
+	(text "Temp sensor"
+		(exclude_from_sim no)
+		(at 72.136 114.046 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "491f61b2-aa92-4fd2-830d-0544ebd1b93b")
+	)
+	(text "Pressure Sensor"
+		(exclude_from_sim no)
+		(at 75.0589 58.01 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "88b7cc37-223f-42e0-8f49-8ee0b8437eb6")
+	)
+)
