@@ -66,6 +66,7 @@ static int ll_servo_init(const struct device *dev) {
         .dma_dev = DEVICE_DT_GET(STM32_DMA_CTLR(idx, tx)),                                          \
         .msgq = &servo_msgq##idx,                                                                   \
         .timer_dma_reg = channel_to_ccr_map[DT_INST_PROP(idx, pwm_channel) - 1],                    \
+        .stop_on_dma_complete = false,                                                              \
     };                                                                                              \
                                                                                                     \
     static ll_motor_data_t servo_data##idx = {                                                      \

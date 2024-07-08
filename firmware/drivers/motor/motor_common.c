@@ -24,9 +24,10 @@ void ll_motor_dma_tx_callback(const struct device *dma_dev, void *arg, uint32_t 
             return;
         }
     } else {
-        // If there are no more blocks, stop the timer
-        // FIXME: Do we want to continue to hold the last position? Or just stop sending pulses?
-        LL_TIM_DisableCounter(cfg->timer);
+        // If there are no more blocks, stop the timer (useful for the stepper driver so it doesn't send more steps)
+        if (cfg->stop_on_dma_complete) {
+            LL_TIM_DisableCounter(cfg->timer);
+        }
     }
 }
 

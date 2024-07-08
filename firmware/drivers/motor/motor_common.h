@@ -35,6 +35,7 @@ typedef struct {
     const struct device *dma_dev;
     struct k_msgq *msgq;
     uint32_t timer_dma_reg;
+    bool stop_on_dma_complete;
 } ll_motor_cfg_t;
 
 static inline int ll_motor_timer_enable_clock(const struct stm32_pclken *timer_clk) {

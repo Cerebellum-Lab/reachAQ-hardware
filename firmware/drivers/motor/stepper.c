@@ -59,6 +59,7 @@ static int ll_stepper_init(const struct device *dev) {
         .dma_dev = DEVICE_DT_GET(STM32_DMA_CTLR(idx, tx)),                                                \
         .msgq = &stepper_msgq##idx,                                                                       \
         .timer_dma_reg = LL_TIM_DMABURST_BASEADDR_ARR,                                                    \
+        .stop_on_dma_complete = true,                                                                     \
     };                                                                                                    \
                                                                                                           \
     static ll_motor_data_t stepper_data##idx = {                                                          \
