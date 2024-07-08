@@ -20,6 +20,10 @@ int ll_queue_servo_positions(const struct device *dev, uint32_t *positions, size
     return ll_motor_queue_data(dev, positions, len, timeout);
 }
 
+int ll_servo_register_callback(const struct device *dev, ll_servo_cb_t *cb) {
+    return ll_motor_register_callback(dev, cb);
+}
+
 static int ll_servo_init(const struct device *dev) {
     const ll_motor_cfg_t *cfg = dev->config;
     ll_motor_data_t *data = dev->data;

@@ -1,9 +1,7 @@
 #include "motor_common.h"
 
-
-#include <zephyr/logging/log.h>
 #include <zephyr/drivers/pinctrl.h>
-
+#include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(ll_motor, CONFIG_LL_MOTOR_LOG_LEVEL);
 
@@ -11,6 +9,7 @@ void ll_motor_dma_tx_callback(const struct device *dma_dev, void *arg, uint32_t 
     const struct device *dev = arg;
     const ll_motor_cfg_t *cfg = dev->config;
     ll_motor_data_t *data = dev->data;
+    ll_motor_cb_t *cb;
 
     // Check the msgq to see if there are any more position blocks to send
     ll_motorq_msg_t msg;
@@ -23,12 +22,30 @@ void ll_motor_dma_tx_callback(const struct device *dma_dev, void *arg, uint32_t 
             LOG_ERR("Failed to reload DMA: %d", ret);
             return;
         }
+
+        // Do the callbacks after the DMA is reloaded so we don't have any gaps in the data output
+        SYS_SLIST_FOR_EACH_CONTAINER(&data->callbacks, cb, node) {
+            cb->func(dev, LL_MOTOR_EVENT_DMA_BLOCK_COMPLETE, arg, cb->user_data);
+        }
     } else {
         // If there are no more blocks, stop the timer (useful for the stepper driver so it doesn't send more steps)
         if (cfg->stop_on_dma_complete) {
             LL_TIM_DisableCounter(cfg->timer);
         }
+
+        // Callback to alert that everything in the queue has been completed.
+        SYS_SLIST_FOR_EACH_CONTAINER(&data->callbacks, cb, node) {
+            cb->func(dev, LL_MOTOR_EVENT_DMA_QUEUE_EMPTY, arg, cb->user_data);
+        }
     }
+}
+
+int ll_motor_register_callback(const struct device *dev, ll_motor_cb_t *cb) {
+    ll_motor_data_t *data = dev->data;
+
+    sys_slist_append(&data->callbacks, &cb->node);
+
+    return 0;
 }
 
 int ll_motor_start_dma(const struct device *dev) {
@@ -104,6 +121,10 @@ int ll_motor_queue_data(const struct device *dev, uint32_t *buf, size_t len, k_t
 
 int ll_motor_init(const struct device *dev) {
     const ll_motor_cfg_t *cfg = dev->config;
+    ll_motor_data_t *data = dev->data;
+
+    // Initialize the callbacks list
+    sys_slist_init(&data->callbacks);
 
     int ret = ll_motor_timer_enable_clock(&cfg->clk);
     if (ret < 0) {

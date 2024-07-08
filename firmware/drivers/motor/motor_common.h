@@ -5,6 +5,8 @@
 #include <zephyr/drivers/clock_control/stm32_clock_control.h>
 #include <zephyr/drivers/dma.h>
 
+#include "motor_callbacks.h"
+
 typedef struct {
     uint32_t *buf;
     size_t buf_size;
@@ -21,7 +23,8 @@ static const uint32_t channel_to_ll_map[] = {LL_TIM_CHANNEL_CH1, LL_TIM_CHANNEL_
                                              LL_TIM_CHANNEL_CH4, LL_TIM_CHANNEL_CH5, LL_TIM_CHANNEL_CH6};
 
 // This macro is odd, but how the LL HAL defines the channels is a bit odd...
-#define CHANNEL_NUM_TO_LL_MAP(__CHANNEL__)                      \
+/* clang-format off */
+#define CHANNEL_NUM_TO_LL_MAP(__CHANNEL__)  \
     ((__CHANNEL__ == 1)   ? TIM_CHANNEL_1   \
     : ((__CHANNEL__ == 2) ? TIM_CHANNEL_2   \
     : ((__CHANNEL__ == 3) ? TIM_CHANNEL_3   \
@@ -29,11 +32,13 @@ static const uint32_t channel_to_ll_map[] = {LL_TIM_CHANNEL_CH1, LL_TIM_CHANNEL_
     : ((__CHANNEL__ == 5) ? TIM_CHANNEL_5   \
     : ((__CHANNEL__ == 6) ? TIM_CHANNEL_6   \
                          : -1))))))
+/* clang-format on */
 
 typedef struct {
     int32_t position;
     struct dma_config dma_cfg;
     int dma_channel;
+    sys_slist_t callbacks;
 } ll_motor_data_t;
 
 typedef struct {
@@ -63,3 +68,4 @@ void ll_motor_dma_tx_callback(const struct device *dma_dev, void *arg, uint32_t 
 int ll_motor_queue_data(const struct device *dev, uint32_t *buf, size_t len, k_timeout_t timeout);
 int ll_motor_start_dma(const struct device *dev);
 int ll_motor_init(const struct device *dev);
+int ll_motor_register_callback(const struct device *dev, ll_motor_cb_t *cb);

@@ -16,6 +16,10 @@ int ll_queue_stepper_positions(const struct device *dev, uint32_t *positions, si
     return ll_motor_queue_data(dev, positions, len, timeout);
 }
 
+int ll_stepper_register_callback(const struct device *dev, ll_stepper_cb_t *cb) {
+    return ll_motor_register_callback(dev, cb);
+}
+
 static int ll_stepper_init(const struct device *dev) {
     const ll_motor_cfg_t *cfg = dev->config;
 

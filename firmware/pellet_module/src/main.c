@@ -76,10 +76,22 @@ int main() {
     }
 }
 
+void servo_callback_func(const struct device *dev, ll_servo_events_t event, void *arg, void *user_data) {
+    LOG_INF("Servo %p event: %d", dev, event);
+}
+
+ll_servo_cb_t servo_cb = {
+    .func = servo_callback_func,
+};
+
 void servo_thread_entry(void *p1, void *p2, void *p3) {
     // Wait for the main thread to populate the data buffers before using them
     k_sem_take(&thread_startup_sem, K_FOREVER);
     k_sem_give(&thread_startup_sem);
+
+    for (int i = 0; i < ARRAY_SIZE(servo_devs); i++) {
+        ll_servo_register_callback(servo_devs[i], &servo_cb);
+    }
 
     while (true) {
         int ret;
@@ -96,10 +108,23 @@ void servo_thread_entry(void *p1, void *p2, void *p3) {
     }
 }
 
+void stepper_callback_func(const struct device *dev, ll_stepper_events_t event, void *arg, void *user_data) {
+    LOG_INF("Stepper %p event: %d", dev, event);
+}
+
+ll_servo_cb_t stepper_cb = {
+    .func = stepper_callback_func,
+};
+
 void stepper_thread_entry(void *p1, void *p2, void *p3) {
     // Wait for the main thread to populate the data buffers before using them
     k_sem_take(&thread_startup_sem, K_FOREVER);
     k_sem_give(&thread_startup_sem);
+
+    // Register the stepper callback
+    for (int i = 0; i < ARRAY_SIZE(stepper_devs); i++) {
+        ll_stepper_register_callback(stepper_devs[i], &stepper_cb);
+    }
 
     while (true) {
         int ret;
