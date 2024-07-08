@@ -284,10 +284,11 @@
     },
     "net_colors": null,
     "netclass_assignments": {
+      "/3V3": "Power",
+      "/5V": "Power",
       "/MCU/3V3": "Power",
       "/Power & Data Connections/12V": "Power",
       "/Power/12V": "Power",
-      "/Power/5V": "Power",
       "Net-(D1-A)": "Power"
     },
     "netclass_patterns": []

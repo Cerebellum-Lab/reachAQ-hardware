@@ -1919,12 +1919,6 @@
 		(uuid "138888d5-df69-4e90-a869-7dcfe735ed53")
 	)
 	(junction
-		(at 158.75 118.11)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "22676539-f393-4154-8751-445003b0d605")
-	)
-	(junction
 		(at 154.94 82.55)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2165,16 +2159,6 @@
 			(type default)
 		)
 		(uuid "6f61bab4-df20-4284-947a-414fac2c7fc9")
-	)
-	(wire
-		(pts
-			(xy 154.94 118.11) (xy 158.75 118.11)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "778c81ad-097b-4010-9139-de31cb0e5f9b")
 	)
 	(wire
 		(pts
@@ -4004,73 +3988,6 @@
 			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/06f3621d-3ec0-4d63-9ba9-06465b135ad7"
 					(reference "J3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 154.94 118.11 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "d13d8ca0-2b48-408e-85ec-9e8f61bdd4e5")
-		(property "Reference" "#FLG01"
-			(at 153.035 118.11 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 151.13 118.1099 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 154.94 118.11 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 154.94 118.11 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 154.94 118.11 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "e398f932-3493-48b3-bc12-c4f59f263f25")
-		)
-		(instances
-			(project "magnet"
-				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/06f3621d-3ec0-4d63-9ba9-06465b135ad7"
-					(reference "#FLG01")
 					(unit 1)
 				)
 			)

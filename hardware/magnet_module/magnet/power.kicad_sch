@@ -1521,6 +1521,12 @@
 		(uuid "68d517ca-e224-4ab4-97de-492543f69f86")
 	)
 	(junction
+		(at 39.37 33.02)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "78eccdd7-1c69-4d88-9bca-949cc02e0ec6")
+	)
+	(junction
 		(at 193.04 95.25)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2143,6 +2149,29 @@
 			(justify left)
 		)
 		(uuid "f71afbc9-307b-4ad6-b006-5c8e25075277")
+	)
+	(netclass_flag ""
+		(length 2.54)
+		(shape round)
+		(at 88.9 151.13 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "7ecca38d-8723-444a-9221-edd1df4bf5bf")
+		(property "Netclass" "Power"
+			(at 89.5985 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+			)
+		)
 	)
 	(netclass_flag ""
 		(length 2.54)
@@ -3104,6 +3133,72 @@
 			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/2d556af5-2e8e-4584-962b-364bdedf6f87"
 					(reference "#PWR069")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 39.37 33.02 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "4a634641-e9be-4306-896c-9b46734cf351")
+		(property "Reference" "#FLG06"
+			(at 39.37 34.925 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 39.37 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 39.37 33.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 39.37 33.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 39.37 33.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "70fdcf4b-eec3-4b0d-8d8a-909812e7f1b4")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/2d556af5-2e8e-4584-962b-364bdedf6f87"
+					(reference "#FLG06")
 					(unit 1)
 				)
 			)
