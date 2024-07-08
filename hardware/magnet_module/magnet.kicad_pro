@@ -289,6 +289,7 @@
       "/MCU/3V3": "Power",
       "/Power & Data Connections/12V": "Power",
       "/Power/12V": "Power",
+      "/Power/3V3": "Power",
       "Net-(D1-A)": "Power"
     },
     "netclass_patterns": []
