@@ -12,6 +12,10 @@
 
 LOG_MODULE_DECLARE(ll_motor, CONFIG_LL_MOTOR_LOG_LEVEL);
 
+static const uint32_t channel_to_ccr_map[] = {LL_TIM_DMABURST_BASEADDR_CCR1, LL_TIM_DMABURST_BASEADDR_CCR2,
+                                              LL_TIM_DMABURST_BASEADDR_CCR3, LL_TIM_DMABURST_BASEADDR_CCR4,
+                                              LL_TIM_DMABURST_BASEADDR_CCR5, LL_TIM_DMABURST_BASEADDR_CCR6};
+
 int ll_queue_servo_positions(const struct device *dev, uint32_t *positions, size_t len, k_timeout_t timeout) {
     return ll_motor_queue_data(dev, positions, len, timeout);
 }
@@ -61,11 +65,11 @@ static int ll_servo_init(const struct device *dev) {
         .channel = channel_to_ll_map[DT_INST_PROP(idx, pwm_channel) - 1],                           \
         .dma_dev = DEVICE_DT_GET(STM32_DMA_CTLR(idx, tx)),                                          \
         .msgq = &servo_msgq##idx,                                                                   \
-        .timer_dma_reg = LL_TIM_DMABURST_BASEADDR_CCR2,                                             \
+        .timer_dma_reg = channel_to_ccr_map[DT_INST_PROP(idx, pwm_channel) - 1],                    \
     };                                                                                              \
                                                                                                     \
     static ll_motor_data_t servo_data##idx = {                                                      \
-        .position = 0,                                                                              \
+        .position = 1000,                                                                           \
         .dma_channel = DT_INST_DMAS_CELL_BY_NAME(idx, tx, channel),                                 \
         .dma_cfg =                                                                                  \
             {                                                                                       \

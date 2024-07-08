@@ -66,6 +66,42 @@
 	};
 };
 
+&timers15 {
+	status = "okay";
+	st,prescaler = <84>; // 170 MHz / (84 + 1) = 2 MHz
+
+	servo1: servo1 {
+		compatible = "ll,servo";
+		status = "okay";
+
+		pinctrl-0 = <&tim15_ch2_pb15>;
+		pinctrl-names = "default";
+
+		pwm-channel = <2>;
+
+		dmas = <&dmamux1 1 79 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
+	};
+};
+
+&timers17 {
+	status = "okay";
+	st,prescaler = <84>; // 170 MHz / (84 + 1) = 2 MHz
+
+	servo2: servo2 {
+		compatible = "ll,servo";
+		status = "okay";
+
+		pinctrl-0 = <&tim17_ch1_pb9>;
+		pinctrl-names = "default";
+
+		pwm-channel = <1>;
+
+		dmas = <&dmamux1 2 85 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
+	};
+};
+
 &timers1 {
 	status = "okay";
 	st,prescaler = <849>; // 170 MHz / (849 + 1) = 200 kHz
@@ -83,7 +119,7 @@
 		// PWM Channel to use
 		pwm-channel = <3>;
 
-		dmas = <&dmamux1 1 46 STM32_DMA_PRIORITY_MEDIUM>;
+		dmas = <&dmamux1 3 46 STM32_DMA_PRIORITY_MEDIUM>;
 		dma-names = "tx";
 	};
 };
@@ -105,7 +141,7 @@
 		// PWM Channel to use
 		pwm-channel = <4>;
 
-		dmas = <&dmamux1 2 53 STM32_DMA_PRIORITY_MEDIUM>;
+		dmas = <&dmamux1 4 53 STM32_DMA_PRIORITY_MEDIUM>;
 		dma-names = "tx";
 	};
 };
@@ -127,7 +163,7 @@
 		// PWM Channel to use
 		pwm-channel = <3>;
 
-		dmas = <&dmamux1 3 90 STM32_DMA_PRIORITY_MEDIUM>;
+		dmas = <&dmamux1 5 90 STM32_DMA_PRIORITY_MEDIUM>;
 		dma-names = "tx";
 	};
 };

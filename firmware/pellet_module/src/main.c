@@ -13,12 +13,15 @@
 LOG_MODULE_REGISTER(app);
 
 const struct device *gpio_dev = DEVICE_DT_GET_ANY(ll_generic_gpios);
-const struct device *servo_dev = DEVICE_DT_GET_ANY(ll_servo);
 
-#define STEPPER_DEF(id) DEVICE_DT_GET(id),
+#define DEV_GET_COMMA(id) DEVICE_DT_GET(id),
 
 const struct device *stepper_devs[] = {
-    DT_FOREACH_STATUS_OKAY(ll_stepper, STEPPER_DEF)
+    DT_FOREACH_STATUS_OKAY(ll_stepper, DEV_GET_COMMA)
+};
+
+const struct device *servo_devs[] = {
+    DT_FOREACH_STATUS_OKAY(ll_servo, DEV_GET_COMMA)
 };
 
 K_SEM_DEFINE(thread_startup_sem, 0, 1);
@@ -70,11 +73,14 @@ void servo_thread_entry(void *p1, void *p2, void *p3) {
     while (true) {
         int ret;
         LOG_INF("Queueing servo positions");
-        ret = ll_queue_servo_positions(servo_dev, triangle_wave, sizeof(triangle_wave), K_FOREVER);
-        ret |= ll_queue_servo_positions(servo_dev, zero_wave, sizeof(zero_wave), K_FOREVER);
-        if (ret < 0) {
-            LOG_ERR("Failed to start servo DMA: %d", ret);
-            break;
+
+        for (int i = 0; i < ARRAY_SIZE(servo_devs); i++) {
+            ret = ll_queue_servo_positions(servo_devs[i], triangle_wave, sizeof(triangle_wave), K_FOREVER);
+            ret |= ll_queue_servo_positions(servo_devs[i], zero_wave, sizeof(zero_wave), K_FOREVER);
+            if (ret < 0) {
+                LOG_ERR("Failed to start servo DMA: %d", ret);
+                break;
+            }
         }
     }
 }
