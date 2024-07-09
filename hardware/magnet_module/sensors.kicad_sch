@@ -913,7 +913,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 118.11 85.09 0)
 			(effects
 				(font
@@ -1060,7 +1060,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "SHT40-AD1B-R2"
 			(at 100.33 151.13 0)
 			(effects
 				(font

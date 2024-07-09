@@ -12,6 +12,108 @@
 		(comment 1 "Prepared by LeafLabs, LLC")
 	)
 	(lib_symbols
+		(symbol "Connector:TestPoint"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0.762) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "TP"
+				(at 0 6.858 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TestPoint"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 5.08 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 5.08 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "test point"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "test point tp"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Pin* Test*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "TestPoint_0_1"
+				(circle
+					(center 0 3.302)
+					(radius 0.762)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TestPoint_1_1"
+				(pin passive line
+					(at 0 0 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Device:C"
 			(pin_numbers hide)
 			(pin_names
@@ -3784,6 +3886,12 @@
 		(members "DM" "DP")
 	)
 	(junction
+		(at 36.83 107.95)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "17691894-4271-4446-a415-4be325ba0bba")
+	)
+	(junction
 		(at 156.21 36.83)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4111,7 +4219,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 109.22) (xy 69.85 109.22)
+			(xy 68.58 109.22) (xy 73.66 109.22)
 		)
 		(stroke
 			(width 0)
@@ -4378,6 +4486,16 @@
 			(type default)
 		)
 		(uuid "5051a526-fa5a-4f2c-a534-5855539d449f")
+	)
+	(wire
+		(pts
+			(xy 40.64 107.95) (xy 36.83 107.95)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "58785b9b-98f3-4e38-9e46-4accef6d0447")
 	)
 	(wire
 		(pts
@@ -4987,7 +5105,7 @@
 	)
 	(rectangle
 		(start 14.605 51.562)
-		(end 78.105 120.65)
+		(end 92.964 120.65)
 		(stroke
 			(width 0)
 			(type default)
@@ -5958,7 +6076,7 @@
 		(uuid "c1f4c06a-9e23-4391-96b3-227763307056")
 	)
 	(label "~{MCU_RST}"
-		(at 35.56 107.95 0)
+		(at 33.02 107.95 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6339,7 +6457,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 32.7152 187.96 0)
 			(effects
 				(font
@@ -6366,7 +6484,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 31.75 184.15 0)
 			(effects
 				(font
@@ -6435,6 +6553,15 @@
 			)
 		)
 		(property "Description" "2x DIP Switch, Single Pole Single Throw (SPST) switch, small symbol"
+			(at 152.4 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "DS04-254-2-02BK-SMT"
 			(at 152.4 177.8 0)
 			(effects
 				(font
@@ -6585,6 +6712,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "W25Q16JVSSIQ"
+			(at 255.27 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "5"
 			(uuid "075658ac-5b4e-44d2-8fb8-b32f3af1a3bb")
 		)
@@ -6704,7 +6840,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 37.7952 116.84 0)
 			(effects
 				(font
@@ -6731,7 +6867,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 36.83 113.03 0)
 			(effects
 				(font
@@ -6866,6 +7002,15 @@
 			)
 		)
 		(property "Description" ""
+			(at 43.18 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "FTSH-107-01-F-D-K"
 			(at 43.18 67.31 0)
 			(effects
 				(font
@@ -7149,6 +7294,73 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 73.66 109.22 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(fields_autoplaced yes)
+		(uuid "6ccfd920-1c4e-45b4-905f-40d5b93389f2")
+		(property "Reference" "TP10"
+			(at 78.74 107.9499 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 78.74 110.4899 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 73.66 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 73.66 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 73.66 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4eeff11b-9663-4281-89ec-a13584ccdfbb")
+		)
+		(instances
+			(project ""
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/286cc8bf-34fd-48cd-9d6c-58653d0694aa"
+					(reference "TP10")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 62.23 142.24 0)
 		(unit 1)
@@ -7176,7 +7388,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 63.1952 146.05 0)
 			(effects
 				(font
@@ -7203,7 +7415,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 62.23 142.24 0)
 			(effects
 				(font
@@ -7348,7 +7560,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 217.17 142.24 0)
 			(effects
 				(font
@@ -7426,7 +7638,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 139.7 186.69 0)
 			(effects
 				(font
@@ -7476,7 +7688,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
 			(at 22.86 179.578 90)
 			(effects
 				(font
@@ -7495,6 +7707,15 @@
 			)
 		)
 		(property "Description" "Ferrite bead"
+			(at 22.86 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "BLM18KG121TN1D"
 			(at 22.86 177.8 0)
 			(effects
 				(font
@@ -7573,7 +7794,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 226.06 142.24 0)
 			(effects
 				(font
@@ -7652,7 +7873,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 140.97 166.37 0)
 			(effects
 				(font
@@ -7702,7 +7923,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
 			(at 170.18 30.988 90)
 			(effects
 				(font
@@ -7721,6 +7942,15 @@
 			)
 		)
 		(property "Description" "Ferrite bead"
+			(at 170.18 29.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "BLM18KG121TN1D"
 			(at 170.18 29.21 0)
 			(effects
 				(font
@@ -7799,7 +8029,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-07220RL"
 			(at 40.64 34.29 0)
 			(effects
 				(font
@@ -7851,7 +8081,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 78.4352 146.05 0)
 			(effects
 				(font
@@ -7878,7 +8108,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 77.47 142.24 0)
 			(effects
 				(font
@@ -7930,7 +8160,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Diode_SMD:D_0603_1608Metric"
 			(at 40.64 26.67 0)
 			(effects
 				(font
@@ -7975,7 +8205,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "150060YS75000"
 			(at 40.64 26.67 0)
 			(effects
 				(font
@@ -8345,7 +8575,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 50.4952 146.05 0)
 			(effects
 				(font
@@ -8372,7 +8602,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 49.53 142.24 0)
 			(effects
 				(font
@@ -8490,7 +8720,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 22.5552 146.05 0)
 			(effects
 				(font
@@ -8517,7 +8747,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 21.59 142.24 0)
 			(effects
 				(font
@@ -8569,7 +8799,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 271.4752 135.89 0)
 			(effects
 				(font
@@ -8596,7 +8826,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 270.51 132.08 0)
 			(effects
 				(font
@@ -8800,6 +9030,15 @@
 			)
 		)
 		(property "Description" "STMicroelectronics Arm Cortex-M4 MCU, 512KB flash, 128KB RAM, 170 MHz, 1.71-3.6V, 52 GPIO, LQFP64"
+			(at 153.67 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "STM32G474RET6"
 			(at 153.67 86.36 0)
 			(effects
 				(font
@@ -9385,7 +9624,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 135.89 166.37 0)
 			(effects
 				(font
@@ -9543,6 +9782,73 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 40.64 107.95 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(fields_autoplaced yes)
+		(uuid "f090e11f-a7cd-4b1f-b25b-95db1bf46f4b")
+		(property "Reference" "TP11"
+			(at 45.72 106.6799 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 45.72 109.2199 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 40.64 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 40.64 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 40.64 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c10a5e76-1f10-427d-8ca4-31550cb684e8")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/286cc8bf-34fd-48cd-9d6c-58653d0694aa"
+					(reference "TP11")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:PWR_FLAG")
 		(at 26.67 177.8 180)
 		(unit 1)
@@ -9635,7 +9941,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 36.5252 146.05 0)
 			(effects
 				(font
@@ -9662,7 +9968,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 35.56 142.24 0)
 			(effects
 				(font

@@ -2731,7 +2731,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 46.0248 71.12 0)
 			(effects
 				(font
@@ -2758,7 +2758,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 46.99 67.31 0)
 			(effects
 				(font
@@ -2905,6 +2905,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "BM03B-SRSS-TB"
+			(at 260.35 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "e6a2fc72-c943-4d62-bf30-c3fd991dcb95")
 		)
@@ -2971,6 +2980,15 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 260.35 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "BM04B-SRSS-TB"
 			(at 260.35 50.8 0)
 			(effects
 				(font
@@ -3056,7 +3074,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 41.91 31.75 0)
 			(effects
 				(font
@@ -3192,6 +3210,15 @@
 			)
 		)
 		(property "Description" "coaxial connector (BNC, SMA, SMB, SMC, Cinch/RCA, LEMO, ...)"
+			(at 54.61 35.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CONMHF1-SMD-T"
 			(at 54.61 35.56 0)
 			(effects
 				(font
@@ -3336,6 +3363,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "CONMHF1-SMD-T"
+			(at 100.33 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "0962af24-f84b-4445-9431-3c4bfcf1ef81")
 		)
@@ -3444,7 +3480,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 62.23 108.2548 0)
 			(effects
 				(font
@@ -3471,7 +3507,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 58.42 109.22 0)
 			(effects
 				(font
@@ -3617,6 +3653,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "CONMHF1-SMD-T"
+			(at 100.33 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1fce39c2-1f1a-489b-b4e5-12debec72776")
 		)
@@ -3688,7 +3733,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 43.18 59.69 0)
 			(effects
 				(font
@@ -3833,6 +3878,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "CONMHF1-SMD-T"
+			(at 100.33 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a928fe79-9f17-4df0-af61-20b4f8475964")
 		)
@@ -3895,6 +3949,15 @@
 			)
 		)
 		(property "Description" "4-Bit Bidirectional Voltage-Level Translator, Auto Direction Sensing and ±15-kV ESD Protection, 1.2 - 3.6V APort, 1.65 - 5.5V BPort, Texas_PUQFN-12"
+			(at 52.07 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "TXB0104RUT"
 			(at 52.07 129.54 0)
 			(effects
 				(font
@@ -3976,7 +4039,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 41.91 108.2548 0)
 			(effects
 				(font
@@ -4003,7 +4066,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 45.72 109.22 0)
 			(effects
 				(font
@@ -4055,7 +4118,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 44.7548 43.18 0)
 			(effects
 				(font
@@ -4082,7 +4145,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 45.72 39.37 0)
 			(effects
 				(font
@@ -4162,6 +4225,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "BM04B-SRSS-TB"
+			(at 260.35 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "cc55573e-da15-4919-8db9-66ff5e983c56")
 		)
@@ -4229,6 +4301,15 @@
 			)
 		)
 		(property "Description" "coaxial connector (BNC, SMA, SMB, SMC, Cinch/RCA, LEMO, ...)"
+			(at 55.88 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CONMHF1-SMD-T"
 			(at 55.88 63.5 0)
 			(effects
 				(font
@@ -4365,6 +4446,15 @@
 			)
 		)
 		(property "Description" "coaxial connector (BNC, SMA, SMB, SMC, Cinch/RCA, LEMO, ...)"
+			(at 100.33 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CONMHF1-SMD-T"
 			(at 100.33 104.14 0)
 			(effects
 				(font
@@ -4568,6 +4658,15 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x03, script generated"
+			(at 260.35 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "BM03B-SRSS-TB"
 			(at 260.35 69.85 0)
 			(effects
 				(font

@@ -1150,7 +1150,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 76.2 96.8248 0)
 			(effects
 				(font
@@ -1177,7 +1177,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 72.39 97.79 0)
 			(effects
 				(font
@@ -1256,7 +1256,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "TXB0102RUT"
 			(at 66.04 111.76 0)
 			(effects
 				(font
@@ -1625,7 +1625,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 55.88 96.8248 0)
 			(effects
 				(font
@@ -1652,7 +1652,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603KRX7R7BB104"
 			(at 59.69 97.79 0)
 			(effects
 				(font
