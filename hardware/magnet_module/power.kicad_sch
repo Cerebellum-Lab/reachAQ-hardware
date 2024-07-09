@@ -4,6 +4,13 @@
 	(generator_version "8.0")
 	(uuid "46bb32ba-aa11-4e3b-9bde-da91587db822")
 	(paper "A4")
+	(title_block
+		(title "Autotrainer Magnet Module - Power")
+		(date "2024-07-09")
+		(rev "v1.0")
+		(company "Christie Lab, CU-Anschultz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
 	(lib_symbols
 		(symbol "Connector:Barrel_Jack"
 			(pin_names

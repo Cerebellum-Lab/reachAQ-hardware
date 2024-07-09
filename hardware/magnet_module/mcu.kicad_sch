@@ -4,6 +4,13 @@
 	(generator_version "8.0")
 	(uuid "6a5a1e64-ea31-46c6-af04-28ae9ff52cc4")
 	(paper "A4")
+	(title_block
+		(title "Autotrainer Magnet Module - MCU")
+		(date "2024-07-09")
+		(rev "v1.0")
+		(company "Christie Lab, CU-Anschultz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
 	(lib_symbols
 		(symbol "Device:C"
 			(pin_numbers hide)

@@ -4,6 +4,13 @@
 	(generator_version "8.0")
 	(uuid "1edbac3d-04cc-4951-b3d1-25ed660afe95")
 	(paper "A4")
+	(title_block
+		(title "Autotrainer Magnet Module - Load Cell")
+		(date "2024-07-09")
+		(rev "v1.0")
+		(company "Christie Lab, CU-Anschultz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
 	(lib_symbols
 		(symbol "Connector:Conn_01x04_Pin"
 			(pin_names
