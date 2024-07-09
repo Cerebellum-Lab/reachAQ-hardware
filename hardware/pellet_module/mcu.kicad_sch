@@ -7402,6 +7402,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "STM32G474RET6"
+			(at 143.51 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "ac08055c-6c88-4191-965d-1fa6c310739a")
 		)
@@ -7828,7 +7837,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 79.7052 182.88 0)
 			(effects
 				(font
@@ -7855,7 +7864,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 78.74 179.07 0)
 			(effects
 				(font
@@ -7972,7 +7981,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 237.49 112.0648 0)
 			(effects
 				(font
@@ -7999,7 +8008,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 233.68 113.03 0)
 			(effects
 				(font
@@ -8142,7 +8151,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Diode_SMD:D_0603_1608Metric"
 			(at 298.45 242.57 0)
 			(effects
 				(font
@@ -8187,7 +8196,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "150060YS75000"
 			(at 298.45 242.57 0)
 			(effects
 				(font
@@ -8305,7 +8314,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 271.4752 35.56 0)
 			(effects
 				(font
@@ -8332,7 +8341,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 270.51 31.75 0)
 			(effects
 				(font
@@ -8411,7 +8420,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 226.06 45.72 0)
 			(effects
 				(font
@@ -8463,7 +8472,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 37.7952 182.88 0)
 			(effects
 				(font
@@ -8490,7 +8499,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 36.83 179.07 0)
 			(effects
 				(font
@@ -8559,6 +8568,15 @@
 			)
 		)
 		(property "Description" ""
+			(at 43.18 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "FTSH-107-01-F-D-K"
 			(at 43.18 43.18 0)
 			(effects
 				(font
@@ -8646,7 +8664,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 23.8252 182.88 0)
 			(effects
 				(font
@@ -8673,7 +8691,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 22.86 179.07 0)
 			(effects
 				(font
@@ -8734,7 +8752,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.winbond.com/resource-files/w25q16jv%20spi%20revg%2003222018%20plus.pdf"
 			(at 255.27 48.26 0)
 			(effects
 				(font
@@ -8955,7 +8973,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 217.17 112.0648 0)
 			(effects
 				(font
@@ -8982,7 +9000,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 220.98 113.03 0)
 			(effects
 				(font
@@ -9061,7 +9079,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-07220RL"
 			(at 298.45 250.19 0)
 			(effects
 				(font
@@ -9207,7 +9225,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 217.17 45.72 0)
 			(effects
 				(font
@@ -9417,7 +9435,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 37.7952 105.41 0)
 			(effects
 				(font
@@ -9444,7 +9462,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 36.83 101.6 0)
 			(effects
 				(font
@@ -9586,7 +9604,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-071KL"
 			(at 170.18 52.07 0)
 			(effects
 				(font
@@ -9729,6 +9747,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "DS04-254-2-02BK-SMT"
+			(at 153.67 175.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "baf0da8c-5cf0-499b-a8ab-3ecdc0e89457")
 		)
@@ -9863,6 +9890,15 @@
 			)
 		)
 		(property "Description" "4-Bit Bidirectional Voltage-Level Translator, Auto Direction Sensing and ±15-kV ESD Protection, 1.2 - 3.6V APort, 1.65 - 5.5V BPort, Texas_PUQFN-12"
+			(at 227.33 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "TXB0104RUT"
 			(at 227.33 133.35 0)
 			(effects
 				(font
@@ -10206,7 +10242,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
 			(at 160.02 34.798 90)
 			(effects
 				(font
@@ -10225,6 +10261,15 @@
 			)
 		)
 		(property "Description" "Ferrite bead"
+			(at 160.02 33.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "BLM18KG121TN1D"
 			(at 160.02 33.02 0)
 			(effects
 				(font
@@ -10342,7 +10387,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 64.4652 182.88 0)
 			(effects
 				(font
@@ -10369,7 +10414,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 63.5 179.07 0)
 			(effects
 				(font
@@ -10447,7 +10492,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 137.16 163.83 0)
 			(effects
 				(font
@@ -10499,7 +10544,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 51.7652 182.88 0)
 			(effects
 				(font
@@ -10526,7 +10571,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 50.8 179.07 0)
 			(effects
 				(font
@@ -10802,7 +10847,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
 			(at 24.13 138.938 90)
 			(effects
 				(font
@@ -10821,6 +10866,15 @@
 			)
 		)
 		(property "Description" "Ferrite bead"
+			(at 24.13 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "BLM18KG121TN1D"
 			(at 24.13 137.16 0)
 			(effects
 				(font
@@ -11031,7 +11085,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 142.24 163.83 0)
 			(effects
 				(font
@@ -11083,7 +11137,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 33.9852 147.32 0)
 			(effects
 				(font
@@ -11110,7 +11164,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 33.02 143.51 0)
 			(effects
 				(font

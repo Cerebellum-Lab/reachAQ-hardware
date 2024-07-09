@@ -2119,6 +2119,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "CONMHF1-SMD-T"
+			(at 48.26 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f569526d-6bf9-40fd-ad9c-6565f583bda9")
 		)
@@ -2254,7 +2263,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 50.8 116.84 0)
 			(effects
 				(font
@@ -2398,7 +2407,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 50.8 86.36 0)
 			(effects
 				(font
@@ -2476,7 +2485,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 50.8 101.6 0)
 			(effects
 				(font
@@ -2556,7 +2565,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-0710KL"
 			(at 35.56 30.48 0)
 			(effects
 				(font
@@ -2608,7 +2617,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 38.4048 41.91 0)
 			(effects
 				(font
@@ -2635,7 +2644,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 39.37 38.1 0)
 			(effects
 				(font
@@ -2706,6 +2715,15 @@
 			)
 		)
 		(property "Description" "4-Bit Bidirectional Voltage-Level Translator, Auto Direction Sensing and ±15-kV ESD Protection, 1.2 - 3.6V APort, 1.65 - 5.5V BPort, Texas_PUQFN-12"
+			(at 172.72 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "TXB0104RUT"
 			(at 172.72 96.52 0)
 			(effects
 				(font
@@ -2881,6 +2899,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "61300311121"
+			(at 59.69 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "b08514c6-84e4-4246-bc21-27dc460c252e")
 		)
@@ -3020,6 +3047,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "CONMHF1-SMD-T"
+			(at 220.98 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6506c208-3668-45c0-82a3-c2d1b6b8bf22")
 		)
@@ -3082,6 +3118,15 @@
 			)
 		)
 		(property "Description" "coaxial connector (BNC, SMA, SMB, SMC, Cinch/RCA, LEMO, ...)"
+			(at 220.98 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CONMHF1-SMD-T"
 			(at 220.98 102.87 0)
 			(effects
 				(font
@@ -3219,6 +3264,15 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x03, script generated"
+			(at 59.69 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "61300311121"
 			(at 59.69 119.38 0)
 			(effects
 				(font
@@ -3367,6 +3421,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "CONMHF1-SMD-T"
+			(at 220.98 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e17b0bd6-5af9-4ee5-9061-8f84fdec6277")
 		)
@@ -3409,7 +3472,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 182.88 75.2348 0)
 			(effects
 				(font
@@ -3436,7 +3499,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 179.07 76.2 0)
 			(effects
 				(font
@@ -3648,6 +3711,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "61300311121"
+			(at 59.69 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "95aa0fb9-ab02-4a4d-a6da-37997b34817c")
 		)
@@ -3721,6 +3793,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "CONMHF1-SMD-T"
+			(at 220.98 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "37e2f5a8-0eb3-41be-860c-d4b0b9d9da0f")
 		)
@@ -3764,7 +3845,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 162.56 75.2348 0)
 			(effects
 				(font
@@ -3791,7 +3872,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 166.37 76.2 0)
 			(effects
 				(font

@@ -247,6 +247,108 @@
 				)
 			)
 		)
+		(symbol "Connector:TestPoint"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0.762) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "TP"
+				(at 0 6.858 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TestPoint"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 5.08 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 5.08 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "test point"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "test point tp"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Pin* Test*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "TestPoint_0_1"
+				(circle
+					(center 0 3.302)
+					(radius 0.762)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TestPoint_1_1"
+				(pin passive line
+					(at 0 0 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Device:C"
 			(pin_numbers hide)
 			(pin_names
@@ -1222,10 +1324,22 @@
 		(uuid "915cced8-1321-47d2-8101-ab392193a2cc")
 	)
 	(junction
+		(at 100.33 105.41)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "c22240ad-3d16-4c82-97a5-e6a1f5a59ccb")
+	)
+	(junction
 		(at 123.19 66.04)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "cca661be-edb2-41cf-9133-6db4cb035c99")
+	)
+	(junction
+		(at 115.57 107.95)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "e84bee05-2c2f-4039-a6a8-10b46f58588f")
 	)
 	(junction
 		(at 143.51 124.46)
@@ -1258,7 +1372,7 @@
 		(uuid "ef026b86-9e70-43d5-a1e8-90d589548079")
 	)
 	(bus_entry
-		(at 120.65 107.95)
+		(at 92.71 107.95)
 		(size 2.54 -2.54)
 		(stroke
 			(width 0)
@@ -1267,7 +1381,7 @@
 		(uuid "8b8a9fa6-a402-47a4-a623-9a296c93ff62")
 	)
 	(bus_entry
-		(at 120.65 110.49)
+		(at 92.71 110.49)
 		(size 2.54 -2.54)
 		(stroke
 			(width 0)
@@ -1276,7 +1390,7 @@
 		(uuid "ad24d92b-6867-424d-87e1-75e78a841ed3")
 	)
 	(bus_entry
-		(at 120.65 107.95)
+		(at 92.71 107.95)
 		(size 2.54 -2.54)
 		(stroke
 			(width 0)
@@ -1285,7 +1399,7 @@
 		(uuid "d021fe30-cbc4-43f9-abe8-17ec6a7d36d2")
 	)
 	(bus_entry
-		(at 120.65 110.49)
+		(at 92.71 110.49)
 		(size 2.54 -2.54)
 		(stroke
 			(width 0)
@@ -1305,7 +1419,7 @@
 	)
 	(wire
 		(pts
-			(xy 123.19 107.95) (xy 129.54 107.95)
+			(xy 95.25 107.95) (xy 115.57 107.95)
 		)
 		(stroke
 			(width 0)
@@ -1335,13 +1449,23 @@
 	)
 	(wire
 		(pts
+			(xy 100.33 105.41) (xy 129.54 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "180fd7d1-34dd-4d4b-b0cd-70fd9a1687e3")
+	)
+	(wire
+		(pts
 			(xy 166.37 107.95) (xy 224.79 107.95)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "177bf247-7789-4b03-a601-bf31859fdccf")
+		(uuid "1efd102a-8653-43df-a5af-e3b17d277757")
 	)
 	(wire
 		(pts
@@ -1352,16 +1476,6 @@
 			(type default)
 		)
 		(uuid "2578869a-c2cc-45d6-86a7-c00685b358a8")
-	)
-	(wire
-		(pts
-			(xy 166.37 95.25) (xy 214.63 95.25)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "28177f4d-41f6-4c03-9942-ba4c2c45990e")
 	)
 	(wire
 		(pts
@@ -1412,6 +1526,16 @@
 			(type default)
 		)
 		(uuid "53244d80-55fa-41b2-ae40-498ed1b95b11")
+	)
+	(wire
+		(pts
+			(xy 115.57 107.95) (xy 129.54 107.95)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5fab765d-0e60-429a-abd4-011eaa3c549c")
 	)
 	(wire
 		(pts
@@ -1565,7 +1689,7 @@
 	)
 	(bus
 		(pts
-			(xy 120.65 107.95) (xy 120.65 110.49)
+			(xy 92.71 107.95) (xy 92.71 110.49)
 		)
 		(stroke
 			(width 0)
@@ -1585,7 +1709,7 @@
 	)
 	(bus
 		(pts
-			(xy 120.65 107.95) (xy 120.65 105.41)
+			(xy 92.71 107.95) (xy 92.71 105.41)
 		)
 		(stroke
 			(width 0)
@@ -1705,7 +1829,7 @@
 	)
 	(wire
 		(pts
-			(xy 123.19 105.41) (xy 129.54 105.41)
+			(xy 95.25 105.41) (xy 100.33 105.41)
 		)
 		(stroke
 			(width 0)
@@ -1775,6 +1899,26 @@
 	)
 	(wire
 		(pts
+			(xy 166.37 95.25) (xy 214.63 95.25)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "eb2b0962-0726-4ded-ab39-950d6976e6b8")
+	)
+	(wire
+		(pts
+			(xy 100.33 109.22) (xy 100.33 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f097aae3-5053-4d61-9688-ef752f1564e3")
+	)
+	(wire
+		(pts
 			(xy 82.55 68.58) (xy 82.55 71.12)
 		)
 		(stroke
@@ -1835,7 +1979,7 @@
 	)
 	(text "Internal voltage reference & CLK"
 		(exclude_from_sim no)
-		(at 108.204 116.078 0)
+		(at 121.666 124.46 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1867,7 +2011,7 @@
 	)
 	(hierarchical_label "{MOTOR_CTRL}"
 		(shape input)
-		(at 120.65 105.41 180)
+		(at 92.71 105.41 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1966,7 +2110,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 124.1552 53.34 0)
 			(effects
 				(font
@@ -1993,7 +2137,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 123.19 57.15 0)
 			(effects
 				(font
@@ -2152,6 +2296,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "TMC2209-LA-T"
+			(at 147.32 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "221ab718-4b35-4dc0-bf4f-c239e1606c69")
 		)
@@ -2284,7 +2437,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
 			(at 117.8052 88.9 0)
 			(effects
 				(font
@@ -2311,7 +2464,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "C0402C223K5REC7411"
 			(at 116.84 85.09 0)
 			(effects
 				(font
@@ -2395,7 +2548,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "ERJ-3RSFR10V"
 			(at 175.26 97.79 0)
 			(effects
 				(font
@@ -2602,7 +2755,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 117.8052 78.74 0)
 			(effects
 				(font
@@ -2629,7 +2782,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 116.84 74.93 0)
 			(effects
 				(font
@@ -2929,7 +3082,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 180.34 82.2452 0)
 			(effects
 				(font
@@ -2956,7 +3109,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL10A225KO8NNNC"
 			(at 176.53 81.28 0)
 			(effects
 				(font
@@ -3043,7 +3196,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "UWT1V101MCL1GS"
 			(at 69.85 74.93 0)
 			(effects
 				(font
@@ -3070,6 +3223,156 @@
 				)
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/c1621989-7136-41fe-a324-58ef8d7bfc7e"
 					(reference "C19")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 115.57 107.95 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7759d641-b80b-486d-9097-79d14e24aa3b")
+		(property "Reference" "TP13"
+			(at 118.11 109.9819 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 118.11 112.5219 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 110.49 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 110.49 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 115.57 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "456501ec-931e-4dd2-b432-30b4e41a7418")
+		)
+		(instances
+			(project ""
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/22d01419-866b-4152-ab6e-a13e801a2c7d"
+					(reference "TP15")
+					(unit 1)
+				)
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/5676e170-b692-4b61-82c2-3a7b0a48eacb"
+					(reference "TP13")
+					(unit 1)
+				)
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/c1621989-7136-41fe-a324-58ef8d7bfc7e"
+					(reference "TP14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 100.33 109.22 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "784e273a-a337-45d8-8b63-a00658f5d85f")
+		(property "Reference" "TP16"
+			(at 102.87 111.2519 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 102.87 113.7919 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 95.25 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 95.25 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 100.33 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "258a629f-96da-4a70-be55-40acd939312e")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/22d01419-866b-4152-ab6e-a13e801a2c7d"
+					(reference "TP18")
+					(unit 1)
+				)
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/5676e170-b692-4b61-82c2-3a7b0a48eacb"
+					(reference "TP16")
+					(unit 1)
+				)
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/c1621989-7136-41fe-a324-58ef8d7bfc7e"
+					(reference "TP17")
 					(unit 1)
 				)
 			)
@@ -3201,7 +3504,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "ERJ-3RSFR10V"
 			(at 175.26 110.49 0)
 			(effects
 				(font
@@ -3261,7 +3564,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 83.5152 78.74 0)
 			(effects
 				(font
@@ -3288,7 +3591,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 82.55 74.93 0)
 			(effects
 				(font
@@ -3348,7 +3651,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 96.2152 78.74 0)
 			(effects
 				(font
@@ -3375,7 +3678,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 95.25 74.93 0)
 			(effects
 				(font

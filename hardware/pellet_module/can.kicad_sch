@@ -448,6 +448,108 @@
 				)
 			)
 		)
+		(symbol "Connector:TestPoint"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0.762) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "TP"
+				(at 0 6.858 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TestPoint"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 5.08 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 5.08 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "test point"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "test point tp"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Pin* Test*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "TestPoint_0_1"
+				(circle
+					(center 0 3.302)
+					(radius 0.762)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TestPoint_1_1"
+				(pin passive line
+					(at 0 0 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Connector:USB_C_Receptacle_USB2.0_14P"
 			(pin_names
 				(offset 1.016)
@@ -1958,6 +2060,12 @@
 		(uuid "aa6cf0bc-6a45-4b9f-baa0-70846ba17fd8")
 	)
 	(junction
+		(at 242.57 74.93)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "aaa246d8-27ab-4583-8b1d-ba3a9326e542")
+	)
+	(junction
 		(at 60.96 147.32)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2131,6 +2239,16 @@
 	)
 	(wire
 		(pts
+			(xy 255.27 157.48) (xy 251.46 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "50bcec43-8e6a-4a52-9302-037d3d6bc77c")
+	)
+	(wire
+		(pts
 			(xy 144.78 49.53) (xy 184.15 49.53)
 		)
 		(stroke
@@ -2151,13 +2269,23 @@
 	)
 	(wire
 		(pts
-			(xy 242.57 53.34) (xy 242.57 83.82)
+			(xy 242.57 53.34) (xy 242.57 74.93)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "573e567c-8c74-4e28-ae89-af6714dec507")
+	)
+	(wire
+		(pts
+			(xy 242.57 74.93) (xy 242.57 83.82)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5a9c720f-f8d2-466e-a45a-5603620b0eb0")
 	)
 	(wire
 		(pts
@@ -2308,6 +2436,16 @@
 			(type default)
 		)
 		(uuid "a7e1ad62-ae17-4426-95d6-fbcba999e4db")
+	)
+	(wire
+		(pts
+			(xy 255.27 148.59) (xy 251.46 148.59)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b056849c-4d2a-4520-be03-09ded8fdd791")
 	)
 	(wire
 		(pts
@@ -2571,6 +2709,17 @@
 		)
 		(uuid "ebf037fe-1ee2-434f-81ce-0a5771a6e5e7")
 	)
+	(label "CANH"
+		(at 255.27 148.59 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "228f729c-f8ba-4b4c-86fe-a6f9e4d00962")
+	)
 	(label "USB_VBUS"
 		(at 72.39 132.08 180)
 		(fields_autoplaced yes)
@@ -2614,6 +2763,17 @@
 			(justify left bottom)
 		)
 		(uuid "77bcc33e-5741-4005-9505-05b3dd719e72")
+	)
+	(label "CANL"
+		(at 255.27 157.48 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "aeaa062d-61e9-4de1-b129-56a674bf083d")
 	)
 	(label "DM"
 		(at 60.96 147.32 0)
@@ -2938,6 +3098,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "12402012E212A"
+			(at 45.72 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "S1"
 			(uuid "97d625c4-7a12-497e-9a07-6cc81ae9705d")
 		)
@@ -2987,6 +3156,138 @@
 			(project ""
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
 					(reference "J20")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 251.46 148.59 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "0c807677-1fda-4115-8519-8b29786af0ad")
+		(property "Reference" "TP9"
+			(at 248.158 143.51 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 248.158 146.05 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 251.46 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 251.46 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 251.46 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "10b5c277-03ad-459e-b24a-ae532862f2ad")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
+					(reference "TP9")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 251.46 139.7 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1145383b-d56d-46a0-8f47-21b964b16577")
+		(property "Reference" "#PWR096"
+			(at 257.81 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 255.27 139.6999 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 251.46 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 251.46 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 251.46 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f61e8770-2b02-4b0a-a926-b0683cfbce80")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
+					(reference "#PWR096")
 					(unit 1)
 				)
 			)
@@ -3180,6 +3481,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "1053141104"
+			(at 251.46 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "fc650a06-751b-4617-a034-c48c061356ab")
 		)
@@ -3196,6 +3506,71 @@
 			(project ""
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
 					(reference "J6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 242.57 74.93 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "29a3e40a-3639-42d6-aae2-a07271b31959")
+		(property "Reference" "TP7"
+			(at 239.268 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 239.268 72.39 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 242.57 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 242.57 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 242.57 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "26c915b7-8aad-4c48-a9b0-a50fbea4ba3f")
+		)
+		(instances
+			(project ""
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
+					(reference "TP7")
 					(unit 1)
 				)
 			)
@@ -3256,7 +3631,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-075K1L"
 			(at 87.63 146.05 0)
 			(effects
 				(font
@@ -3333,6 +3708,15 @@
 				(hide yes)
 			)
 		)
+		(property "MPN" "61300311121"
+			(at 180.34 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "8bd7be54-6ffe-4769-8a38-fd1a192743cb")
 		)
@@ -3346,6 +3730,71 @@
 			(project ""
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
 					(reference "J4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 251.46 139.7 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "4902763f-6242-4830-9da7-b403d14f1891")
+		(property "Reference" "TP8"
+			(at 248.158 134.62 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 248.158 137.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 251.46 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 251.46 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 251.46 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "0f6a8e42-4707-4b23-9df8-a7e804f7a79d")
+		)
+		(instances
+			(project ""
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
+					(reference "TP8")
 					(unit 1)
 				)
 			)
@@ -3378,7 +3827,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 158.4452 62.23 0)
 			(effects
 				(font
@@ -3405,7 +3854,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 157.48 58.42 0)
 			(effects
 				(font
@@ -3550,7 +3999,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RC0603FR-075K1L"
 			(at 78.74 146.05 0)
 			(effects
 				(font
@@ -3675,7 +4124,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://ww1.microchip.com/downloads/en/DeviceDoc/20005991B.pdf"
 			(at 193.04 43.942 0)
 			(effects
 				(font
@@ -3685,6 +4134,15 @@
 			)
 		)
 		(property "Description" "CAN-FD Transceiver"
+			(at 193.04 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "ATA6561-GAQW-N"
 			(at 193.04 44.45 0)
 			(effects
 				(font
@@ -3752,7 +4210,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Diode_SMD:D_Powermite3"
 			(at 237.49 53.34 0)
 			(effects
 				(font
@@ -3797,7 +4255,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "UPS840E3/TR13"
 			(at 237.49 53.34 0)
 			(effects
 				(font
@@ -3935,6 +4393,15 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 251.46 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "1053141104"
 			(at 251.46 55.88 0)
 			(effects
 				(font
@@ -4230,6 +4697,71 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 251.46 157.48 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d5089491-3907-43bd-b6ab-f90ceff75660")
+		(property "Reference" "TP10"
+			(at 248.158 152.4 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 248.158 154.94 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 251.46 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 251.46 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 251.46 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "0ce363ff-87df-4924-8f20-aaea16af723e")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
+					(reference "TP10")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 157.48 62.23 0)
 		(unit 1)
@@ -4348,7 +4880,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "RMCF0603FT120R"
 			(at 194.31 88.9 0)
 			(effects
 				(font
@@ -4399,7 +4931,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 145.7452 62.23 0)
 			(effects
 				(font
@@ -4426,7 +4958,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CC0603ZRY5V9BB104"
 			(at 144.78 58.42 0)
 			(effects
 				(font
