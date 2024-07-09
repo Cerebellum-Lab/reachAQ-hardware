@@ -4,6 +4,13 @@
 	(generator_version "8.0")
 	(uuid "260a3869-be79-4343-adab-2636a6e46775")
 	(paper "A4")
+	(title_block
+		(title "Autotrainer Pellet Module - Power")
+		(date "2024-07-09")
+		(rev "v1.0")
+		(company "Christie Lab, CU-Anschutz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
 	(lib_symbols
 		(symbol "Connector:Barrel_Jack"
 			(pin_names

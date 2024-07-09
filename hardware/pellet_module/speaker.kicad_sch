@@ -4,6 +4,13 @@
 	(generator_version "8.0")
 	(uuid "6f68e74a-d06c-4d20-a9c7-1c2641f8cda4")
 	(paper "A4")
+	(title_block
+		(title "Autotrainer Pellet Module - Speaker")
+		(date "2024-07-09")
+		(rev "v1.0")
+		(company "Christie Lab, CU-Anschutz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
 	(lib_symbols
 		(symbol "Connector:TestPoint"
 			(pin_numbers hide)

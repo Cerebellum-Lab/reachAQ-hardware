@@ -4,6 +4,13 @@
 	(generator_version "8.0")
 	(uuid "f6885b9a-ac5a-4a92-8f4b-5802f5e4d3f4")
 	(paper "A4")
+	(title_block
+		(title "Autotrainer Pellet Module - MCU")
+		(date "2024-07-09")
+		(rev "v1.0")
+		(company "Christie Lab, CU-Anschutz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
 	(lib_symbols
 		(symbol "Device:C"
 			(pin_numbers hide)
@@ -4494,10 +4501,6 @@
 		(uuid "073f774d-247a-4409-89a4-05f81dd1d35e")
 	)
 	(no_connect
-		(at 125.73 77.47)
-		(uuid "0d73c874-0d86-45d4-9440-f7a8e7205c58")
-	)
-	(no_connect
 		(at 161.29 105.41)
 		(uuid "2bfa16a3-0d9e-4750-976d-0c25308ccec3")
 	)
@@ -4508,10 +4511,6 @@
 	(no_connect
 		(at 138.43 41.91)
 		(uuid "3e0e26d9-b4bd-4028-b642-7df33d203f36")
-	)
-	(no_connect
-		(at 161.29 49.53)
-		(uuid "4968ea55-3a53-4b62-9780-63b45db25aa3")
 	)
 	(no_connect
 		(at 161.29 115.57)
@@ -4532,6 +4531,10 @@
 	(no_connect
 		(at 125.73 105.41)
 		(uuid "7dad62fa-d859-41f1-9751-c3e53469eb46")
+	)
+	(no_connect
+		(at 161.29 64.77)
+		(uuid "a5c078dd-3b27-4a21-a61a-c043e8d69bc6")
 	)
 	(no_connect
 		(at 237.49 140.97)
@@ -4742,7 +4745,7 @@
 		(uuid "f61f1e76-d5c6-4ecc-bd5f-4cd22ea61c4d")
 	)
 	(bus_entry
-		(at 99.06 74.93)
+		(at 99.06 80.01)
 		(size 2.54 -2.54)
 		(stroke
 			(width 0)
@@ -4839,16 +4842,6 @@
 			(type default)
 		)
 		(uuid "1d8a1a86-390d-4514-a4d3-4d19754c9ee1")
-	)
-	(wire
-		(pts
-			(xy 110.49 100.33) (xy 125.73 100.33)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "220513dd-f42c-4d7f-a240-36555f4d25bf")
 	)
 	(wire
 		(pts
@@ -5362,7 +5355,7 @@
 	)
 	(bus
 		(pts
-			(xy 97.79 74.93) (xy 99.06 74.93)
+			(xy 97.79 77.47) (xy 99.06 77.47)
 		)
 		(stroke
 			(width 0)
@@ -5399,6 +5392,16 @@
 			(type default)
 		)
 		(uuid "9b48ffde-54e0-4093-be24-67ee6629869e")
+	)
+	(wire
+		(pts
+			(xy 173.99 62.23) (xy 161.29 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9c1d59ec-d24f-4da1-be00-9d438925f55a")
 	)
 	(wire
 		(pts
@@ -5602,6 +5605,16 @@
 	)
 	(wire
 		(pts
+			(xy 161.29 49.53) (xy 181.61 49.53)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bcd82755-b142-4b78-8636-3caec9e0519a")
+	)
+	(wire
+		(pts
 			(xy 161.29 100.33) (xy 170.18 100.33)
 		)
 		(stroke
@@ -5752,7 +5765,7 @@
 	)
 	(bus
 		(pts
-			(xy 99.06 74.93) (xy 99.06 77.47)
+			(xy 99.06 77.47) (xy 99.06 80.01)
 		)
 		(stroke
 			(width 0)
@@ -5832,7 +5845,7 @@
 	)
 	(wire
 		(pts
-			(xy 101.6 72.39) (xy 125.73 72.39)
+			(xy 101.6 77.47) (xy 125.73 77.47)
 		)
 		(stroke
 			(width 0)
@@ -5954,6 +5967,16 @@
 		)
 		(uuid "1117bd9c-fc05-4643-be0a-562402f141ed")
 	)
+	(text "DAC2_OUT1"
+		(exclude_from_sim no)
+		(at 204.47 61.214 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "11c250ce-a212-441f-89fb-86cc2d81b177")
+	)
 	(text "FDCAN3_TX"
 		(exclude_from_sim no)
 		(at 184.658 99.568 0)
@@ -5978,7 +6001,7 @@
 	)
 	(text "TIM5_CH2"
 		(exclude_from_sim no)
-		(at 104.394 99.568 0)
+		(at 187.706 48.768 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6028,7 +6051,7 @@
 		)
 		(uuid "4133768c-7c2c-4b50-914f-950c50e4b021")
 	)
-	(text "SPI1_NSS"
+	(text "SPI3_NSS"
 		(exclude_from_sim no)
 		(at 173.99 84.328 0)
 		(effects
@@ -6059,9 +6082,9 @@
 		)
 		(uuid "6039a8b5-d9fa-4d30-8a2c-2af63a01e2db")
 	)
-	(text "UART4_RX"
+	(text "LPUART1_RX"
 		(exclude_from_sim no)
-		(at 109.728 96.774 0)
+		(at 107.188 69.088 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6099,9 +6122,9 @@
 		)
 		(uuid "a51a1b7d-00dc-4ede-8345-9e8693d1001a")
 	)
-	(text "SPI1_MOSI"
+	(text "SPI3_MOSI"
 		(exclude_from_sim no)
-		(at 199.136 63.5 0)
+		(at 104.902 99.06 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6150,14 +6173,14 @@
 		)
 		(uuid "dcc2b670-bc10-4c51-b098-8b9a39e7db1b")
 	)
-	(text "SPI1_MISO"
+	(text "SPI3_MISO"
 		(exclude_from_sim no)
-		(at 199.136 61.214 0)
+		(at 114.808 96.774 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "e432da64-d915-4b2c-86ea-05f7af79d08e")
 	)
@@ -6202,9 +6225,9 @@
 		)
 		(uuid "f068fac4-78b5-406a-a129-09824b31e471")
 	)
-	(text "UART4_TX"
+	(text "LPUART1_TX"
 		(exclude_from_sim no)
-		(at 109.728 94.488 0)
+		(at 106.934 71.374 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6232,14 +6255,14 @@
 		)
 		(uuid "ff1ea804-bd07-459d-801f-876cf894c17f")
 	)
-	(text "SPI1_SCK"
+	(text "SPI3_SCK"
 		(exclude_from_sim no)
-		(at 199.136 58.928 0)
+		(at 114.046 94.488 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "ff32cbd7-760d-4472-8fdc-04cfd8c94f21")
 	)
@@ -6277,13 +6300,13 @@
 		(uuid "0466f3cf-e496-4420-b885-eaf108bc63f0")
 	)
 	(label "FLASH_CLK"
-		(at 161.29 59.69 0)
+		(at 125.73 95.25 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "07353c4b-81a9-4610-9ce6-2043af564a3e")
 	)
@@ -6464,13 +6487,13 @@
 		(uuid "319675f2-3559-4b2d-a919-134b6b64f876")
 	)
 	(label "FLASH_DO"
-		(at 161.29 62.23 0)
+		(at 125.73 97.79 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "32e141d9-3353-43d4-b373-ec5373b2b2f9")
 	)
@@ -6508,7 +6531,7 @@
 		(uuid "3e546403-8cd5-49cb-b9aa-f3ab18a4bbb3")
 	)
 	(label "DEBUG_RX"
-		(at 125.73 97.79 180)
+		(at 125.73 69.85 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6717,7 +6740,7 @@
 		(uuid "8c95ee73-6f1f-4593-9dc4-22011c631071")
 	)
 	(label "0.DIR"
-		(at 101.6 72.39 0)
+		(at 101.6 77.47 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6750,13 +6773,13 @@
 		(uuid "95de8648-2aa5-4569-922b-1dbe18345aaa")
 	)
 	(label "SERVO_PWM0"
-		(at 110.49 100.33 0)
+		(at 181.61 49.53 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "99e9feed-bbfb-47f2-b19d-06d12dab153a")
 	)
@@ -6937,13 +6960,13 @@
 		(uuid "caab410a-88f2-4f3e-8078-2b2825690831")
 	)
 	(label "FLASH_DI"
-		(at 161.29 64.77 0)
+		(at 125.73 100.33 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "ce787af6-9834-454f-a4d9-b245cf476c90")
 	)
@@ -7058,7 +7081,7 @@
 		(uuid "f21be4d8-00a2-4311-a51d-e21213dd28f7")
 	)
 	(label "DEBUG_TX"
-		(at 125.73 95.25 180)
+		(at 125.73 72.39 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7069,13 +7092,13 @@
 		(uuid "f582472c-0e3d-4537-98fc-c15cb0e4d685")
 	)
 	(label "STATUS_LED"
-		(at 125.73 69.85 180)
+		(at 161.29 59.69 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
 		(uuid "f5bfbd6e-6eac-4991-b891-877e1a8c96d0")
 	)
@@ -7128,7 +7151,7 @@
 	)
 	(hierarchical_label "0{MOTOR_CTRL}"
 		(shape output)
-		(at 97.79 74.93 180)
+		(at 97.79 77.47 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7257,6 +7280,18 @@
 			(justify left)
 		)
 		(uuid "fb6e23a0-eebe-4af8-90fd-7bc4dfe7bfdb")
+	)
+	(hierarchical_label "STATUS_OUT"
+		(shape output)
+		(at 173.99 62.23 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ff8321fa-b6bf-4af6-b0be-9e3f6c346670")
 	)
 	(netclass_flag ""
 		(length 2.54)

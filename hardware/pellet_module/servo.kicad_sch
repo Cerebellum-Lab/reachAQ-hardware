@@ -4,6 +4,13 @@
 	(generator_version "8.0")
 	(uuid "51efd197-0767-46c4-b0d2-186c52cd698e")
 	(paper "A4")
+	(title_block
+		(title "Autotrainer Pellet Module - Servo")
+		(date "2024-07-09")
+		(rev "v1.0")
+		(company "Christie Lab, CU-Anschutz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
 	(lib_symbols
 		(symbol "Connector:Conn_01x03_Pin"
 			(pin_names

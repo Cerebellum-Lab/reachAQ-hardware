@@ -4,22 +4,29 @@
 	(generator_version "8.0")
 	(uuid "884b55d2-96a2-4794-8d3e-106cd2f47ca9")
 	(paper "A4")
+	(title_block
+		(title "Autotrainer Pellet Module - External IO")
+		(date "2024-07-09")
+		(rev "v1.0")
+		(company "Christie Lab, CU-Anschutz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
 	(lib_symbols
-		(symbol "Connector:Conn_01x03_Pin"
+		(symbol "Connector:Conn_01x02_Pin"
 			(pin_names
 				(offset 1.016) hide)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "J"
-				(at 0 5.08 0)
+				(at 0 2.54 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
 				)
 			)
-			(property "Value" "Conn_01x03_Pin"
+			(property "Value" "Conn_01x02_Pin"
 				(at 0 -5.08 0)
 				(effects
 					(font
@@ -45,7 +52,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Generic connector, single row, 01x03, script generated"
+			(property "Description" "Generic connector, single row, 01x02, script generated"
 				(at 0 0 0)
 				(effects
 					(font
@@ -80,7 +87,7 @@
 					(hide yes)
 				)
 			)
-			(symbol "Conn_01x03_Pin_1_1"
+			(symbol "Conn_01x02_Pin_1_1"
 				(polyline
 					(pts
 						(xy 1.27 -2.54) (xy 0.8636 -2.54)
@@ -96,18 +103,6 @@
 				(polyline
 					(pts
 						(xy 1.27 0) (xy 0.8636 0)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.27 2.54) (xy 0.8636 2.54)
 					)
 					(stroke
 						(width 0.1524)
@@ -139,19 +134,8 @@
 						(type outline)
 					)
 				)
-				(rectangle
-					(start 0.8636 2.667)
-					(end 0 2.413)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
 				(pin passive line
-					(at 5.08 2.54 180)
+					(at 5.08 0 180)
 					(length 3.81)
 					(name "Pin_1"
 						(effects
@@ -169,7 +153,7 @@
 					)
 				)
 				(pin passive line
-					(at 5.08 0 180)
+					(at 5.08 -2.54 180)
 					(length 3.81)
 					(name "Pin_2"
 						(effects
@@ -179,24 +163,6 @@
 						)
 					)
 					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 5.08 -2.54 180)
-					(length 3.81)
-					(name "Pin_3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1337,18 +1303,6 @@
 		(color 0 0 0 0)
 		(uuid "e74cfe0e-ee3f-4fc2-a6f5-f488826ef2e3")
 	)
-	(no_connect
-		(at 54.61 91.44)
-		(uuid "4bf7a47f-c483-4407-91d3-2194a8ea23e1")
-	)
-	(no_connect
-		(at 54.61 121.92)
-		(uuid "71114f27-c203-4f83-a327-40822904f4bd")
-	)
-	(no_connect
-		(at 54.61 106.68)
-		(uuid "78d9fc16-ca06-4dd0-9688-1c7fa7b2089b")
-	)
 	(bus_entry
 		(at 31.75 86.36)
 		(size 2.54 2.54)
@@ -1441,6 +1395,16 @@
 			(type default)
 		)
 		(uuid "41aa1148-778b-40be-b820-dc6abc0cc72e")
+	)
+	(wire
+		(pts
+			(xy 36.83 153.67) (xy 44.45 153.67)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4890e71d-00e8-4911-9f59-6b9879bce1d0")
 	)
 	(bus
 		(pts
@@ -1658,6 +1622,18 @@
 		)
 		(uuid a60f41c7-c7f9-4f77-91bf-483e17a977ec)
 	)
+	(rectangle
+		(start 17.399 140.208)
+		(end 70.104 171.323)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid ebc0f0bc-e404-420a-b08a-28998f110772)
+	)
 	(text "Connections to Limit Switches"
 		(exclude_from_sim no)
 		(at 31.496 72.136 0)
@@ -1668,25 +1644,35 @@
 		)
 		(uuid "09cad6a3-2fb4-4a50-a4e5-d5feaae83e7b")
 	)
-	(text "NO"
+	(text "Analog status indicator"
 		(exclude_from_sim no)
-		(at 78.994 88.392 0)
+		(at 28.702 138.684 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 		)
-		(uuid "37db5b63-e4c4-4289-9ac0-9e2b9d897e4e")
+		(uuid "376541ce-a000-490f-aa20-84c3a3d6a47e")
 	)
 	(text "NC"
 		(exclude_from_sim no)
-		(at 78.994 90.678 0)
+		(at 78.994 89.154 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 		)
 		(uuid "41315c6f-c4c5-4dd4-b53c-6236cae5a6e6")
+	)
+	(text "NC"
+		(exclude_from_sim no)
+		(at 78.994 104.394 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "6c57df7a-090e-4864-9132-d12d696ddaf5")
 	)
 	(text "External Equipment"
 		(exclude_from_sim no)
@@ -1698,6 +1684,26 @@
 		)
 		(uuid "8251d4d0-6256-4175-b64f-3205e2511d6f")
 	)
+	(text "C"
+		(exclude_from_sim no)
+		(at 78.994 101.346 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "86d84ef9-750f-45b3-adc8-4188823de206")
+	)
+	(text "C"
+		(exclude_from_sim no)
+		(at 78.994 116.586 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "8c81ea1f-c235-48b7-a105-19c82b64d7fa")
+	)
 	(text "Connection to external button"
 		(exclude_from_sim no)
 		(at 30.48 19.05 0)
@@ -1707,6 +1713,16 @@
 			)
 		)
 		(uuid "99f1fb08-a1f4-4c75-87c6-85e9a166e6f3")
+	)
+	(text "NC"
+		(exclude_from_sim no)
+		(at 78.994 119.634 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "da693005-ccd3-41ae-a50d-ce7361cca485")
 	)
 	(text "C"
 		(exclude_from_sim no)
@@ -1950,6 +1966,18 @@
 		)
 		(uuid "203c79d2-29b4-493d-a2b0-93d7be23571a")
 	)
+	(hierarchical_label "STATUS_OUT"
+		(shape input)
+		(at 36.83 153.67 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "452d4983-5265-443e-8fec-773e95ea5caf")
+	)
 	(hierarchical_label "LIMIT[0..2]"
 		(shape output)
 		(at 31.75 85.09 180)
@@ -2138,6 +2166,85 @@
 			(project "pellet"
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
 					(reference "J11")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:Conn_Coaxial")
+		(at 49.53 153.67 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "082e32c1-8124-43ea-85cb-3a0298b8ccbe")
+		(property "Reference" "J21"
+			(at 53.34 152.6931 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Conn_Coaxial"
+			(at 53.34 155.2331 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 49.53 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 49.53 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "coaxial connector (BNC, SMA, SMB, SMC, Cinch/RCA, LEMO, ...)"
+			(at 49.53 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CONMHF1-SMD-T"
+			(at 49.53 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e3232158-04b5-4bfa-9d53-cb1abe9dd6fc")
+		)
+		(pin "2"
+			(uuid "17655263-8e30-445d-adbf-affed2a14826")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
+					(reference "J21")
 					(unit 1)
 				)
 			)
@@ -2426,6 +2533,72 @@
 			(project "pellet"
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
 					(reference "R14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 49.53 158.75 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "2ecb9b01-a91a-4b1e-8ea2-3e6d516cd48c")
+		(property "Reference" "#PWR098"
+			(at 49.53 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 49.53 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 49.53 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 49.53 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 49.53 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4a4fbdce-b118-4614-bdb0-8d30af533b1b")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
+					(reference "#PWR098")
 					(unit 1)
 				)
 			)
@@ -2778,6 +2951,77 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:Conn_01x02_Pin")
+		(at 59.69 101.6 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "5d52abac-88fd-40b0-ba74-759b1c6f3667")
+		(property "Reference" "J13"
+			(at 60.96 101.5999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "Conn_01x02_Pin"
+			(at 60.96 104.1399 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 59.69 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 59.69 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 59.69 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "37d56657-f7ff-46dd-9ee6-ee87b624876b")
+		)
+		(pin "1"
+			(uuid "4568cdd6-5cad-43d7-9435-6fdb528e2ba3")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
+					(reference "J13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 220.98 107.95 0)
 		(unit 1)
@@ -2844,8 +3088,8 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector:Conn_01x03_Pin")
-		(at 59.69 104.14 0)
+		(lib_id "Connector:Conn_01x02_Pin")
+		(at 59.69 86.36 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -2853,9 +3097,9 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "771240ad-22af-4bc2-8c31-2ee70d76f867")
-		(property "Reference" "J13"
-			(at 60.96 102.8699 0)
+		(uuid "7dae71da-169a-4aba-bb3e-a546aff15b14")
+		(property "Reference" "J12"
+			(at 60.96 86.3599 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2863,8 +3107,8 @@
 				(justify right)
 			)
 		)
-		(property "Value" "Conn_01x03_Pin"
-			(at 60.96 105.4099 0)
+		(property "Value" "Conn_01x02_Pin"
+			(at 60.96 88.8999 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2873,7 +3117,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 59.69 104.14 0)
+			(at 59.69 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2882,7 +3126,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 59.69 104.14 0)
+			(at 59.69 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2890,17 +3134,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Generic connector, single row, 01x03, script generated"
-			(at 59.69 104.14 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "61300311121"
-			(at 59.69 104.14 0)
+		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 59.69 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2909,18 +3144,15 @@
 			)
 		)
 		(pin "2"
-			(uuid "b08514c6-84e4-4246-bc21-27dc460c252e")
-		)
-		(pin "3"
-			(uuid "c25c5dd3-72d9-4720-a281-5d67f46514b2")
+			(uuid "33c06d83-fbb1-498d-a56a-8997157634bd")
 		)
 		(pin "1"
-			(uuid "dcd16fa3-0ac7-4b39-b9ae-0813e922ab9d")
+			(uuid "d84c9148-963d-4746-a4a7-4eb4929887a3")
 		)
 		(instances
-			(project "pellet"
+			(project ""
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
-					(reference "J13")
+					(reference "J12")
 					(unit 1)
 				)
 			)
@@ -3151,6 +3383,77 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:Conn_01x02_Pin")
+		(at 59.69 116.84 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c1025043-f215-494e-9437-4b342cf290e4")
+		(property "Reference" "J14"
+			(at 60.96 116.8399 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "Conn_01x02_Pin"
+			(at 60.96 119.3799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 59.69 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 59.69 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 59.69 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "169d7e1d-bf27-415a-95e9-b637930373f8")
+		)
+		(pin "1"
+			(uuid "15df0145-ae2f-46bd-bcef-9c54c939dfd1")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
+					(reference "J14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 220.98 76.2 0)
 		(unit 1)
@@ -3211,89 +3514,6 @@
 			(project "pellet"
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
 					(reference "#PWR057")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:Conn_01x03_Pin")
-		(at 59.69 119.38 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "c9896a94-28c6-4033-a9ca-455ccebd43cd")
-		(property "Reference" "J14"
-			(at 60.96 118.1099 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "Conn_01x03_Pin"
-			(at 60.96 120.6499 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 59.69 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 59.69 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x03, script generated"
-			(at 59.69 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "61300311121"
-			(at 59.69 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "01a99a74-966b-402b-8f81-3504050e7953")
-		)
-		(pin "3"
-			(uuid "c251d708-5300-4ea8-b400-623339d146b0")
-		)
-		(pin "1"
-			(uuid "b958a8af-9e99-4b92-bde3-0edead29424f")
-		)
-		(instances
-			(project "pellet"
-				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
-					(reference "J14")
 					(unit 1)
 				)
 			)
@@ -3650,89 +3870,6 @@
 			(project "pellet"
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
 					(reference "#PWR054")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:Conn_01x03_Pin")
-		(at 59.69 88.9 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "e2e7a813-b49e-41c6-8b15-a62cf314e11d")
-		(property "Reference" "J12"
-			(at 60.96 87.6299 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "Conn_01x03_Pin"
-			(at 60.96 90.1699 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 59.69 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 59.69 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x03, script generated"
-			(at 59.69 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "61300311121"
-			(at 59.69 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "95aa0fb9-ab02-4a4d-a6da-37997b34817c")
-		)
-		(pin "3"
-			(uuid "bccb7e7c-971d-490c-bd76-e248c01e720c")
-		)
-		(pin "1"
-			(uuid "b8456033-dbe1-428d-a8d7-36b88c62a9a7")
-		)
-		(instances
-			(project ""
-				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
-					(reference "J12")
 					(unit 1)
 				)
 			)

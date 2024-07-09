@@ -289,6 +289,7 @@
       "/CAN Connectors/12V": "Power",
       "/External IO/3V3": "Power",
       "/MCU/3V3": "Power",
+      "/Power & Data Connectors/12V": "Power",
       "/Power/12V": "Power",
       "/Power/5V": "Power",
       "Net-(D3-A)": "Power"

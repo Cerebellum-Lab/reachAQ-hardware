@@ -4,6 +4,13 @@
 	(generator_version "8.0")
 	(uuid "82898b6f-a2f4-4454-a3a6-44b8cf21ea0b")
 	(paper "A4")
+	(title_block
+		(title "Autotrainer Pellet Module - Stepper")
+		(date "2024-07-09")
+		(rev "v1.0")
+		(company "Christie Lab, CU-Anschutz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
 	(lib_symbols
 		(symbol "Connector:Conn_01x04_Pin"
 			(pin_names
@@ -3238,7 +3245,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7759d641-b80b-486d-9097-79d14e24aa3b")
-		(property "Reference" "TP13"
+		(property "Reference" "TP15"
 			(at 118.11 109.9819 0)
 			(effects
 				(font
@@ -3313,7 +3320,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "784e273a-a337-45d8-8b63-a00658f5d85f")
-		(property "Reference" "TP16"
+		(property "Reference" "TP18"
 			(at 102.87 111.2519 0)
 			(effects
 				(font

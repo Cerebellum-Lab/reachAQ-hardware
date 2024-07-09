@@ -4,6 +4,13 @@
 	(generator_version "8.0")
 	(uuid "48650363-a452-429d-997e-1ddabb69aad0")
 	(paper "A4")
+	(title_block
+		(title "Autotrainer Pellet Module - Main")
+		(date "2024-07-09")
+		(rev "v1.0")
+		(company "Christie Lab, CU-Anschutz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
 	(lib_symbols
 		(symbol "Device:R"
 			(pin_numbers hide)
@@ -437,6 +444,16 @@
 			(type default)
 		)
 		(uuid "0660b6c4-c8e4-4250-b555-a8a2806445a2")
+	)
+	(wire
+		(pts
+			(xy 127 124.46) (xy 143.51 124.46)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "06fcf871-5f54-4f29-9a48-983ba09eb3b8")
 	)
 	(bus
 		(pts
@@ -2078,7 +2095,7 @@
 	)
 	(sheet
 		(at 143.51 77.47)
-		(size 39.37 46.99)
+		(size 39.37 49.784)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -2098,7 +2115,7 @@
 			)
 		)
 		(property "Sheetfile" "mcu.kicad_sch"
-			(at 143.51 125.0446 0)
+			(at 143.51 127.8386 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2235,6 +2252,16 @@
 				(justify left)
 			)
 			(uuid "28a4e9ff-077f-4fb6-9f54-1684c5df18e5")
+		)
+		(pin "STATUS_OUT" output
+			(at 143.51 124.46 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "72af1ffe-c65c-4926-bc5c-b45226c50987")
 		)
 		(instances
 			(project "pellet"
@@ -2674,7 +2701,7 @@
 	)
 	(sheet
 		(at 102.87 113.03)
-		(size 24.13 12.7)
+		(size 24.13 14.224)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -2694,7 +2721,7 @@
 			)
 		)
 		(property "Sheetfile" "stim.kicad_sch"
-			(at 102.87 126.3146 0)
+			(at 102.87 127.8386 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2760,6 +2787,16 @@
 				(justify left)
 			)
 			(uuid "c09ab6a2-d0a1-44af-bd1d-1158155ef21b")
+		)
+		(pin "STATUS_OUT" input
+			(at 127 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "390f8ed4-68eb-4185-85db-2a4acd8a0729")
 		)
 		(instances
 			(project "pellet"
