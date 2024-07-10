@@ -1494,7 +1494,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "01a9a1b8-3f0b-4d54-9b66-dcbed2ed70ee")
-		(property "Reference" "J9"
+		(property "Reference" "J3"
 			(at 193.04 85.0899 0)
 			(effects
 				(font
@@ -1512,7 +1512,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal"
 			(at 191.77 86.36 0)
 			(effects
 				(font
@@ -1884,7 +1884,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal"
 			(at 190.5 105.41 0)
 			(effects
 				(font
@@ -2076,7 +2076,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal"
 			(at 190.5 123.19 0)
 			(effects
 				(font
@@ -2272,7 +2272,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f3416bde-a5a9-484c-a492-ae1087a8f5e8")
-		(property "Reference" "#PWR051"
+		(property "Reference" "#PWR023"
 			(at 185.42 96.52 0)
 			(effects
 				(font

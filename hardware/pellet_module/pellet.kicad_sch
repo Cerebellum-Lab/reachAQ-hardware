@@ -1036,7 +1036,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad"
 			(at 55.88 177.8 0)
 			(effects
 				(font
@@ -1101,7 +1101,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 257.81 77.978 90)
 			(effects
 				(font
@@ -1242,7 +1242,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad"
 			(at 30.48 189.23 0)
 			(effects
 				(font
@@ -1307,7 +1307,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad"
 			(at 30.48 177.8 0)
 			(effects
 				(font
@@ -1372,7 +1372,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad"
 			(at 55.88 189.23 0)
 			(effects
 				(font
@@ -1900,7 +1900,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 257.81 96.012 90)
 			(effects
 				(font

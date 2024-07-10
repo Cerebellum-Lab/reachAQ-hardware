@@ -1147,24 +1147,6 @@
 						)
 					)
 				)
-				(pin power_in line
-					(at 1.27 -64.77 90)
-					(length 2.54)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "EPAD"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
 			)
 			(symbol "TMC2209_0_1"
 				(rectangle
@@ -1191,6 +1173,24 @@
 						)
 					)
 					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 1.27 -64.77 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "29"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2378,7 +2378,7 @@
 		(pin "8"
 			(uuid "df2dad3a-122b-4cfa-8c73-b57bae0d4af3")
 		)
-		(pin "EPAD"
+		(pin "29"
 			(uuid "8d19525d-7cb0-4c22-9c8b-f4109e64f50f")
 		)
 		(pin "4"
@@ -2528,7 +2528,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 175.26 96.012 90)
 			(effects
 				(font
@@ -2998,7 +2998,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Leaf_Connectors:JST_ZH_S4B-ZR_1x04_P1.50mm_Horizontal"
 			(at 229.87 102.87 0)
 			(effects
 				(font
@@ -3176,7 +3176,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:CP_Elec_6.3x7.7"
 			(at 70.8152 78.74 0)
 			(effects
 				(font
@@ -3263,7 +3263,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
 			(at 110.49 107.95 0)
 			(effects
 				(font
@@ -3338,7 +3338,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
 			(at 95.25 109.22 0)
 			(effects
 				(font
@@ -3484,7 +3484,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 175.26 108.712 90)
 			(effects
 				(font

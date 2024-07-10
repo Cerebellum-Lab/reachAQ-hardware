@@ -2120,7 +2120,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Leaf_Connectors:CONBNC002"
 			(at 48.26 34.29 0)
 			(effects
 				(font
@@ -2199,7 +2199,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Leaf_Connectors:CONBNC002"
 			(at 49.53 153.67 0)
 			(effects
 				(font
@@ -2343,7 +2343,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 50.8 118.618 90)
 			(effects
 				(font
@@ -2487,7 +2487,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 50.8 88.138 90)
 			(effects
 				(font
@@ -2631,7 +2631,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 50.8 103.378 90)
 			(effects
 				(font
@@ -2711,7 +2711,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 33.782 30.48 90)
 			(effects
 				(font
@@ -2979,7 +2979,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
 			(at 59.69 101.6 0)
 			(effects
 				(font
@@ -2998,6 +2998,15 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 59.69 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "61300211121"
 			(at 59.69 101.6 0)
 			(effects
 				(font
@@ -3116,7 +3125,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
 			(at 59.69 86.36 0)
 			(effects
 				(font
@@ -3135,6 +3144,15 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 59.69 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "61300211121"
 			(at 59.69 86.36 0)
 			(effects
 				(font
@@ -3252,7 +3270,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Leaf_Connectors:CONBNC002"
 			(at 220.98 87.63 0)
 			(effects
 				(font
@@ -3331,7 +3349,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Leaf_Connectors:CONBNC002"
 			(at 220.98 102.87 0)
 			(effects
 				(font
@@ -3411,7 +3429,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
 			(at 59.69 116.84 0)
 			(effects
 				(font
@@ -3430,6 +3448,15 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 59.69 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "61300211121"
 			(at 59.69 116.84 0)
 			(effects
 				(font
@@ -3614,7 +3641,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Leaf_Connectors:CONBNC002"
 			(at 220.98 71.12 0)
 			(effects
 				(font
@@ -3903,7 +3930,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Leaf_Connectors:CONBNC002"
 			(at 220.98 121.92 0)
 			(effects
 				(font

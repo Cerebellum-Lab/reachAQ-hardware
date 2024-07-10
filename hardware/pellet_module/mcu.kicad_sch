@@ -7464,7 +7464,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 227.838 45.72 90)
 			(effects
 				(font
@@ -8044,7 +8044,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 296.672 250.19 90)
 			(effects
 				(font
@@ -8190,7 +8190,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 218.948 45.72 90)
 			(effects
 				(font
@@ -8569,7 +8569,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 170.18 53.848 90)
 			(effects
 				(font
@@ -8646,7 +8646,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_DIP:DIP-4_W8.89mm_SMDSocket_LongPads"
 			(at 153.67 175.26 0)
 			(effects
 				(font
@@ -9216,7 +9216,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 135.382 163.83 90)
 			(effects
 				(font
@@ -9742,7 +9742,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 144.018 163.83 90)
 			(effects
 				(font
