@@ -4216,9 +4216,9 @@
 		(at 135.89 63.5 270)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2a87b020-5b3b-4630-bbf6-b182c9b6bf61")
 		(property "Reference" "TP9"

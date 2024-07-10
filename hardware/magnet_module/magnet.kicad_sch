@@ -452,28 +452,6 @@
 		(uuid "6d6c3d9d-85b1-4260-b768-3126b1664637")
 	)
 	(label "5V"
-		(at 148.59 68.58 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "0b787ac6-065f-4040-855c-6e5561cbf45e")
-	)
-	(label "5V"
-		(at 247.65 114.3 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "1d4cb258-dbe7-44fe-99f8-787ba20f1a97")
-	)
-	(label "5V"
 		(at 214.63 92.71 0)
 		(fields_autoplaced yes)
 		(effects
@@ -1363,26 +1341,6 @@
 			)
 			(uuid "8be11804-0fe0-40cc-b747-5d71fb952933")
 		)
-		(pin "5V_SERVO[0..1]" output
-			(at 168.91 91.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "00d3b9f8-f74e-4ab3-83b7-c76ca012cd45")
-		)
-		(pin "5V" input
-			(at 148.59 68.58 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "5c3dffd6-0694-46f2-a7de-209cb7dadf0a")
-		)
 		(pin "BUTTON[0..1]" input
 			(at 168.91 113.03 0)
 			(effects
@@ -1432,6 +1390,16 @@
 				(justify right)
 			)
 			(uuid "aa9855a0-b61d-4a6e-9419-a5de887cb6ad")
+		)
+		(pin "SERVO[0..1]" output
+			(at 168.91 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "b74c6028-bc06-4202-a786-c0f6eb73927c")
 		)
 		(instances
 			(project "magnet"
@@ -1684,16 +1652,6 @@
 			)
 			(uuid "e072b5ec-3bf6-4f76-9258-ba2f086f250d")
 		)
-		(pin "PRESSURE_OUT" output
-			(at 101.6 102.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "5e8d352d-9f0e-4d37-9c4f-4a15e77a3b73")
-		)
 		(pin "TEMP{I2C}" bidirectional
 			(at 101.6 106.68 0)
 			(effects
@@ -1703,6 +1661,16 @@
 				(justify right)
 			)
 			(uuid "c4f81352-ac01-4415-9f6d-ea27f2d9fc73")
+		)
+		(pin "PRESSURE_FILT" output
+			(at 101.6 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "73be3d3a-ecdc-4680-8fa8-756f2fc38ea4")
 		)
 		(instances
 			(project "magnet"
@@ -1751,16 +1719,6 @@
 				(justify left)
 			)
 			(uuid "8054b4ab-936b-4017-825a-71cfdd31f1e9")
-		)
-		(pin "5V" input
-			(at 247.65 114.3 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "1a10ecdc-ed30-403c-b3cb-a6ad7f10c6a7")
 		)
 		(pin "3V3" input
 			(at 247.65 118.11 0)
