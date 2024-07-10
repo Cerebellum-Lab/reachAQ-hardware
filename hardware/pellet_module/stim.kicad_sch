@@ -2147,7 +2147,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONMHF1-SMD-T"
+		(property "MPN" "CONBNC002"
 			(at 48.26 34.29 0)
 			(effects
 				(font
@@ -2226,7 +2226,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONMHF1-SMD-T"
+		(property "MPN" "CONBNC002"
 			(at 49.53 153.67 0)
 			(effects
 				(font
@@ -3279,7 +3279,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONMHF1-SMD-T"
+		(property "MPN" "CONBNC002"
 			(at 220.98 87.63 0)
 			(effects
 				(font
@@ -3358,7 +3358,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONMHF1-SMD-T"
+		(property "MPN" "CONBNC002"
 			(at 220.98 102.87 0)
 			(effects
 				(font
@@ -3641,7 +3641,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONMHF1-SMD-T"
+		(property "MPN" "CONBNC002"
 			(at 220.98 71.12 0)
 			(effects
 				(font
@@ -3930,7 +3930,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONMHF1-SMD-T"
+		(property "MPN" "CONBNC002"
 			(at 220.98 121.92 0)
 			(effects
 				(font

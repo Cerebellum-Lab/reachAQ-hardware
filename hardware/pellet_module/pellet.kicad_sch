@@ -750,7 +750,7 @@
 	)
 	(rectangle
 		(start 185.42 45.72)
-		(end 278.765 150.495)
+		(end 278.765 129.54)
 		(stroke
 			(width 0)
 			(type default)
