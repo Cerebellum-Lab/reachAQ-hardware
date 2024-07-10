@@ -398,33 +398,6 @@
 		(color 0 0 0 0)
 		(uuid "df356b46-5645-4ceb-882c-57bed2610127")
 	)
-	(bus_entry
-		(at 189.23 138.43)
-		(size 2.54 2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9fe28866-f145-4814-90d4-8e4e84c6713d")
-	)
-	(bus_entry
-		(at 189.23 114.3)
-		(size 2.54 2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d4c289e6-2282-4fc7-b331-21fc5c47a178")
-	)
-	(bus_entry
-		(at 189.23 127)
-		(size 2.54 2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "dfb5ce52-f9fb-4e5e-910e-cdde550868b3")
-	)
 	(bus
 		(pts
 			(xy 127 82.55) (xy 143.51 82.55)
@@ -495,16 +468,6 @@
 		)
 		(uuid "1062185b-be90-481c-95d2-82b6fa874b2c")
 	)
-	(bus
-		(pts
-			(xy 189.23 114.3) (xy 189.23 127)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "12d0a9e6-84cb-4776-b983-337e38f31eb3")
-	)
 	(wire
 		(pts
 			(xy 254 95.25) (xy 269.24 95.25)
@@ -547,16 +510,6 @@
 	)
 	(wire
 		(pts
-			(xy 191.77 129.54) (xy 214.63 129.54)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "29a7c6ca-4186-4b4d-bd4a-01e135423f10")
-	)
-	(wire
-		(pts
 			(xy 194.31 82.55) (xy 194.31 99.06)
 		)
 		(stroke
@@ -595,26 +548,6 @@
 		)
 		(uuid "621abb6a-9bec-4adb-a439-bec210b23f1a")
 	)
-	(bus
-		(pts
-			(xy 182.88 110.49) (xy 189.23 110.49)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "68cbef39-ce30-4d9e-bbad-d537c64d558c")
-	)
-	(bus
-		(pts
-			(xy 189.23 127) (xy 189.23 138.43)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "691a91d7-cfc3-4f6c-ba39-a45bd4a532be")
-	)
 	(wire
 		(pts
 			(xy 194.31 80.01) (xy 213.36 80.01)
@@ -624,16 +557,6 @@
 			(type default)
 		)
 		(uuid "69a4c8bb-eeac-46eb-84d3-89cc52676112")
-	)
-	(wire
-		(pts
-			(xy 191.77 116.84) (xy 214.63 116.84)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6e876bc3-b238-48b8-990e-ff23926e48c8")
 	)
 	(bus
 		(pts
@@ -675,16 +598,6 @@
 		)
 		(uuid "87edfff8-471b-49ba-96cd-d171580c8a22")
 	)
-	(wire
-		(pts
-			(xy 191.77 140.97) (xy 214.63 140.97)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "89996731-433c-4a2e-92b5-ec4bb20e2b29")
-	)
 	(bus
 		(pts
 			(xy 207.01 91.44) (xy 207.01 95.25)
@@ -725,16 +638,6 @@
 		)
 		(uuid "a82c7810-ef2f-4d1b-a809-04ba96fb037d")
 	)
-	(bus
-		(pts
-			(xy 189.23 110.49) (xy 189.23 114.3)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "aa170ffe-4453-442c-a17d-b704fc340da7")
-	)
 	(wire
 		(pts
 			(xy 194.31 80.01) (xy 194.31 82.55)
@@ -754,6 +657,16 @@
 			(type default)
 		)
 		(uuid "b5092c59-0ff6-43a2-ae8b-5c33045af89d")
+	)
+	(bus
+		(pts
+			(xy 182.88 120.65) (xy 214.63 120.65)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "beea877b-53c7-4623-b0db-3cfb6456c461")
 	)
 	(wire
 		(pts
@@ -943,8 +856,8 @@
 		)
 		(uuid "399ad0dc-f6e7-4c2f-aba5-e5c0d6f3dc87")
 	)
-	(label "5V"
-		(at 238.76 140.97 0)
+	(label "3V3"
+		(at 238.76 119.38 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -952,7 +865,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "44f11cb1-c775-4016-9051-1127b96f5837")
+		(uuid "3d053062-e6ff-49d2-95f5-a8c04e57be94")
 	)
 	(label "3V3"
 		(at 264.16 76.2 0)
@@ -998,17 +911,6 @@
 		)
 		(uuid "6fd52a3d-6bdc-4b98-a35a-359cb3d0f1ad")
 	)
-	(label "5V_SERVO_PWM2"
-		(at 193.04 140.97 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "7f22a1d8-9e41-44f6-b28d-f34f8fbdebce")
-	)
 	(label "3V3"
 		(at 264.16 97.79 0)
 		(fields_autoplaced yes)
@@ -1031,17 +933,6 @@
 		)
 		(uuid "9c3e5999-2967-46f5-9d42-3a1058090579")
 	)
-	(label "5V"
-		(at 238.76 129.54 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "a6e45bd2-0762-496f-8365-a15e8f4c0925")
-	)
 	(label "3V3"
 		(at 232.41 53.34 90)
 		(fields_autoplaced yes)
@@ -1052,28 +943,6 @@
 			(justify left bottom)
 		)
 		(uuid "a750ec75-ad77-459b-88c7-6e561af64875")
-	)
-	(label "5V_SERVO_PWM0"
-		(at 193.04 116.84 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "ae8631cc-d798-4bee-9295-588a1951f622")
-	)
-	(label "5V"
-		(at 163.83 77.47 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "b20a664f-44ee-4a1d-83da-486e7dd57af4")
 	)
 	(label "3V3"
 		(at 160.02 77.47 90)
@@ -1118,17 +987,6 @@
 			(justify left bottom)
 		)
 		(uuid "de1ce85a-9147-4275-86e4-d008c910bb35")
-	)
-	(label "5V_SERVO_PWM1"
-		(at 193.04 129.54 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e92a8426-bfe5-4bed-a22c-d6d4a1f149b6")
 	)
 	(label "3V3"
 		(at 102.87 102.87 180)
@@ -2223,26 +2081,6 @@
 			)
 			(uuid "7b77eef0-8bb1-48d5-a930-7da5d1d55369")
 		)
-		(pin "5V" input
-			(at 163.83 77.47 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "155e7a93-256b-4037-af24-94bfaddeb4fb")
-		)
-		(pin "5V_SERVO_PWM[0..2]" output
-			(at 182.88 110.49 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "31a2fd12-cfd4-47fa-bc8b-894060b32112")
-		)
 		(pin "{USB2}" bidirectional
 			(at 143.51 85.09 180)
 			(effects
@@ -2262,6 +2100,16 @@
 				(justify left)
 			)
 			(uuid "72af1ffe-c65c-4926-bc5c-b45226c50987")
+		)
+		(pin "SERVO_PWM[0..2]" output
+			(at 182.88 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "a3e2253c-d577-4c37-b5f6-ec9bf553b736")
 		)
 		(instances
 			(project "pellet"
@@ -2370,122 +2218,6 @@
 		)
 	)
 	(sheet
-		(at 214.63 127)
-		(size 24.13 5.08)
-		(fields_autoplaced yes)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(fill
-			(color 0 0 0 0.0000)
-		)
-		(uuid "4620b840-dc49-4f71-9a63-a60540da9309")
-		(property "Sheetname" "Servo Driver1"
-			(at 214.63 126.2884 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Sheetfile" "servo.kicad_sch"
-			(at 214.63 132.6646 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-			)
-		)
-		(pin "PWM" input
-			(at 214.63 129.54 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "df7477c5-0d69-4735-a377-35e4891e3d3e")
-		)
-		(pin "5V" input
-			(at 238.76 129.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "330c9e0a-29d7-4c6d-af4c-500c57bf4a1d")
-		)
-		(instances
-			(project "pellet"
-				(path "/48650363-a452-429d-997e-1ddabb69aad0"
-					(page "9")
-				)
-			)
-		)
-	)
-	(sheet
-		(at 214.63 138.43)
-		(size 24.13 5.08)
-		(fields_autoplaced yes)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(fill
-			(color 0 0 0 0.0000)
-		)
-		(uuid "4831acae-569e-4d04-8564-552236c83207")
-		(property "Sheetname" "Servo Driver2"
-			(at 214.63 137.7184 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Sheetfile" "servo.kicad_sch"
-			(at 214.63 144.0946 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-			)
-		)
-		(pin "PWM" input
-			(at 214.63 140.97 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "a1a6b288-4369-45d6-9557-cf37f0e5d2af")
-		)
-		(pin "5V" input
-			(at 238.76 140.97 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "60b78ac0-a90e-4746-ae0e-fefa1fed23d1")
-		)
-		(instances
-			(project "pellet"
-				(path "/48650363-a452-429d-997e-1ddabb69aad0"
-					(page "10")
-				)
-			)
-		)
-	)
-	(sheet
 		(at 213.36 53.34)
 		(size 40.64 10.16)
 		(fields_autoplaced yes)
@@ -2585,7 +2317,7 @@
 	)
 	(sheet
 		(at 214.63 114.3)
-		(size 24.13 5.08)
+		(size 24.13 10.16)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -2605,23 +2337,13 @@
 			)
 		)
 		(property "Sheetfile" "servo.kicad_sch"
-			(at 214.63 119.9646 0)
+			(at 214.63 125.0446 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left top)
 			)
-		)
-		(pin "PWM" input
-			(at 214.63 116.84 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "5c7951cf-6776-429b-8a37-67503ae916d2")
 		)
 		(pin "5V" input
 			(at 238.76 116.84 0)
@@ -2632,6 +2354,26 @@
 				(justify right)
 			)
 			(uuid "db50c796-d1e0-4d01-a04c-577481cef647")
+		)
+		(pin "SERVO_PWM[0..2]" input
+			(at 214.63 120.65 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "c8eab79c-6eea-484f-bcb6-05c25f5b6a74")
+		)
+		(pin "3V3" input
+			(at 238.76 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "22c0efdb-dc63-46c4-8415-2cd82329228b")
 		)
 		(instances
 			(project "pellet"
