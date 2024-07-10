@@ -1420,7 +1420,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "B3B-XH-A"
+		(property "MPN" "S3B-XH-A"
 			(at 134.62 99.06 0)
 			(effects
 				(font
@@ -1503,7 +1503,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "B3B-XH-A"
+		(property "MPN" "S3B-XH-A"
 			(at 133.35 123.19 0)
 			(effects
 				(font

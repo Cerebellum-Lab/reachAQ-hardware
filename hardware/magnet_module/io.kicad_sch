@@ -1735,7 +1735,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "BM04B-SRSS-TB"
+		(property "MPN" "SM04B-SRSS-TB"
 			(at 260.35 50.8 0)
 			(effects
 				(font
@@ -1899,7 +1899,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONMHF1-SMD-T"
+		(property "MPN" "CONBNC002"
 			(at 54.61 35.56 0)
 			(effects
 				(font
@@ -2422,7 +2422,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "BM04B-SRSS-TB"
+		(property "MPN" "SM04B-SRSS-TB"
 			(at 260.35 36.83 0)
 			(effects
 				(font
@@ -2506,7 +2506,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONMHF1-SMD-T"
+		(property "MPN" "CONBNC002"
 			(at 55.88 63.5 0)
 			(effects
 				(font
