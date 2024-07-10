@@ -8,7 +8,7 @@
 		(title "Autotrainer Magnet Module - MCU")
 		(date "2024-07-09")
 		(rev "v1.0")
-		(company "Christie Lab, CU-Anschultz")
+		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
 	)
 	(lib_symbols
@@ -3998,6 +3998,10 @@
 		(uuid "4fa186ad-9cef-418d-aa52-e014808d68ee")
 	)
 	(no_connect
+		(at 135.89 96.52)
+		(uuid "68858f25-ca97-4c73-8ae5-2d2f9472bcbc")
+	)
+	(no_connect
 		(at 135.89 76.2)
 		(uuid "7073664f-31b2-4e70-99ae-d0af0b29f039")
 	)
@@ -4050,8 +4054,16 @@
 		(uuid "ec0ad198-b605-45e7-b32b-44fbb7feca60")
 	)
 	(no_connect
+		(at 135.89 93.98)
+		(uuid "ed8b5459-2b83-472a-ae48-3b0f4fb7dff0")
+	)
+	(no_connect
 		(at 171.45 55.88)
 		(uuid "f9e4b071-f350-4e2c-aecf-34158772436b")
+	)
+	(no_connect
+		(at 135.89 91.44)
+		(uuid "fed79e8a-bfb5-4bda-b2b7-827452259955")
 	)
 	(bus_entry
 		(at 189.23 101.6)
@@ -4090,15 +4102,6 @@
 		(uuid "384f824e-22da-4405-b70b-6c25f8b7cd07")
 	)
 	(bus_entry
-		(at 121.92 99.06)
-		(size 2.54 -2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3da01bee-dada-45e2-b9b5-7c72b1e8e570")
-	)
-	(bus_entry
 		(at 109.22 83.82)
 		(size 2.54 2.54)
 		(stroke
@@ -4135,15 +4138,6 @@
 		(uuid "83ac291b-783c-4963-a32d-6a77981f9aed")
 	)
 	(bus_entry
-		(at 121.92 93.98)
-		(size 2.54 -2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a3294203-1c50-4fd5-8a0b-82e22f839f75")
-	)
-	(bus_entry
 		(at 200.66 93.98)
 		(size -2.54 -2.54)
 		(stroke
@@ -4151,15 +4145,6 @@
 			(type default)
 		)
 		(uuid "a653397b-ddfd-41d3-9834-ecb5e7dd1c2c")
-	)
-	(bus_entry
-		(at 121.92 96.52)
-		(size 2.54 -2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ab3e8808-b56e-4d9e-9994-7b2fb553b16b")
 	)
 	(bus_entry
 		(at 109.22 86.36)
@@ -4759,26 +4744,6 @@
 	)
 	(wire
 		(pts
-			(xy 124.46 96.52) (xy 135.89 96.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9af8ef8e-b6a2-4fd8-ade5-254841a7a7d9")
-	)
-	(bus
-		(pts
-			(xy 121.92 96.52) (xy 121.92 99.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9ee2ce47-4ff7-4a90-9ca6-d8efa1cd079e")
-	)
-	(wire
-		(pts
 			(xy 171.45 88.9) (xy 198.12 88.9)
 		)
 		(stroke
@@ -4796,16 +4761,6 @@
 			(type default)
 		)
 		(uuid "a770c096-b05e-4606-829c-e00c634ad4fb")
-	)
-	(wire
-		(pts
-			(xy 124.46 91.44) (xy 135.89 91.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "acfefa9d-476f-457f-b9e3-c48a79aebfb7")
 	)
 	(bus
 		(pts
@@ -4957,16 +4912,6 @@
 		)
 		(uuid "e2562448-f96c-452b-b4ff-f4a048979803")
 	)
-	(wire
-		(pts
-			(xy 124.46 93.98) (xy 135.89 93.98)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e2fc1c46-5ce6-4521-99d6-2e305b28719d")
-	)
 	(bus
 		(pts
 			(xy 195.58 66.04) (xy 195.58 68.58)
@@ -4976,16 +4921,6 @@
 			(type default)
 		)
 		(uuid "e4441efd-aae2-40d9-82c8-19fd401aba36")
-	)
-	(bus
-		(pts
-			(xy 121.92 93.98) (xy 121.92 96.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e71823ba-716d-47f1-83a5-e6f4e92f3aff")
 	)
 	(wire
 		(pts
@@ -5569,17 +5504,6 @@
 		)
 		(uuid "27f14c45-7b18-424c-99dc-608a9fe3a02b")
 	)
-	(label "STIM1"
-		(at 124.46 93.98 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "2c994930-2fd3-4d5f-94cc-bd8662166fd1")
-	)
 	(label "SERVO1"
 		(at 171.45 50.8 0)
 		(fields_autoplaced yes)
@@ -6042,17 +5966,6 @@
 		)
 		(uuid "b469933c-4816-46e1-9785-a6a0056086a7")
 	)
-	(label "STIM2"
-		(at 124.46 96.52 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "b721aeb1-d96a-4e38-b8ee-fd368660c6ee")
-	)
 	(label "3V3"
 		(at 217.17 138.43 90)
 		(fields_autoplaced yes)
@@ -6196,17 +6109,6 @@
 		)
 		(uuid "ede1f0b0-e743-46aa-9c5d-4440e4fc13f6")
 	)
-	(label "STIM0"
-		(at 124.46 91.44 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "f381234b-666f-44bb-81a6-b74c82d09c3b")
-	)
 	(label "FLASH_CLK"
 		(at 245.11 139.7 180)
 		(fields_autoplaced yes)
@@ -6322,18 +6224,6 @@
 			(justify right)
 		)
 		(uuid "53257ec0-17d3-4616-bd39-b70f91f3d6a3")
-	)
-	(hierarchical_label "STIM[0..3]"
-		(shape bidirectional)
-		(at 121.92 99.06 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "62cb74c0-ed91-4bef-bbab-0abac39057fe")
 	)
 	(hierarchical_label "GPIO0"
 		(shape bidirectional)

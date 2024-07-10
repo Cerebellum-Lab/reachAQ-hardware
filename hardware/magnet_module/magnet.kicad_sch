@@ -8,7 +8,7 @@
 		(title "Autotrainer Magnet Module")
 		(date "2024-07-09")
 		(rev "v1.0")
-		(company "Christie Lab, CU-Anschultz")
+		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
 	)
 	(lib_symbols
@@ -308,16 +308,6 @@
 			(type default)
 		)
 		(uuid "3d0a1da9-2b8e-43b7-971a-b8e56c26ef51")
-	)
-	(bus
-		(pts
-			(xy 168.91 115.57) (xy 220.98 115.57)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "75d51dea-126d-408e-bbcf-1cad2e5a481c")
 	)
 	(bus
 		(pts
@@ -667,7 +657,7 @@
 		(exclude_from_sim yes)
 		(in_bom no)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "33bd68f6-ecbf-447a-8d68-7cc34b2baa06")
 		(property "Reference" "H4"
@@ -732,7 +722,7 @@
 		(exclude_from_sim yes)
 		(in_bom no)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "350417ab-d608-4881-8f39-a4985788d4fd")
 		(property "Reference" "H3"
@@ -931,7 +921,7 @@
 		(exclude_from_sim yes)
 		(in_bom no)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a75543a8-2961-4950-aef5-e59aedbacde8")
 		(property "Reference" "H2"
@@ -1063,7 +1053,7 @@
 		(exclude_from_sim yes)
 		(in_bom no)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cb19a0d7-897f-4c4d-a1ff-f2845d290988")
 		(property "Reference" "U2"
@@ -1127,7 +1117,7 @@
 		(exclude_from_sim yes)
 		(in_bom no)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "dabfe100-0e81-4f67-b854-b4af3f8a870e")
 		(property "Reference" "H1"
@@ -1402,16 +1392,6 @@
 				(justify right)
 			)
 			(uuid "775a31e6-2b66-4021-86f0-7016f7d45789")
-		)
-		(pin "STIM[0..3]" bidirectional
-			(at 168.91 115.57 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "fcc8cb01-838d-4eab-88ff-abe1edc81084")
 		)
 		(pin "SPARE0{I2C}" bidirectional
 			(at 168.91 118.11 0)
@@ -1781,16 +1761,6 @@
 				(justify right)
 			)
 			(uuid "1a10ecdc-ed30-403c-b3cb-a6ad7f10c6a7")
-		)
-		(pin "STIM[0..3]" input
-			(at 220.98 115.57 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "694a505d-ea5c-44c6-96f5-fe559dd15c99")
 		)
 		(pin "3V3" input
 			(at 247.65 118.11 0)

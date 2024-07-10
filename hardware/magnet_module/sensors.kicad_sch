@@ -8,7 +8,7 @@
 		(title "Autotrainer Magnet Module - Sensors")
 		(date "2024-07-09")
 		(rev "v1.0")
-		(company "Christie Lab, CU-Anschultz")
+		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
 	)
 	(lib_symbols
@@ -172,6 +172,449 @@
 				)
 			)
 		)
+		(symbol "Connector:Conn_01x03_Pin"
+			(pin_names
+				(offset 1.016) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "J"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x03_Pin"
+				(at 0 -5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Generic connector, single row, 01x03, script generated"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_locked" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "connector"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Conn_01x03_Pin_1_1"
+				(polyline
+					(pts
+						(xy 1.27 -2.54) (xy 0.8636 -2.54)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 0) (xy 0.8636 0)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 2.54) (xy 0.8636 2.54)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start 0.8636 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 2.667)
+					(end 0 2.413)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(pin passive line
+					(at 5.08 2.54 180)
+					(length 3.81)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 0 180)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 -2.54 180)
+					(length 3.81)
+					(name "Pin_3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
+		(symbol "Connector:Conn_01x04_Pin"
+			(pin_names
+				(offset 1.016) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "J"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x04_Pin"
+				(at 0 -7.62 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Generic connector, single row, 01x04, script generated"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_locked" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "connector"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Conn_01x04_Pin_1_1"
+				(polyline
+					(pts
+						(xy 1.27 -5.08) (xy 0.8636 -5.08)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -2.54) (xy 0.8636 -2.54)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 0) (xy 0.8636 0)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 2.54) (xy 0.8636 2.54)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start 0.8636 -4.953)
+					(end 0 -5.207)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 2.667)
+					(end 0 2.413)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(pin passive line
+					(at 5.08 2.54 180)
+					(length 3.81)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 0 180)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 -2.54 180)
+					(length 3.81)
+					(name "Pin_3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 -5.08 180)
+					(length 3.81)
+					(name "Pin_4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Device:R"
 			(pin_numbers hide)
 			(pin_names
@@ -293,161 +736,6 @@
 				)
 			)
 		)
-		(symbol "Leaf_Temperature:SHT4x"
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "U"
-				(at 0 8.89 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify right)
-				)
-			)
-			(property "Value" "SHT4x"
-				(at 0 6.35 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify right)
-				)
-			)
-			(property "Footprint" "Leaf_Temperature:Sensirion_DFN-4_1.5x1.5mm_P0.8mm_SHT4x_NoCentralPad"
-				(at 3.81 -6.35 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://sensirion.com/media/documents/33FD6951/624C4357/Datasheet_SHT4x.pdf"
-				(at 3.81 -8.89 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-					(hide yes)
-				)
-			)
-			(property "Description" "Digital Humidity and Temperature Sensor, +/-1%RH, +/-0.1degC, I2C, 1.08-3.6V, 16bit, DFN-4"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "Sensirion environment environmental measurement digital SHT40 SHT41 SHT45"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "Sensirion?DFN*1.5x1.5mm*P0.8mm*SHT4x*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "SHT4x_1_1"
-				(rectangle
-					(start -5.08 5.08)
-					(end 5.08 -5.08)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin bidirectional line
-					(at -7.62 -2.54 0)
-					(length 2.54)
-					(name "SDA"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -7.62 2.54 0)
-					(length 2.54)
-					(name "SCL"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 2.54 7.62 270)
-					(length 2.54)
-					(name "VDD"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 2.54 -7.62 90)
-					(length 2.54)
-					(name "VSS"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-		)
 		(symbol "power:GND"
 			(power)
 			(pin_numbers hide)
@@ -552,22 +840,22 @@
 		(uuid "8f281e3f-ef56-4e72-b691-ca83461acafc")
 	)
 	(bus_entry
-		(at 77.47 146.05)
+		(at 80.01 152.4)
 		(size 2.54 2.54)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "36b9434e-ebc4-49b8-949a-38b1f21d78a5")
+		(uuid "c17513d3-7a3c-44ff-8b91-5403c62f64f0")
 	)
 	(bus_entry
-		(at 77.47 151.13)
+		(at 80.01 154.94)
 		(size 2.54 2.54)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "85c435f7-f7c9-4d0f-9820-238ca217443b")
+		(uuid "fc19d72a-7efb-4168-9579-35afb7afbdf5")
 	)
 	(wire
 		(pts
@@ -601,6 +889,26 @@
 	)
 	(wire
 		(pts
+			(xy 217.17 90.17) (xy 229.87 90.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "515b8a30-4277-46a5-acba-33c75243cd61")
+	)
+	(wire
+		(pts
+			(xy 82.55 154.94) (xy 96.52 154.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "520d3f69-8787-430f-8b7d-5193442432c4")
+	)
+	(wire
+		(pts
 			(xy 110.49 74.93) (xy 118.11 74.93)
 		)
 		(stroke
@@ -608,6 +916,16 @@
 			(type default)
 		)
 		(uuid "5a25abbb-ce4f-43b9-9148-c5c0a87eb56d")
+	)
+	(wire
+		(pts
+			(xy 228.6 82.55) (xy 229.87 82.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5da92218-e305-4b02-8690-fa0045c3f325")
 	)
 	(wire
 		(pts
@@ -621,23 +939,13 @@
 	)
 	(wire
 		(pts
-			(xy 80.01 153.67) (xy 92.71 153.67)
+			(xy 229.87 82.55) (xy 229.87 85.09)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "62b48459-6d53-490f-8780-7a9683475028")
-	)
-	(bus
-		(pts
-			(xy 77.47 144.78) (xy 77.47 146.05)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "77542c20-67cd-49e1-ab54-9d16ff3a3bc2")
+		(uuid "65262d84-44e9-4c75-a00d-1fd6d01410c8")
 	)
 	(wire
 		(pts
@@ -649,25 +957,57 @@
 		)
 		(uuid "87258d53-d351-442e-9e9a-e3389bb71569")
 	)
-	(wire
+	(bus
 		(pts
-			(xy 80.01 148.59) (xy 92.71 148.59)
+			(xy 80.01 151.13) (xy 80.01 152.4)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "c3975259-1620-4ecf-81f3-a99bdd1eecdc")
+		(uuid "8a3846a6-2b58-4f4a-9f54-4a9a4f7f9d69")
+	)
+	(wire
+		(pts
+			(xy 96.52 147.32) (xy 96.52 149.86)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ce5d1166-226e-48d3-9e54-f18ce8dffc3a")
+	)
+	(wire
+		(pts
+			(xy 82.55 157.48) (xy 96.52 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e15baae2-7af4-44ec-a7de-4683fefd55f8")
 	)
 	(bus
 		(pts
-			(xy 77.47 146.05) (xy 77.47 151.13)
+			(xy 80.01 152.4) (xy 80.01 154.94)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "d38d007d-f3f6-4873-86c4-b8d22f42ee0f")
+		(uuid "e96caa66-c94d-497f-8d1c-84673dae38bd")
+	)
+	(rectangle
+		(start 200.914 71.882)
+		(end 262.636 101.092)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 4cbef5ef-b7c7-49a9-afde-00369f7a5ebc)
 	)
 	(rectangle
 		(start 67.056 53.594)
@@ -682,8 +1022,8 @@
 		(uuid 77be73a4-1baf-401f-a6f6-ef5a65ac3541)
 	)
 	(rectangle
-		(start 64.77 133.096)
-		(end 127.254 168.656)
+		(start 67.056 140.716)
+		(end 122.682 162.052)
 		(stroke
 			(width 0)
 			(type default)
@@ -691,7 +1031,7 @@
 		(fill
 			(type none)
 		)
-		(uuid b0458377-06ad-4d36-b97a-f49f43ec1980)
+		(uuid aa3f63c9-4d52-4aa4-b2df-dd236dc222f7)
 	)
 	(text "To resistive pressure sensor\n(FSR400 series)"
 		(exclude_from_sim no)
@@ -703,15 +1043,15 @@
 		)
 		(uuid "07cf1f00-3e28-4843-94ad-be4e84932f61")
 	)
-	(text "Temp sensor"
+	(text "todo: is this the right way to handle the open vs closed circuit thing"
 		(exclude_from_sim no)
-		(at 70.612 131.826 0)
+		(at 227.076 105.918 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 		)
-		(uuid "491f61b2-aa92-4fd2-830d-0544ebd1b93b")
+		(uuid "4410c87f-4772-4082-92e3-6f9ef5fdc11d")
 	)
 	(text "Pressure Sensor"
 		(exclude_from_sim no)
@@ -723,30 +1063,18 @@
 		)
 		(uuid "88b7cc37-223f-42e0-8f49-8ee0b8437eb6")
 	)
-	(label "TEMP.SDA"
-		(at 80.01 153.67 0)
-		(fields_autoplaced yes)
+	(text "To external temp/humidity sensor"
+		(exclude_from_sim no)
+		(at 83.312 139.446 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
 		)
-		(uuid "28785eb0-299b-4a4b-82c3-a4d4057780b6")
-	)
-	(label "3V3"
-		(at 102.87 143.51 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "4bd99415-779c-45b2-888d-3f82ee95e12d")
+		(uuid "b52f0eaa-bf8b-49fa-a737-74744bc5ef76")
 	)
 	(label "TEMP.SCL"
-		(at 80.01 148.59 0)
+		(at 82.55 157.48 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -754,19 +1082,40 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "e5fe7b54-194b-4702-a295-f8298c781ba5")
+		(uuid "4797797a-e318-425c-a0cf-156dc61df351")
 	)
-	(hierarchical_label "TEMP{I2C}"
-		(shape bidirectional)
-		(at 77.47 144.78 180)
+	(label "TEMP.SDA"
+		(at 82.55 154.94 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right)
+			(justify left bottom)
 		)
-		(uuid "36bf64a1-59d0-42f5-a048-7268ffc0ddc8")
+		(uuid "4bcb45e3-f199-4a60-80ea-87c05d6ddf80")
+	)
+	(label "3V3"
+		(at 96.52 152.4 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "60f77296-c14b-4162-9259-e5e79d8e3820")
+	)
+	(label "3V3"
+		(at 229.87 87.63 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "90cb8103-0c78-4e41-b7dd-d1c868f68726")
 	)
 	(hierarchical_label "PRESSURE_OUT"
 		(shape output)
@@ -779,6 +1128,30 @@
 			(justify left)
 		)
 		(uuid "485b3221-7204-4750-bc61-784e48547aa7")
+	)
+	(hierarchical_label "GPIO0"
+		(shape bidirectional)
+		(at 217.17 90.17 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "4b73640a-2aea-45eb-89fd-64b216935ba7")
+	)
+	(hierarchical_label "TEMP{I2C}"
+		(shape bidirectional)
+		(at 80.01 151.13 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "a68f9680-1ea6-487b-80b9-f0fecaed3763")
 	)
 	(hierarchical_label "3V3"
 		(shape input)
@@ -794,16 +1167,16 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 102.87 158.75 0)
+		(at 228.6 82.55 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "10e77337-e9a8-4b72-82d6-a96d69c2af2c")
-		(property "Reference" "#PWR028"
-			(at 102.87 165.1 0)
+		(uuid "1fc42614-478d-49cb-857c-3601a2e0c911")
+		(property "Reference" "#PWR052"
+			(at 222.25 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -812,15 +1185,16 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 102.87 163.83 0)
+			(at 224.79 82.5499 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify right)
 			)
 		)
 		(property "Footprint" ""
-			(at 102.87 158.75 0)
+			(at 228.6 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -829,7 +1203,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 102.87 158.75 0)
+			(at 228.6 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -838,7 +1212,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 102.87 158.75 0)
+			(at 228.6 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -847,12 +1221,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "2551306b-5fb7-459b-ad93-079c6a8e0551")
+			(uuid "af727471-7ad1-4b25-bce7-2e5448374733")
 		)
 		(instances
-			(project ""
+			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
-					(reference "#PWR028")
+					(reference "#PWR052")
 					(unit 1)
 				)
 			)
@@ -938,6 +1312,242 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:Conn_01x04_Pin")
+		(at 101.6 152.4 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "4e742e39-8137-4985-9a7a-d69d48339c19")
+		(property "Reference" "J5"
+			(at 102.87 152.3999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "Conn_01x04_Pin"
+			(at 102.87 154.9399 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 101.6 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 101.6 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 101.6 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "BM04B-SRSS-TB"
+			(at 101.6 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "84ae21b7-ff10-4e9e-8868-79a3758065f7")
+		)
+		(pin "4"
+			(uuid "177f28b8-aecb-41c3-aff0-464d8e7e60c6")
+		)
+		(pin "2"
+			(uuid "90e2a14b-2809-4bc5-97f0-05f5c2eeb30c")
+		)
+		(pin "3"
+			(uuid "1d13b716-d37c-4a0b-9d7b-d421676d8caa")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
+					(reference "J5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 96.52 147.32 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "523cfa92-d547-44c4-bc4e-f8fa9312d3b2")
+		(property "Reference" "#PWR028"
+			(at 90.17 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 92.71 147.3199 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 96.52 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 96.52 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 96.52 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "424e8b94-5083-4105-b6eb-36b79a4821e1")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
+					(reference "#PWR028")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:Conn_01x03_Pin")
+		(at 234.95 87.63 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8361876e-ed20-4ec7-a153-406a4795bfd5")
+		(property "Reference" "J12"
+			(at 236.22 86.3599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "Conn_01x03_Pin"
+			(at 236.22 88.8999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 234.95 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 234.95 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x03, script generated"
+			(at 234.95 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "BM03B-SRSS-TB"
+			(at 234.95 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "f6a330c0-b0b2-4b97-9a93-1038f13568f3")
+		)
+		(pin "1"
+			(uuid "2f2a77c6-b441-4983-9b60-536c10df7c5e")
+		)
+		(pin "3"
+			(uuid "27d1cb65-3814-4d0b-9bfa-e6ade2876419")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
+					(reference "J12")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 118.11 93.98 0)
 		(unit 1)
@@ -998,93 +1608,6 @@
 			(project ""
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
 					(reference "#PWR026")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Leaf_Temperature:SHT4x")
-		(at 100.33 151.13 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "c63584bd-03da-4395-af0f-c16be10bfb2e")
-		(property "Reference" "U7"
-			(at 106.68 149.8599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "SHT40-AD1B-R2"
-			(at 106.68 152.3999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Leaf_Temperature:Sensirion_DFN-4_1.5x1.5mm_P0.8mm_SHT4x_NoCentralPad"
-			(at 104.14 157.48 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://sensirion.com/media/documents/33FD6951/624C4357/Datasheet_SHT4x.pdf"
-			(at 104.14 160.02 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Description" "Digital Humidity and Temperature Sensor, +/-1%RH, +/-0.1degC, I2C, 1.08-3.6V, 16bit, DFN-4"
-			(at 100.33 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "SHT40-AD1B-R2"
-			(at 100.33 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "a8d0379b-f125-4314-adb0-3f2791b8192f")
-		)
-		(pin "4"
-			(uuid "3ba487e9-d35b-42a3-bf90-aad0ccb1a936")
-		)
-		(pin "3"
-			(uuid "ce345d76-86a9-44e9-9f23-7b1eb1c4e420")
-		)
-		(pin "1"
-			(uuid "e143dba2-fd8c-48be-a7e8-6f681b52421c")
-		)
-		(instances
-			(project ""
-				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
-					(reference "U7")
 					(unit 1)
 				)
 			)
