@@ -125,7 +125,7 @@
 	(footprint "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "1a641800-08bc-4e54-8170-7d38c732774d")
-		(at 160.25 48.35 180)
+		(at 96.75 48.35 180)
 		(descr "JST XH series connector, S3B-XH-A (http://www.jst-mfg.com/product/pdf/eng/eXH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST XH horizontal")
 		(property "Reference" "J10"
@@ -864,7 +864,7 @@
 	(footprint "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "2d6e11e7-813b-4b2c-8ff6-d9059530b395")
-		(at 198.25 48.25 180)
+		(at 134.75 48.25 180)
 		(descr "JST XH series connector, S3B-XH-A (http://www.jst-mfg.com/product/pdf/eng/eXH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST XH horizontal")
 		(property "Reference" "J9"
@@ -1416,7 +1416,7 @@
 	(footprint "Leaf_Connectors:JST_ZH_S4B-ZR_1x04_P1.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "44717186-4e31-409a-9f07-f6e64c36cfe2")
-		(at 88.31 44.025 180)
+		(at 147.06 44.15 180)
 		(property "Reference" "J2"
 			(at 0 -2.450001 180)
 			(unlocked yes)
@@ -1850,7 +1850,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "485c32a6-0172-4773-8077-a1271e4c68b8")
-		(at 96.46 48.875 90)
+		(at 155.21 49 90)
 		(descr "Through hole angled pin header, 1x02, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J12"
@@ -3870,7 +3870,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "6f2b104d-320c-4e61-b01b-02c45d46cfc3")
-		(at 138.46 48.875 90)
+		(at 197.21 49 90)
 		(descr "Through hole angled pin header, 1x02, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J14"
@@ -4557,7 +4557,7 @@
 	(footprint "Leaf_Connectors:JST_ZH_S4B-ZR_1x04_P1.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "71cc8ce5-85b4-41fa-971b-e39dddc260a1")
-		(at 129.81 44.025 180)
+		(at 188.56 44.15 180)
 		(property "Reference" "J8"
 			(at 0 -2.450001 180)
 			(unlocked yes)
@@ -5655,7 +5655,7 @@
 	(footprint "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "7b2d01dd-f7cf-4f42-ac8a-64da763cce12")
-		(at 179.25 48.35 180)
+		(at 115.75 48.35 180)
 		(descr "JST XH series connector, S3B-XH-A (http://www.jst-mfg.com/product/pdf/eng/eXH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST XH horizontal")
 		(property "Reference" "J3"
@@ -6697,7 +6697,7 @@
 	(footprint "Leaf_Connectors:JST_ZH_S4B-ZR_1x04_P1.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "d0eebac1-7d10-4ca8-9ab8-a8552e72eaad")
-		(at 108.31 44.025 180)
+		(at 167.06 44.15 180)
 		(property "Reference" "J7"
 			(at 0 -2.450001 180)
 			(unlocked yes)
@@ -7576,7 +7576,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "e2623020-79da-48a6-80ae-84d447e0baa1")
-		(at 116.96 48.875 90)
+		(at 175.71 49 90)
 		(descr "Through hole angled pin header, 1x02, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J13"
