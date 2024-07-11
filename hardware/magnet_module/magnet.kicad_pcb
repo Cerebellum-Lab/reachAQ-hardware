@@ -310,7 +310,7 @@
 		(descr "Through hole angled pin header, 1x02, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J14"
-			(at 4.385 -2.27 360)
+			(at 4.385 -2.27 0)
 			(layer "F.SilkS")
 			(uuid "03728ae1-ba8d-4847-a45b-ce2c3ad8f13a")
 			(effects
@@ -321,7 +321,7 @@
 			)
 		)
 		(property "Value" "Conn_01x02_Pin"
-			(at 4.385 4.81 360)
+			(at 4.385 4.81 0)
 			(layer "F.Fab")
 			(uuid "cd04ea95-0180-4b8e-a699-3b3bb52890fc")
 			(effects
@@ -1161,7 +1161,7 @@
 		)
 		(fp_arc
 			(start 0.788712 1.483352)
-			(mid 0.406429 1.630097)
+			(mid 0.406429 1.630096)
 			(end 0 1.679999)
 			(stroke
 				(width 0.12)
@@ -2779,7 +2779,7 @@
 	(footprint "MountingHole:MountingHole_3.2mm_M3_Pad"
 		(layer "F.Cu")
 		(uuid "3175b00f-385a-433f-988f-c26b3bea8c57")
-		(at 213.85 152.5)
+		(at 215.5 152.5)
 		(descr "Mounting Hole 3.2mm, M3")
 		(tags "mounting hole 3.2mm m3")
 		(property "Reference" "H1"
@@ -3327,7 +3327,7 @@
 		(descr "Through hole angled pin header, 1x02, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J13"
-			(at 4.385 -2.27 360)
+			(at 4.385 -2.27 0)
 			(layer "F.SilkS")
 			(uuid "08296748-cb58-476a-b3f9-cb67c145d070")
 			(effects
@@ -3338,7 +3338,7 @@
 			)
 		)
 		(property "Value" "Conn_01x02_Pin"
-			(at 4.385 4.81 360)
+			(at 4.385 4.81 0)
 			(layer "F.Fab")
 			(uuid "aa2f7b2a-b134-4496-b35e-03f8084bfb64")
 			(effects
@@ -4014,7 +4014,7 @@
 		(descr "JST SH series connector, SM04B-SRSS-TB (http://www.jst-mfg.com/product/pdf/eng/eSH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST SH horizontal")
 		(property "Reference" "J12"
-			(at 0 -3.98 360)
+			(at 0 -3.98 0)
 			(layer "F.SilkS")
 			(uuid "bd33d59b-95f6-4379-983c-78dd9330bc3c")
 			(effects
@@ -4025,7 +4025,7 @@
 			)
 		)
 		(property "Value" "Conn_01x04_Pin"
-			(at 0 3.98 360)
+			(at 0 3.98 0)
 			(layer "F.Fab")
 			(uuid "62e6077a-8552-42c7-b3fc-1bc6a55bf7a6")
 			(effects
@@ -4253,7 +4253,7 @@
 			(uuid "5ba11ca0-ffbf-42a6-ad78-ae011f26786c")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "e0e7dc43-c55d-4930-aede-2486d2cdc250")
 			(effects
@@ -4571,7 +4571,7 @@
 			(uuid "6686a533-0e19-41be-83cd-41bf8af316c3")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 2.54 360)
+			(at 0 2.54 0)
 			(layer "F.Fab")
 			(uuid "a9329b39-f55f-44fb-ac90-14d76595454e")
 			(effects
@@ -4633,7 +4633,7 @@
 		(descr "JST SH series connector, SM04B-SRSS-TB (http://www.jst-mfg.com/product/pdf/eng/eSH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST SH horizontal")
 		(property "Reference" "J17"
-			(at 0 -3.98 360)
+			(at 0 -3.98 0)
 			(layer "F.SilkS")
 			(uuid "922b4432-1791-4487-9070-922f4b2dc326")
 			(effects
@@ -4644,7 +4644,7 @@
 			)
 		)
 		(property "Value" "Conn_01x04_Pin"
-			(at 0 3.98 360)
+			(at 0 3.98 0)
 			(layer "F.Fab")
 			(uuid "9a651a59-46dd-419d-a0b1-4a74219aa14c")
 			(effects
@@ -4872,7 +4872,7 @@
 			(uuid "b80c62d9-3569-47be-a612-a5c9a0962a73")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "8501f7ea-c7b2-46c3-a467-78639951682d")
 			(effects
@@ -4961,7 +4961,7 @@
 		(descr "JST XH series connector, S3B-XH-A (http://www.jst-mfg.com/product/pdf/eng/eXH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST XH horizontal")
 		(property "Reference" "J21"
-			(at 2.5 -3.5 360)
+			(at 2.5 -3.5 0)
 			(layer "F.SilkS")
 			(uuid "725b8297-61ed-4821-a2c7-ac53519d4b10")
 			(effects
@@ -4972,7 +4972,7 @@
 			)
 		)
 		(property "Value" "Conn_01x03_Pin"
-			(at 2.499999 10.4 360)
+			(at 2.499999 10.4 0)
 			(layer "F.Fab")
 			(uuid "57da7f0f-5e7c-46c8-b885-962a3787d15f")
 			(effects
@@ -5450,7 +5450,7 @@
 			(uuid "1566dc16-aae4-445f-9978-14a6f822a8db")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 2.5 3.449999 360)
+			(at 2.5 3.449999 0)
 			(layer "F.Fab")
 			(uuid "2a39a7ce-1220-4ec1-9602-fa61d4d61f58")
 			(effects
@@ -6050,7 +6050,7 @@
 		(descr "JST SH series connector, SM04B-SRSS-TB (http://www.jst-mfg.com/product/pdf/eng/eSH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST SH horizontal")
 		(property "Reference" "J5"
-			(at 0 -3.98 360)
+			(at 0 -3.98 0)
 			(layer "F.SilkS")
 			(uuid "c63e9f1b-a698-4308-b52c-6333147afbc2")
 			(effects
@@ -6061,7 +6061,7 @@
 			)
 		)
 		(property "Value" "Conn_01x04_Pin"
-			(at 0 3.98 360)
+			(at 0 3.98 0)
 			(layer "F.Fab")
 			(uuid "a4566da6-0d08-417e-a4ba-fca1b374e1d7")
 			(effects
@@ -6289,7 +6289,7 @@
 			(uuid "8c77ebb5-dc52-4e91-bd49-5efe587ba1cd")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "5bb7d9f1-5e1d-4ce7-93b6-7a06d2a87f3f")
 			(effects
@@ -6378,7 +6378,7 @@
 		(descr "JST XH series connector, S3B-XH-A (http://www.jst-mfg.com/product/pdf/eng/eXH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST XH horizontal")
 		(property "Reference" "J4"
-			(at 2.5 -3.5 360)
+			(at 2.5 -3.5 0)
 			(layer "F.SilkS")
 			(uuid "7116edd5-e967-45b1-bfc4-ba428133c7b0")
 			(effects
@@ -6389,7 +6389,7 @@
 			)
 		)
 		(property "Value" "Conn_01x03_Pin"
-			(at 2.499999 10.4 360)
+			(at 2.499999 10.4 0)
 			(layer "F.Fab")
 			(uuid "6e6e8cc1-7995-487f-a6d6-98f46f069d4e")
 			(effects
@@ -6867,7 +6867,7 @@
 			(uuid "7d168a81-0886-45a5-8047-1971b0f85941")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 2.5 3.449999 360)
+			(at 2.5 3.449999 0)
 			(layer "F.Fab")
 			(uuid "72517f11-f925-4d0c-b754-d19422f7c750")
 			(effects
