@@ -5365,7 +5365,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Diode_SMD:D_Powermite3"
+		(property "Footprint" "Leaf_Diode:POWERMITE3_MCH"
 			(at 52.07 29.21 0)
 			(effects
 				(font

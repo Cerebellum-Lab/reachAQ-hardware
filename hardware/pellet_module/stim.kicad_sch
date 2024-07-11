@@ -2979,7 +2979,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 			(at 59.69 101.6 0)
 			(effects
 				(font
@@ -3006,7 +3006,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "61300211121"
+		(property "MPN" "M20-9750242"
 			(at 59.69 101.6 0)
 			(effects
 				(font
@@ -3125,7 +3125,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 			(at 59.69 86.36 0)
 			(effects
 				(font
@@ -3152,7 +3152,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "61300211121"
+		(property "MPN" "M20-9750242"
 			(at 59.69 86.36 0)
 			(effects
 				(font
@@ -3429,7 +3429,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 			(at 59.69 116.84 0)
 			(effects
 				(font
@@ -3456,7 +3456,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "61300211121"
+		(property "MPN" "M20-9750242"
 			(at 59.69 116.84 0)
 			(effects
 				(font
