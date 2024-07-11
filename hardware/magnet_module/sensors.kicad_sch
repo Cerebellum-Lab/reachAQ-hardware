@@ -12,6 +12,183 @@
 		(comment 1 "Prepared by LeafLabs, LLC")
 	)
 	(lib_symbols
+		(symbol "Amplifier_Operational:MCP6001R"
+			(pin_names
+				(offset 0.127)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "MCP6001R"
+				(at 0 -5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://ww1.microchip.com/downloads/en/DeviceDoc/MCP6001-1R-1U-2-4-1-MHz-Low-Power-Op-Amp-DS20001733L.pdf"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "1MHz, Low-Power Op Amp, SOT-23-5"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "single opamp"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "SOT?23*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "MCP6001R_0_1"
+				(polyline
+					(pts
+						(xy -5.08 5.08) (xy 5.08 0) (xy -5.08 -5.08) (xy -5.08 5.08)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "MCP6001R_1_1"
+				(pin output line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -2.54 7.62 270)
+					(length 3.81)
+					(name "V+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -7.62 2.54 0)
+					(length 2.54)
+					(name "+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -7.62 -2.54 0)
+					(length 2.54)
+					(name "-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -2.54 -7.62 90)
+					(length 3.81)
+					(name "V-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Connector:Conn_01x02_Pin"
 			(pin_names
 				(offset 1.016) hide)
@@ -671,258 +848,6 @@
 				)
 			)
 		)
-		(symbol "Leaf_OpAmp:LT1810CS8-PBF"
-			(pin_names
-				(offset 0.254)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "U"
-				(at 0 7.62 0)
-				(effects
-					(font
-						(size 1.524 1.524)
-					)
-				)
-			)
-			(property "Value" "LT1810CS8-PBF"
-				(at 1.27 10.16 0)
-				(effects
-					(font
-						(size 1.524 1.524)
-					)
-				)
-			)
-			(property "Footprint" "Leaf_OpAmp:LT1810CS8-PBF"
-				(at -1.27 -19.05 0)
-				(effects
-					(font
-						(size 1.524 1.524)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 1.27 0)
-				(effects
-					(font
-						(size 1.524 1.524)
-					)
-				)
-			)
-			(property "Description" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_locked" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "SO-8_S_LIT SO-8_S_LIT-M SO-8_S_LIT-L"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "LT1810CS8-PBF_1_1"
-				(polyline
-					(pts
-						(xy -2.54 5.08) (xy -2.54 -5.08) (xy 7.62 0) (xy -2.54 5.08)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin output line
-					(at 10.16 0 180)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 0.9906 0.9906)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 0.9906 0.9906)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -5.08 -2.54 0)
-					(length 2.54)
-					(name "-"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -5.08 2.54 0)
-					(length 2.54)
-					(name "+"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(symbol "LT1810CS8-PBF_2_1"
-				(polyline
-					(pts
-						(xy -2.54 5.08) (xy 7.62 0) (xy -2.54 -5.08) (xy -2.54 5.08)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin input line
-					(at -5.08 2.54 0)
-					(length 2.54)
-					(name "+"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -5.08 -2.54 0)
-					(length 2.54)
-					(name "-"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin output line
-					(at 10.16 0 180)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 0.9906 0.9906)
-							)
-						)
-					)
-					(number "7"
-						(effects
-							(font
-								(size 0.9906 0.9906)
-							)
-						)
-					)
-				)
-			)
-			(symbol "LT1810CS8-PBF_3_1"
-				(rectangle
-					(start -1.27 3.81)
-					(end 1.27 -6.35)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin power_in line
-					(at 0 -8.89 90)
-					(length 2.54)
-					(name "V-"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 6.35 270)
-					(length 2.54)
-					(name "V+"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "8"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-		)
 		(symbol "power:GND"
 			(power)
 			(pin_numbers hide)
@@ -1031,18 +956,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "8f281e3f-ef56-4e72-b691-ca83461acafc")
-	)
-	(no_connect
-		(at 144.78 81.28)
-		(uuid "1a2d0a7b-1b0b-484a-82f5-9598fc828347")
-	)
-	(no_connect
-		(at 160.02 78.74)
-		(uuid "719231d2-5bac-4ece-a5ab-e9a0540ff8f3")
-	)
-	(no_connect
-		(at 144.78 76.2)
-		(uuid "ff4e1555-c77e-43db-b4ff-5cd0851761a9")
 	)
 	(bus_entry
 		(at 80.01 152.4)
@@ -1286,6 +1199,16 @@
 		)
 		(uuid "07cf1f00-3e28-4843-94ad-be4e84932f61")
 	)
+	(text "@ max pressure: Rp = 10kOhm, ADC input = 2.5V\n@ min pressure: Rp = 30kOhm, ADC input = 1.25V"
+		(exclude_from_sim no)
+		(at 141.986 77.47 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "5036afd7-403b-4f1a-bff7-ee322e265762")
+	)
 	(text "Buffer stage"
 		(exclude_from_sim no)
 		(at 89.408 68.834 0)
@@ -1337,8 +1260,8 @@
 		)
 		(uuid "21db982a-a30f-458d-aa2f-68a719b70b00")
 	)
-	(label "3V3"
-		(at 149.86 43.18 90)
+	(label "5V"
+		(at 87.63 45.72 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1346,7 +1269,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "2a881f42-cc7e-416f-b152-d03c1ad18d96")
+		(uuid "2807be23-843d-4705-beea-b9559dddd5f7")
 	)
 	(label "TEMP.SCL"
 		(at 82.55 157.48 0)
@@ -1405,7 +1328,7 @@
 		)
 		(uuid "a68f9680-1ea6-487b-80b9-f0fecaed3763")
 	)
-	(hierarchical_label "3V3"
+	(hierarchical_label "5V"
 		(shape input)
 		(at 60.96 39.37 90)
 		(fields_autoplaced yes)
@@ -1497,6 +1420,83 @@
 		)
 	)
 	(symbol
+		(lib_id "Amplifier_Operational:MCP6001R")
+		(at 90.17 53.34 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "34aad710-5490-48fb-b71a-312f642743cf")
+		(property "Reference" "U10"
+			(at 101.6 47.0214 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "MCP6001R"
+			(at 101.6 49.5614 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5"
+			(at 90.17 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://ww1.microchip.com/downloads/en/DeviceDoc/MCP6001-1R-1U-2-4-1-MHz-Low-Power-Op-Amp-DS20001733L.pdf"
+			(at 90.17 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "1MHz, Low-Power Op Amp, SOT-23-5"
+			(at 90.17 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "5"
+			(uuid "21202833-d7fb-4993-bd08-1d224d39c4a7")
+		)
+		(pin "3"
+			(uuid "d47910b1-093d-435b-aa13-3892289d0e74")
+		)
+		(pin "4"
+			(uuid "e3e29689-ffd0-4773-a8b8-e83c6cb816b8")
+		)
+		(pin "2"
+			(uuid "eb0b5dd3-92ae-40f5-81dd-8962c2b59b91")
+		)
+		(pin "1"
+			(uuid "f2dd9221-b8e2-49f1-acdb-59a5f2634210")
+		)
+		(instances
+			(project ""
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
+					(reference "U10")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 120.65 64.77 0)
 		(unit 1)
@@ -1581,7 +1581,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10nF"
+		(property "Value" "150nF"
 			(at 124.46 62.2299 0)
 			(effects
 				(font
@@ -1796,157 +1796,6 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 149.86 58.42 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "751a0c94-8387-4cdb-be0b-6d2ef2403fe1")
-		(property "Reference" "#PWR053"
-			(at 149.86 64.77 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 149.86 63.5 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 149.86 58.42 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 149.86 58.42 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 149.86 58.42 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "e04bc4da-eeae-47a9-88a6-f14fc81adf98")
-		)
-		(instances
-			(project ""
-				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
-					(reference "#PWR053")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Leaf_OpAmp:LT1810CS8-PBF")
-		(at 149.86 78.74 0)
-		(unit 2)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "9243c3db-5ddf-45df-853b-0f236df5b071")
-		(property "Reference" "U7"
-			(at 152.4 68.58 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-			)
-		)
-		(property "Value" "LT1810CS8-PBF"
-			(at 152.4 71.12 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-			)
-		)
-		(property "Footprint" "Leaf_OpAmp:LT1810CS8-PBF"
-			(at 148.59 97.79 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 149.86 77.47 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 149.86 78.74 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "8"
-			(uuid "78d23f05-37d6-41d0-93c5-d8800c8a87ae")
-		)
-		(pin "4"
-			(uuid "1df99fc9-cb04-4cc9-8c2b-fd9b5f3eb27d")
-		)
-		(pin "1"
-			(uuid "30d26a47-69ca-4ad2-acc3-1e3aa53d4725")
-		)
-		(pin "3"
-			(uuid "6c21ab99-0359-423d-8b04-edeac0a9a17e")
-		)
-		(pin "7"
-			(uuid "8cd10c5e-d95b-4120-a5b4-63fae37729d6")
-		)
-		(pin "2"
-			(uuid "9e6a1ceb-b3ae-4c00-9591-9a823cd27306")
-		)
-		(pin "5"
-			(uuid "601a220c-b35c-4cab-a27b-94c680c96418")
-		)
-		(pin "6"
-			(uuid "ca7bf0ea-0597-471d-b975-2e53bd2d1236")
-		)
-		(instances
-			(project ""
-				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
-					(reference "U7")
-					(unit 2)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
 		(at 60.96 69.85 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -2006,91 +1855,6 @@
 			(project ""
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
 					(reference "#PWR026")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Leaf_OpAmp:LT1810CS8-PBF")
-		(at 87.63 53.34 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "cece474b-7cc0-4dc2-a712-3786f748cbf8")
-		(property "Reference" "U7"
-			(at 90.17 43.18 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-			)
-		)
-		(property "Value" "LT1810CS8-PBF"
-			(at 90.17 45.72 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-			)
-		)
-		(property "Footprint" "Leaf_OpAmp:LT1810CS8-PBF"
-			(at 86.36 72.39 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 87.63 52.07 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 87.63 53.34 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "8"
-			(uuid "78d23f05-37d6-41d0-93c5-d8800c8a87af")
-		)
-		(pin "4"
-			(uuid "1df99fc9-cb04-4cc9-8c2b-fd9b5f3eb27e")
-		)
-		(pin "1"
-			(uuid "30d26a47-69ca-4ad2-acc3-1e3aa53d4726")
-		)
-		(pin "3"
-			(uuid "6c21ab99-0359-423d-8b04-edeac0a9a17f")
-		)
-		(pin "7"
-			(uuid "8cd10c5e-d95b-4120-a5b4-63fae37729d7")
-		)
-		(pin "2"
-			(uuid "9e6a1ceb-b3ae-4c00-9591-9a823cd27307")
-		)
-		(pin "5"
-			(uuid "601a220c-b35c-4cab-a27b-94c680c96419")
-		)
-		(pin "6"
-			(uuid "ca7bf0ea-0597-471d-b975-2e53bd2d1237")
-		)
-		(instances
-			(project ""
-				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
-					(reference "U7")
 					(unit 1)
 				)
 			)
@@ -2165,52 +1929,16 @@
 		)
 	)
 	(symbol
-		(lib_id "Leaf_OpAmp:LT1810CS8-PBF")
-		(at 149.86 49.53 0)
-		(unit 3)
+		(lib_id "power:GND")
+		(at 87.63 60.96 0)
+		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "d4144262-157a-4451-994c-eaea9dad0762")
-		(property "Reference" "U7"
-			(at 152.4 49.5299 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "LT1810CS8-PBF"
-			(at 152.4 52.0699 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Leaf_OpAmp:LT1810CS8-PBF"
-			(at 148.59 68.58 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 149.86 48.26 0)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 149.86 49.53 0)
+		(uuid "decbf404-df80-4cba-8e32-2f4ae6e8368a")
+		(property "Reference" "#PWR052"
+			(at 87.63 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2218,35 +1946,49 @@
 				(hide yes)
 			)
 		)
-		(pin "8"
-			(uuid "78d23f05-37d6-41d0-93c5-d8800c8a87b0")
+		(property "Value" "GND"
+			(at 91.948 62.992 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
 		)
-		(pin "4"
-			(uuid "1df99fc9-cb04-4cc9-8c2b-fd9b5f3eb27f")
+		(property "Footprint" ""
+			(at 87.63 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 87.63 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 87.63 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
 		)
 		(pin "1"
-			(uuid "30d26a47-69ca-4ad2-acc3-1e3aa53d4727")
-		)
-		(pin "3"
-			(uuid "6c21ab99-0359-423d-8b04-edeac0a9a180")
-		)
-		(pin "7"
-			(uuid "8cd10c5e-d95b-4120-a5b4-63fae37729d8")
-		)
-		(pin "2"
-			(uuid "9e6a1ceb-b3ae-4c00-9591-9a823cd27308")
-		)
-		(pin "5"
-			(uuid "601a220c-b35c-4cab-a27b-94c680c9641a")
-		)
-		(pin "6"
-			(uuid "ca7bf0ea-0597-471d-b975-2e53bd2d1238")
+			(uuid "12169f70-33ed-445f-bbf7-d4c46663ab72")
 		)
 		(instances
-			(project ""
+			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
-					(reference "U7")
-					(unit 3)
+					(reference "#PWR052")
+					(unit 1)
 				)
 			)
 		)
@@ -2269,7 +2011,7 @@
 				)
 			)
 		)
-		(property "Value" "15k"
+		(property "Value" "1k"
 			(at 114.3 49.53 90)
 			(effects
 				(font
