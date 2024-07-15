@@ -41,6 +41,7 @@
 	(setup
 		(pad_to_mask_clearance 0)
 		(allow_soldermask_bridges_in_footprints no)
+		(grid_origin 242.2 153.5)
 		(pcbplotparams
 			(layerselection 0x00010fc_ffffffff)
 			(plot_on_all_layers_selection 0x0000000_00000000)
@@ -125,7 +126,7 @@
 	(footprint "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "1a641800-08bc-4e54-8170-7d38c732774d")
-		(at 96.75 48.35 180)
+		(at 139.268 74.3564 180)
 		(descr "JST XH series connector, S3B-XH-A (http://www.jst-mfg.com/product/pdf/eng/eXH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST XH horizontal")
 		(property "Reference" "J10"
@@ -677,7 +678,7 @@
 	(footprint "Leaf_Connectors:CONBNC002"
 		(layer "F.Cu")
 		(uuid "2b5b33ac-6f9b-49ae-bf96-1b0c461810b9")
-		(at 216.325 121.86 -90)
+		(at 227.225 146.1 -90)
 		(property "Reference" "J11"
 			(at 0 -2.794 -90)
 			(unlocked yes)
@@ -864,7 +865,7 @@
 	(footprint "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "2d6e11e7-813b-4b2c-8ff6-d9059530b395")
-		(at 134.75 48.25 180)
+		(at 163.268 74.3564 180)
 		(descr "JST XH series connector, S3B-XH-A (http://www.jst-mfg.com/product/pdf/eng/eXH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST XH horizontal")
 		(property "Reference" "J9"
@@ -1416,7 +1417,7 @@
 	(footprint "Leaf_Connectors:JST_ZH_S4B-ZR_1x04_P1.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "44717186-4e31-409a-9f07-f6e64c36cfe2")
-		(at 147.06 44.15 180)
+		(at 171.603 69.8564 180)
 		(property "Reference" "J2"
 			(at 0 -2.450001 180)
 			(unlocked yes)
@@ -1850,7 +1851,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "485c32a6-0172-4773-8077-a1271e4c68b8")
-		(at 155.21 49 90)
+		(at 178.568 75.2064 90)
 		(descr "Through hole angled pin header, 1x02, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J12"
@@ -2420,7 +2421,7 @@
 	(footprint "Connector_Molex:Molex_Nano-Fit_105314-xx04_2x02_P2.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "49513df2-89f0-4703-b227-f90861d18a64")
-		(at 211.25 52 90)
+		(at 223.6882 77.9556 90)
 		(descr "Molex Nano-Fit Power Connectors, 105314-xx04, 2 Pins per row (http://www.molex.com/pdm_docs/sd/1053141208_sd.pdf), generated with kicad-footprint-generator")
 		(tags "connector Molex Nano-Fit top entry")
 		(property "Reference" "J5"
@@ -2847,7 +2848,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "5d53f150-9669-4cb0-830d-7dd5092fb435")
-		(at 215.920001 60.25 90)
+		(at 228.620001 83.5 90)
 		(descr "Through hole straight pin header, 1x03, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x03 2.54mm single row")
 		(property "Reference" "J4"
@@ -3139,7 +3140,7 @@
 	(footprint "MountingHole:MountingHole_3.2mm_M3_Pad"
 		(layer "F.Cu")
 		(uuid "69911edc-ed5a-4928-813b-f7a755d9b769")
-		(at 77 44)
+		(at 152.2 84)
 		(descr "Mounting Hole 3.2mm, M3")
 		(tags "mounting hole 3.2mm m3")
 		(property "Reference" "H2"
@@ -3256,7 +3257,7 @@
 	(footprint "Connector_Molex:Molex_Nano-Fit_105314-xx04_2x02_P2.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "6b2def10-107c-4329-a8b0-72f48907430c")
-		(at 223 52 90)
+		(at 235.4382 77.9556 90)
 		(descr "Molex Nano-Fit Power Connectors, 105314-xx04, 2 Pins per row (http://www.molex.com/pdm_docs/sd/1053141208_sd.pdf), generated with kicad-footprint-generator")
 		(tags "connector Molex Nano-Fit top entry")
 		(property "Reference" "J6"
@@ -3684,7 +3685,7 @@
 	(footprint "Leaf_Connectors:CONBNC002"
 		(layer "F.Cu")
 		(uuid "6cec597c-085e-42e7-8f10-74546db39787")
-		(at 97.675 139.88 90)
+		(at 142.875 146.1 90)
 		(property "Reference" "J18"
 			(at 0 -2.794 90)
 			(unlocked yes)
@@ -3870,7 +3871,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "6f2b104d-320c-4e61-b01b-02c45d46cfc3")
-		(at 197.21 49 90)
+		(at 213.493 75.2064 90)
 		(descr "Through hole angled pin header, 1x02, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J14"
@@ -4440,7 +4441,7 @@
 	(footprint "MountingHole:MountingHole_3.2mm_M3_Pad"
 		(layer "F.Cu")
 		(uuid "70a5b0e2-f6cf-409a-993b-18f42bc34359")
-		(at 236 44)
+		(at 216.2 84)
 		(descr "Mounting Hole 3.2mm, M3")
 		(tags "mounting hole 3.2mm m3")
 		(property "Reference" "H1"
@@ -4557,7 +4558,7 @@
 	(footprint "Leaf_Connectors:JST_ZH_S4B-ZR_1x04_P1.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "71cc8ce5-85b4-41fa-971b-e39dddc260a1")
-		(at 188.56 44.15 180)
+		(at 206.588 69.8564 180)
 		(property "Reference" "J8"
 			(at 0 -2.450001 180)
 			(unlocked yes)
@@ -4991,7 +4992,7 @@
 	(footprint "MountingHole:MountingHole_3.2mm_M3_Pad"
 		(layer "F.Cu")
 		(uuid "73d89451-2204-4a2a-a7d3-0058fca8d21c")
-		(at 214 145)
+		(at 216.2 148.5)
 		(descr "Mounting Hole 3.2mm, M3")
 		(tags "mounting hole 3.2mm m3")
 		(property "Reference" "H3"
@@ -5108,7 +5109,7 @@
 	(footprint "Leaf_Connectors:CONBNC002"
 		(layer "F.Cu")
 		(uuid "75cb56d8-ee0b-493d-a8f1-a448058621de")
-		(at 97.675 115.88 90)
+		(at 142.875 127.05 90)
 		(property "Reference" "J17"
 			(at 0 -2.794 90)
 			(unlocked yes)
@@ -5294,7 +5295,7 @@
 	(footprint "Connector_BarrelJack:BarrelJack_GCT_DCJ200-10-A_Horizontal"
 		(layer "F.Cu")
 		(uuid "7ada6d0c-6fee-40a0-95a9-e3f2b61ba580")
-		(at 227.65 74.9 90)
+		(at 228.05 93.65 90)
 		(descr "Barrel jack connector (5.5 mm outer diameter, 2.05 inner diameter ), https://gct.co/files/drawings/dcj200-10.pdf")
 		(tags "connector barrel jack")
 		(property "Reference" "J22"
@@ -5655,7 +5656,7 @@
 	(footprint "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "7b2d01dd-f7cf-4f42-ac8a-64da763cce12")
-		(at 115.75 48.35 180)
+		(at 151.168 74.3564 180)
 		(descr "JST XH series connector, S3B-XH-A (http://www.jst-mfg.com/product/pdf/eng/eXH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST XH horizontal")
 		(property "Reference" "J3"
@@ -6208,7 +6209,7 @@
 	(footprint "Leaf_Connectors:CONBNC002"
 		(layer "F.Cu")
 		(uuid "8788a411-5f8a-4ed5-9cd8-6736eee8ade7")
-		(at 216.225 97.86 -90)
+		(at 227.125 127.05 -90)
 		(property "Reference" "J21"
 			(at 0 -2.794 -90)
 			(unlocked yes)
@@ -6394,7 +6395,7 @@
 	(footprint "MountingHole:MountingHole_3.2mm_M3_Pad"
 		(layer "F.Cu")
 		(uuid "8ffd4cff-7eea-4d44-a37a-a6804745fb8f")
-		(at 112.5 145)
+		(at 152.2 148.5)
 		(descr "Mounting Hole 3.2mm, M3")
 		(tags "mounting hole 3.2mm m3")
 		(property "Reference" "H4"
@@ -6511,7 +6512,7 @@
 	(footprint "Leaf_Connectors:CONBNC002"
 		(layer "F.Cu")
 		(uuid "c2b08327-64b5-4b5b-a425-be6add10e7fb")
-		(at 97.675 91.88 90)
+		(at 142.875 108 90)
 		(property "Reference" "J16"
 			(at 0 -2.794 90)
 			(unlocked yes)
@@ -6697,7 +6698,7 @@
 	(footprint "Leaf_Connectors:JST_ZH_S4B-ZR_1x04_P1.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "d0eebac1-7d10-4ca8-9ab8-a8552e72eaad")
-		(at 167.06 44.15 180)
+		(at 189.443 69.8564 180)
 		(property "Reference" "J7"
 			(at 0 -2.450001 180)
 			(unlocked yes)
@@ -7131,7 +7132,7 @@
 	(footprint "Leaf_Connectors:AMPHENOL_12402012E212A"
 		(layer "F.Cu")
 		(uuid "d5bf0acb-ec0f-46d7-ac11-c0e84e97828e")
-		(at 238.98 138.18 90)
+		(at 239.35 108.5 90)
 		(property "Reference" "J20"
 			(at 0 3.599999 90)
 			(layer "F.SilkS")
@@ -7576,7 +7577,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "e2623020-79da-48a6-80ae-84d447e0baa1")
-		(at 175.71 49 90)
+		(at 196.348 75.2064 90)
 		(descr "Through hole angled pin header, 1x02, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J13"
@@ -8146,7 +8147,7 @@
 	(footprint "Leaf_Connectors:CONBNC002"
 		(layer "F.Cu")
 		(uuid "f3c1961e-4f60-429c-9dd1-cab295b3997a")
-		(at 97.675 67.8 90)
+		(at 142.875 88.95 90)
 		(property "Reference" "J15"
 			(at 0 -2.794 90)
 			(unlocked yes)
@@ -8330,7 +8331,7 @@
 		)
 	)
 	(gr_rect
-		(start 72.2 38.5)
+		(start 127.9 64.6)
 		(end 242.2 153.5)
 		(stroke
 			(width 0.05)
@@ -8341,8 +8342,8 @@
 		(uuid "083b60f5-8fec-4451-832b-266465cd4f96")
 	)
 	(gr_rect
-		(start 207.25 17.5)
-		(end 217.75 47.5)
+		(start 219.6882 43.4556)
+		(end 230.1882 73.4556)
 		(stroke
 			(width 0.05)
 			(type default)
@@ -8352,8 +8353,8 @@
 		(uuid "556f916c-a84f-4952-85de-637a628b7be4")
 	)
 	(gr_rect
-		(start 219 17.5)
-		(end 229.5 47.5)
+		(start 231.4382 43.4556)
+		(end 241.9382 73.4556)
 		(stroke
 			(width 0.05)
 			(type default)
@@ -8372,6 +8373,153 @@
 				(thickness 0.1)
 			)
 			(justify left bottom)
+		)
+	)
+	(dimension
+		(type aligned)
+		(layer "Cmts.User")
+		(uuid "12f5dc77-44c3-4291-8164-daa973b29f3c")
+		(pts
+			(xy 239.5 146.1) (xy 239.5 127.05)
+		)
+		(height 27.7)
+		(gr_text "0.7500 in"
+			(at 266.05 136.575 90)
+			(layer "Cmts.User")
+			(uuid "12f5dc77-44c3-4291-8164-daa973b29f3c")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(format
+			(prefix "")
+			(suffix "")
+			(units 3)
+			(units_format 1)
+			(precision 4)
+		)
+		(style
+			(thickness 0.1)
+			(arrow_length 1.27)
+			(text_position_mode 0)
+			(extension_height 0.58642)
+			(extension_offset 0.5) keep_text_aligned)
+	)
+	(dimension
+		(type aligned)
+		(layer "Cmts.User")
+		(uuid "5c19f23e-26cd-443b-af67-b7a6f5c18c15")
+		(pts
+			(xy 130.6 146.1) (xy 130.6 127.05)
+		)
+		(height -30.64)
+		(gr_text "0.7500 in"
+			(at 98.81 136.575 90)
+			(layer "Cmts.User")
+			(uuid "5c19f23e-26cd-443b-af67-b7a6f5c18c15")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(format
+			(prefix "")
+			(suffix "")
+			(units 3)
+			(units_format 1)
+			(precision 4)
+		)
+		(style
+			(thickness 0.1)
+			(arrow_length 1.27)
+			(text_position_mode 0)
+			(extension_height 0.58642)
+			(extension_offset 0.5) keep_text_aligned)
+	)
+	(dimension
+		(type aligned)
+		(layer "Cmts.User")
+		(uuid "91e311ff-0ed7-4ee9-8fc8-c3becc262c9f")
+		(pts
+			(xy 127.9 64.6) (xy 242.2 64.6)
+		)
+		(height -6.8)
+		(gr_text "4.5000 in"
+			(at 185.05 56.65 0)
+			(layer "Cmts.User")
+			(uuid "91e311ff-0ed7-4ee9-8fc8-c3becc262c9f")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(format
+			(prefix "")
+			(suffix "")
+			(units 3)
+			(units_format 1)
+			(precision 4)
+		)
+		(style
+			(thickness 0.1)
+			(arrow_length 1.27)
+			(text_position_mode 0)
+			(extension_height 0.58642)
+			(extension_offset 0.5) keep_text_aligned)
+	)
+	(dimension
+		(type aligned)
+		(layer "Cmts.User")
+		(uuid "ed71d042-4de1-4f92-9d85-9aba236d7c28")
+		(pts
+			(xy 242.2 153.5) (xy 242.2 64.6)
+		)
+		(height 28)
+		(gr_text "3.5000 in"
+			(at 269.05 109.05 90)
+			(layer "Cmts.User")
+			(uuid "ed71d042-4de1-4f92-9d85-9aba236d7c28")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(format
+			(prefix "")
+			(suffix "")
+			(units 3)
+			(units_format 1)
+			(precision 4)
+		)
+		(style
+			(thickness 0.1)
+			(arrow_length 1.27)
+			(text_position_mode 0)
+			(extension_height 0.58642)
+			(extension_offset 0.5) keep_text_aligned)
+	)
+	(group ""
+		(uuid "0fafc5bd-d3cf-4b09-8822-449397cc0b12")
+		(members "49513df2-89f0-4703-b227-f90861d18a64" "556f916c-a84f-4952-85de-637a628b7be4"
+			"65e59366-091d-4992-af76-f8dc2033777c" "6b2def10-107c-4329-a8b0-72f48907430c"
+		)
+	)
+	(group ""
+		(uuid "a8331f76-6815-4046-b577-64ba53e30210")
+		(members "0fafc5bd-d3cf-4b09-8822-449397cc0b12" "1a641800-08bc-4e54-8170-7d38c732774d"
+			"2d6e11e7-813b-4b2c-8ff6-d9059530b395" "44717186-4e31-409a-9f07-f6e64c36cfe2"
+			"485c32a6-0172-4773-8077-a1271e4c68b8" "6f2b104d-320c-4e61-b01b-02c45d46cfc3"
+			"71cc8ce5-85b4-41fa-971b-e39dddc260a1" "7b2d01dd-f7cf-4f42-ac8a-64da763cce12"
+			"d0eebac1-7d10-4ca8-9ab8-a8552e72eaad" "e2623020-79da-48a6-80ae-84d447e0baa1"
 		)
 	)
 )
