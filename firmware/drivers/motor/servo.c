@@ -24,6 +24,18 @@ int ll_servo_register_callback(const struct device *dev, ll_servo_cb_t *cb) {
     return ll_motor_register_callback(dev, cb);
 }
 
+int ll_servo_enable(const struct device *dev, bool enable) {
+    const ll_motor_cfg_t *cfg = dev->config;
+
+    if (enable) {
+        LL_TIM_EnableCounter(cfg->timer);
+    } else {
+        LL_TIM_DisableCounter(cfg->timer);
+    }
+
+    return 0;
+}
+
 static int ll_servo_init(const struct device *dev) {
     const ll_motor_cfg_t *cfg = dev->config;
     ll_motor_data_t *data = dev->data;

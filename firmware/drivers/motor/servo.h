@@ -11,3 +11,4 @@ typedef ll_motor_cb_t ll_servo_cb_t;
 
 int ll_queue_servo_positions(const struct device *dev, uint32_t *positions, size_t len, k_timeout_t timeout);
 int ll_servo_register_callback(const struct device *dev, ll_servo_cb_t *cb);
+int ll_servo_enable(const struct device *dev, bool enable);
