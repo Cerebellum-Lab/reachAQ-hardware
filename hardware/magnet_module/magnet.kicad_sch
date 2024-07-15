@@ -309,26 +309,6 @@
 		)
 		(uuid "3d0a1da9-2b8e-43b7-971a-b8e56c26ef51")
 	)
-	(bus
-		(pts
-			(xy 168.91 113.03) (xy 220.98 113.03)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "928e4202-5aa2-48e2-84ad-f0103ad59291")
-	)
-	(bus
-		(pts
-			(xy 168.91 120.65) (xy 220.98 120.65)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "939e6a26-d101-41db-a0d4-e50971dfadb6")
-	)
 	(wire
 		(pts
 			(xy 168.91 125.73) (xy 220.98 125.73)
@@ -361,13 +341,13 @@
 	)
 	(bus
 		(pts
-			(xy 168.91 118.11) (xy 220.98 118.11)
+			(xy 168.91 120.65) (xy 220.98 120.65)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "b7e86377-397d-47c8-bbb5-5f75364606fa")
+		(uuid "affe4013-a910-4723-901a-b8ca8b21d46e")
 	)
 	(wire
 		(pts
@@ -549,6 +529,17 @@
 			(justify right bottom)
 		)
 		(uuid "b74ea3fe-1013-425d-91cd-64aa1e5e0542")
+	)
+	(label "5V"
+		(at 71.12 104.14 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "db60104b-54a2-4972-afc7-610957fc9aa2")
 	)
 	(label "3V3"
 		(at 247.65 118.11 0)
@@ -1341,27 +1332,7 @@
 			)
 			(uuid "8be11804-0fe0-40cc-b747-5d71fb952933")
 		)
-		(pin "BUTTON[0..1]" input
-			(at 168.91 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "775a31e6-2b66-4021-86f0-7016f7d45789")
-		)
 		(pin "SPARE0{I2C}" bidirectional
-			(at 168.91 118.11 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "fc49ba61-248f-40a8-a343-7577e0ae745a")
-		)
-		(pin "SPARE1{I2C}" bidirectional
 			(at 168.91 120.65 0)
 			(effects
 				(font
@@ -1369,7 +1340,7 @@
 				)
 				(justify right)
 			)
-			(uuid "a2a14290-d80e-4256-b703-e9b012915917")
+			(uuid "fc49ba61-248f-40a8-a343-7577e0ae745a")
 		)
 		(pin "GPIO0" bidirectional
 			(at 168.91 123.19 0)
@@ -1672,6 +1643,16 @@
 			)
 			(uuid "73be3d3a-ecdc-4680-8fa8-756f2fc38ea4")
 		)
+		(pin "5V" input
+			(at 71.12 104.14 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "f1c8437f-6751-44c7-bb42-023adcb1a50e")
+		)
 		(instances
 			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095"
@@ -1710,16 +1691,6 @@
 				(justify left top)
 			)
 		)
-		(pin "BUTTON[0..1]" output
-			(at 220.98 113.03 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "8054b4ab-936b-4017-825a-71cfdd31f1e9")
-		)
 		(pin "3V3" input
 			(at 247.65 118.11 0)
 			(effects
@@ -1729,16 +1700,6 @@
 				(justify right)
 			)
 			(uuid "5ce6a356-6ba6-4802-b82e-7bd1b3eca4dc")
-		)
-		(pin "SPARE1{I2C}" bidirectional
-			(at 220.98 118.11 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "8d9fdeb4-32ad-4963-a5ee-7955dd95d504")
 		)
 		(pin "SPARE0{I2C}" bidirectional
 			(at 220.98 120.65 180)

@@ -4044,12 +4044,20 @@
 		(uuid "bcd5323d-d557-460d-b4bd-d78b583ee3a3")
 	)
 	(no_connect
+		(at 171.45 63.5)
+		(uuid "cf073f17-2eba-4e39-ba2b-d059a96e5e31")
+	)
+	(no_connect
 		(at 58.42 72.39)
 		(uuid "d1cd01e0-bc4f-46c0-aa14-a38f3f5c8ba4")
 	)
 	(no_connect
 		(at 171.45 68.58)
 		(uuid "d35452d4-6ab6-4c7f-ac13-55e66af5b744")
+	)
+	(no_connect
+		(at 171.45 91.44)
+		(uuid "d3a9ec66-6ec1-4892-afec-a209bf33619b")
 	)
 	(no_connect
 		(at 171.45 114.3)
@@ -4060,12 +4068,20 @@
 		(uuid "d9b54314-8cdb-4526-b1ce-aeef7c8625ee")
 	)
 	(no_connect
+		(at 171.45 88.9)
+		(uuid "e08018e9-342b-40f3-9966-b6b41b4d37bb")
+	)
+	(no_connect
 		(at 171.45 93.98)
 		(uuid "ec0ad198-b605-45e7-b32b-44fbb7feca60")
 	)
 	(no_connect
 		(at 135.89 93.98)
 		(uuid "ed8b5459-2b83-472a-ae48-3b0f4fb7dff0")
+	)
+	(no_connect
+		(at 171.45 66.04)
+		(uuid "f17df9d6-3889-4a5b-95c4-94b99387fc4e")
 	)
 	(no_connect
 		(at 171.45 55.88)
@@ -4083,24 +4099,6 @@
 			(type default)
 		)
 		(uuid "0c027041-66ac-4698-8f79-3e357f82893b")
-	)
-	(bus_entry
-		(at 195.58 66.04)
-		(size -2.54 -2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "24f8011b-ea5e-47b4-ac29-0ff0718ad02d")
-	)
-	(bus_entry
-		(at 195.58 68.58)
-		(size -2.54 -2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2c5eb6a2-6e17-4f07-9d49-651829040935")
 	)
 	(bus_entry
 		(at 194.31 83.82)
@@ -4157,15 +4155,6 @@
 		(uuid "83ac291b-783c-4963-a32d-6a77981f9aed")
 	)
 	(bus_entry
-		(at 200.66 93.98)
-		(size -2.54 -2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a653397b-ddfd-41d3-9834-ecb5e7dd1c2c")
-	)
-	(bus_entry
 		(at 109.22 86.36)
 		(size 2.54 2.54)
 		(stroke
@@ -4200,15 +4189,6 @@
 			(type default)
 		)
 		(uuid "d34f5bfb-2463-4305-b01c-ff14e0782d82")
-	)
-	(bus_entry
-		(at 200.66 91.44)
-		(size -2.54 -2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f4b42cb4-092f-4002-8bd7-0b0ada936b0d")
 	)
 	(wire
 		(pts
@@ -4310,16 +4290,6 @@
 		)
 		(uuid "171474d0-6914-47db-b6ce-4df8419730a3")
 	)
-	(bus
-		(pts
-			(xy 200.66 91.44) (xy 200.66 93.98)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "18f1cb20-0ab0-432f-bf98-aab9431d7cb5")
-	)
 	(wire
 		(pts
 			(xy 151.13 35.56) (xy 151.13 36.83)
@@ -4369,26 +4339,6 @@
 			(type default)
 		)
 		(uuid "204d4c92-9c29-4767-ae90-8476baed7374")
-	)
-	(wire
-		(pts
-			(xy 193.04 63.5) (xy 171.45 63.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "214a41ca-7cb2-4543-9f43-1ec28606ba63")
-	)
-	(wire
-		(pts
-			(xy 171.45 91.44) (xy 198.12 91.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "22197497-8ee7-48cc-8c5d-60786399afc7")
 	)
 	(wire
 		(pts
@@ -4489,16 +4439,6 @@
 			(type default)
 		)
 		(uuid "40294bc6-33a7-40cf-92ef-c8588d8b8903")
-	)
-	(wire
-		(pts
-			(xy 193.04 66.04) (xy 171.45 66.04)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4ed00fd9-4008-4e4c-9bcc-15367507ebd7")
 	)
 	(wire
 		(pts
@@ -4670,16 +4610,6 @@
 		)
 		(uuid "7a01c1dc-d0b9-44f9-bf92-bf1698d0fabb")
 	)
-	(bus
-		(pts
-			(xy 200.66 90.17) (xy 200.66 91.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7b7ce1aa-f625-44df-92c5-47fe0eaacf0a")
-	)
 	(wire
 		(pts
 			(xy 156.21 133.35) (xy 153.67 133.35)
@@ -4789,16 +4719,6 @@
 			(type default)
 		)
 		(uuid "98fa3dc7-e494-4308-91c0-582da50ce25e")
-	)
-	(wire
-		(pts
-			(xy 171.45 88.9) (xy 198.12 88.9)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a3f90097-2b20-4c4c-9958-6e4fa46182e2")
 	)
 	(wire
 		(pts
@@ -4969,16 +4889,6 @@
 			(type default)
 		)
 		(uuid "e2562448-f96c-452b-b4ff-f4a048979803")
-	)
-	(bus
-		(pts
-			(xy 195.58 66.04) (xy 195.58 68.58)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e4441efd-aae2-40d9-82c8-19fd401aba36")
 	)
 	(wire
 		(pts
@@ -5172,16 +5082,6 @@
 		)
 		(uuid "16532ec7-3689-40cc-b924-d42a4e875752")
 	)
-	(text "I2C2_SDA"
-		(exclude_from_sim no)
-		(at 189.23 62.23 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "1810a449-e426-4dc0-bd6e-4b656e1e1185")
-	)
 	(text "External clock"
 		(exclude_from_sim no)
 		(at 20.32 161.29 0)
@@ -5372,16 +5272,6 @@
 			)
 		)
 		(uuid "7cc05ecf-7307-4a2e-8573-b6bb9715e063")
-	)
-	(text "I2C2_SCL"
-		(exclude_from_sim no)
-		(at 189.23 64.77 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "8468f0e1-9382-4d50-9071-33dbd5e40dca")
 	)
 	(text "Module Address"
 		(exclude_from_sim no)
@@ -5749,17 +5639,6 @@
 		)
 		(uuid "57c6c806-3691-49a1-afa0-5edd0d0c9a12")
 	)
-	(label "SPARE1.SCL"
-		(at 171.45 66.04 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "615f5774-85ba-45f0-aff1-0ce64fbb9263")
-	)
 	(label "CANID1"
 		(at 135.89 73.66 180)
 		(fields_autoplaced yes)
@@ -5891,17 +5770,6 @@
 			(justify left bottom)
 		)
 		(uuid "873853dd-b8ec-4253-866d-06da19846634")
-	)
-	(label "BUTTON1"
-		(at 187.96 91.44 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "892d7d5d-94da-419b-8e3c-10c21e9d638c")
 	)
 	(label "CELL.SCL"
 		(at 127 81.28 0)
@@ -6123,17 +5991,6 @@
 		)
 		(uuid "e40a1059-0ed2-4ea2-83d0-23c804d63fd1")
 	)
-	(label "BUTTON0"
-		(at 187.96 88.9 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e7e872f3-0004-4904-bb48-377eaa60e3d0")
-	)
 	(label "~{MCU_RST}"
 		(at 135.89 48.26 180)
 		(fields_autoplaced yes)
@@ -6144,17 +6001,6 @@
 			(justify right bottom)
 		)
 		(uuid "e99d94b8-cdcc-436d-9947-067accf16829")
-	)
-	(label "SPARE1.SDA"
-		(at 171.45 63.5 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "ede1f0b0-e743-46aa-9c5d-4440e4fc13f6")
 	)
 	(label "FLASH_CLK"
 		(at 245.11 139.7 180)
@@ -6248,18 +6094,6 @@
 		)
 		(uuid "11e13d27-023f-452c-9580-42f5cb8da5b1")
 	)
-	(hierarchical_label "BUTTON[0..1]"
-		(shape input)
-		(at 200.66 90.17 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "412b0863-971a-4dbd-8b1e-f2180d7af0e4")
-	)
 	(hierarchical_label "GPIO1"
 		(shape bidirectional)
 		(at 135.89 104.14 180)
@@ -6307,18 +6141,6 @@
 			(justify left)
 		)
 		(uuid "88cbf093-d9f6-44ca-b6e2-83454dd9d923")
-	)
-	(hierarchical_label "SPARE1{I2C}"
-		(shape bidirectional)
-		(at 195.58 68.58 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "9f47d373-5010-417c-a739-eb19610c23d7")
 	)
 	(hierarchical_label "SPARE0{I2C}"
 		(shape bidirectional)
