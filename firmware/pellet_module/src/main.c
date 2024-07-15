@@ -28,8 +28,9 @@ static void on_input_func(struct input_event *evt) {
 
 INPUT_CALLBACK_DEFINE(NULL, on_input_func);
 
-static uint32_t triangle_wave[101];
-static uint32_t zero_wave[10] = {0};
+static uint32_t saw_start[50];
+static uint32_t saw_ramp[90];
+static uint32_t saw_end[50];
 
 static uint32_t fast_steps[4096];
 static uint32_t step_range[8192];
@@ -51,11 +52,21 @@ int main() {
 
     placeholder_function();
 
-    // Create a triangle wave from 5% to 10% duty cycle
-    for (int i = 0; i < ARRAY_SIZE(triangle_wave); i++) {
-        triangle_wave[i] = (i * (2000 / (ARRAY_SIZE(triangle_wave) - 1))) + 2000;
+    // Create a saw tooth wave for 0 to 180 degrees on the servo with a hold at the start and end
+    for (int i = 0; i < ARRAY_SIZE(saw_start); i++) {
+        saw_start[i] = 1000;
     }
-    sys_cache_data_flush_range(triangle_wave, sizeof(triangle_wave));
+    sys_cache_data_flush_range(saw_start, sizeof(saw_start));
+
+    for (int i = 0; i < ARRAY_SIZE(saw_ramp); i++) {
+        saw_ramp[i] = (i * (4000 / (ARRAY_SIZE(saw_ramp) - 1))) + 1000;
+    }
+    sys_cache_data_flush_range(saw_ramp, sizeof(saw_ramp));
+
+    for (int i = 0; i < ARRAY_SIZE(saw_end); i++) {
+        saw_end[i] = 5000;
+    }
+    sys_cache_data_flush_range(saw_end, sizeof(saw_end));
 
     // Create a pattern of fast steps
     for (int i = 0; i < ARRAY_SIZE(fast_steps); i++) {
@@ -98,8 +109,9 @@ void servo_thread_entry(void *p1, void *p2, void *p3) {
         LOG_INF("Queueing servo positions");
 
         for (int i = 0; i < ARRAY_SIZE(servo_devs); i++) {
-            ret = ll_queue_servo_positions(servo_devs[i], triangle_wave, sizeof(triangle_wave), K_FOREVER);
-            ret |= ll_queue_servo_positions(servo_devs[i], zero_wave, sizeof(zero_wave), K_FOREVER);
+            ret = ll_queue_servo_positions(servo_devs[i], saw_start, sizeof(saw_start), K_FOREVER);
+            ret |= ll_queue_servo_positions(servo_devs[i], saw_ramp, sizeof(saw_ramp), K_FOREVER);
+            ret |= ll_queue_servo_positions(servo_devs[i], saw_end, sizeof(saw_end), K_FOREVER);
             if (ret < 0) {
                 LOG_ERR("Failed to start servo DMA: %d", ret);
                 break;
@@ -133,7 +145,7 @@ void stepper_thread_entry(void *p1, void *p2, void *p3) {
         int ret;
         LOG_INF("Queueing stepper positions");
         for (int i = 0; i < ARRAY_SIZE(stepper_devs); i++) {
-            // ret = ll_queue_stepper_positions(stepper_devs[i], triangle_wave, sizeof(triangle_wave), K_FOREVER);
+            // ret = ll_queue_stepper_positions(stepper_devs[i], saw_ramp, sizeof(saw_ramp), K_FOREVER);
             // ret = ll_queue_stepper_positions(stepper_devs[i], fast_steps, sizeof(fast_steps), K_FOREVER);
             ret = ll_queue_stepper_positions(stepper_devs[i], step_range, sizeof(step_range), K_FOREVER);
             if (ret < 0) {
