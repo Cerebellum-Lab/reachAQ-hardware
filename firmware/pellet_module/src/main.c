@@ -12,13 +12,13 @@
 
 LOG_MODULE_REGISTER(app);
 
-const struct device *gpio_dev = DEVICE_DT_GET_ANY(ll_generic_gpios);
+static const struct device *gpio_dev = DEVICE_DT_GET_ANY(ll_generic_gpios);
 
 #define DEV_GET_COMMA(id) DEVICE_DT_GET(id),
 
-const struct device *stepper_devs[] = {DT_FOREACH_STATUS_OKAY(ll_stepper, DEV_GET_COMMA)};
+static const struct device *stepper_devs[] = {DT_FOREACH_STATUS_OKAY(ll_stepper, DEV_GET_COMMA)};
 
-const struct device *servo_devs[] = {DT_FOREACH_STATUS_OKAY(ll_servo, DEV_GET_COMMA)};
+static const struct device *servo_devs[] = {DT_FOREACH_STATUS_OKAY(ll_servo, DEV_GET_COMMA)};
 
 K_SEM_DEFINE(thread_startup_sem, 0, 1);
 

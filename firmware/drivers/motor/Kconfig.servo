@@ -6,3 +6,10 @@ menuconfig LL_SERVO
         select DMA
         help
             Enable support for the servo driver
+
+config LL_SERVO_SHELL
+        bool "Enable shell commands for servo driver"
+        default y
+        depends on LL_SERVO
+        help
+            Enable shell commands for the servo driver
