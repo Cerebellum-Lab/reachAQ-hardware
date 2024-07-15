@@ -41,7 +41,7 @@
 	(setup
 		(pad_to_mask_clearance 0)
 		(allow_soldermask_bridges_in_footprints no)
-		(grid_origin 242.2 153.5)
+		(grid_origin 242.2 64.6)
 		(pcbplotparams
 			(layerselection 0x00010fc_ffffffff)
 			(plot_on_all_layers_selection 0x0000000_00000000)
@@ -126,7 +126,7 @@
 	(footprint "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "1a641800-08bc-4e54-8170-7d38c732774d")
-		(at 139.268 74.3564 180)
+		(at 138.02 73.892 180)
 		(descr "JST XH series connector, S3B-XH-A (http://www.jst-mfg.com/product/pdf/eng/eXH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST XH horizontal")
 		(property "Reference" "J10"
@@ -865,7 +865,7 @@
 	(footprint "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "2d6e11e7-813b-4b2c-8ff6-d9059530b395")
-		(at 163.268 74.3564 180)
+		(at 163.42 73.892 180)
 		(descr "JST XH series connector, S3B-XH-A (http://www.jst-mfg.com/product/pdf/eng/eXH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST XH horizontal")
 		(property "Reference" "J9"
@@ -1417,7 +1417,7 @@
 	(footprint "Leaf_Connectors:JST_ZH_S4B-ZR_1x04_P1.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "44717186-4e31-409a-9f07-f6e64c36cfe2")
-		(at 171.603 69.8564 180)
+		(at 171.08 69.4006 180)
 		(property "Reference" "J2"
 			(at 0 -2.450001 180)
 			(unlocked yes)
@@ -1851,7 +1851,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "485c32a6-0172-4773-8077-a1271e4c68b8")
-		(at 178.568 75.2064 90)
+		(at 178.695 74.817 90)
 		(descr "Through hole angled pin header, 1x02, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J12"
@@ -2421,7 +2421,7 @@
 	(footprint "Connector_Molex:Molex_Nano-Fit_105314-xx04_2x02_P2.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "49513df2-89f0-4703-b227-f90861d18a64")
-		(at 223.6882 77.9556 90)
+		(at 223.6882 77.515 90)
 		(descr "Molex Nano-Fit Power Connectors, 105314-xx04, 2 Pins per row (http://www.molex.com/pdm_docs/sd/1053141208_sd.pdf), generated with kicad-footprint-generator")
 		(tags "connector Molex Nano-Fit top entry")
 		(property "Reference" "J5"
@@ -2835,7 +2835,7 @@
 		)
 		(model "${LEAF_MODELS}/Molex_Nano-Fit_105314-xx04_2x02.stp"
 			(offset
-				(xyz 8.5 -1.25 3.5)
+				(xyz 8.5000084 -1.2500102 3.499993)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -3257,7 +3257,7 @@
 	(footprint "Connector_Molex:Molex_Nano-Fit_105314-xx04_2x02_P2.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "6b2def10-107c-4329-a8b0-72f48907430c")
-		(at 235.4382 77.9556 90)
+		(at 235.4382 77.515 90)
 		(descr "Molex Nano-Fit Power Connectors, 105314-xx04, 2 Pins per row (http://www.molex.com/pdm_docs/sd/1053141208_sd.pdf), generated with kicad-footprint-generator")
 		(tags "connector Molex Nano-Fit top entry")
 		(property "Reference" "J6"
@@ -3672,7 +3672,7 @@
 		)
 		(model "${LEAF_MODELS}/Molex_Nano-Fit_105314-xx04_2x02.stp"
 			(offset
-				(xyz 9 -1.25 3.5)
+				(xyz 8.5000084 -1.2500102 3.499993)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -3871,7 +3871,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "6f2b104d-320c-4e61-b01b-02c45d46cfc3")
-		(at 213.493 75.2064 90)
+		(at 214.255 74.817 90)
 		(descr "Through hole angled pin header, 1x02, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J14"
@@ -4558,7 +4558,7 @@
 	(footprint "Leaf_Connectors:JST_ZH_S4B-ZR_1x04_P1.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "71cc8ce5-85b4-41fa-971b-e39dddc260a1")
-		(at 206.588 69.8564 180)
+		(at 206.64 69.577 180)
 		(property "Reference" "J8"
 			(at 0 -2.450001 180)
 			(unlocked yes)
@@ -5295,7 +5295,7 @@
 	(footprint "Connector_BarrelJack:BarrelJack_GCT_DCJ200-10-A_Horizontal"
 		(layer "F.Cu")
 		(uuid "7ada6d0c-6fee-40a0-95a9-e3f2b61ba580")
-		(at 228.05 93.65 90)
+		(at 228.28 93.65 90)
 		(descr "Barrel jack connector (5.5 mm outer diameter, 2.05 inner diameter ), https://gct.co/files/drawings/dcj200-10.pdf")
 		(tags "connector barrel jack")
 		(property "Reference" "J22"
@@ -5656,7 +5656,7 @@
 	(footprint "Connector_JST:JST_XH_S3B-XH-A_1x03_P2.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "7b2d01dd-f7cf-4f42-ac8a-64da763cce12")
-		(at 151.168 74.3564 180)
+		(at 150.72 73.892 180)
 		(descr "JST XH series connector, S3B-XH-A (http://www.jst-mfg.com/product/pdf/eng/eXH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST XH horizontal")
 		(property "Reference" "J3"
@@ -6698,7 +6698,7 @@
 	(footprint "Leaf_Connectors:JST_ZH_S4B-ZR_1x04_P1.50mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "d0eebac1-7d10-4ca8-9ab8-a8552e72eaad")
-		(at 189.443 69.8564 180)
+		(at 188.86 69.4006 180)
 		(property "Reference" "J7"
 			(at 0 -2.450001 180)
 			(unlocked yes)
@@ -7132,7 +7132,7 @@
 	(footprint "Leaf_Connectors:AMPHENOL_12402012E212A"
 		(layer "F.Cu")
 		(uuid "d5bf0acb-ec0f-46d7-ac11-c0e84e97828e")
-		(at 239.35 108.5 90)
+		(at 239.406 108.5 90)
 		(property "Reference" "J20"
 			(at 0 3.599999 90)
 			(layer "F.SilkS")
@@ -7577,7 +7577,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "e2623020-79da-48a6-80ae-84d447e0baa1")
-		(at 196.348 75.2064 90)
+		(at 196.348 74.817 90)
 		(descr "Through hole angled pin header, 1x02, 2.54mm pitch, 6mm pin length, single row")
 		(tags "Through hole angled pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J13"
@@ -8342,8 +8342,8 @@
 		(uuid "083b60f5-8fec-4451-832b-266465cd4f96")
 	)
 	(gr_rect
-		(start 219.6882 43.4556)
-		(end 230.1882 73.4556)
+		(start 219.6882 43.227)
+		(end 230.1882 73.227)
 		(stroke
 			(width 0.05)
 			(type default)
@@ -8353,8 +8353,8 @@
 		(uuid "556f916c-a84f-4952-85de-637a628b7be4")
 	)
 	(gr_rect
-		(start 231.4382 43.4556)
-		(end 241.9382 73.4556)
+		(start 231.4382 43.227)
+		(end 241.9382 73.227)
 		(stroke
 			(width 0.05)
 			(type default)
@@ -8383,7 +8383,7 @@
 			(xy 239.5 146.1) (xy 239.5 127.05)
 		)
 		(height 27.7)
-		(gr_text "0.7500 in"
+		(gr_text "19.0500 mm"
 			(at 266.05 136.575 90)
 			(layer "Cmts.User")
 			(uuid "12f5dc77-44c3-4291-8164-daa973b29f3c")
@@ -8416,7 +8416,7 @@
 			(xy 130.6 146.1) (xy 130.6 127.05)
 		)
 		(height -30.64)
-		(gr_text "0.7500 in"
+		(gr_text "19.0500 mm"
 			(at 98.81 136.575 90)
 			(layer "Cmts.User")
 			(uuid "5c19f23e-26cd-443b-af67-b7a6f5c18c15")
@@ -8449,7 +8449,7 @@
 			(xy 127.9 64.6) (xy 242.2 64.6)
 		)
 		(height -6.8)
-		(gr_text "4.5000 in"
+		(gr_text "114.3000 mm"
 			(at 185.05 56.65 0)
 			(layer "Cmts.User")
 			(uuid "91e311ff-0ed7-4ee9-8fc8-c3becc262c9f")
@@ -8482,7 +8482,7 @@
 			(xy 242.2 153.5) (xy 242.2 64.6)
 		)
 		(height 28)
-		(gr_text "3.5000 in"
+		(gr_text "88.9000 mm"
 			(at 269.05 109.05 90)
 			(layer "Cmts.User")
 			(uuid "ed71d042-4de1-4f92-9d85-9aba236d7c28")
