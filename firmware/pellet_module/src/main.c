@@ -9,6 +9,7 @@
 #include "placeholder.h"
 #include "servo.h"
 #include "stepper.h"
+#include "tone_generator.h"
 
 LOG_MODULE_REGISTER(app);
 
@@ -19,6 +20,8 @@ static const struct device *gpio_dev = DEVICE_DT_GET_ANY(ll_generic_gpios);
 static const struct device *stepper_devs[] = {DT_FOREACH_STATUS_OKAY(ll_stepper, DEV_GET_COMMA)};
 
 static const struct device *servo_devs[] = {DT_FOREACH_STATUS_OKAY(ll_servo, DEV_GET_COMMA)};
+
+const struct device *tone_generator = DEVICE_DT_GET_ANY(ll_tone_generator);
 
 K_SEM_DEFINE(thread_startup_sem, 0, 1);
 
@@ -156,10 +159,33 @@ void stepper_thread_entry(void *p1, void *p2, void *p3) {
     }
 }
 
+void tone_generator_thread_entry(void *p1, void *p2, void *p3) {
+    // Wait for the main thread to populate the data buffers before using them
+    k_sem_take(&thread_startup_sem, K_FOREVER);
+    k_sem_give(&thread_startup_sem);
+
+    /**
+     * Tone Generator Example usage
+     */
+
+    /* Non-blocking usage example - playing 20KHz tone for 5 seconds */
+    ll_tone_generator_play_tone(tone_generator, 20000, 5000);
+
+    /* Sleep for 10 seconds - 5 to allow the tone to elapse, and another 5 for silence */
+    k_msleep(10000);
+
+    /* Blocking usage example - playing 1KHz tone for 5 seconds */
+    ll_tone_generator_play_tone_blocking(tone_generator, 1000, 5000);
+}
+
 #if DT_HAS_COMPAT_STATUS_OKAY(ll_servo)
 K_THREAD_DEFINE(servo_tid, 1024, servo_thread_entry, NULL, NULL, NULL, 5, 0, 0);
 #endif
 
 #if DT_HAS_COMPAT_STATUS_OKAY(ll_stepper)
 K_THREAD_DEFINE(stepper_tid, 1024, stepper_thread_entry, NULL, NULL, NULL, 5, 0, 0);
+#endif
+
+#if DT_HAS_COMPAT_STATUS_OKAY(ll_tone_generator)
+K_THREAD_DEFINE(tone_generator_tid, 1024, tone_generator_thread_entry, NULL, NULL, NULL, 5, 0, 0);
 #endif

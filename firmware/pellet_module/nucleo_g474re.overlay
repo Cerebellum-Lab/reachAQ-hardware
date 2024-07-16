@@ -189,6 +189,27 @@
 	status = "okay";
 };
 
+&timers2 {
+	status = "okay";
+};
+
+/ {
+	tone_generator {
+		compatible = "ll,tone-generator";
+	
+		sample-rate-timer = <&timers2>;
+	
+		dac = <&dac1>;
+
+		dac-channel = <1>;
+	
+		dmas = <&dmamux1 6 6 STM32_DMA_PRIORITY_HIGH>;
+		dma-names = "tx";
+	
+		status = "okay";
+	};
+};
+
 &fdcan3 {
 	clocks = <&rcc STM32_CLOCK_BUS_APB1 0x02000000>,
 			 <&rcc STM32_SRC_HSE FDCAN_SEL(0)>;

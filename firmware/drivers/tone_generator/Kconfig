@@ -1,0 +1,21 @@
+config LL_TONE_GENERATOR_LOG_LEVEL
+    int "Log level (0-4)"
+        default 4
+        help
+            Set the log level for the tone generator
+
+config LL_TONE_GENERATOR_INIT_PRIORITY
+        int "Initialization priority"
+        default 91
+        help
+            Set the initialization priority for the tone generator
+
+menuconfig LL_TONE_GENERATOR
+        bool "Support LeafLabs tone generator driver"
+        default y
+        depends on DT_HAS_LL_TONE_GENERATOR_ENABLED
+        select USE_STM32_LL_TIM
+        select USE_STM32_LL_DAC
+        select DMA
+        help
+            Enable support for the tone generator

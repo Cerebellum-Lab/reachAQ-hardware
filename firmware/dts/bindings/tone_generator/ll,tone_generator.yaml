@@ -1,0 +1,29 @@
+description: |
+  Tone generator using STM32 DMA, DAC, and timer peripherals
+
+compatible: "ll,tone-generator"
+
+include:
+  - name: base.yaml
+
+properties:
+  sample-rate-timer:
+    type: phandle
+    required: true
+    description: TIM peripheral instance for generating sample rate
+
+  dac:
+    type: phandle
+    required: true
+    description: DAC peripheral instance for outputting waveform
+
+  dac-channel:
+    type: int
+    required: true
+    enum: [1, 2]
+    description: DAC peripheral channel for outputting waveform
+
+  dmas:
+    type: phandle-array
+    required: true
+    description: DMAMUX instance, channel, request line, and priority
