@@ -961,7 +961,7 @@
 		(dnp no)
 		(uuid "90b7ea6e-70d4-4133-a09e-2bf068d09356")
 		(property "Reference" "J12"
-			(at 147.32 45.72 0)
+			(at 147.32 49.022 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -974,6 +974,7 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(hide yes)
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_SH_BM04B-SRSS-TB_1x04-1MP_P1.00mm_Vertical"
@@ -1003,7 +1004,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "SM04B-SRSS-TB"
+		(property "MPN" "BM04B-SRSS-TB"
 			(at 147.32 54.61 0)
 			(effects
 				(font

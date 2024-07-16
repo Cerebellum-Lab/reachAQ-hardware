@@ -1894,7 +1894,7 @@
 		(dnp no)
 		(uuid "c100cf80-c8b3-470b-90c7-d023ba5d2cd1")
 		(property "Reference" "J5"
-			(at 101.6 143.51 0)
+			(at 101.6 146.812 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1907,6 +1907,7 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(hide yes)
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_SH_BM04B-SRSS-TB_1x04-1MP_P1.00mm_Vertical"
@@ -1936,7 +1937,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "SM04B-SRSS-TB"
+		(property "MPN" "BM04B-SRSS-TB"
 			(at 101.6 152.4 0)
 			(effects
 				(font
