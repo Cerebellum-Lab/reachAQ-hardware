@@ -4682,7 +4682,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105314-xx04_2x02_P2.50mm_Horizontal"
+		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical"
 			(at 144.78 53.34 0)
 			(effects
 				(font
@@ -5630,7 +5630,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105314-xx04_2x02_P2.50mm_Horizontal"
+		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical"
 			(at 144.78 83.82 0)
 			(effects
 				(font
