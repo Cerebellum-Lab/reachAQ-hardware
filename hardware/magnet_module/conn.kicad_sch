@@ -4680,6 +4680,7 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
 			)
 		)
 		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical"
@@ -4700,7 +4701,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Generic connector, single row, 01x04, script generated"
+		(property "Description" ""
 			(at 144.78 53.34 0)
 			(effects
 				(font
@@ -4709,7 +4710,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "1053141104"
+		(property "MPN" "1053101104"
 			(at 144.78 53.34 0)
 			(effects
 				(font
@@ -5628,6 +5629,7 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
 			)
 		)
 		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical"
@@ -5648,7 +5650,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Generic connector, single row, 01x04, script generated"
+		(property "Description" ""
 			(at 144.78 83.82 0)
 			(effects
 				(font
@@ -5657,7 +5659,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "1053141104"
+		(property "MPN" "1053101104"
 			(at 144.78 83.82 0)
 			(effects
 				(font

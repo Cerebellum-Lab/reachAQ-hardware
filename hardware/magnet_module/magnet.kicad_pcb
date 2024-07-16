@@ -677,7 +677,7 @@
 		)
 		(fp_arc
 			(start 0.788712 1.483352)
-			(mid 0.406429 1.630097)
+			(mid 0.406429 1.630096)
 			(end 0 1.679999)
 			(stroke
 				(width 0.12)
@@ -2386,7 +2386,7 @@
 		(descr "Molex Nano-Fit Power Connectors, 105310-xx04, 2 Pins per row (http://www.molex.com/pdm_docs/sd/1053101208_sd.pdf), generated with kicad-footprint-generator")
 		(tags "connector Molex Nano-Fit side entry")
 		(property "Reference" "J3"
-			(at 1.25 -2.92 360)
+			(at 1.25 -2.92 0)
 			(layer "F.SilkS")
 			(uuid "63d7c795-07e4-4174-95c7-076ab40f7820")
 			(effects
@@ -2397,7 +2397,7 @@
 			)
 		)
 		(property "Value" "Conn_01x04_Pin"
-			(at 1.25 5.42 360)
+			(at 1.25 5.42 0)
 			(layer "F.Fab")
 			(uuid "872123ac-8aa6-4b96-bb69-5752e6684e09")
 			(effects
@@ -3347,7 +3347,7 @@
 		(descr "JST SH series connector, BM04B-SRSS-TB (http://www.jst-mfg.com/product/pdf/eng/eSH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST SH vertical")
 		(property "Reference" "J12"
-			(at 0 -3.3 360)
+			(at 0 -3.3 0)
 			(layer "F.SilkS")
 			(uuid "47488283-0c62-44c3-b03d-096db909716b")
 			(effects
@@ -3358,7 +3358,7 @@
 			)
 		)
 		(property "Value" "Conn_01x04_Pin"
-			(at 0 3.3 360)
+			(at 0 3.3 0)
 			(layer "F.Fab")
 			(uuid "79f8285e-ee9f-48b6-8de8-85272399e455")
 			(effects
@@ -3746,7 +3746,7 @@
 			(uuid "1efc46f6-dda8-4728-8b45-afd7daa39c2c")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -0.25 360)
+			(at 0 -0.25 0)
 			(layer "F.Fab")
 			(uuid "c0670737-8023-4ebe-bc80-fe7a1b9de58e")
 			(effects
@@ -3827,6 +3827,17 @@
 				(xyz 0 0 0)
 			)
 		)
+		(model "${LEAF_3DMODEL_DIR}/JST_SH_BM04B-SRSS-TB.STEP"
+			(offset
+				(xyz 0 1 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz -90 0 0)
+			)
+		)
 	)
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
 		(layer "F.Cu")
@@ -3835,7 +3846,7 @@
 		(descr "Through hole straight pin header, 1x03, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x03 2.54mm single row")
 		(property "Reference" "J1"
-			(at 0 -2.33 360)
+			(at 0 -2.33 0)
 			(layer "F.SilkS")
 			(uuid "be776160-3ad2-4d5f-88b1-3c3319f86a5d")
 			(effects
@@ -3846,7 +3857,7 @@
 			)
 		)
 		(property "Value" "Conn_01x03_Pin"
-			(at 0 7.41 360)
+			(at 0 7.41 0)
 			(layer "F.Fab")
 			(uuid "62e80e86-3e1d-4958-b867-a1fdb3e9b812")
 			(effects
@@ -4126,7 +4137,7 @@
 		(descr "JST XH series connector, B3B-XH-A (http://www.jst-mfg.com/product/pdf/eng/eXH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST XH vertical")
 		(property "Reference" "J21"
-			(at 2.5 -3.55 360)
+			(at 2.5 -3.55 0)
 			(layer "F.SilkS")
 			(uuid "148b5e51-4b80-4c65-bec8-24d0b684573a")
 			(effects
@@ -4137,7 +4148,7 @@
 			)
 		)
 		(property "Value" "Conn_01x03_Pin"
-			(at 2.5 4.6 360)
+			(at 2.5 4.6 0)
 			(layer "F.Fab")
 			(uuid "e17a13e8-4eaa-4e2a-91f7-50158f72c7b3")
 			(effects
@@ -4545,7 +4556,7 @@
 			(uuid "1785c2d1-7f55-43b5-877d-1534df96d6e7")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 2.5 2.7 360)
+			(at 2.5 2.7 0)
 			(layer "F.Fab")
 			(uuid "a2be55d3-9c3c-4321-925e-97f821a37e03")
 			(effects
@@ -4956,7 +4967,7 @@
 		(descr "JST SH series connector, BM04B-SRSS-TB (http://www.jst-mfg.com/product/pdf/eng/eSH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST SH vertical")
 		(property "Reference" "J5"
-			(at 0 -3.3 360)
+			(at 0 -3.3 0)
 			(layer "F.SilkS")
 			(uuid "3da2f1e7-6d32-47a2-8695-138787f62d63")
 			(effects
@@ -4967,7 +4978,7 @@
 			)
 		)
 		(property "Value" "Conn_01x04_Pin"
-			(at 0 3.3 360)
+			(at 0 3.3 0)
 			(layer "F.Fab")
 			(uuid "66a687ca-e1ce-47b9-b8b9-2dc6bb337b08")
 			(effects
@@ -5355,7 +5366,7 @@
 			(uuid "6a5cd4a4-52a4-410b-a725-dc79742ca5d6")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -0.25 360)
+			(at 0 -0.25 0)
 			(layer "F.Fab")
 			(uuid "28bc6b0c-fd83-4fd6-b9cc-43dc8c3ec3ab")
 			(effects
@@ -5434,6 +5445,17 @@
 			)
 			(rotate
 				(xyz 0 0 0)
+			)
+		)
+		(model "${LEAF_3DMODEL_DIR}/JST_SH_BM04B-SRSS-TB.STEP"
+			(offset
+				(xyz 0 1 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz -90 0 0)
 			)
 		)
 	)
@@ -6043,7 +6065,7 @@
 		(descr "Molex Nano-Fit Power Connectors, 105310-xx04, 2 Pins per row (http://www.molex.com/pdm_docs/sd/1053101208_sd.pdf), generated with kicad-footprint-generator")
 		(tags "connector Molex Nano-Fit side entry")
 		(property "Reference" "J2"
-			(at 1.25 -2.92 360)
+			(at 1.25 -2.92 0)
 			(layer "F.SilkS")
 			(uuid "1598a57b-7fb1-4f3b-bd84-8d41c5ac2901")
 			(effects
@@ -6054,7 +6076,7 @@
 			)
 		)
 		(property "Value" "Conn_01x04_Pin"
-			(at 1.25 5.42 360)
+			(at 1.25 5.42 0)
 			(layer "F.Fab")
 			(uuid "992a9c77-fc2d-4655-8c9d-4771aeb5b7bc")
 			(effects
@@ -6608,7 +6630,7 @@
 			(xy 227 157.25) (xy 156 157.25)
 		)
 		(height -5.5)
-		(gr_text "2.7953 in"
+		(gr_text "71.0000 mm"
 			(at 191.5 161.6 0)
 			(layer "Cmts.User")
 			(uuid "4e572e26-c7bf-4489-a300-f858b4d1a2ee")
@@ -6641,7 +6663,7 @@
 			(xy 227 157.25) (xy 227 68.25)
 		)
 		(height 8)
-		(gr_text "3.5039 in"
+		(gr_text "89.0000 mm"
 			(at 233.85 112.75 90)
 			(layer "Cmts.User")
 			(uuid "b1e98b41-f496-49cc-87a1-049abfb9d1cb")
