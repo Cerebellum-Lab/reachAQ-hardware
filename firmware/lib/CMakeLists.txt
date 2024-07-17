@@ -1,1 +1,1 @@
-add_subdirectory_ifdef(CONFIG_LIB_PLACEHOLDER placeholder)
+add_subdirectory_ifdef(CONFIG_LIB_MOTOR_MOTION motor_motion)
