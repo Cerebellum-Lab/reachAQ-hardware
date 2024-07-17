@@ -6,7 +6,6 @@
 #include <zephyr/logging/log.h>
 
 #include "generic_gpios.h"
-#include "placeholder.h"
 #include "servo.h"
 #include "stepper.h"
 #include "tone_generator.h"
@@ -52,8 +51,6 @@ int main() {
 
     // Print out the device type and node ID
     LOG_INF("CAN_ID: 0x%X", (node_id << 2) | device_type);
-
-    placeholder_function();
 
     // Create a saw tooth wave for 0 to 180 degrees on the servo with a hold at the start and end
     for (int i = 0; i < ARRAY_SIZE(saw_start); i++) {

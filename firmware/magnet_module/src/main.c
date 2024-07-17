@@ -2,14 +2,10 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
-#include "placeholder.h"
-
 LOG_MODULE_REGISTER(app);
 
 int main() {
     LOG_INF("Autotrainer Magnet Module v%s", APP_VERSION_STRING);
-
-    placeholder_function();
 
     while (true) {
         k_msleep(100);

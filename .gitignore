@@ -21,7 +21,8 @@ deps
 *-save.kicad_pcb
 fp-info-cache
 *.lck
-
+.vscode
+__pycache__
 
 # Netlist files (exported from Eeschema)
 *.net

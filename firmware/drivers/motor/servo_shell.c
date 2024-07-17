@@ -7,6 +7,8 @@
 static const struct device *servo_devs[] = {DT_FOREACH_STATUS_OKAY(ll_servo, DEV_GET_COMMA)};
 static uint32_t servo_positions[ARRAY_SIZE(servo_devs)];
 
+static int32_t degree_to_pulse_width(int degree) { return degree * 4000 / 180 + 1000; }
+
 static int cmd_servo_set(const struct shell *shell, size_t argc, char **argv) {
     if (argc != 3) {
         shell_print(shell, "Usage: %s <servo> <position>", argv[0]);
@@ -26,7 +28,7 @@ static int cmd_servo_set(const struct shell *shell, size_t argc, char **argv) {
         return -EINVAL;
     }
 
-    servo_positions[servo] = position * 4000 / 180 + 1000;
+    servo_positions[servo] = degree_to_pulse_width(position);
     ll_queue_servo_positions(servo_devs[servo], &servo_positions[servo], sizeof(servo_positions[0]), K_FOREVER);
 
     return 0;
