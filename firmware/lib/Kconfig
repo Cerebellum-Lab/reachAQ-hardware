@@ -1,6 +1,5 @@
-menuconfig LIB_MOTOR_MOTION
-    bool "Enable the motor motion math library"
-    default y
+menuconfig LIB_PLACEHOLDER
+    bool "Enable lib placeholder"
+    default n
     help
-      The motor motion math library implements servo and stepper motor motion
-      profiles based on the work by Arevalo
+      Enable lib placeholder
