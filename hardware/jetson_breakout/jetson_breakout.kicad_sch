@@ -1,0 +1,444 @@
+(kicad_sch
+	(version 20231120)
+	(generator "eeschema")
+	(generator_version "8.0")
+	(uuid "2f8e404a-f8f0-4824-bb86-c9c070099b28")
+	(paper "A4")
+	(title_block
+		(title "Jetson AGX Orin CAN Adapter")
+		(date "2024-07-16")
+		(rev "v1.0")
+		(company "Christie Lab, CU Anschutz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
+	(lib_symbols)
+	(junction
+		(at 140.97 74.93)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "347a5bac-658d-4604-a71a-44d7a1b6a105")
+	)
+	(bus
+		(pts
+			(xy 92.71 78.74) (xy 113.03 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0dfbdb99-5f5f-495f-aaca-1043f0988199")
+	)
+	(bus
+		(pts
+			(xy 92.71 93.98) (xy 113.03 93.98)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "16342648-5e7e-4092-8956-53d4ad017ab2")
+	)
+	(wire
+		(pts
+			(xy 140.97 92.71) (xy 135.89 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8207e5c3-9d59-45d1-9a29-31d7e706440e")
+	)
+	(wire
+		(pts
+			(xy 140.97 74.93) (xy 135.89 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9dfb8458-9dd2-4e76-af79-2e6a3e25c194")
+	)
+	(wire
+		(pts
+			(xy 92.71 58.42) (xy 140.97 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "be227403-1683-4f0f-9aba-d71ddf4f60f9")
+	)
+	(wire
+		(pts
+			(xy 140.97 74.93) (xy 140.97 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ebc6bfa7-3f8c-4cab-ada5-35e994f60f6a")
+	)
+	(wire
+		(pts
+			(xy 140.97 58.42) (xy 140.97 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f358343e-fea7-4b9d-b3ea-d559f108d48f")
+	)
+	(label "5V"
+		(at 135.89 95.25 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "1170ea6f-a9b6-4bb7-a47d-91e3395bca2b")
+	)
+	(label "3V3"
+		(at 64.77 81.28 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "208744f6-c92c-4719-a236-e6231a802fa2")
+	)
+	(label "5V"
+		(at 135.89 77.47 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "9f9777cd-c336-481e-8dc0-ec6426f372cb")
+	)
+	(label "5V"
+		(at 64.77 78.74 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "c33f3b75-3a24-47bb-9d49-422d972c0fe3")
+	)
+	(label "3V3"
+		(at 135.89 97.79 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ce5cee9e-bde5-4c50-8a65-3cc7aa918560")
+	)
+	(label "3V3"
+		(at 135.89 80.01 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "f4e300ff-974f-46e2-96f6-fd726071ef25")
+	)
+	(sheet
+		(at 113.03 90.17)
+		(size 22.86 10.16)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "1b37a068-abca-4131-8dcb-8f13c7f088c1")
+		(property "Sheetname" "CAN1 Connection"
+			(at 113.03 89.4584 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "can.kicad_sch"
+			(at 113.03 100.9146 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "5V" input
+			(at 135.89 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "89dd7d69-f717-485a-a7e9-898c864ecdc4")
+		)
+		(pin "3V3" input
+			(at 135.89 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "ab3ceca2-5f08-476e-b503-12408b9e43c5")
+		)
+		(pin "{FDCAN}" bidirectional
+			(at 113.03 93.98 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "2eebd932-4f6c-4875-8b78-f0fd9a61f8cd")
+		)
+		(pin "12V" input
+			(at 135.89 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "bc39e516-09cf-4da4-91ef-35cccefb5d19")
+		)
+		(instances
+			(project "jetson_breakout"
+				(path "/2f8e404a-f8f0-4824-bb86-c9c070099b28"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 64.77 53.34)
+		(size 27.94 11.43)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "8e8fc6cc-8be5-41c1-8d94-496f42b6659d")
+		(property "Sheetname" "Power"
+			(at 64.77 52.6284 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "power.kicad_sch"
+			(at 64.77 65.3546 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "12V" output
+			(at 92.71 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "954a4779-e29f-4afe-8e06-33be6c1dd675")
+		)
+		(instances
+			(project "jetson_breakout"
+				(path "/2f8e404a-f8f0-4824-bb86-c9c070099b28"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 113.03 72.39)
+		(size 22.86 10.16)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "e7cee297-2752-4957-83d7-9399f0b15d69")
+		(property "Sheetname" "CAN0 Connection"
+			(at 113.03 71.6784 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "can.kicad_sch"
+			(at 113.03 83.1346 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "5V" input
+			(at 135.89 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "8b250eec-b8b1-4d16-9083-d07a7b54db0f")
+		)
+		(pin "3V3" input
+			(at 135.89 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "66642185-49fb-437b-bdee-6c212810fb2f")
+		)
+		(pin "{FDCAN}" bidirectional
+			(at 113.03 78.74 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "1b10d2a9-a23f-4e18-8ded-acda83bbaec8")
+		)
+		(pin "12V" input
+			(at 135.89 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "c8f159ba-b614-4314-9adb-681dd1567175")
+		)
+		(instances
+			(project "jetson_breakout"
+				(path "/2f8e404a-f8f0-4824-bb86-c9c070099b28"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 64.77 74.93)
+		(size 27.94 26.67)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "f93aa4ed-249c-403a-91f0-1440dbc911e5")
+		(property "Sheetname" "Jetson AGX Orin"
+			(at 64.77 74.2184 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "orin.kicad_sch"
+			(at 64.77 102.1846 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "5V" output
+			(at 64.77 78.74 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "107a55bc-d331-4b7e-8ca1-e6b6e22b2712")
+		)
+		(pin "3V3" output
+			(at 64.77 81.28 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "b63bf5cf-d93d-49e3-9e24-1c0f9161b7da")
+		)
+		(pin "0{FDCAN}" bidirectional
+			(at 92.71 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "86d68dab-c717-469b-8579-86a8f9ec8f1b")
+		)
+		(pin "1{FDCAN}" bidirectional
+			(at 92.71 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "d80b8b85-0e3f-4930-968c-7bdbbce8977d")
+		)
+		(instances
+			(project "jetson_breakout"
+				(path "/2f8e404a-f8f0-4824-bb86-c9c070099b28"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+)
