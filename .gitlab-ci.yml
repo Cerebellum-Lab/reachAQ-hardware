@@ -1,0 +1,69 @@
+stages:
+  - check
+  - build
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Job that is run on merge requests
+check_formatting:
+  image: registry.gitlab.leaflabs.com/cuanschutz/autotrainer/code-format
+  interruptible: true
+  stage: check
+  variables:
+    ENFORCE_FORMAT_DIR: 'firmwar'
+  script:
+    - git fetch
+    - git-clang-format -v --commit origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME -q --diff -- $ENFORCE_FORMAT_DIR
+  only:
+    - merge_requests
+
+.build_firmware_template: &build_firmware_template
+  image: registry.gitlab.leaflabs.com/cuanschutz/autotrainer/zephyr-sdk
+  stage: build
+  tags:
+    - linux
+  cache:
+    key: deps-cache
+    paths:
+      - deps
+  artifacts:
+    paths:
+      - firmware/${MODULE}_fw.hex
+      - firmware/${MODULE}_bootloader.hex
+  script:
+    - cd firmware
+    - west init -l
+    - west update
+    - cd ${MODULE}
+    - west build -p --sysbuild -b ${BOARD}
+    - cp build/${MODULE}/zephyr/zephyr.signed.hex ../${MODULE}_fw.hex
+    - cp build/mcuboot/zephyr/zephyr.hex ../${MODULE}_bootloader.hex
+
+# Build the firmware for the nucleo_g474re board- will update this once we're developing on real hardware
+build_pellet_nucleo_firmware:
+  <<: *build_firmware_template
+  variables:
+    MODULE: pellet_module
+    BOARD: nucleo_g474re
+
+build_pellet_firmware:
+  <<: *build_firmware_template
+  variables:
+    MODULE: pellet_module
+    BOARD: cerebellumlab_pellet_module
+
+build_magnet_nucleo_firmware:
+  <<: *build_firmware_template
+  variables:
+    MODULE: magnet_module
+    BOARD: nucleo_g474re
+
+build_magnet_firmware:
+  <<: *build_firmware_template
+  variables:
+    MODULE: magnet_module
+    BOARD: cerebellumlab_magnet_module
