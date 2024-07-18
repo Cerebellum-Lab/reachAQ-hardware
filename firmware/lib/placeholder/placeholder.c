@@ -1,3 +1,1 @@
-void placeholder_function() {
-
-}
+void placeholder_function() {}

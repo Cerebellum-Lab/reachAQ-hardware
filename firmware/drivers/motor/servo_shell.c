@@ -32,9 +32,7 @@ static int cmd_servo_set(const struct shell *shell, size_t argc, char **argv) {
     return 0;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(sub_servo,
-    SHELL_CMD_ARG(set, NULL, "Set a servo position", cmd_servo_set, 3, 0),
-    SHELL_SUBCMD_SET_END
-);
+SHELL_STATIC_SUBCMD_SET_CREATE(sub_servo, SHELL_CMD_ARG(set, NULL, "Set a servo position", cmd_servo_set, 3, 0),
+                               SHELL_SUBCMD_SET_END);
 
 SHELL_CMD_REGISTER(servo, &sub_servo, "Servo commands", NULL);

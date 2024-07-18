@@ -1,9 +1,8 @@
 #include <app_version.h>
-#include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 
 #include "placeholder.h"
-
 
 LOG_MODULE_REGISTER(app);
 

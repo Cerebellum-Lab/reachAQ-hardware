@@ -52,7 +52,7 @@ typedef struct {
     struct k_msgq *msgq;
     uint32_t timer_dma_reg;
     bool stop_on_dma_complete;
-    struct gpio_dt_spec dir_pin; // Used for the stepper driver
+    struct gpio_dt_spec dir_pin;  // Used for the stepper driver
 } ll_motor_cfg_t;
 
 static inline int ll_motor_timer_enable_clock(const struct stm32_pclken *timer_clk) {

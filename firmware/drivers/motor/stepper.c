@@ -20,9 +20,8 @@ int ll_stepper_register_callback(const struct device *dev, ll_stepper_cb_t *cb) 
     return ll_motor_register_callback(dev, cb);
 }
 
-
 int ll_stepper_set_direction(const struct device *dev, ll_stepper_dir_t dir) {
-const ll_motor_cfg_t *cfg = dev->config;
+    const ll_motor_cfg_t *cfg = dev->config;
     int ret;
 
     if (cfg->dir_pin.port == NULL) {
