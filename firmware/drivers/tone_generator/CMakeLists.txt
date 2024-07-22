@@ -3,3 +3,5 @@ zephyr_library()
 zephyr_include_directories(.)
 
 zephyr_library_sources_ifdef(CONFIG_LL_TONE_GENERATOR tone_generator.c)
+
+zephyr_library_sources_ifdef(CONFIG_LL_TONE_GENERATOR_SHELL tone_generator_shell.c)

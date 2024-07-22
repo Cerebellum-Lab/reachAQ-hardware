@@ -168,14 +168,8 @@ void tone_generator_thread_entry(void *p1, void *p2, void *p3) {
      * Tone Generator Example usage
      */
 
-    /* Non-blocking usage example - playing 20KHz tone for 5 seconds */
-    ll_tone_generator_play_tone(tone_generator, 20000, 5000);
-
-    /* Sleep for 10 seconds - 5 to allow the tone to elapse, and another 5 for silence */
-    k_msleep(10000);
-
-    /* Blocking usage example - playing 1KHz tone for 5 seconds */
-    ll_tone_generator_play_tone_blocking(tone_generator, 1000, 5000);
+    /* Non-blocking usage example - playing 1KHz tone for 5 seconds */
+    ll_tone_generator_play_tone(tone_generator, 1000, 5000);
 }
 
 #if DT_HAS_COMPAT_STATUS_OKAY(ll_servo)

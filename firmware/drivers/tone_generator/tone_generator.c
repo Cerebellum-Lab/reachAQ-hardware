@@ -77,14 +77,21 @@ typedef struct {
     bool initialized;
     bool enabled;
     struct dma_config dma_cfg;
+    struct k_timer duration_timer;
 } ll_tone_generator_data_t;
 
 /* Callback to handle DMA transfer error */
-void dma_callback(const struct device *dma_dev, void *user_data, uint32_t channel, int status) {
+static void dma_callback(const struct device *dma_dev, void *user_data, uint32_t channel, int status) {
     if (status < 0) {
         LOG_ERR("DMA encountered error and entered interrupt with status: %d", status);
         ll_tone_generator_abort_tone((const struct device *)user_data);
     }
+}
+
+/*  Kernel Timer Expirey Callback function*/
+static void duration_expiry_cb(struct k_timer *timer) {
+    LOG_DBG("Duration Timer Expired");
+    ll_tone_generator_abort_tone((const struct device *)timer->user_data);
 }
 
 /* Enable the provided clock */
@@ -138,7 +145,7 @@ static int ll_tone_generator_tim_init(const struct device *dev) {
     */
     tim_init.Prescaler = 0x0;
     tim_init.CounterMode = LL_TIM_COUNTERMODE_UP;
-    tim_init.Autoreload = 0x0000;
+    tim_init.Autoreload = 0x0001;
     tim_init.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
 
     /* Enable TIM Clock */
@@ -146,6 +153,9 @@ static int ll_tone_generator_tim_init(const struct device *dev) {
         LOG_ERR("Failed to initialize TIM: %d", ret);
         return ret;
     }
+
+    /* Enable Auto-Reload Preload (Buffer the auto-reload register) */
+    LL_TIM_EnableARRPreload(cfg->sample_rate_timer);
 
     /* Set trigger to output on UPDATE event */
     LL_TIM_SetTriggerOutput(cfg->sample_rate_timer, LL_TIM_TRGO_UPDATE);
@@ -201,7 +211,14 @@ static int ll_tone_generator_init(const struct device *dev) {
 
     int ret = 0;
 
+    /* Initialize the duration timer */
+    k_timer_init(&data->duration_timer, duration_expiry_cb, NULL);
+
+    /* Place tone generator in dma_cfg user_data so it can be used to handle errors appropriately */
     data->dma_cfg.user_data = (void *)dev;
+
+    /* Place tone generator in k_timer user_data so it can be passed to ll_tone_generator_abort_tone() */
+    data->duration_timer.user_data = (void *)dev;
 
     /* Initialize the sample rate timer TIM peripheral */
     if ((ret = ll_tone_generator_tim_init(dev)) < 0) {
@@ -226,29 +243,24 @@ static int ll_tone_generator_init(const struct device *dev) {
     return ret;
 }
 
-/*  Kernel Timer Expirey Callback function*/
-void duration_expiry_cb(struct k_timer *timer) {
-    LOG_DBG("Duration Timer Expired");
-    ll_tone_generator_abort_tone((const struct device *)timer->user_data);
-}
-
-/*  Kernel Timer Stop Callback function*/
-void duration_stop_cb(struct k_timer *timer) {
-    LOG_DBG("Duration Timer Stopped");
-    ll_tone_generator_abort_tone((const struct device *)timer->user_data);
-}
-
 /**
  * Generates a tone with the given frequency and duration on the provided tone generator.
  */
 int ll_tone_generator_play_tone(const struct device *dev, unsigned int frequency_hz, unsigned int duration_ms) {
     const ll_tone_generator_cfg_t *cfg = dev->config;
     ll_tone_generator_data_t *data = dev->data;
-    static struct k_timer duration_timer;
+    int ret = 0;
+
+    /* Ensure that the tone generator has been initialized */
     if (!data->initialized) {
         LOG_ERR("Tone Generator must be initialized before play tone can be called");
+        return -1;
     }
-    int ret = 0;
+
+    /* If a tone is actively being played, stop it before continuing */
+    if (data->enabled) {
+        ll_tone_generator_abort_tone(dev);
+    }
 
     /* Start the DMA transfer */
     if ((ret = dma_start(cfg->dma_dev, cfg->dma_channel)) < 0) {
@@ -273,18 +285,13 @@ int ll_tone_generator_play_tone(const struct device *dev, unsigned int frequency
     /* Enable DAC */
     LL_DAC_Enable(cfg->dac, cfg->dac_channel);
 
-    /* Initialize the duration timer */
-    k_timer_init(&duration_timer, duration_expiry_cb, duration_stop_cb);
-
-    /* Place tone generator in user_data so it can be passed to ll_tone_generator_abort_tone() */
-    duration_timer.user_data = (void *)dev;
-
     /* Start the duration timer to expire after the given duration in milliseconds in one-shot mode */
-    k_timer_start(&duration_timer, K_MSEC(duration_ms), K_NO_WAIT);
+    k_timer_start(&data->duration_timer, K_MSEC(duration_ms), K_NO_WAIT);
+
+    /* Set the enabled flag to true */
+    data->enabled = true;
 
     LOG_INF("Playing tone at %uHz for %ums", frequency_hz, duration_ms);
-
-    data->enabled = true;
 
     return ret;
 }
@@ -304,7 +311,7 @@ int ll_tone_generator_play_tone_blocking(const struct device *dev, unsigned int 
     return ret;
 }
 
-/* Halts the tone generation proccess */
+/* Halts the tone generation proccess on the given tone generator */
 int ll_tone_generator_abort_tone(const struct device *dev) {
     const ll_tone_generator_cfg_t *cfg = dev->config;
     ll_tone_generator_data_t *data = dev->data;
@@ -312,6 +319,9 @@ int ll_tone_generator_abort_tone(const struct device *dev) {
     if (!data->initialized) {
         LOG_ERR("Tone Generator must be initialized before abort tone can be called");
     }
+
+    /* Ensure that the duration time has been stopped - does nothing if already expired */
+    k_timer_stop(&data->duration_timer);
 
     /* Stop the DMA transfer */
     if ((ret = dma_stop(cfg->dma_dev, cfg->dma_channel)) < 0) {

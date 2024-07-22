@@ -19,3 +19,10 @@ menuconfig LL_TONE_GENERATOR
         select DMA
         help
             Enable support for the tone generator
+
+config LL_TONE_GENERATOR_SHELL
+        bool "Enable shell commands for tone generator driver"
+        default y
+        depends on LL_TONE_GENERATOR
+        help
+            Enable shell commands for tone generator driver
