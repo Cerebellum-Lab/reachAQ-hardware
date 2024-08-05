@@ -14,12 +14,15 @@ check_formatting:
   interruptible: true
   stage: check
   variables:
-    ENFORCE_FORMAT_DIR: 'firmwar'
+    ENFORCE_FORMAT_DIR: 'firmware'
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      changes:
+        - $ENFORCE_FORMAT_DIR/**/*
+        - docker/**/*
   script:
     - git fetch
     - git-clang-format -v --commit origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME -q --diff -- $ENFORCE_FORMAT_DIR
-  only:
-    - merge_requests
 
 .build_firmware_template: &build_firmware_template
   image: registry.gitlab.leaflabs.com/cuanschutz/autotrainer/zephyr-sdk
@@ -36,8 +39,8 @@ check_formatting:
       - firmware/${MODULE}_bootloader.hex
   rules:
     - changes:
-      - firmware/**
-      - docker/**
+        - firmware/**/*
+        - docker/**/*
   script:
     - cd firmware
     - west init -l
