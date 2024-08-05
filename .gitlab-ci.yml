@@ -74,3 +74,41 @@ build_magnet_firmware:
   variables:
     MODULE: magnet_module
     BOARD: cerebellumlab_magnet_module
+
+# Generate diffs for PCB projects
+.generate_hardware_diffs_template: &generate_hardware_diffs_template
+  image:
+    name: leoheck/kiri:latest
+    docker:
+      user: root
+  stage: check
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      changes:
+        - $PROJECT_DIR/**/*
+  artifacts:
+    paths:
+      - $PROJECT_DIR/.kiri
+  before_script:
+    - export PATH=$PATH:/home/kiri/.local/share/kiri/bin/:/home/kiri/.local/share/kiri/submodules/KiCad-Diff/bin:/home/kiri/bin
+    - export TERM=xterm
+  script:
+    - kiri --no-server -o $(git rev-parse --short $CI_MERGE_REQUEST_DIFF_BASE_SHA) $PROJECT_DIR/$PROJECT_FILE
+
+generate_pellet_diffs:
+  <<: *generate_hardware_diffs_template
+  variables:
+    PROJECT_DIR: hardware/pellet_module
+    PROJECT_FILE: pellet.kicad_pro
+
+generate_magnet_diffs:
+  <<: *generate_hardware_diffs_template
+  variables:
+    PROJECT_DIR: hardware/magnet_module
+    PROJECT_FILE: magnet.kicad_pro
+
+generate_jetson_diffs:
+  <<: *generate_hardware_diffs_template
+  variables:
+    PROJECT_DIR: hardware/jetson_breakout
+    PROJECT_FILE: jetson_breakout.kicad_pro
