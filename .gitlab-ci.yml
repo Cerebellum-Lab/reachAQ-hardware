@@ -34,6 +34,10 @@ check_formatting:
     paths:
       - firmware/${MODULE}_fw.hex
       - firmware/${MODULE}_bootloader.hex
+  rules:
+    - changes:
+      - firmware/**
+      - docker/**
   script:
     - cd firmware
     - west init -l
