@@ -1,0 +1,35 @@
+ERC report (2024-08-12T12:03:56-0400, Encoding UTF8)
+
+***** Sheet /
+[pin_to_pin]: Pins of type Power output and Bidirectional are connected
+    ; warning
+    @(2300.00 mils, 7450.00 mils): Symbol #FLG01 Pin 1 [Power output, Line]
+    @(6350.00 mils, 3550.00 mils): Symbol U1 Pin 24 [PB0, Bidirectional, Line]
+[pin_to_pin]: Pins of type Power output and Bidirectional are connected
+    ; warning
+    @(2300.00 mils, 7450.00 mils): Symbol #FLG01 Pin 1 [Power output, Line]
+    @(6350.00 mils, 3650.00 mils): Symbol U1 Pin 25 [PB1, Bidirectional, Line]
+
+***** Sheet /MCU/
+[multiple_net_names]: Both GND and CANID2 are attached to the same items; GND will be used in the netlist
+    ; warning
+    @(800.00 mils, 3950.00 mils): Symbol #PWR061 Pin 1 [Power input, Line]
+    @(6350.00 mils, 3550.00 mils): Label 'CANID2'
+
+***** Sheet /Stepper Driver/
+
+***** Sheet /Servo Driver/
+
+***** Sheet /Speaker/
+
+***** Sheet /Power & Data Connectors/
+
+***** Sheet /Stepper Driver1/
+
+***** Sheet /Stepper Driver2/
+
+***** Sheet /External IO/
+
+***** Sheet /Power/
+
+ ** ERC messages: 3  Errors 0  Warnings 3
