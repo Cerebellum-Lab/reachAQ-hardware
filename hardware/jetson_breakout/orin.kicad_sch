@@ -4,6 +4,13 @@
 	(generator_version "8.0")
 	(uuid "59dac0b5-814e-49f1-8186-da555d1ea993")
 	(paper "A4")
+	(title_block
+		(title "Jetson AGX Orin CAN Adapter - Jetson")
+		(date "2024-07-26")
+		(rev "v1.0")
+		(company "Christie Lab, CU Anschutz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
 	(lib_symbols
 		(symbol "Leaf_Connectors:Jetson_AGX_Orin_40pin"
 			(exclude_from_sim no)
@@ -143,7 +150,7 @@
 						)
 					)
 				)
-				(pin power_out line
+				(pin power_in line
 					(at 1.27 -67.31 90)
 					(length 2.54)
 					(name "GND"
@@ -190,24 +197,6 @@
 						)
 					)
 					(number "16"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_out line
-					(at -17.78 -12.7 0)
-					(length 2.54)
-					(name "3V3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "17"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -269,7 +258,7 @@
 						)
 					)
 				)
-				(pin power_out line
+				(pin power_in line
 					(at 6.35 -67.31 90)
 					(length 2.54)
 					(name "GND"
@@ -359,7 +348,7 @@
 						)
 					)
 				)
-				(pin power_out line
+				(pin power_in line
 					(at -6.35 -67.31 90)
 					(length 2.54)
 					(name "GND"
@@ -467,7 +456,7 @@
 						)
 					)
 				)
-				(pin power_out line
+				(pin power_in line
 					(at -1.27 -67.31 90)
 					(length 2.54)
 					(name "GND"
@@ -539,7 +528,7 @@
 						)
 					)
 				)
-				(pin power_out line
+				(pin power_in line
 					(at 3.81 -67.31 90)
 					(length 2.54)
 					(name "GND"
@@ -593,7 +582,7 @@
 						)
 					)
 				)
-				(pin power_out line
+				(pin power_in line
 					(at 8.89 -67.31 90)
 					(length 2.54)
 					(name "GND"
@@ -604,24 +593,6 @@
 						)
 					)
 					(number "39"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_out line
-					(at -17.78 -6.35 0)
-					(length 2.54)
-					(name "5V"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -647,7 +618,7 @@
 						)
 					)
 				)
-				(pin power_out line
+				(pin power_in line
 					(at -8.89 -67.31 90)
 					(length 2.54)
 					(name "GND"
@@ -701,7 +672,7 @@
 						)
 					)
 				)
-				(pin power_out line
+				(pin power_in line
 					(at -3.81 -67.31 90)
 					(length 2.54)
 					(name "GND"
@@ -734,6 +705,24 @@
 				)
 			)
 			(symbol "Jetson_AGX_Orin_40pin_1_0"
+				(pin passive line
+					(at -17.78 -12.7 0)
+					(length 2.54)
+					(name "3V3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "17"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
 				(pin bidirectional line
 					(at -17.78 -39.37 0)
 					(length 2.54)
@@ -763,6 +752,24 @@
 						)
 					)
 					(number "38"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -17.78 -6.35 0)
+					(length 2.54)
+					(name "5V"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -886,6 +893,102 @@
 				)
 			)
 		)
+		(symbol "power:PWR_FLAG"
+			(power)
+			(pin_numbers hide)
+			(pin_names
+				(offset 0) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#FLG"
+				(at 0 1.905 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "PWR_FLAG"
+				(at 0 3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Special symbol for telling ERC where power comes from"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "flag power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "PWR_FLAG_0_0"
+				(pin power_out line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "PWR_FLAG_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+		)
 	)
 	(junction
 		(at 133.35 132.08)
@@ -898,6 +1001,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "3aafd944-7e08-4626-a0be-81a26d54ca72")
+	)
+	(junction
+		(at 128.27 135.89)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4371abe6-7ef4-4808-a627-4e5d9d82bb07")
 	)
 	(junction
 		(at 119.38 68.58)
@@ -1185,7 +1294,7 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 132.08) (xy 128.27 133.35)
+			(xy 128.27 132.08) (xy 128.27 135.89)
 		)
 		(stroke
 			(width 0)
@@ -1212,6 +1321,16 @@
 			(type default)
 		)
 		(uuid "b579034a-c087-4ca4-b836-9a56873556c6")
+	)
+	(wire
+		(pts
+			(xy 128.27 135.89) (xy 128.27 138.43)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b93483f8-52b2-4226-bdb9-970046ff8a6f")
 	)
 	(wire
 		(pts
@@ -1253,15 +1372,15 @@
 		)
 		(uuid "f1afb5e2-f719-4854-b976-5a69d2a4b581")
 	)
-	(text "Orin: \ninput = out of header, \noutput = into header"
+	(text "All signals at logic level 3.3V"
 		(exclude_from_sim no)
-		(at 172.974 90.424 0)
+		(at 177.292 72.898 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 		)
-		(uuid "32671d5d-22ac-4f6b-a3a3-8b7476f4583b")
+		(uuid "ba2fc8f2-8037-4c82-a1d8-39b1f8f4c247")
 	)
 	(label "1.RXD"
 		(at 154.94 106.68 0)
@@ -1402,6 +1521,73 @@
 		)
 	)
 	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 128.27 135.89 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "205daeca-7bb4-4461-94b8-dde148394e03")
+		(property "Reference" "#FLG01"
+			(at 126.365 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 124.46 135.8899 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 128.27 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 128.27 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 128.27 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "90317893-e632-4a89-9089-cc53814242d7")
+		)
+		(instances
+			(project ""
+				(path "/2f8e404a-f8f0-4824-bb86-c9c070099b28/f93aa4ed-249c-403a-91f0-1440dbc911e5"
+					(reference "#FLG01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Leaf_Connectors:Jetson_AGX_Orin_40pin")
 		(at 137.16 64.77 0)
 		(unit 1)
@@ -1427,7 +1613,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_2x20_P2.54mm_Vertical"
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_2x20_P2.54mm_Vertical"
 			(at 137.16 64.77 0)
 			(effects
 				(font
@@ -1436,7 +1622,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://jetsonhacks.com/nvidia-jetson-agx-orin-gpio-header-pinout/"
 			(at 137.16 64.77 0)
 			(effects
 				(font
@@ -1454,7 +1640,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "SSW-120-01-T-D-LL"
+		(property "MPN" "2.54-2*20"
 			(at 137.16 64.77 0)
 			(effects
 				(font
@@ -1473,6 +1659,15 @@
 			)
 		)
 		(property "Sim.Pins" ""
+			(at 137.16 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2977589"
 			(at 137.16 64.77 0)
 			(effects
 				(font
@@ -1612,7 +1807,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 128.27 133.35 0)
+		(at 128.27 138.43 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1621,7 +1816,7 @@
 		(fields_autoplaced yes)
 		(uuid "f4f0330d-3603-4f1d-a25c-b87881fa840f")
 		(property "Reference" "#PWR01"
-			(at 128.27 139.7 0)
+			(at 128.27 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1630,7 +1825,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 128.27 138.43 0)
+			(at 128.27 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1638,7 +1833,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 128.27 133.35 0)
+			(at 128.27 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1647,7 +1842,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 128.27 133.35 0)
+			(at 128.27 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1656,7 +1851,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 128.27 133.35 0)
+			(at 128.27 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)

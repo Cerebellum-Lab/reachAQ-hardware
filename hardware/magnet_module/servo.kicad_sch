@@ -6,7 +6,7 @@
 	(paper "A4")
 	(title_block
 		(title "Autotrainer Magnet Module - Servos")
-		(date "2024-07-09")
+		(date "2024-07-26")
 		(rev "v1.0")
 		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
@@ -987,7 +987,7 @@
 		(uuid "dc9044c0-db73-4d60-882c-e2f3c90352d6")
 	)
 	(label "5V_SERVO0"
-		(at 76.2 109.22 0)
+		(at 76.2 114.3 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1009,7 +1009,7 @@
 		(uuid "7207bf60-dce4-4f52-8e3e-31bc1742fb45")
 	)
 	(label "SERVO1"
-		(at 55.88 114.3 180)
+		(at 55.88 109.22 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1031,7 +1031,7 @@
 		(uuid "a3d8318c-9375-4270-9b45-bf50f1944d65")
 	)
 	(label "SERVO0"
-		(at 55.88 109.22 180)
+		(at 55.88 114.3 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1053,7 +1053,7 @@
 		(uuid "eaaab5c3-dbdf-48ba-9485-c2240ba5c2f0")
 	)
 	(label "5V_SERVO1"
-		(at 76.2 114.3 0)
+		(at 76.2 109.22 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1177,7 +1177,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0603KRX7R7BB104"
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 72.39 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 72.39 97.79 0)
 			(effects
 				(font
@@ -1209,10 +1218,9 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "3aa89f33-adda-4a4a-957e-4188bfbdcb6d")
 		(property "Reference" "U6"
-			(at 68.2341 124.46 0)
+			(at 74.676 124.46 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1220,16 +1228,15 @@
 				(justify left)
 			)
 		)
-		(property "Value" "TXB0102RUT"
-			(at 68.2341 127 0)
+		(property "Value" "TXB0102DCU"
+			(at 74.676 127 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
-		(property "Footprint" "Package_SO:TSSOP-8_3x3mm_P0.65mm"
+		(property "Footprint" "Package_SO:VSSOP-8_2.3x2mm_P0.5mm"
 			(at 66.04 125.73 0)
 			(effects
 				(font
@@ -1256,7 +1263,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TXB0102RUT"
+		(property "MPN" "TXB0102DCUR"
+			(at 66.04 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C60709"
 			(at 66.04 111.76 0)
 			(effects
 				(font
@@ -1430,6 +1446,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C144394"
+			(at 133.35 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "65dd107f-6502-47a9-b137-03bc5ed77831")
 		)
@@ -1506,6 +1531,15 @@
 			)
 		)
 		(property "MPN" "B3B-XH-A"
+			(at 133.35 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C144394"
 			(at 133.35 124.46 0)
 			(effects
 				(font
@@ -1654,7 +1688,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0603KRX7R7BB104"
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 59.69 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 59.69 97.79 0)
 			(effects
 				(font

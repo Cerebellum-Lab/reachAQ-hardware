@@ -6,7 +6,7 @@
 	(paper "A4")
 	(title_block
 		(title "Autotrainer Magnet Module - Sensors")
-		(date "2024-07-09")
+		(date "2024-07-26")
 		(rev "v1.0")
 		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
@@ -940,10 +940,22 @@
 		)
 	)
 	(junction
+		(at 63.5 154.94)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "01fd6089-349c-4284-be56-187de2087d1a")
+	)
+	(junction
 		(at 101.6 53.34)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "33686eeb-700d-4670-a3a6-aa273a1bc999")
+	)
+	(junction
+		(at 74.93 157.48)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "7e0c0913-3426-45c9-90f4-838a07eee108")
 	)
 	(junction
 		(at 60.96 50.8)
@@ -952,7 +964,7 @@
 		(uuid "8f281e3f-ef56-4e72-b691-ca83461acafc")
 	)
 	(bus_entry
-		(at 80.01 152.4)
+		(at 41.91 152.4)
 		(size 2.54 2.54)
 		(stroke
 			(width 0)
@@ -961,7 +973,7 @@
 		(uuid "c17513d3-7a3c-44ff-8b91-5403c62f64f0")
 	)
 	(bus_entry
-		(at 80.01 154.94)
+		(at 41.91 154.94)
 		(size 2.54 2.54)
 		(stroke
 			(width 0)
@@ -1061,7 +1073,7 @@
 	)
 	(wire
 		(pts
-			(xy 82.55 154.94) (xy 96.52 154.94)
+			(xy 44.45 154.94) (xy 63.5 154.94)
 		)
 		(stroke
 			(width 0)
@@ -1101,6 +1113,16 @@
 	)
 	(wire
 		(pts
+			(xy 74.93 149.86) (xy 74.93 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6ac5c7ab-441a-4a47-b4b8-e48edf92b77a")
+	)
+	(wire
+		(pts
 			(xy 101.6 66.04) (xy 101.6 53.34)
 		)
 		(stroke
@@ -1131,7 +1153,7 @@
 	)
 	(bus
 		(pts
-			(xy 80.01 151.13) (xy 80.01 152.4)
+			(xy 41.91 151.13) (xy 41.91 152.4)
 		)
 		(stroke
 			(width 0)
@@ -1161,6 +1183,16 @@
 	)
 	(wire
 		(pts
+			(xy 63.5 154.94) (xy 96.52 154.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b3c024d4-a63e-4a42-9d01-548479053f2b")
+	)
+	(wire
+		(pts
 			(xy 120.65 53.34) (xy 120.65 57.15)
 		)
 		(stroke
@@ -1171,7 +1203,7 @@
 	)
 	(wire
 		(pts
-			(xy 82.55 157.48) (xy 96.52 157.48)
+			(xy 44.45 157.48) (xy 74.93 157.48)
 		)
 		(stroke
 			(width 0)
@@ -1181,13 +1213,33 @@
 	)
 	(bus
 		(pts
-			(xy 80.01 152.4) (xy 80.01 154.94)
+			(xy 41.91 152.4) (xy 41.91 154.94)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "e96caa66-c94d-497f-8d1c-84673dae38bd")
+	)
+	(wire
+		(pts
+			(xy 74.93 157.48) (xy 96.52 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ea3f0921-0d13-49eb-9809-3847813f183e")
+	)
+	(wire
+		(pts
+			(xy 63.5 149.86) (xy 63.5 154.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ed5438f0-d09f-404b-bd89-eb9c5d2a1107")
 	)
 	(wire
 		(pts
@@ -1212,7 +1264,7 @@
 		(uuid 77be73a4-1baf-401f-a6f6-ef5a65ac3541)
 	)
 	(rectangle
-		(start 67.056 140.716)
+		(start 26.67 129.54)
 		(end 130.81 171.45)
 		(stroke
 			(width 0)
@@ -1232,6 +1284,16 @@
 			)
 		)
 		(uuid "07cf1f00-3e28-4843-94ad-be4e84932f61")
+	)
+	(text "STEMMA QT Compatible"
+		(exclude_from_sim no)
+		(at 117.094 147.574 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "2069e464-a6d7-4977-b1ca-17a643cd7d8f")
 	)
 	(text "@ max pressure: Rp = 10kOhm, ADC input = 2.5V\n@ min pressure: Rp = 30kOhm, ADC input = 1.25V"
 		(exclude_from_sim no)
@@ -1275,7 +1337,7 @@
 	)
 	(text "To external temp/humidity sensor"
 		(exclude_from_sim no)
-		(at 83.312 139.446 0)
+		(at 42.672 127.508 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1306,7 +1368,7 @@
 		(uuid "2807be23-843d-4705-beea-b9559dddd5f7")
 	)
 	(label "TEMP.SCL"
-		(at 82.55 157.48 0)
+		(at 44.45 157.48 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1317,7 +1379,7 @@
 		(uuid "4797797a-e318-425c-a0cf-156dc61df351")
 	)
 	(label "TEMP.SDA"
-		(at 82.55 154.94 0)
+		(at 44.45 154.94 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1326,6 +1388,28 @@
 			(justify left bottom)
 		)
 		(uuid "4bcb45e3-f199-4a60-80ea-87c05d6ddf80")
+	)
+	(label "3V3"
+		(at 74.93 142.24 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "80a1f3f4-1889-4b14-86f2-47d56ee8fb8c")
+	)
+	(label "3V3"
+		(at 63.5 142.24 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "a3a08dbe-aa66-4136-ad3b-b6f01c449fa5")
 	)
 	(hierarchical_label "3V3"
 		(shape input)
@@ -1353,7 +1437,7 @@
 	)
 	(hierarchical_label "TEMP{I2C}"
 		(shape bidirectional)
-		(at 80.01 151.13 180)
+		(at 41.91 151.13 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1374,6 +1458,94 @@
 			(justify left)
 		)
 		(uuid "b66bb7b5-d702-4546-a4c5-f071ed81e6c3")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 63.5 146.05 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1a1f0ed0-38bc-47ac-b73d-36f62562678f")
+		(property "Reference" "R19"
+			(at 66.04 144.7799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "4.7k"
+			(at 66.04 147.3199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 61.722 146.05 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 63.5 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 63.5 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 63.5 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "0603WAF4701T5E"
+			(at 63.5 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "b7f37587-ed9a-486b-b283-d18d216f09a9")
+		)
+		(pin "1"
+			(uuid "104d95d9-7811-4481-80bc-31537017be43")
+		)
+		(instances
+			(project ""
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
+					(reference "R19")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -1430,7 +1602,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "RC0603FR-0710KL"
+		(property "MPN" "0603WAF1002T5E"
+			(at 60.96 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25804"
 			(at 60.96 60.96 0)
 			(effects
 				(font
@@ -1508,6 +1689,15 @@
 			)
 		)
 		(property "MPN" "MCP6001RT-I/OT"
+			(at 90.17 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C154973"
 			(at 90.17 53.34 0)
 			(effects
 				(font
@@ -1661,7 +1851,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0603KRX7R7BB104"
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 120.65 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 120.65 60.96 0)
 			(effects
 				(font
@@ -1885,6 +2084,94 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R")
+		(at 74.93 146.05 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a4df220d-0334-44cd-be88-7d087909a82e")
+		(property "Reference" "R20"
+			(at 77.47 144.7799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "4.7k"
+			(at 77.47 147.3199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 73.152 146.05 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 74.93 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 74.93 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 74.93 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "0603WAF4701T5E"
+			(at 74.93 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "cee9f8e5-5054-4e5c-ad13-95bda4e31d6c")
+		)
+		(pin "1"
+			(uuid "9da5dc43-78d9-4be2-a77a-87c319eb449a")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
+					(reference "R20")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector_Generic_MountingPin:Conn_01x04_MountingPin")
 		(at 101.6 152.4 0)
 		(unit 1)
@@ -1938,6 +2225,15 @@
 			)
 		)
 		(property "MPN" "BM04B-SRSS-TB"
+			(at 101.6 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C160390"
 			(at 101.6 152.4 0)
 			(effects
 				(font
@@ -2023,7 +2319,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "PPTC021LGBN-RC"
+		(property "MPN" "DW254W-11-02-85"
+			(at 48.26 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2935992"
 			(at 48.26 48.26 0)
 			(effects
 				(font
@@ -2165,7 +2470,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "RC0603FR-071KL"
+		(property "MPN" "0603WAF1001T5E"
+			(at 114.3 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C21190"
 			(at 114.3 53.34 0)
 			(effects
 				(font

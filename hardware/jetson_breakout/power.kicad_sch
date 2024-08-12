@@ -4,6 +4,13 @@
 	(generator_version "8.0")
 	(uuid "d76086a7-4530-4552-9f5a-5aabf7710678")
 	(paper "A4")
+	(title_block
+		(title "Jetson AGX Orin CAN Adapter - Power")
+		(date "2024-07-26")
+		(rev "v1.0")
+		(company "Christie Lab, CU Anschutz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
 	(lib_symbols
 		(symbol "Connector:Barrel_Jack_Switch"
 			(pin_names hide)
@@ -695,6 +702,16 @@
 	)
 	(wire
 		(pts
+			(xy 153.67 116.84) (xy 153.67 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ebf2c116-e71c-4a92-8c12-69b06a479127")
+	)
+	(wire
+		(pts
 			(xy 135.89 96.52) (xy 127 96.52)
 		)
 		(stroke
@@ -838,6 +855,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C5280493"
+			(at 119.38 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "431d9214-d15a-404b-99c1-744e0b966c84")
 		)
@@ -858,7 +884,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 153.67 113.03 0)
+		(at 153.67 116.84 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -867,7 +893,7 @@
 		(fields_autoplaced yes)
 		(uuid "ca09d94f-0dbb-4ccc-82b0-a0aaa79bfd96")
 		(property "Reference" "#PWR08"
-			(at 153.67 119.38 0)
+			(at 153.67 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -876,7 +902,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 153.67 118.11 0)
+			(at 153.67 121.92 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -884,7 +910,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 153.67 113.03 0)
+			(at 153.67 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -893,7 +919,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 153.67 113.03 0)
+			(at 153.67 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -902,7 +928,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 153.67 113.03 0)
+			(at 153.67 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1004,6 +1030,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C5252984"
+			(at 153.67 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "3d23476b-72d2-4f54-9596-c7cc82edf4fb")
 		)
@@ -1074,7 +1109,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "RC0603FR-072K2L"
+		(property "MPN" "0603WAF2201T5E"
 			(at 153.67 109.22 0)
 			(effects
 				(font
@@ -1093,6 +1128,15 @@
 			)
 		)
 		(property "Sim.Pins" ""
+			(at 153.67 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C4190"
 			(at 153.67 109.22 0)
 			(effects
 				(font

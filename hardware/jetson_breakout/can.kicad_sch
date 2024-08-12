@@ -4,6 +4,13 @@
 	(generator_version "8.0")
 	(uuid "2d24128c-fa20-4f27-9087-7025abd7702e")
 	(paper "A4")
+	(title_block
+		(title "Jetson AGX Orin CAN Adapter - CAN Connection")
+		(date "2024-07-26")
+		(rev "v1.0")
+		(company "Christie Lab, CU Anschutz")
+		(comment 1 "Prepared by LeafLabs, LLC")
+	)
 	(lib_symbols
 		(symbol "Connector:Conn_01x03_Pin"
 			(pin_names
@@ -1031,22 +1038,22 @@
 		(uuid "5f2979d9-773d-436e-a59a-8fab6a8216b6")
 	)
 	(junction
+		(at 85.09 43.18)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "91aa7112-a842-41d9-86bb-9a3b47699ef0")
+	)
+	(junction
+		(at 97.79 45.72)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "936d48a7-5e37-404c-966b-1ac2a5eea3c9")
+	)
+	(junction
 		(at 162.56 49.53)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "9813519f-8bb2-4d90-9f7c-f631b2731e59")
-	)
-	(junction
-		(at 106.68 45.72)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a82f3fbe-513f-4791-bcd7-ebc0e48cd2ae")
-	)
-	(junction
-		(at 93.98 43.18)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "edebc152-43eb-42be-bf3c-a4fbd29abadc")
 	)
 	(no_connect
 		(at 138.43 81.28)
@@ -1112,7 +1119,17 @@
 	)
 	(wire
 		(pts
-			(xy 91.44 45.72) (xy 106.68 45.72)
+			(xy 97.79 45.72) (xy 133.35 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2ba1f735-662b-43af-8de9-d4f5de4acb0c")
+	)
+	(wire
+		(pts
+			(xy 81.28 45.72) (xy 97.79 45.72)
 		)
 		(stroke
 			(width 0)
@@ -1130,6 +1147,16 @@
 		)
 		(uuid "31396aec-1320-4290-b790-ab759e588c84")
 	)
+	(wire
+		(pts
+			(xy 81.28 43.18) (xy 85.09 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4881e7a0-3299-4a81-a263-d0f0d312bf27")
+	)
 	(polyline
 		(pts
 			(xy 130.81 76.2) (xy 130.81 78.232)
@@ -1139,16 +1166,6 @@
 			(type default)
 		)
 		(uuid "4a839d39-15d4-4de8-954a-5f1e2dcadbb2")
-	)
-	(wire
-		(pts
-			(xy 93.98 43.18) (xy 133.35 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "599d8890-c97b-41cf-847e-01e9cb16afb5")
 	)
 	(polyline
 		(pts
@@ -1172,7 +1189,7 @@
 	)
 	(wire
 		(pts
-			(xy 93.98 43.18) (xy 93.98 48.26)
+			(xy 85.09 43.18) (xy 85.09 48.26)
 		)
 		(stroke
 			(width 0)
@@ -1242,17 +1259,17 @@
 	)
 	(wire
 		(pts
-			(xy 91.44 43.18) (xy 93.98 43.18)
+			(xy 85.09 43.18) (xy 133.35 43.18)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "b58ed972-41a2-4c13-b7a2-983057b1ba8b")
+		(uuid "b7a4f89f-aad0-4c73-92a0-b425960f8a62")
 	)
 	(wire
 		(pts
-			(xy 106.68 45.72) (xy 106.68 48.26)
+			(xy 97.79 45.72) (xy 97.79 48.26)
 		)
 		(stroke
 			(width 0)
@@ -1339,16 +1356,6 @@
 			(type default)
 		)
 		(uuid "e5215784-3b5c-4102-b419-6a8ec55e388c")
-	)
-	(wire
-		(pts
-			(xy 106.68 45.72) (xy 133.35 45.72)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ebab9da8-45a5-4dd8-bb3a-98413cb9c491")
 	)
 	(bus
 		(pts
@@ -1443,7 +1450,7 @@
 		)
 		(uuid "86462118-5264-465c-bfcd-7d37f7649936")
 	)
-	(label "FDCAN.TXD"
+	(label "TXD"
 		(at 120.65 49.53 0)
 		(fields_autoplaced yes)
 		(effects
@@ -1454,7 +1461,7 @@
 		)
 		(uuid "c33bd93d-a31b-431b-bbee-f66c995907e3")
 	)
-	(label "FDCAN.RXD"
+	(label "RXD"
 		(at 120.65 52.07 0)
 		(fields_autoplaced yes)
 		(effects
@@ -1467,7 +1474,7 @@
 	)
 	(hierarchical_label "3V3"
 		(shape input)
-		(at 91.44 45.72 180)
+		(at 81.28 45.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1491,7 +1498,7 @@
 	)
 	(hierarchical_label "5V"
 		(shape input)
-		(at 91.44 43.18 180)
+		(at 81.28 43.18 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1548,7 +1555,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://ww1.microchip.com/downloads/en/DeviceDoc/20005991B.pdf"
 			(at 142.24 37.592 0)
 			(effects
 				(font
@@ -1585,6 +1592,15 @@
 			)
 		)
 		(property "Sim.Pins" ""
+			(at 142.24 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C616016"
 			(at 142.24 38.1 0)
 			(effects
 				(font
@@ -1783,6 +1799,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C5271185"
+			(at 184.15 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5bdbfabf-5c84-4372-9997-2d95c7440fab")
 		)
@@ -1880,7 +1905,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 106.68 55.88 0)
+		(at 97.79 55.88 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1889,7 +1914,7 @@
 		(fields_autoplaced yes)
 		(uuid "968ba4d4-95df-4d06-ab07-8897d35ca07f")
 		(property "Reference" "#PWR05"
-			(at 106.68 62.23 0)
+			(at 97.79 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1898,7 +1923,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 106.68 60.96 0)
+			(at 97.79 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1906,7 +1931,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 106.68 55.88 0)
+			(at 97.79 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1915,7 +1940,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 106.68 55.88 0)
+			(at 97.79 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1924,7 +1949,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 106.68 55.88 0)
+			(at 97.79 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2028,6 +2053,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C2915006"
+			(at 133.35 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "d4620781-c03a-4356-9ed5-ad9552e93b9f")
 		)
@@ -2103,7 +2137,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "RMCF0603FT120R"
+		(property "MPN" "0603WAF1200T5E"
 			(at 147.32 78.74 0)
 			(effects
 				(font
@@ -2122,6 +2156,15 @@
 			)
 		)
 		(property "Sim.Pins" ""
+			(at 147.32 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C22787"
 			(at 147.32 78.74 0)
 			(effects
 				(font
@@ -2221,7 +2264,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 93.98 52.07 0)
+		(at 85.09 52.07 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2229,7 +2272,7 @@
 		(dnp no)
 		(uuid "cd451312-32df-4bb7-b25d-a277334628b5")
 		(property "Reference" "C2"
-			(at 90.17 50.7999 0)
+			(at 81.28 50.7999 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2238,7 +2281,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 90.17 53.3399 0)
+			(at 81.28 53.3399 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2247,7 +2290,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 94.9452 55.88 0)
+			(at 86.0552 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2256,7 +2299,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 93.98 52.07 0)
+			(at 85.09 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2265,7 +2308,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 93.98 52.07 0)
+			(at 85.09 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2273,8 +2316,8 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0603ZRY5V9BB104"
-			(at 93.98 52.07 0)
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 85.09 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2283,7 +2326,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 93.98 52.07 0)
+			(at 85.09 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2292,7 +2335,16 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 93.98 52.07 0)
+			(at 85.09 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
+			(at 85.09 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2402,6 +2454,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C5271185"
+			(at 185.42 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "52d86e08-87ca-4f8f-8ff4-739acff571cb")
 		)
@@ -2499,7 +2560,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 93.98 55.88 0)
+		(at 85.09 55.88 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2508,7 +2569,7 @@
 		(fields_autoplaced yes)
 		(uuid "dc1e8c8a-12d0-443a-b9b8-704225f336e6")
 		(property "Reference" "#PWR03"
-			(at 93.98 62.23 0)
+			(at 85.09 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2517,7 +2578,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 93.98 60.96 0)
+			(at 85.09 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2525,7 +2586,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 93.98 55.88 0)
+			(at 85.09 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2534,7 +2595,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 93.98 55.88 0)
+			(at 85.09 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2543,7 +2604,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 93.98 55.88 0)
+			(at 85.09 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2569,7 +2630,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 106.68 52.07 0)
+		(at 97.79 52.07 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2577,7 +2638,7 @@
 		(dnp no)
 		(uuid "ea98ceb2-091e-4ad0-ab53-008336257f00")
 		(property "Reference" "C4"
-			(at 102.87 50.7999 0)
+			(at 93.98 50.7999 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2586,7 +2647,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 102.87 53.3399 0)
+			(at 93.98 53.3399 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2595,7 +2656,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 107.6452 55.88 0)
+			(at 98.7552 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2604,7 +2665,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 106.68 52.07 0)
+			(at 97.79 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2613,7 +2674,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 106.68 52.07 0)
+			(at 97.79 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2621,8 +2682,8 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0603ZRY5V9BB104"
-			(at 106.68 52.07 0)
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 97.79 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2631,7 +2692,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 106.68 52.07 0)
+			(at 97.79 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2640,7 +2701,16 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 106.68 52.07 0)
+			(at 97.79 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
+			(at 97.79 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)

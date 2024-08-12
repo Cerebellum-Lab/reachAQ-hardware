@@ -1355,7 +1355,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "RC0603FR-0715KL"
+		(property "MPN" "0603WAF1502T5E"
+			(at 160.02 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C22809"
 			(at 160.02 96.52 0)
 			(effects
 				(font
@@ -1433,6 +1442,15 @@
 			)
 		)
 		(property "MPN" "3296W-1-204LF"
+			(at 170.18 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C58354"
 			(at 170.18 96.52 0)
 			(effects
 				(font
@@ -1523,6 +1541,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C3311279"
+			(at 242.57 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "bc695959-b78c-4dc0-b94e-a75eeb1ce271")
 		)
@@ -1590,7 +1617,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "RC0603FR-07150KL"
+		(property "MPN" "0603WAF1503T5E"
+			(at 194.31 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C22807"
 			(at 194.31 99.06 0)
 			(effects
 				(font
@@ -1619,7 +1655,7 @@
 		(at 222.25 96.52 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -1686,7 +1722,7 @@
 		(at 222.25 99.06 180)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -1774,7 +1810,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_SO:HVSSOP-8-1EP_3x3mm_P0.65mm_EP1.57x1.89mm"
+		(property "Footprint" "Leaf_InterfaceIC:HVSSOP-8-1EP_3x3mm_P0.65mm_EP1.57x1.89mm_SmallPads"
 			(at 209.55 85.09 0)
 			(effects
 				(font
@@ -1801,7 +1837,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TPA2005D1DRBR"
+		(property "MPN" "TPA2005D1DGNR"
+			(at 209.55 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C27396"
 			(at 209.55 85.09 0)
 			(effects
 				(font
@@ -2041,6 +2086,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C162235"
+			(at 187.96 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "4a656626-334f-4286-9a48-5cd99409c4cb")
 		)
@@ -2110,7 +2164,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0603KRX7R7BB105"
+		(property "MPN" "CL10A105KB8NNNC"
+			(at 119.38 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C15849"
 			(at 119.38 99.06 0)
 			(effects
 				(font
@@ -2256,6 +2319,15 @@
 			)
 		)
 		(property "MPN" "GRM1885C1H510JA01D"
+			(at 147.32 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C162235"
 			(at 147.32 96.52 0)
 			(effects
 				(font

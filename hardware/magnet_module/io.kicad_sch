@@ -6,7 +6,7 @@
 	(paper "A4")
 	(title_block
 		(title "Autotrainer Magnet Module - External IO")
-		(date "2024-07-09")
+		(date "2024-07-26")
 		(rev "v1.0")
 		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
@@ -408,6 +408,127 @@
 				)
 			)
 		)
+		(symbol "Device:R"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "R"
+				(at 2.032 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "R"
+				(at 0 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Resistor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "R res resistor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "R_0_1"
+				(rectangle
+					(start -1.016 -2.54)
+					(end 1.016 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "R_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "power:GND"
 			(power)
 			(pin_numbers hide)
@@ -505,8 +626,20 @@
 			)
 		)
 	)
+	(junction
+		(at 121.92 59.69)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "a35305b3-3bea-4890-9bb6-b2ed335f009d")
+	)
+	(junction
+		(at 113.03 57.15)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "bd59b548-c6a7-4c37-8771-88b8f08eb9cf")
+	)
 	(bus_entry
-		(at 125.73 57.15)
+		(at 95.25 57.15)
 		(size 2.54 2.54)
 		(stroke
 			(width 0)
@@ -515,7 +648,7 @@
 		(uuid "0ce91e75-0899-404a-92cf-e1e89610e475")
 	)
 	(bus_entry
-		(at 125.73 54.61)
+		(at 95.25 54.61)
 		(size 2.54 2.54)
 		(stroke
 			(width 0)
@@ -525,7 +658,7 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 57.15) (xy 142.24 57.15)
+			(xy 97.79 57.15) (xy 113.03 57.15)
 		)
 		(stroke
 			(width 0)
@@ -545,27 +678,17 @@
 	)
 	(wire
 		(pts
-			(xy 142.24 50.8) (xy 142.24 52.07)
+			(xy 121.92 52.07) (xy 121.92 59.69)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "433b1a01-231b-41c4-ac94-58ef7b335032")
-	)
-	(wire
-		(pts
-			(xy 140.97 54.61) (xy 142.24 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "56f28f05-41e2-41f0-a105-8677dcd4af5e")
+		(uuid "52a86e6c-21cc-4d7f-9338-20ae299d096f")
 	)
 	(bus
 		(pts
-			(xy 125.73 54.61) (xy 125.73 57.15)
+			(xy 95.25 54.61) (xy 95.25 57.15)
 		)
 		(stroke
 			(width 0)
@@ -575,17 +698,7 @@
 	)
 	(wire
 		(pts
-			(xy 140.97 53.34) (xy 140.97 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6f6047be-a28d-46f0-8f1d-705669df37af")
-	)
-	(wire
-		(pts
-			(xy 137.16 50.8) (xy 142.24 50.8)
+			(xy 140.97 52.07) (xy 142.24 52.07)
 		)
 		(stroke
 			(width 0)
@@ -595,7 +708,7 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 59.69) (xy 142.24 59.69)
+			(xy 97.79 59.69) (xy 121.92 59.69)
 		)
 		(stroke
 			(width 0)
@@ -605,7 +718,7 @@
 	)
 	(wire
 		(pts
-			(xy 138.43 53.34) (xy 140.97 53.34)
+			(xy 138.43 54.61) (xy 142.24 54.61)
 		)
 		(stroke
 			(width 0)
@@ -613,9 +726,29 @@
 		)
 		(uuid "aed8954d-a9ba-433e-b37b-55b7d04e8437")
 	)
+	(wire
+		(pts
+			(xy 121.92 59.69) (xy 142.24 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b13ac3a4-016f-4c15-a9fd-6ab090fb6bfd")
+	)
+	(wire
+		(pts
+			(xy 113.03 57.15) (xy 142.24 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c3327139-ef13-469f-8ee1-7382b2a0eb76")
+	)
 	(bus
 		(pts
-			(xy 125.73 53.34) (xy 125.73 54.61)
+			(xy 95.25 53.34) (xy 95.25 54.61)
 		)
 		(stroke
 			(width 0)
@@ -623,8 +756,18 @@
 		)
 		(uuid "f1d2c649-fb1c-41ad-93a2-db1502cabb3a")
 	)
+	(wire
+		(pts
+			(xy 113.03 52.07) (xy 113.03 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f34d7c22-a247-4600-a5a4-d1bd4c696e57")
+	)
 	(rectangle
-		(start 101.6 38.1)
+		(start 71.12 38.1)
 		(end 170.18 76.2)
 		(stroke
 			(width 0)
@@ -659,7 +802,7 @@
 	)
 	(text "STEMMA QT Connector"
 		(exclude_from_sim no)
-		(at 112.268 37.084 0)
+		(at 81.534 36.322 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -667,8 +810,19 @@
 		)
 		(uuid "e38d322e-d491-4fb9-95fe-74f736363ced")
 	)
+	(label "3V3"
+		(at 121.92 44.45 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "4ca15ba3-6c24-4d1f-bc18-279cd12bc569")
+	)
 	(label "SPARE0.SCL"
-		(at 128.27 59.69 0)
+		(at 97.79 59.69 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -678,8 +832,19 @@
 		)
 		(uuid "55512cfb-fa04-492f-b19b-781b0e880f5a")
 	)
+	(label "3V3"
+		(at 113.03 44.45 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "64bf4661-4348-4d6e-85fe-3602c27f333e")
+	)
 	(label "SPARE0.SDA"
-		(at 128.27 57.15 0)
+		(at 97.79 57.15 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -691,7 +856,7 @@
 	)
 	(hierarchical_label "3V3"
 		(shape input)
-		(at 138.43 53.34 180)
+		(at 138.43 54.61 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -703,7 +868,7 @@
 	)
 	(hierarchical_label "SPARE0{I2C}"
 		(shape bidirectional)
-		(at 125.73 53.34 180)
+		(at 95.25 53.34 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -739,7 +904,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 137.16 50.8 270)
+		(at 140.97 52.07 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -748,7 +913,7 @@
 		(fields_autoplaced yes)
 		(uuid "162d0d58-8387-45a5-8d1a-ea3caf5d7f08")
 		(property "Reference" "#PWR059"
-			(at 130.81 50.8 0)
+			(at 134.62 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -757,7 +922,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 133.35 50.7999 90)
+			(at 137.16 52.0699 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -766,7 +931,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 137.16 50.8 0)
+			(at 140.97 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -775,7 +940,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 137.16 50.8 0)
+			(at 140.97 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -784,7 +949,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 137.16 50.8 0)
+			(at 140.97 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -927,7 +1092,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "61300211121"
+		(property "MPN" "A2541WV-2P"
+			(at 137.16 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C225477"
 			(at 137.16 102.87 0)
 			(effects
 				(font
@@ -946,6 +1120,94 @@
 			(project ""
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/f6a6e864-0822-4ae4-be84-ceba396b8425"
 					(reference "J13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 113.03 48.26 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8bfe1c0c-07da-4089-a5e7-ef648b91f196")
+		(property "Reference" "R23"
+			(at 115.57 46.9899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "4.7k"
+			(at 115.57 49.5299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 111.252 48.26 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 113.03 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 113.03 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 113.03 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "0603WAF4701T5E"
+			(at 113.03 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "b9b1b219-5342-478f-9541-6f3a0a0eec94")
+		)
+		(pin "1"
+			(uuid "80ec8576-4f8d-4197-b901-4f6ff28e4719")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/f6a6e864-0822-4ae4-be84-ceba396b8425"
+					(reference "R23")
 					(unit 1)
 				)
 			)
@@ -1005,6 +1267,15 @@
 			)
 		)
 		(property "MPN" "BM04B-SRSS-TB"
+			(at 147.32 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C160390"
 			(at 147.32 54.61 0)
 			(effects
 				(font
@@ -1159,7 +1430,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "61300211121"
+		(property "MPN" "A2541WV-2P"
+			(at 137.16 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C225477"
 			(at 137.16 115.57 0)
 			(effects
 				(font
@@ -1178,6 +1458,94 @@
 			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/f6a6e864-0822-4ae4-be84-ceba396b8425"
 					(reference "J14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 121.92 48.26 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d18854cb-d25b-4da3-8c51-c785fe0d0acc")
+		(property "Reference" "R24"
+			(at 124.46 46.9899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "4.7k"
+			(at 124.46 49.5299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 120.142 48.26 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 121.92 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 121.92 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 121.92 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "0603WAF4701T5E"
+			(at 121.92 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "99e18747-3764-40f1-9ff2-ddd649ae3b79")
+		)
+		(pin "1"
+			(uuid "e8dd8f6f-b003-4f2c-b9fe-9c7d649663d4")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/f6a6e864-0822-4ae4-be84-ceba396b8425"
+					(reference "R24")
 					(unit 1)
 				)
 			)

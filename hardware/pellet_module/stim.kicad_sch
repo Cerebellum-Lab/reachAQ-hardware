@@ -2120,7 +2120,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Leaf_Connectors:CONBNC002"
+		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-801-0038"
 			(at 48.26 34.29 0)
 			(effects
 				(font
@@ -2147,7 +2147,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONBNC002"
+		(property "MPN" "KH-BNC50-3511"
+			(at 48.26 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2837587"
 			(at 48.26 34.29 0)
 			(effects
 				(font
@@ -2199,7 +2208,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Leaf_Connectors:CONBNC002"
+		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-801-0038"
 			(at 49.53 153.67 0)
 			(effects
 				(font
@@ -2226,7 +2235,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONBNC002"
+		(property "MPN" "KH-BNC50-3511"
+			(at 49.53 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2837587"
 			(at 49.53 153.67 0)
 			(effects
 				(font
@@ -2370,7 +2388,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "RC0603FR-0710KL"
+		(property "MPN" "0603WAF1002T5E"
+			(at 50.8 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25804"
 			(at 50.8 116.84 0)
 			(effects
 				(font
@@ -2514,7 +2541,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "RC0603FR-0710KL"
+		(property "MPN" "0603WAF1002T5E"
+			(at 50.8 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25804"
 			(at 50.8 86.36 0)
 			(effects
 				(font
@@ -2658,7 +2694,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "RC0603FR-0710KL"
+		(property "MPN" "0603WAF1002T5E"
+			(at 50.8 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25804"
 			(at 50.8 101.6 0)
 			(effects
 				(font
@@ -2738,7 +2783,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "RC0603FR-0710KL"
+		(property "MPN" "0603WAF1002T5E"
+			(at 35.56 30.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25804"
 			(at 35.56 30.48 0)
 			(effects
 				(font
@@ -2817,7 +2871,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0603ZRY5V9BB104"
+		(property "MPN" " CC0603KRX7R9BB104"
+			(at 39.37 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 39.37 38.1 0)
 			(effects
 				(font
@@ -2897,6 +2960,15 @@
 			)
 		)
 		(property "MPN" "TXB0104RUT"
+			(at 172.72 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C105266"
 			(at 172.72 96.52 0)
 			(effects
 				(font
@@ -3006,7 +3078,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "M20-9750242"
+		(property "MPN" " A2005WR-2P"
+			(at 59.69 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C225269"
 			(at 59.69 101.6 0)
 			(effects
 				(font
@@ -3152,7 +3233,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "M20-9750242"
+		(property "MPN" " A2005WR-2P"
+			(at 59.69 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C225269"
 			(at 59.69 86.36 0)
 			(effects
 				(font
@@ -3270,7 +3360,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Leaf_Connectors:CONBNC002"
+		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-801-0038"
 			(at 220.98 87.63 0)
 			(effects
 				(font
@@ -3297,7 +3387,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONBNC002"
+		(property "MPN" "KH-BNC50-3511"
+			(at 220.98 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2837587"
 			(at 220.98 87.63 0)
 			(effects
 				(font
@@ -3349,7 +3448,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Leaf_Connectors:CONBNC002"
+		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-801-0038"
 			(at 220.98 102.87 0)
 			(effects
 				(font
@@ -3376,7 +3475,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONBNC002"
+		(property "MPN" "KH-BNC50-3511"
+			(at 220.98 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2837587"
 			(at 220.98 102.87 0)
 			(effects
 				(font
@@ -3456,7 +3564,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "M20-9750242"
+		(property "MPN" " A2005WR-2P"
+			(at 59.69 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C225269"
 			(at 59.69 116.84 0)
 			(effects
 				(font
@@ -3641,7 +3758,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Leaf_Connectors:CONBNC002"
+		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-801-0038"
 			(at 220.98 71.12 0)
 			(effects
 				(font
@@ -3668,7 +3785,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONBNC002"
+		(property "MPN" "KH-BNC50-3511"
+			(at 220.98 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2837587"
 			(at 220.98 71.12 0)
 			(effects
 				(font
@@ -3746,7 +3872,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0603ZRY5V9BB104"
+		(property "MPN" " CC0603KRX7R9BB104"
+			(at 179.07 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 179.07 76.2 0)
 			(effects
 				(font
@@ -3930,7 +4065,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Leaf_Connectors:CONBNC002"
+		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-801-0038"
 			(at 220.98 121.92 0)
 			(effects
 				(font
@@ -3957,7 +4092,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CONBNC002"
+		(property "MPN" "KH-BNC50-3511"
+			(at 220.98 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2837587"
 			(at 220.98 121.92 0)
 			(effects
 				(font
@@ -4036,7 +4180,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0603ZRY5V9BB104"
+		(property "MPN" " CC0603KRX7R9BB104"
+			(at 166.37 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 166.37 76.2 0)
 			(effects
 				(font

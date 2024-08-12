@@ -1676,7 +1676,7 @@
 	)
 	(wire
 		(pts
-			(xy 82.55 68.58) (xy 69.85 68.58)
+			(xy 69.85 68.58) (xy 82.55 68.58)
 		)
 		(stroke
 			(width 0)
@@ -2144,7 +2144,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0603ZRY5V9BB104"
+		(property "MPN" " CC0603KRX7R9BB104"
+			(at 123.19 57.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 123.19 57.15 0)
 			(effects
 				(font
@@ -2285,7 +2294,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.analog.com/media/en/technical-documentation/data-sheets/TMC2209_datasheet_rev1.09.pdf"
 			(at 147.32 58.42 0)
 			(effects
 				(font
@@ -2304,6 +2313,15 @@
 			)
 		)
 		(property "MPN" "TMC2209-LA-T"
+			(at 147.32 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C2150710"
 			(at 147.32 58.42 0)
 			(effects
 				(font
@@ -2471,7 +2489,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "C0402C223K5REC7411"
+		(property "MPN" "0402B223K500NT"
+			(at 116.84 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" " C1532"
 			(at 116.84 85.09 0)
 			(effects
 				(font
@@ -2555,7 +2582,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "ERJ-3RSFR10V"
+		(property "MPN" "0603WAJ010KT5E"
+			(at 175.26 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C247025"
 			(at 175.26 97.79 0)
 			(effects
 				(font
@@ -2789,7 +2825,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0603ZRY5V9BB104"
+		(property "MPN" " CC0603KRX7R9BB104"
+			(at 116.84 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 116.84 74.93 0)
 			(effects
 				(font
@@ -3034,6 +3079,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C157924"
+			(at 229.87 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "2f2efccd-4c39-4963-8bc7-9e31e7db942c")
 		)
@@ -3117,6 +3171,15 @@
 			)
 		)
 		(property "MPN" "CL10A225KO8NNNC"
+			(at 176.53 81.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C23630"
 			(at 176.53 81.28 0)
 			(effects
 				(font
@@ -3212,6 +3275,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C125975"
+			(at 69.85 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "dbe89e2d-f61b-4764-91e4-a5e67cbe3d19")
 		)
@@ -3240,7 +3312,7 @@
 		(at 115.57 107.95 180)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -3315,7 +3387,7 @@
 		(at 100.33 109.22 180)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -3511,7 +3583,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "ERJ-3RSFR10V"
+		(property "MPN" "0603WAJ010KT5E"
+			(at 175.26 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C247025"
 			(at 175.26 110.49 0)
 			(effects
 				(font
@@ -3598,7 +3679,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0603ZRY5V9BB104"
+		(property "MPN" " CC0603KRX7R9BB104"
+			(at 82.55 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 82.55 74.93 0)
 			(effects
 				(font
@@ -3685,7 +3775,16 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0603ZRY5V9BB104"
+		(property "MPN" " CC0603KRX7R9BB104"
+			(at 95.25 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 95.25 74.93 0)
 			(effects
 				(font
