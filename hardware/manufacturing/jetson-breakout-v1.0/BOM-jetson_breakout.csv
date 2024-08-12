@@ -1,0 +1,11 @@
+Comment,Designator,Footprint,LCSC
+0.1uF,"C1,C2,C3,C4",C_0603_1608Metric,C14663
+120,R1,R_0603_1608Metric,C22787
+Conn_01x03_Pin,"J2,J3",PinHeader_1x03_P2.54mm_Vertical,C2915006
+Jetson AGX Orin 40pin Header,J1,PinSocket_2x20_P2.54mm_Vertical,C2977589
+2.2k,R2,R_0603_1608Metric,C4190
+120,R3,R_0603_1608Metric,C507496
+150060GS75000,D2,D_0603_1608Metric,C5252984
+Conn_01x04_Pin,"J5,J6,J7,J8",Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical,C5271185
+Barrel_Jack_Switch,J4,BarrelJack_GCT_DCJ200-10-A_Horizontal,C5280493
+ATA6561,"U1,U2",SOIC-8_3.9x4.9mm_P1.27mm,C616016
