@@ -30,5 +30,3 @@ ip link set can1 up type can bitrate 500000 dbitrate 1000000 berr-reporting on f
 
 echo "Installing CAN utilities"
 apt install can-utils
-
-echo "Please reboot to confirm changes to your pinmux"
