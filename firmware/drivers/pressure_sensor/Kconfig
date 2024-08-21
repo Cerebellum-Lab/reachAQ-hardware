@@ -1,0 +1,30 @@
+config LL_PRESSURE_SENSOR_LOG_LEVEL
+    int "Log level (0-4)"
+        default 4
+        help
+            Set the log level for the pressure sensor
+
+config LL_PRESSURE_SENSOR_INIT_PRIORITY
+        int "Initialization priority"
+        default 91
+        help
+            Set the initialization priority for the pressure sensor
+
+menuconfig LL_PRESSURE_SENSOR
+        bool "Support LeafLabs pressure sensor driver"
+        default y
+        depends on DT_HAS_LL_PRESSURE_SENSOR_ENABLED
+        select USE_STM32_LL_GPIO
+        select ADC
+        select ADC_ASYNC
+        select DMA
+        help
+            Enable support for the pressure sensor
+
+config LL_PRESSURE_SENSOR_SHELL
+        bool "Enable shell commands for pressure sensor driver"
+        default y
+        depends on SHELL
+        depends on LL_PRESSURE_SENSOR
+        help
+            Enable shell commands for pressure sensor

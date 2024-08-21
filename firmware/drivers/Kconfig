@@ -1,3 +1,4 @@
 rsource "gpio/Kconfig"
 rsource "motor/Kconfig"
 rsource "tone_generator/Kconfig"
+rsource "pressure_sensor/Kconfig"

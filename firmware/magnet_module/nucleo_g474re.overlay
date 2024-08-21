@@ -1,0 +1,133 @@
+/ {
+	leds {
+		status = "okay";
+
+        status_led: led_1 {
+            gpios = <&gpioa 6 GPIO_ACTIVE_HIGH>;
+            label = "STATUS_LED";
+        };
+    };
+
+	gpio_keys {
+		status = "okay";
+
+		boot_button: boot_button {
+            label = "BOOT button";
+            gpios = <&gpiob 10 GPIO_ACTIVE_LOW>;
+            zephyr,code = <INPUT_KEY_1>;
+        };
+
+	};
+
+	generic-gpios {
+		status = "okay";
+
+		compatible = "ll,generic-gpios";
+		input-gpios = <&gpioc 2 GPIO_ACTIVE_HIGH>, // CAN_ID[0] / DeviceType[0]
+					  <&gpioc 3 GPIO_ACTIVE_HIGH>, // CAN_ID[1] / DeviceType[1]
+					  <&gpioa 0 GPIO_ACTIVE_HIGH>, // CAN_ID[2] / NodeNumber[0]
+					  <&gpioa 1 GPIO_ACTIVE_HIGH>, // CAN_ID[3] / NodeNumber[1]
+					  <&gpioc 5 GPIO_ACTIVE_HIGH>; // DRDY
+		output-gpios = <&gpioc 14 GPIO_ACTIVE_HIGH>, // GPIO0 (input or output?)
+					   <&gpioc 15 GPIO_ACTIVE_HIGH>; // GPIO1 (input or output?)
+	};
+
+    pressure_sensor: pressure_sensor {
+		compatible = "ll,pressure-sensor";
+		status = "okay";
+
+		adc = <&adc1>;
+		adc-channel = <15>;
+		sample-rate = <1000>;
+	};
+};
+
+
+&dma1 {
+	status = "okay";
+};
+
+&dmamux1 {
+	status = "okay";
+};
+
+&timers2 {
+	status = "okay";
+	st,prescaler = <84>; // 170 MHz / (84 + 1) = 2 MHz
+
+	servo0: servo0 {
+		compatible = "ll,servo";
+		status = "okay";
+
+		pinctrl-0 = <&tim2_ch3_pa2>;
+		pinctrl-names = "default";
+
+		pwm-channel = <3>;
+
+		dmas = <&dmamux1 0 76 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
+	};
+};
+
+&timers5 {
+	status = "okay";
+	st,prescaler = <84>; // 170 MHz / (84 + 1) = 2 MHz
+
+	servo1: servo1 {
+		compatible = "ll,servo";
+		status = "okay";
+
+		pinctrl-0 = <&tim5_ch4_pa3>;
+		pinctrl-names = "default";
+
+		pwm-channel = <4>;
+
+		dmas = <&dmamux1 1 79 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
+	};
+};
+
+&i2c1 {
+	pinctrl-0 = <&i2c1_scl_pa15 &i2c1_sda_pb9>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	// TODO: Temperature Sensor Goes here
+};
+
+&i2c4 {
+	pinctrl-0 = <&i2c4_scl_pc6 &i2c4_sda_pc7>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	// TODO: Load cell goes here
+};
+
+&i2c3 {
+	pinctrl-0 = <&i2c3_scl_pc8 &i2c3_sda_pc9>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&spi2 {
+	pinctrl-0 = <&spi2_nss_pb12 &spi2_sck_pb13
+				 &spi2_miso_pb14 &spi2_mosi_pb15>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&adc1 {
+	pinctrl-0 = <&adc1_in15_pb0>;
+	pinctrl-names = "default";
+	st,adc-clock-source = <SYNC>;
+	st,adc-prescaler = <4>;
+	status = "okay";
+};
+
+&fdcan2 {
+	clocks = <&rcc STM32_CLOCK_BUS_APB1 0x02000000>,
+			 <&rcc STM32_SRC_HSE FDCAN_SEL(0)>;
+	pinctrl-0 = <&fdcan2_rx_pb5 &fdcan2_tx_pb6>;
+	pinctrl-names = "default";
+	status = "okay";
+};

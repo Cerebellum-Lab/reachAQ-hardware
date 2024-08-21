@@ -1,0 +1,21 @@
+description: |
+  Pressure Sensor using ADC peripherals
+
+compatible: "ll,pressure-sensor"
+
+include:
+  - name: base.yaml
+
+properties:
+  adc:
+    type: phandle
+    required: true
+    description: ADC peripheral instance
+  adc-channel:
+    type: int
+    required: true
+    description: ADC channel number
+  sample-rate:
+    type: int
+    required: true
+    description: The rate at which the pressure sensor is sampled

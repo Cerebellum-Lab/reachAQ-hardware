@@ -49,6 +49,15 @@
 					   <&gpioc 15 GPIO_ACTIVE_HIGH>; // GPIO1 (input or output?)
 	};
 
+	pressure_sensor: pressure_sensor {
+		compatible = "ll,pressure-sensor";
+		status = "okay";
+
+		adc = <&adc1>;
+		adc-channel = <15>;
+		sample-rate = <1000>;
+	};
+
 	aliases {
 		led0 = &status_led;
 		mcuboot-led0 = &status_led;
