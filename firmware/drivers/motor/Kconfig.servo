@@ -11,5 +11,6 @@ config LL_SERVO_SHELL
         bool "Enable shell commands for servo driver"
         default y
         depends on LL_SERVO
+        depends on SHELL
         help
             Enable shell commands for the servo driver
