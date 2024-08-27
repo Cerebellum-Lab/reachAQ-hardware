@@ -193,7 +193,7 @@
 		pinctrl-names = "default";
 
 		// Direction Pin
-		dir-gpios = <&gpioc 1 GPIO_ACTIVE_HIGH>;
+		dir-gpios = <&gpioc 3 GPIO_ACTIVE_HIGH>;
 
 		// PWM Channel to use
 		pwm-channel = <3>;
