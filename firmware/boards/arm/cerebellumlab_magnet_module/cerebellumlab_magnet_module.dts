@@ -9,7 +9,7 @@
 
 	chosen {
 		zephyr,console = &lpuart1;
-		zephyr,shell-uart = &lpuart1;
+		zephyr,shell-uart = &lpuart1; // FIXME: Change to USB
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
 		zephyr,canbus = &fdcan2;
@@ -17,6 +17,7 @@
 	};
 
 	leds {
+		compatible = "gpio-leds";
 		status = "okay";
 
 		status_led: led_1 {
@@ -26,19 +27,17 @@
 	};
 
 	gpio_keys {
-		status = "okay";
+		compatible = "gpio-keys";
 
 		boot_button: boot_button {
 			label = "BOOT button";
-			gpios = <&gpiob 10 GPIO_ACTIVE_LOW>;
+			gpios = <&gpiob 8 GPIO_ACTIVE_LOW>;
 			zephyr,code = <INPUT_KEY_1>;
 		};
-
 	};
 
 	generic-gpios {
 		status = "okay";
-
 		compatible = "ll,generic-gpios";
 		input-gpios = <&gpioc 2 GPIO_ACTIVE_HIGH>, // CAN_ID[0] / DeviceType[0]
 					  <&gpioc 3 GPIO_ACTIVE_HIGH>, // CAN_ID[1] / DeviceType[1]
@@ -66,6 +65,10 @@
 };
 
 &clk_lsi {
+	status = "okay";
+};
+
+&clk_hsi48 {
 	status = "okay";
 };
 
