@@ -34,28 +34,28 @@ static const uint32_t sine_wave[256] = {
 /* Macro to map Channel Number to LL DAC Channel Constant*/
 #define DAC_CHANNEL_NUM_TO_LL_MAP(ch) ((ch) == 1 ? LL_DAC_CHANNEL_1 : LL_DAC_CHANNEL_2)
 
-#define GET_LL_DAC_TIM_TRIGGER_SOURCE(__DACx__, __TIMx__)                         \
-    (((__DACx__) == DAC1 && (__TIMx__) == TIM2)     ? LL_DAC_TRIG_EXT_TIM2_TRGO   \
-     : ((__DACx__) == DAC1 && (__TIMx__) == TIM3)   ? LL_DAC_TRIG_EXT_TIM3_TRGO   \
-     : ((__DACx__) == DAC1 && (__TIMx__) == TIM4)   ? LL_DAC_TRIG_EXT_TIM4_TRGO   \
-     : ((__DACx__) == DAC1 && (__TIMx__) == TIM6)   ? LL_DAC_TRIG_EXT_TIM6_TRGO   \
-     : ((__DACx__) == DAC1 && (__TIMx__) == TIM7)   ? LL_DAC_TRIG_EXT_TIM7_TRGO   \
-     : ((__DACx__) == DAC1 && (__TIMx__) == TIM15)  ? LL_DAC_TRIG_EXT_TIM15_TRGO  \
-     : ((__DACx__) == DAC1 && (__TIMx__) == HRTIM1) ? LL_DAC_TRIG_EXT_HRTIM_TRGO1 \
-     : ((__DACx__) == DAC2 && (__TIMx__) == TIM2)   ? LL_DAC_TRIG_EXT_TIM2_TRGO   \
-     : ((__DACx__) == DAC2 && (__TIMx__) == TIM4)   ? LL_DAC_TRIG_EXT_TIM4_TRGO   \
-     : ((__DACx__) == DAC2 && (__TIMx__) == TIM6)   ? LL_DAC_TRIG_EXT_TIM6_TRGO   \
-     : ((__DACx__) == DAC2 && (__TIMx__) == TIM15)  ? LL_DAC_TRIG_EXT_TIM15_TRGO  \
-     : ((__DACx__) == DAC2 && (__TIMx__) == HRTIM1) ? LL_DAC_TRIG_EXT_HRTIM_TRGO2 \
-     : ((__DACx__) == DAC3 && (__TIMx__) == TIM1)   ? LL_DAC_TRIG_EXT_TIM1_TRGO   \
-     : ((__DACx__) == DAC3 && (__TIMx__) == TIM8)   ? LL_DAC_TRIG_EXT_TIM8_TRGO   \
-     : ((__DACx__) == DAC3 && (__TIMx__) == TIM2)   ? LL_DAC_TRIG_EXT_TIM2_TRGO   \
-     : ((__DACx__) == DAC3 && (__TIMx__) == TIM3)   ? LL_DAC_TRIG_EXT_TIM3_TRGO   \
-     : ((__DACx__) == DAC3 && (__TIMx__) == TIM4)   ? LL_DAC_TRIG_EXT_TIM4_TRGO   \
-     : ((__DACx__) == DAC3 && (__TIMx__) == TIM6)   ? LL_DAC_TRIG_EXT_TIM6_TRGO   \
-     : ((__DACx__) == DAC3 && (__TIMx__) == HRTIM1) ? LL_DAC_TRIG_EXT_HRTIM_TRGO3 \
-     : ((__DACx__) == DAC4 && (__TIMx__) == HRTIM1) ? LL_DAC_TRIG_EXT_HRTIM_TRGO1 \
-                                                    : -1)
+#define GET_LL_DAC_TIM_TRIGGER_SOURCE(__DACx__, __TIMx__)                                 \
+    (((__DACx__) == DAC1 && (__TIMx__) == TIM2)             ? LL_DAC_TRIG_EXT_TIM2_TRGO   \
+     : ((__DACx__) == DAC1 && (__TIMx__) == TIM3)           ? LL_DAC_TRIG_EXT_TIM3_TRGO   \
+     : ((__DACx__) == DAC1 && (__TIMx__) == TIM4)           ? LL_DAC_TRIG_EXT_TIM4_TRGO   \
+     : ((__DACx__) == DAC1 && (__TIMx__) == TIM6)           ? LL_DAC_TRIG_EXT_TIM6_TRGO   \
+     : ((__DACx__) == DAC1 && (__TIMx__) == TIM7)           ? LL_DAC_TRIG_EXT_TIM7_TRGO   \
+     : ((__DACx__) == DAC1 && (__TIMx__) == TIM15)          ? LL_DAC_TRIG_EXT_TIM15_TRGO  \
+     : ((__DACx__) == DAC1 && (__TIMx__) == (void *)HRTIM1) ? LL_DAC_TRIG_EXT_HRTIM_TRGO1 \
+     : ((__DACx__) == DAC2 && (__TIMx__) == TIM2)           ? LL_DAC_TRIG_EXT_TIM2_TRGO   \
+     : ((__DACx__) == DAC2 && (__TIMx__) == TIM4)           ? LL_DAC_TRIG_EXT_TIM4_TRGO   \
+     : ((__DACx__) == DAC2 && (__TIMx__) == TIM6)           ? LL_DAC_TRIG_EXT_TIM6_TRGO   \
+     : ((__DACx__) == DAC2 && (__TIMx__) == TIM15)          ? LL_DAC_TRIG_EXT_TIM15_TRGO  \
+     : ((__DACx__) == DAC2 && (__TIMx__) == (void *)HRTIM1) ? LL_DAC_TRIG_EXT_HRTIM_TRGO2 \
+     : ((__DACx__) == DAC3 && (__TIMx__) == TIM1)           ? LL_DAC_TRIG_EXT_TIM1_TRGO   \
+     : ((__DACx__) == DAC3 && (__TIMx__) == TIM8)           ? LL_DAC_TRIG_EXT_TIM8_TRGO   \
+     : ((__DACx__) == DAC3 && (__TIMx__) == TIM2)           ? LL_DAC_TRIG_EXT_TIM2_TRGO   \
+     : ((__DACx__) == DAC3 && (__TIMx__) == TIM3)           ? LL_DAC_TRIG_EXT_TIM3_TRGO   \
+     : ((__DACx__) == DAC3 && (__TIMx__) == TIM4)           ? LL_DAC_TRIG_EXT_TIM4_TRGO   \
+     : ((__DACx__) == DAC3 && (__TIMx__) == TIM6)           ? LL_DAC_TRIG_EXT_TIM6_TRGO   \
+     : ((__DACx__) == DAC3 && (__TIMx__) == (void *)HRTIM1) ? LL_DAC_TRIG_EXT_HRTIM_TRGO3 \
+     : ((__DACx__) == DAC4 && (__TIMx__) == (void *)HRTIM1) ? LL_DAC_TRIG_EXT_HRTIM_TRGO1 \
+                                                            : -1)
 
 /* Macro to acquire 12-bit right-aligned data holding register for the given DAC instance and channel */
 #define GET_DACx_DHR12Rx_REGISTER(__DACx__, __CHANNELx__) \
@@ -66,7 +66,7 @@ typedef struct {
     DAC_TypeDef *dac;
     struct stm32_pclken tim_clk;
     struct stm32_pclken dac_clk;
-    struct device *dma_dev;
+    const struct device *dma_dev;
     uint32_t dac_channel;
     uint32_t dac_resolution;
     uint32_t dma_channel;
@@ -352,10 +352,10 @@ int ll_tone_generator_abort_tone(const struct device *dev) {
     };                                                                                                              \
                                                                                                                     \
     static const ll_tone_generator_cfg_t tone_generator_cfg_##idx = {                                               \
-        .sample_rate_timer = DT_REG_ADDR(DT_INST_PROP(idx, sample_rate_timer)),                                     \
+        .sample_rate_timer = (TIM_TypeDef *)DT_REG_ADDR(DT_INST_PROP(idx, sample_rate_timer)),                      \
         .tim_clk = (struct stm32_pclken){.bus = DT_CLOCKS_CELL(DT_INST_PROP(idx, sample_rate_timer), bus),          \
                                          .enr = DT_CLOCKS_CELL(DT_INST_PROP(idx, sample_rate_timer), bits)},        \
-        .dac = DT_REG_ADDR(DT_INST_PROP(idx, dac)),                                                                 \
+        .dac = (DAC_TypeDef *)DT_REG_ADDR(DT_INST_PROP(idx, dac)),                                                  \
         .dac_clk = (struct stm32_pclken){.bus = DT_CLOCKS_CELL(DT_INST_PROP(idx, dac), bus),                        \
                                          .enr = DT_CLOCKS_CELL(DT_INST_PROP(idx, dac), bits)},                      \
         .dma_dev = DEVICE_DT_GET(DT_INST_DMAS_CTLR(idx)),                                                           \
