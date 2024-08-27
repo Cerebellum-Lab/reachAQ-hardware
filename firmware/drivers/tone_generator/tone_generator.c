@@ -107,14 +107,15 @@ static inline int ll_tone_generator_enable_clock(const struct stm32_pclken *clk)
 static int ll_tone_generator_dma_init(const struct device *dev) {
     const ll_tone_generator_cfg_t *cfg = dev->config;
     ll_tone_generator_data_t *data = dev->data;
-    int ret = 0;
+    int ret;
 
     if (!cfg->dma_dev) {
         LOG_ERR("dma_dev is NULL");
         return -ENODEV;
     }
 
-    if ((ret = dma_config(cfg->dma_dev, cfg->dma_channel, &data->dma_cfg)) < 0) {
+    ret = dma_config(cfg->dma_dev, cfg->dma_channel, &data->dma_cfg);
+    if (ret != 0) {
         LOG_ERR("Failed to configure DMA: %d", ret);
         return ret;
     }
@@ -125,10 +126,10 @@ static int ll_tone_generator_dma_init(const struct device *dev) {
 /* TIM Initialization */
 static int ll_tone_generator_tim_init(const struct device *dev) {
     const ll_tone_generator_cfg_t *cfg = dev->config;
+    int ret;
 
-    int ret = 0;
-
-    if ((ret = ll_tone_generator_enable_clock(&cfg->tim_clk)) < 0) {
+    ret = ll_tone_generator_enable_clock(&cfg->tim_clk);
+    if (ret != 0) {
         LOG_ERR("Failed to enable sample rate timer clock: %d", ret);
         return ret;
     }
@@ -149,7 +150,8 @@ static int ll_tone_generator_tim_init(const struct device *dev) {
     tim_init.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
 
     /* Enable TIM Clock */
-    if ((ret = LL_TIM_Init(cfg->sample_rate_timer, &tim_init)) < 0) {
+    ret = LL_TIM_Init(cfg->sample_rate_timer, &tim_init);
+    if (ret != 0) {
         LOG_ERR("Failed to initialize TIM: %d", ret);
         return ret;
     }
@@ -169,11 +171,11 @@ static int ll_tone_generator_tim_init(const struct device *dev) {
 /* DAC Initialization */
 static int ll_tone_generator_dac_init(const struct device *dev) {
     const ll_tone_generator_cfg_t *cfg = dev->config;
-
-    int ret = 0;
+    int ret;
 
     /* Enable DAC Clock */
-    if ((ret = ll_tone_generator_enable_clock(&cfg->dac_clk)) < 0) {
+    ret = ll_tone_generator_enable_clock(&cfg->dac_clk);
+    if (ret != 0) {
         LOG_ERR("Failed to enable DAC clock: %d", ret);
         return ret;
     }
@@ -195,7 +197,8 @@ static int ll_tone_generator_dac_init(const struct device *dev) {
     dac_init.OutputConnection = LL_DAC_OUTPUT_CONNECT_GPIO;  // Connect DAC output to GPIO
     dac_init.OutputMode = LL_DAC_OUTPUT_MODE_NORMAL;         // Output mode is NORMAL
 
-    if ((ret = LL_DAC_Init(cfg->dac, cfg->dac_channel, &dac_init)) < 0) {
+    ret = LL_DAC_Init(cfg->dac, cfg->dac_channel, &dac_init);
+    if (ret != 0) {
         LOG_ERR("Failed to Initialize DAC: %d", ret);
         return ret;
     }
@@ -206,10 +209,9 @@ static int ll_tone_generator_dac_init(const struct device *dev) {
 /* Tone Generator Initialization Function */
 static int ll_tone_generator_init(const struct device *dev) {
     ll_tone_generator_data_t *data = dev->data;
+    int ret;
 
     LOG_INF("Initializing Tone Generator...");
-
-    int ret = 0;
 
     /* Initialize the duration timer */
     k_timer_init(&data->duration_timer, duration_expiry_cb, NULL);
@@ -221,19 +223,22 @@ static int ll_tone_generator_init(const struct device *dev) {
     data->duration_timer.user_data = (void *)dev;
 
     /* Initialize the sample rate timer TIM peripheral */
-    if ((ret = ll_tone_generator_tim_init(dev)) < 0) {
+    ret = ll_tone_generator_tim_init(dev);
+    if (ret != 0) {
         LOG_ERR("Failed to initialize sample rate timer: %d", ret);
         return ret;
     }
 
     /* Initialize the DAC peripheral */
-    if ((ret = ll_tone_generator_dac_init(dev)) < 0) {
+    ret = ll_tone_generator_dac_init(dev);
+    if (ret != 0) {
         LOG_ERR("Failed to initialize DAC: %d", ret);
         return ret;
     }
 
     /* Intialize the DMA peripheral */
-    if ((ret = ll_tone_generator_dma_init(dev)) < 0) {
+    ret = ll_tone_generator_dma_init(dev);
+    if (ret != 0) {
         LOG_ERR("Failed to initialize DMA: %d", ret);
         return ret;
     }
@@ -249,7 +254,7 @@ static int ll_tone_generator_init(const struct device *dev) {
 int ll_tone_generator_play_tone(const struct device *dev, unsigned int frequency_hz, unsigned int duration_ms) {
     const ll_tone_generator_cfg_t *cfg = dev->config;
     ll_tone_generator_data_t *data = dev->data;
-    int ret = 0;
+    int ret;
 
     /* Ensure that the tone generator has been initialized */
     if (!data->initialized) {
@@ -263,7 +268,8 @@ int ll_tone_generator_play_tone(const struct device *dev, unsigned int frequency
     }
 
     /* Start the DMA transfer */
-    if ((ret = dma_start(cfg->dma_dev, cfg->dma_channel)) < 0) {
+    ret = dma_start(cfg->dma_dev, cfg->dma_channel);
+    if (ret != 0) {
         LOG_ERR("Failed to start DMA: %d", ret);
         return ret;
     }
@@ -302,8 +308,10 @@ int ll_tone_generator_play_tone(const struct device *dev, unsigned int frequency
  */
 int ll_tone_generator_play_tone_blocking(const struct device *dev, unsigned int frequency_hz,
                                          unsigned int duration_ms) {
+    int ret;
+
     /* Start playing tone */
-    int ret = ll_tone_generator_play_tone(dev, frequency_hz, duration_ms);
+    ret = ll_tone_generator_play_tone(dev, frequency_hz, duration_ms);
 
     /* Sleep for duration of tone */
     k_msleep(duration_ms);
@@ -315,7 +323,8 @@ int ll_tone_generator_play_tone_blocking(const struct device *dev, unsigned int 
 int ll_tone_generator_abort_tone(const struct device *dev) {
     const ll_tone_generator_cfg_t *cfg = dev->config;
     ll_tone_generator_data_t *data = dev->data;
-    int ret = 0;
+    int ret;
+
     if (!data->initialized) {
         LOG_ERR("Tone Generator must be initialized before abort tone can be called");
     }
@@ -324,7 +333,8 @@ int ll_tone_generator_abort_tone(const struct device *dev) {
     k_timer_stop(&data->duration_timer);
 
     /* Stop the DMA transfer */
-    if ((ret = dma_stop(cfg->dma_dev, cfg->dma_channel)) < 0) {
+    ret = dma_stop(cfg->dma_dev, cfg->dma_channel);
+    if (ret != 0) {
         LOG_ERR("Failed to stop DMA: %d", ret);
         return ret;
     }

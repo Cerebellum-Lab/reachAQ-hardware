@@ -73,6 +73,21 @@
 					   <&gpiob 14 GPIO_ACTIVE_HIGH>; // STIM[3]
 	};
 
+	tone_generator {
+		compatible = "ll,tone-generator";
+
+		sample-rate-timer = <&timers2>;
+
+		dac = <&dac1>;
+
+		dac-channel = <1>;
+
+		dmas = <&dmamux1 6 6 STM32_DMA_PRIORITY_HIGH>;
+		dma-names = "tx";
+
+		status = "okay";
+	};
+
 	aliases {
 		led0 = &status_led;
 		mcuboot-led0 = &status_led;

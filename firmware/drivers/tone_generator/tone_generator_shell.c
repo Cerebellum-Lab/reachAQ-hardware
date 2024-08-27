@@ -35,13 +35,13 @@ static int cmd_tone_generator_play_tone(const struct shell *shell, size_t argc, 
     }
 
     /* Play tone with the given parameters */
-    int err;
-    if ((err = ll_tone_generator_play_tone(tone_generator_devs[tone_generator], frequency, duration_ms))) {
-        shell_print(shell, "Error playing tone: %d", err);
-        return err;
+    int ret = ll_tone_generator_play_tone(tone_generator_devs[tone_generator], frequency, duration_ms);
+    if (ret != 0) {
+        shell_print(shell, "Error playing tone: %d", ret);
+        return ret;
     }
 
-    return 0;
+    return ret;
 }
 
 static int cmd_tone_generator_abort_tone(const struct shell *shell, size_t argc, char **argv) {
@@ -58,13 +58,13 @@ static int cmd_tone_generator_abort_tone(const struct shell *shell, size_t argc,
         return -EINVAL;
     }
     /* Play tone with the given parameters */
-    int err;
-    if ((err = ll_tone_generator_abort_tone(tone_generator_devs[tone_generator]))) {
-        shell_print(shell, "Error aborting tone: %d", err);
-        return err;
+    int ret = ll_tone_generator_abort_tone(tone_generator_devs[tone_generator]);
+    if (ret != 0) {
+        shell_print(shell, "Error aborting tone: %d", ret);
+        return ret;
     }
 
-    return 0;
+    return ret;
 }
 
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_tone_generator,
@@ -72,4 +72,4 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_tone_generator,
                                SHELL_CMD_ARG(abort_tone, NULL, "Abort a tone", cmd_tone_generator_abort_tone, 2, 0),
                                SHELL_SUBCMD_SET_END);
 
-SHELL_CMD_REGISTER(tone_generator, &sub_tone_generator, "Servo commands", NULL);
+SHELL_CMD_REGISTER(tone_generator, &sub_tone_generator, "Tone Generator commands", NULL);
