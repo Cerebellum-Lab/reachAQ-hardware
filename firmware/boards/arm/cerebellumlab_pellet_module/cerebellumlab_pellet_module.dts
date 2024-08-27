@@ -8,8 +8,8 @@
 	compatible = "cerebellumlab,pellet-module";
 
 	chosen {
-		zephyr,console = &uart4;
-		zephyr,shell-uart = &uart4; // FIXME: Change to USB
+		zephyr,console = &lpuart1;
+		zephyr,shell-uart = &lpuart1; // FIXME: Change to USB
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
 		zephyr,canbus = &fdcan3;
@@ -72,6 +72,21 @@
 					   <&gpiob 14 GPIO_ACTIVE_HIGH>;
 	};
 
+	tone_generator {
+		compatible = "ll,tone-generator";
+
+		sample-rate-timer = <&timers2>;
+
+		dac = <&dac1>;
+
+		dac-channel = <1>;
+
+		dmas = <&dmamux1 6 6 STM32_DMA_PRIORITY_HIGH>;
+		dma-names = "tx";
+
+		status = "okay";
+	};
+
 	aliases {
 		status-led = &green_led;
 		mcuboot-led0 = &green_led;
@@ -96,7 +111,7 @@
 &pll {
 	div-m = <2>;
 	mul-n = <85>;
-	div-p = <7>;
+	div-p = <2>;
 	div-q = <2>;
 	div-r = <2>;
 	clocks = <&clk_hse>;
@@ -111,17 +126,138 @@
 	apb2-prescaler = <1>;
 };
 
-&uart4 {
-	pinctrl-0 = <&uart4_rx_pc11 &uart4_tx_pc10>;
-	pinctrl-names = "default";
-	current-speed = <115200>;
+&dma1 {
 	status = "okay";
 };
 
-&spi1 {
-	pinctrl-0 = <&spi1_sck_pa5 &spi1_miso_pa6 &spi1_mosi_pa7>;
+&dmamux1 {
+	status = "okay";
+};
+
+&timers5 {
+	status = "okay";
+	st,prescaler = <84>; // 170 MHz / (84 + 1) = 2 MHz
+
+	servo0: servo0 {
+		compatible = "ll,servo";
+		status = "okay";
+
+		pinctrl-0 = <&tim5_ch2_pc12>;
+		pinctrl-names = "default";
+
+		pwm-channel = <2>;
+
+		dmas = <&dmamux1 0 76 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
+	};
+};
+
+&timers15 {
+	status = "okay";
+	st,prescaler = <84>; // 170 MHz / (84 + 1) = 2 MHz
+
+	servo1: servo1 {
+		compatible = "ll,servo";
+		status = "okay";
+
+		pinctrl-0 = <&tim15_ch2_pb15>;
+		pinctrl-names = "default";
+
+		pwm-channel = <2>;
+
+		dmas = <&dmamux1 1 79 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
+	};
+};
+
+&timers17 {
+	status = "okay";
+	st,prescaler = <84>; // 170 MHz / (84 + 1) = 2 MHz
+
+	servo2: servo2 {
+		compatible = "ll,servo";
+		status = "okay";
+
+		pinctrl-0 = <&tim17_ch1_pb9>;
+		pinctrl-names = "default";
+
+		pwm-channel = <1>;
+
+		dmas = <&dmamux1 2 85 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
+	};
+};
+
+&timers1 {
+	status = "okay";
+	st,prescaler = <849>; // 170 MHz / (849 + 1) = 200 kHz
+
+	stepper0: stepper0 {
+		compatible = "ll,stepper";
+		status = "okay";
+
+		pinctrl-0 = <&tim1_ch3_pc2>;
+		pinctrl-names = "default";
+
+		// Direction Pin
+		dir-gpios = <&gpioc 1 GPIO_ACTIVE_HIGH>;
+
+		// PWM Channel to use
+		pwm-channel = <3>;
+
+		dmas = <&dmamux1 3 46 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
+	};
+};
+
+&timers8 {
+	status = "okay";
+	st,prescaler = <849>; // 170 MHz / (849 + 1) = 200 kHz
+
+	stepper1: stepper1 {
+		compatible = "ll,stepper";
+		status = "okay";
+
+		pinctrl-0 = <&tim8_ch4_pc9>;
+		pinctrl-names = "default";
+
+		// Direction Pin
+		dir-gpios = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+
+		// PWM Channel to use
+		pwm-channel = <4>;
+
+		dmas = <&dmamux1 4 53 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
+	};
+};
+
+&timers20 {
+	status = "okay";
+	st,prescaler = <849>; // 170 MHz / (849 + 1) = 200 kHz
+
+	stepper2: stepper2 {
+		compatible = "ll,stepper";
+		status = "okay";
+
+		pinctrl-0 = <&tim20_ch3_pc8>;
+		pinctrl-names = "default";
+
+		// Direction Pin
+		dir-gpios = <&gpioc 7 GPIO_ACTIVE_HIGH>;
+
+		// PWM Channel to use
+		pwm-channel = <3>;
+
+		dmas = <&dmamux1 5 90 STM32_DMA_PRIORITY_MEDIUM>;
+		dma-names = "tx";
+	};
+};
+
+&lpuart1 {
+	pinctrl-0 = <&lpuart1_tx_pc1 &lpuart1_rx_pc0>;
 	pinctrl-names = "default";
-	cs-gpios = <&gpioa 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+	current-speed = <115200>;
 	status = "okay";
 };
 
@@ -133,18 +269,12 @@
 
 		boot_partition: partition@0 {
 			label = "mcuboot";
-			reg = <0x00000000 DT_SIZE_K(34)>;
+			reg = <0x00000000 DT_SIZE_K(64)>;
 		};
 
-		slot0_partition: partition@8800 {
+		slot0_partition: partition@10000 {
 			label = "image-0";
-			reg = <0x00008800 DT_SIZE_K(240)>;
-		};
-
-		// FIXME: Move this to external flash
-		slot1_partition: partition@44800 {
-			label = "image-1";
-			reg = <0x00044800 DT_SIZE_K(234)>;
+			reg = <0x00010000 DT_SIZE_K(444)>;
 		};
 
 		/* Set 4Kb of storage at the end of the 512Kb of flash */
@@ -155,12 +285,48 @@
 	};
 };
 
+&spi3 {
+	pinctrl-0 = <&spi3_nss_pa15 &spi3_sck_pc10
+				 &spi3_miso_pc11 &spi3_mosi_pc12>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	flash1: external_flash@0 {
+		status = "okay";
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <4000000>;
+		size = <0x8000000>;
+		has-dpd;
+		t-enter-dpd = <3000>;
+		t-exit-dpd = <30000>;
+		jedec-id = [ef 40 15]; // For W25Q16JV
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			slot1_partition: partition@0 {
+				label = "image-1";
+				reg = <0x00000000 DT_SIZE_K(444)>;
+			};
+		};
+	};
+};
+
 &iwdg {
 	status = "okay";
 };
 
 &dac1 {
 	pinctrl-0 = <&dac1_out1_pa4>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&dac2 {
+	pinctrl-0 = <&dac2_out1_pa6>;
 	pinctrl-names = "default";
 	status = "okay";
 };
