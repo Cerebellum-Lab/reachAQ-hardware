@@ -1,4 +1,6 @@
 #include <app_version.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/sensor.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
@@ -8,7 +10,7 @@ int main() {
     LOG_INF("Autotrainer Magnet Module v%s", APP_VERSION_STRING);
 
     while (true) {
-        k_msleep(100);
+        k_msleep(1000);
     }
 
 error:

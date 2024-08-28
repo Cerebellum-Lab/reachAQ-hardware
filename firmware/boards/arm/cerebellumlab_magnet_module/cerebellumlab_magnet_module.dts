@@ -149,7 +149,11 @@
 	pinctrl-names = "default";
 	status = "okay";
 
-	// TODO: Temperature Sensor Goes here
+	temp_sensor@40 {
+		compatible = "silabs,si7006";
+		reg = <0x40>;
+		status = "okay";
+	};
 };
 
 &i2c4 {
