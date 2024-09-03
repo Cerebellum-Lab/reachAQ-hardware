@@ -898,6 +898,16 @@
 	)
 	(wire
 		(pts
+			(xy 125.73 96.52) (xy 128.27 96.52)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "99808188-1b68-450c-b23c-1c24ceb39644")
+	)
+	(wire
+		(pts
 			(xy 63.5 88.9) (xy 63.5 97.79)
 		)
 		(stroke
@@ -918,17 +928,7 @@
 	)
 	(wire
 		(pts
-			(xy 127 101.6) (xy 127 102.87)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ab06c247-8051-4e2a-a02b-1ac35e308d41")
-	)
-	(wire
-		(pts
-			(xy 128.27 127) (xy 127 127)
+			(xy 128.27 121.92) (xy 127 121.92)
 		)
 		(stroke
 			(width 0)
@@ -948,23 +948,23 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 101.6) (xy 127 101.6)
+			(xy 124.46 127) (xy 128.27 127)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dcd5b6d4-2166-419e-82d7-5cb284654fdd")
+	)
+	(wire
+		(pts
+			(xy 128.27 101.6) (xy 123.19 101.6)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "eefb3717-dd53-42ac-9ab7-9bdb45d23dd4")
-	)
-	(wire
-		(pts
-			(xy 127 127) (xy 127 128.27)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fad11c0c-7078-4f47-a84b-4bd4d9a2161b")
 	)
 	(text "HS-65HB (1.2A stall current)"
 		(exclude_from_sim no)
@@ -998,7 +998,7 @@
 		(uuid "4d0e5847-6472-4004-84ac-e1bc32a8ac31")
 	)
 	(label "5V_SERVO1"
-		(at 128.27 121.92 180)
+		(at 124.46 127 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1042,7 +1042,7 @@
 		(uuid "d1cc80a5-0af9-49e2-85a0-ee0517b0e262")
 	)
 	(label "5V_SERVO0"
-		(at 128.27 96.52 180)
+		(at 123.19 101.6 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1316,7 +1316,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 127 102.87 0)
+		(at 125.73 96.52 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1325,7 +1325,7 @@
 		(fields_autoplaced yes)
 		(uuid "65addd53-5127-4774-803f-6f27c68b4ecf")
 		(property "Reference" "#PWR011"
-			(at 127 109.22 0)
+			(at 119.38 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1334,7 +1334,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 127 107.95 0)
+			(at 124.46 92.71 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1342,7 +1342,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 127 102.87 0)
+			(at 125.73 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1351,7 +1351,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 127 102.87 0)
+			(at 125.73 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1360,7 +1360,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 127 102.87 0)
+			(at 125.73 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1789,16 +1789,15 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 127 128.27 0)
+		(at 127 121.92 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "ee426985-3e67-4b02-9ed7-2bb259c2dcb4")
 		(property "Reference" "#PWR079"
-			(at 127 134.62 0)
+			(at 120.65 121.92 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1807,7 +1806,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 127 133.35 0)
+			(at 121.412 121.92 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1815,7 +1814,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 127 128.27 0)
+			(at 127 121.92 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1824,7 +1823,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 127 128.27 0)
+			(at 127 121.92 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1833,7 +1832,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 127 128.27 0)
+			(at 127 121.92 0)
 			(effects
 				(font
 					(size 1.27 1.27)

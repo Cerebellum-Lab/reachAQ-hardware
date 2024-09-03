@@ -1342,26 +1342,6 @@
 			)
 			(uuid "fc49ba61-248f-40a8-a343-7577e0ae745a")
 		)
-		(pin "GPIO0" bidirectional
-			(at 168.91 123.19 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "e1fc7af8-c30c-4950-a88d-1134c451761d")
-		)
-		(pin "GPIO1" bidirectional
-			(at 168.91 125.73 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "aa9855a0-b61d-4a6e-9419-a5de887cb6ad")
-		)
 		(pin "SERVO[0..1]" output
 			(at 168.91 91.44 0)
 			(effects
@@ -1371,6 +1351,26 @@
 				(justify right)
 			)
 			(uuid "b74c6028-bc06-4202-a786-c0f6eb73927c")
+		)
+		(pin "CONT1" bidirectional
+			(at 168.91 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "0c0bdacf-a87a-4bd0-926a-9df887b91373")
+		)
+		(pin "CONT0" bidirectional
+			(at 168.91 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "2b38b6dd-ea3b-45b5-9670-2c6daf1aa84f")
 		)
 		(instances
 			(project "magnet"
@@ -1711,17 +1711,7 @@
 			)
 			(uuid "f156a022-5d8e-4b2f-b9cb-8ebc2943e48a")
 		)
-		(pin "GPIO0" bidirectional
-			(at 220.98 123.19 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "3de5aa98-4d2f-4c2d-92f4-a48cae4ba0b0")
-		)
-		(pin "GPIO1" bidirectional
+		(pin "CONT1" bidirectional
 			(at 220.98 125.73 180)
 			(effects
 				(font
@@ -1729,7 +1719,17 @@
 				)
 				(justify left)
 			)
-			(uuid "d642bbe0-d136-4d7a-869c-aab3be596c7b")
+			(uuid "63ff6f5c-f6ac-439d-801c-35afd1cddf81")
+		)
+		(pin "CONT0" bidirectional
+			(at 220.98 123.19 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "5c775132-66ae-49e6-9ed3-d7b1e649347b")
 		)
 		(instances
 			(project "magnet"

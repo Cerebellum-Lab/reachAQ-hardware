@@ -522,6 +522,7 @@
       "/MCU/DN": "DIFF90",
       "/MCU/DP": "DIFF90",
       "/Power & Data Connections/12V": "Power",
+      "/Power & Data Connections/CAN_PWR_IN": "Power",
       "/Power/12V": "Power",
       "/Power/3V3": "Power",
       "/Power/5V": "Power",
