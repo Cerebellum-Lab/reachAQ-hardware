@@ -6,8 +6,8 @@
 	(paper "A4")
 	(title_block
 		(title "Autotrainer Pellet Module - Main")
-		(date "2024-08-12")
-		(rev "v1.0")
+		(date "2024-09-03")
+		(rev "v1.1")
 		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
 	)
@@ -659,6 +659,16 @@
 			(type default)
 		)
 		(uuid "69a4c8bb-eeac-46eb-84d3-89cc52676112")
+	)
+	(wire
+		(pts
+			(xy 127 105.41) (xy 143.51 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "76982587-901b-4560-bcc3-546c327a0910")
 	)
 	(bus
 		(pts
@@ -2317,6 +2327,16 @@
 			)
 			(uuid "a3e2253c-d577-4c37-b5f6-ec9bf553b736")
 		)
+		(pin "~{MUTE}" output
+			(at 143.51 105.41 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "55cadac4-08f6-4a7e-ab9d-e7c8b3ca9e6c")
+		)
 		(instances
 			(project "pellet"
 				(path "/48650363-a452-429d-997e-1ddabb69aad0"
@@ -2591,7 +2611,7 @@
 	)
 	(sheet
 		(at 102.87 100.33)
-		(size 24.13 5.08)
+		(size 24.13 7.62)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -2611,7 +2631,7 @@
 			)
 		)
 		(property "Sheetfile" "speaker.kicad_sch"
-			(at 102.87 105.9946 0)
+			(at 102.87 108.5346 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2639,6 +2659,16 @@
 			)
 			(uuid "2435bd16-056c-40a0-bd4d-808cdce753bf")
 		)
+		(pin "~{MUTE}" input
+			(at 127 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "1536564a-13af-494a-828a-f69c094ec464")
+		)
 		(instances
 			(project "pellet"
 				(path "/48650363-a452-429d-997e-1ddabb69aad0"
@@ -2648,8 +2678,8 @@
 		)
 	)
 	(sheet
-		(at 102.87 113.03)
-		(size 24.13 14.224)
+		(at 102.87 114.3)
+		(size 24.13 12.954)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -2660,7 +2690,7 @@
 		)
 		(uuid "b8597be6-0cb3-4e54-9f55-240b87344e85")
 		(property "Sheetname" "External IO"
-			(at 102.87 112.3184 0)
+			(at 102.87 113.5884 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2678,7 +2708,7 @@
 			)
 		)
 		(property "Field2" ""
-			(at 102.87 113.03 0)
+			(at 102.87 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)

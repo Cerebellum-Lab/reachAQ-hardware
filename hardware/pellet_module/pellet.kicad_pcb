@@ -9,8 +9,8 @@
 	(paper "A4")
 	(title_block
 		(title "Autotrainer Pellet Module")
-		(date "2024-07-31")
-		(rev "v1.0")
+		(date "2024-09-03")
+		(rev "v1.1")
 		(company "Christie Lab, CU Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
 	)
@@ -44279,7 +44279,7 @@
 			(justify left bottom)
 		)
 	)
-	(gr_text "Christie Lab, CU Anschutz\nAutotrainer Pellet Module\nPrepared by LeafLabs, LLC\n08/2024"
+	(gr_text "Christie Lab, CU Anschutz\nAutotrainer Pellet Module v1.1\nPrepared by LeafLabs, LLC\n09/2024"
 		(at 112.99 107.365 0)
 		(layer "F.SilkS")
 		(uuid "38cbd6b3-5cb8-4eef-853d-8eaeb5c8b182")

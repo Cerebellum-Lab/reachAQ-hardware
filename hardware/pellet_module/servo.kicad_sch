@@ -6,8 +6,8 @@
 	(paper "A4")
 	(title_block
 		(title "Autotrainer Pellet Module - Servo")
-		(date "2024-08-12")
-		(rev "v1.0")
+		(date "2024-09-03")
+		(rev "v1.1")
 		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
 	)
@@ -1111,6 +1111,16 @@
 	)
 	(wire
 		(pts
+			(xy 181.61 102.87) (xy 185.42 102.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "475a266e-7e9b-4b0f-8deb-31c8bde4ef21")
+	)
+	(wire
+		(pts
 			(xy 85.09 88.9) (xy 85.09 91.44)
 		)
 		(stroke
@@ -1121,7 +1131,7 @@
 	)
 	(wire
 		(pts
-			(xy 185.42 125.73) (xy 184.15 125.73)
+			(xy 185.42 125.73) (xy 181.61 125.73)
 		)
 		(stroke
 			(width 0)
@@ -1181,23 +1191,13 @@
 	)
 	(wire
 		(pts
-			(xy 184.15 125.73) (xy 184.15 127)
+			(xy 182.88 120.65) (xy 185.42 120.65)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "a2c4fbd9-62b1-4ac1-8a55-9a37f492c499")
-	)
-	(wire
-		(pts
-			(xy 186.69 88.9) (xy 185.42 88.9)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a8930e90-b645-4c9e-98be-0b7f797678a8")
+		(uuid "92a39f2a-a590-4579-a19b-7eb352e6160a")
 	)
 	(wire
 		(pts
@@ -1211,7 +1211,7 @@
 	)
 	(wire
 		(pts
-			(xy 185.42 107.95) (xy 184.15 107.95)
+			(xy 181.61 107.95) (xy 185.42 107.95)
 		)
 		(stroke
 			(width 0)
@@ -1221,7 +1221,7 @@
 	)
 	(wire
 		(pts
-			(xy 185.42 88.9) (xy 185.42 90.17)
+			(xy 186.69 83.82) (xy 185.42 83.82)
 		)
 		(stroke
 			(width 0)
@@ -1261,13 +1261,13 @@
 	)
 	(wire
 		(pts
-			(xy 184.15 107.95) (xy 184.15 109.22)
+			(xy 181.61 88.9) (xy 186.69 88.9)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "ff62ba74-3745-404a-8f18-b1e6f1840fb1")
+		(uuid "ffda2f32-8b6b-45fc-946c-1435a50f76d7")
 	)
 	(rectangle
 		(start 33.02 72.39)
@@ -1302,7 +1302,7 @@
 		(uuid "72430961-528f-4220-b107-94e28ed8ac5a")
 	)
 	(label "5V_SERVO_PWM2"
-		(at 185.42 120.65 180)
+		(at 181.61 125.73 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1313,7 +1313,7 @@
 		(uuid "00a7b25a-b20f-447a-914e-19312f804a32")
 	)
 	(label "5V_SERVO_PWM0"
-		(at 186.69 83.82 180)
+		(at 181.61 88.9 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1335,7 +1335,7 @@
 		(uuid "118fec96-2374-4c90-9039-81dbcf012faa")
 	)
 	(label "5V_SERVO_PWM1"
-		(at 185.42 102.87 180)
+		(at 181.61 107.95 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1643,16 +1643,15 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 184.15 109.22 0)
+		(at 181.61 102.87 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "455b2940-74bc-4715-8690-4d6b8f264b70")
 		(property "Reference" "#PWR083"
-			(at 184.15 115.57 0)
+			(at 175.26 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1661,7 +1660,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 184.15 114.3 0)
+			(at 175.768 102.87 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1669,7 +1668,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 184.15 109.22 0)
+			(at 181.61 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1678,7 +1677,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 184.15 109.22 0)
+			(at 181.61 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1687,7 +1686,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 184.15 109.22 0)
+			(at 181.61 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2252,16 +2251,15 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 184.15 127 0)
+		(at 182.88 120.65 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "e7ccd71c-fe0d-42a1-838c-6cdf4adc8c36")
 		(property "Reference" "#PWR084"
-			(at 184.15 133.35 0)
+			(at 176.53 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2270,7 +2268,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 184.15 132.08 0)
+			(at 177.038 120.65 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2278,7 +2276,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 184.15 127 0)
+			(at 182.88 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2287,7 +2285,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 184.15 127 0)
+			(at 182.88 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2296,7 +2294,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 184.15 127 0)
+			(at 182.88 120.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2318,16 +2316,15 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 185.42 90.17 0)
+		(at 185.42 83.82 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "f3416bde-a5a9-484c-a492-ae1087a8f5e8")
 		(property "Reference" "#PWR023"
-			(at 185.42 96.52 0)
+			(at 179.07 83.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2336,7 +2333,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 185.42 95.25 0)
+			(at 180.34 83.82 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2344,7 +2341,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 185.42 90.17 0)
+			(at 185.42 83.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2353,7 +2350,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 185.42 90.17 0)
+			(at 185.42 83.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2362,7 +2359,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 185.42 90.17 0)
+			(at 185.42 83.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
