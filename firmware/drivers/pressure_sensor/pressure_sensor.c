@@ -22,7 +22,7 @@ typedef struct {
     bool initialized;
     bool enabled;
     enum adc_action adc_action;
-    volatile uint32_t raw_data;
+    uint32_t raw_data;
 } ll_pressure_sensor_data_t;
 
 /* ADC callback */

@@ -1,0 +1,60 @@
+description: |
+  Load cell driver on I2C bus using NAU7802 24-bit ADC
+
+compatible: "ll,load-cell"
+
+include:
+  - name: base.yaml
+  - name: sensor-device.yaml
+  - name: i2c-device.yaml
+
+properties:
+  adc-channel:
+    type: int
+    required: true
+    enum: [1, 2]
+    default: 1
+    description: NAU7802 24-bit ADC channel connected to load cell
+  ldo-voltage:
+    type: string
+    required: true
+    enum:
+      - "4V5"
+      - "4V2"
+      - "3V9"
+      - "3V6"
+      - "3V3"
+      - "3V0"
+      - "2V7"
+      - "2V4"
+    default: "2V4"
+    description: NAU7802 Internal LDO Output Voltage (AVDD) - Must not exceed VDD-0.3V
+  gain:
+    type: int
+    required: true
+    enum: 
+      - 1
+      - 2
+      - 4
+      - 8
+      - 16
+      - 32
+      - 64
+      - 128
+    default: 1
+    description: NAU7802 Gain Selection
+  conversion-rate:
+    type: int
+    required: true
+    enum:
+      - 10
+      - 20
+      - 40
+      - 80
+      - 320
+    default: 10
+    description: NAU7802 Conversion Rate in samples-per-second
+  drdy-gpios:
+    type: phandle-array
+    required: true
+    description: NAU7802 DRDY interrupt pin

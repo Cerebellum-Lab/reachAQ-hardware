@@ -169,7 +169,16 @@
 	pinctrl-names = "default";
 	status = "okay";
 
-	// TODO: Load cell goes here
+	load_cell: load_cell@2a {
+		compatible = "ll,load-cell";
+		reg = <0x2a>;
+		adc-channel = <1>;
+		ldo-voltage = "2V7";
+		gain = <1>;
+		conversion-rate = <10>;
+		drdy-gpios = <&gpioc 5 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
 };
 
 &i2c3 {

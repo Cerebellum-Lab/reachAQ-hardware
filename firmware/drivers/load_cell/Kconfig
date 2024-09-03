@@ -1,0 +1,28 @@
+config LL_LOAD_CELL_LOG_LEVEL
+        int "Log level (0-4)"
+        default 4
+        help
+            Set the log level for the load cell
+
+config LL_LOAD_CELL_INIT_PRIORITY
+        int "Initialization priority"
+        default 91
+        help
+            Set the initialization priority for the load cell
+
+menuconfig LL_LOAD_CELL
+        bool "Support LeafLabs load cell driver"
+        default y
+        depends on DT_HAS_LL_LOAD_CELL_ENABLED
+        select I2C
+        select GPIO
+        help
+            Enable support for the load cell
+
+config LL_LOAD_CELL_SHELL
+        bool "Enable shell commands for load cell driver"
+        default y
+        depends on SHELL
+        depends on LL_LOAD_CELL
+        help
+            Enable shell commands for load cell driver
