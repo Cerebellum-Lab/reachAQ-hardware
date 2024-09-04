@@ -524,6 +524,7 @@
       "/MCU/3V3": "Power",
       "/MCU/DN": "DIFF90",
       "/MCU/DP": "DIFF90",
+      "/Power & Data Connectors/CAN_PWR_IN": "Power",
       "/Power/12V": "Power",
       "/Power/5V": "Power",
       "Net-(D3-A)": "Power",
@@ -578,7 +579,7 @@
           "group_by": false,
           "label": "Datasheet",
           "name": "Datasheet",
-          "show": true
+          "show": false
         },
         {
           "group_by": false,

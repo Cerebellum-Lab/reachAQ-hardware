@@ -5554,8 +5554,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_02x02_Odd_Even")
-		(at 50.8 58.42 0)
-		(mirror y)
+		(at 48.26 58.42 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5579,7 +5578,7 @@
 			)
 		)
 		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical"
-			(at 50.8 58.42 0)
+			(at 48.26 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5588,7 +5587,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 50.8 58.42 0)
+			(at 48.26 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5597,7 +5596,7 @@
 			)
 		)
 		(property "Description" "Generic connector, double row, 02x02, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 50.8 58.42 0)
+			(at 48.26 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5606,7 +5605,7 @@
 			)
 		)
 		(property "LCSC" "C5271185"
-			(at 50.8 58.42 0)
+			(at 48.26 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5615,7 +5614,7 @@
 			)
 		)
 		(property "MPN" "1053101104"
-			(at 50.8 58.42 0)
+			(at 48.26 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
