@@ -3814,6 +3814,88 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector_Generic:Conn_02x02_Odd_Even")
+		(at 40.64 31.75 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "06bc82e4-4a7d-4625-a2dd-31849c5e9889")
+		(property "Reference" "J5"
+			(at 41.91 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Conn_02x02_Odd_Even"
+			(at 41.91 27.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105314-xx04_2x02_P2.50mm_Horizontal"
+			(at 40.64 31.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 40.64 31.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, double row, 02x02, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 40.64 31.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "1053141104"
+			(at 40.64 31.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "5d1bdb4b-fe60-4ce8-a8ff-ac6ce1f3b096")
+		)
+		(pin "1"
+			(uuid "f49fe5f7-be81-4eb9-965d-d962be595ccf")
+		)
+		(pin "3"
+			(uuid "5456cd6b-8375-470b-95d4-aad3f99536a0")
+		)
+		(pin "4"
+			(uuid "1015c384-8b62-4e0d-8aa4-b44f6a1ffb4a")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
+					(reference "J5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector:USB_C_Receptacle_USB2.0_16P")
 		(at 45.72 162.56 0)
 		(unit 1)
@@ -3939,88 +4021,6 @@
 			(project ""
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
 					(reference "J20")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_02x02_Odd_Even")
-		(at 40.64 52.07 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "09f81f7c-ce52-4145-a970-b0ad1737aec6")
-		(property "Reference" "J19"
-			(at 41.91 45.72 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Conn_02x02_Odd_Even"
-			(at 41.91 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105314-xx04_2x02_P2.50mm_Horizontal"
-			(at 40.64 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 40.64 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, double row, 02x02, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 40.64 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "1053141104"
-			(at 40.64 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "d69b0316-d848-4ddd-b59c-85414f3b7a21")
-		)
-		(pin "1"
-			(uuid "6d873910-4db8-4463-91d6-f7dd6328a2c7")
-		)
-		(pin "3"
-			(uuid "2f625d01-9da6-4253-9c49-f1ad302d5bd0")
-		)
-		(pin "4"
-			(uuid "f500d8f0-4893-42ab-b6bb-ac6beafe7b3b")
-		)
-		(instances
-			(project ""
-				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
-					(reference "J19")
 					(unit 1)
 				)
 			)
@@ -4312,88 +4312,6 @@
 			(project ""
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
 					(reference "#PWR032")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_02x02_Odd_Even")
-		(at 40.64 31.75 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "158375b4-8812-45e2-a8e5-dbbadb6f4977")
-		(property "Reference" "J23"
-			(at 41.91 25.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Conn_02x02_Odd_Even"
-			(at 41.91 27.94 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105314-xx04_2x02_P2.50mm_Horizontal"
-			(at 40.64 31.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 40.64 31.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, double row, 02x02, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 40.64 31.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "1053141104"
-			(at 40.64 31.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "f1f4ee0e-b84d-47b3-8f6d-f976728635a9")
-		)
-		(pin "1"
-			(uuid "18cac98f-ab96-4897-8a8f-ac6c6a8e16ab")
-		)
-		(pin "3"
-			(uuid "32d605e9-ee9f-4d61-92aa-825d336a2b4a")
-		)
-		(pin "4"
-			(uuid "6c0ca0f2-a2fa-47f3-981a-4242eeaa1272")
-		)
-		(instances
-			(project "pellet"
-				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
-					(reference "J23")
 					(unit 1)
 				)
 			)
@@ -5776,6 +5694,88 @@
 			(project ""
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
 					(reference "#PWR086")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_02x02_Odd_Even")
+		(at 40.64 52.07 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "d4f4bb37-2482-484a-a8c1-ac2bca9217ce")
+		(property "Reference" "J6"
+			(at 41.91 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Conn_02x02_Odd_Even"
+			(at 41.91 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105314-xx04_2x02_P2.50mm_Horizontal"
+			(at 40.64 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 40.64 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, double row, 02x02, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 40.64 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "1053141104"
+			(at 40.64 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "90305bdd-0020-4a26-bb28-77416eb380b1")
+		)
+		(pin "1"
+			(uuid "5b5ddea9-2779-41ad-8815-211662bd3a78")
+		)
+		(pin "3"
+			(uuid "b76124c0-d53e-4dfc-a8a5-74a1da6f232c")
+		)
+		(pin "4"
+			(uuid "1d7c6dfa-ddfe-47f5-98d6-96e5c5db5bfa")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
+					(reference "J6")
 					(unit 1)
 				)
 			)
