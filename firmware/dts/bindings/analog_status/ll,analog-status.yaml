@@ -1,0 +1,20 @@
+description: |
+  Analog status output using DAC peripheral.
+
+compatible: "ll,analog-status"
+
+include:
+  - name: base.yaml
+
+properties:
+  io-channels:
+    type: phandle-array
+    required: true
+    description: DAC peripheral instance and channel for outputting analog status
+  
+  resolution:
+    type: int
+    required: true
+    enum: [8, 10, 12]
+    default: 12
+    description: DAC resolution, in bits

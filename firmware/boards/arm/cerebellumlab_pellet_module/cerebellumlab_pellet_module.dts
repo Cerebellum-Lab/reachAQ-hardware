@@ -96,6 +96,13 @@
 		status = "okay";
 	};
 
+	analog_status: analog_status {
+		compatible = "ll,analog-status";
+		status = "okay";
+		io-channels = <&dac2 1>;
+		resolution = <12>;
+	};
+
 	aliases {
 		led0 = &status_led;
 		mcuboot-led0 = &status_led;
