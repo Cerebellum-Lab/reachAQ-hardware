@@ -44,8 +44,15 @@
 					  <&gpioa 0 GPIO_ACTIVE_HIGH>, // CAN_ID[2] / NodeNumber[0]
 					  <&gpioa 1 GPIO_ACTIVE_HIGH>, // CAN_ID[3] / NodeNumber[1]
 					  <&gpioc 5 GPIO_ACTIVE_HIGH>; // DRDY
+		input-gpio-names = "CAN_ID[0]",
+						   "CAN_ID[1]",
+						   "CAN_ID[2]",
+						   "CAN_ID[3]",
+						   "DRDY";
 		output-gpios = <&gpioc 14 GPIO_ACTIVE_HIGH>, // GPIO0 (input or output?)
 					   <&gpioc 15 GPIO_ACTIVE_HIGH>; // GPIO1 (input or output?)
+		output-gpio-names = "CONT0",
+					 		"CONT1";
 	};
 
 	pressure_sensor: pressure_sensor {

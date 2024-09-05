@@ -1,6 +1,20 @@
+config LL_GENERIC_GPIO_LOG_LEVEL
+    int "Log level (0-4)"
+        default 4
+        help
+            Set the log level for generic GPIO driver
+
 menuconfig LL_GENERIC_GPIO
         bool "Support LeafLabs generic GPIO driver"
         default y
         depends on DT_HAS_LL_GENERIC_GPIOS_ENABLED
         help
             Enable support the simple generic gpio driver
+
+config LL_GENERIC_GPIO_SHELL
+        bool "Enable shell commands for generic GPIO driver"
+        default y
+        depends on SHELL
+        depends on LL_GENERIC_GPIO
+        help
+            Enable shell commands for generic GPIO driver

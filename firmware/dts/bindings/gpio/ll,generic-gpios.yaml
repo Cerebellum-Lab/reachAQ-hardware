@@ -8,5 +8,9 @@ include: base.yaml
 properties:
   input-gpios:
     type: phandle-array
+  input-gpio-names:
+    type: string-array
   output-gpios:
     type: phandle-array
+  output-gpio-names:
+    type: string-array
