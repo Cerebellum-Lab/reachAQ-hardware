@@ -1050,7 +1050,7 @@
 	)
 	(wire
 		(pts
-			(xy 121.92 137.16) (xy 127 137.16)
+			(xy 144.78 137.16) (xy 139.7 137.16)
 		)
 		(stroke
 			(width 0)
@@ -1070,7 +1070,7 @@
 	)
 	(wire
 		(pts
-			(xy 139.7 137.16) (xy 147.32 137.16)
+			(xy 127 137.16) (xy 119.38 137.16)
 		)
 		(stroke
 			(width 0)
@@ -1309,13 +1309,13 @@
 		(uuid "ff324b53-fa9e-4cab-9839-320914f015fc")
 	)
 	(label "CANL"
-		(at 127 139.7 180)
+		(at 139.7 139.7 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
 		(uuid "31eb3ba9-f679-439b-80d8-71b6153b69e6")
 	)
@@ -1353,13 +1353,13 @@
 		(uuid "86462118-5264-465c-bfcd-7d37f7649936")
 	)
 	(label "CANH"
-		(at 139.7 139.7 0)
+		(at 127 139.7 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "9db74970-c349-4f5d-9ba3-7e73ab142434")
 	)
@@ -1410,13 +1410,13 @@
 	)
 	(hierarchical_label "12V"
 		(shape input)
-		(at 147.32 137.16 0)
+		(at 119.38 137.16 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "a15f088f-2829-4103-8377-94f72595e2cc")
 	)
@@ -1591,7 +1591,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1d0e99bb-bd59-45d0-85e5-428c3a9998ce")
-		(property "Reference" "J5"
+		(property "Reference" "J6"
 			(at 133.35 130.81 0)
 			(effects
 				(font
@@ -1607,7 +1607,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical"
 			(at 132.08 137.16 0)
 			(effects
 				(font
@@ -1626,6 +1626,24 @@
 			)
 		)
 		(property "Description" "Generic connector, double row, 02x02, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 132.08 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C5271185"
+			(at 132.08 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "1053101104"
 			(at 132.08 137.16 0)
 			(effects
 				(font
@@ -1669,7 +1687,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "64b09323-3ca1-47af-9d7a-c5aaf6f09563")
-		(property "Reference" "J9"
+		(property "Reference" "J10"
 			(at 133.35 105.41 0)
 			(effects
 				(font
@@ -1685,7 +1703,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical"
 			(at 132.08 111.76 0)
 			(effects
 				(font
@@ -1704,6 +1722,24 @@
 			)
 		)
 		(property "Description" "Generic connector, double row, 02x02, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 132.08 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C5271185"
+			(at 132.08 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "1053101104"
 			(at 132.08 111.76 0)
 			(effects
 				(font
@@ -1810,8 +1846,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 121.92 137.16 270)
-		(mirror x)
+		(at 144.78 137.16 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1819,8 +1854,8 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "91a1c327-b035-4709-9fb6-d3e7901eb2e2")
-		(property "Reference" "#PWR013"
-			(at 115.57 137.16 0)
+		(property "Reference" "#PWR015"
+			(at 151.13 137.16 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1829,7 +1864,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 118.11 137.1599 90)
+			(at 148.59 137.1599 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1838,7 +1873,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 121.92 137.16 0)
+			(at 144.78 137.16 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1847,7 +1882,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 121.92 137.16 0)
+			(at 144.78 137.16 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1856,7 +1891,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 121.92 137.16 0)
+			(at 144.78 137.16 0)
 			(effects
 				(font
 					(size 1.27 1.27)
