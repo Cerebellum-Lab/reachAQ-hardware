@@ -3043,7 +3043,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Leaf_Connectors:JST_ZH_S4B-ZR_1x04_P1.50mm_Horizontal"
+		(property "Footprint" "Connector_Molex:Molex_PicoBlade_53048-0410_1x04_P1.25mm_Horizontal"
 			(at 229.87 102.87 0)
 			(effects
 				(font
@@ -3070,7 +3070,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "S4B-ZR"
+		(property "MPN" "0530480410"
 			(at 229.87 102.87 0)
 			(effects
 				(font
@@ -3079,7 +3079,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C157924"
+		(property "LCSC" "C588275"
 			(at 229.87 102.87 0)
 			(effects
 				(font
