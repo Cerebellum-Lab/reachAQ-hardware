@@ -1,0 +1,14 @@
+menuconfig LIB_JERRYCAN
+    bool "Enable the JerryCAN library"
+    default n
+    help
+      Enable the library that handles CAN communication for the the MouseGym system.
+
+menuconfig LIB_JERRYCAN_SHELL
+    bool "Enable the shell for the JerryCAN library"
+    default n
+    depends on LIB_JERRYCAN
+    depends on SHELL
+    depends on CAN
+    help
+      Enable the shell for the JerryCAN library
