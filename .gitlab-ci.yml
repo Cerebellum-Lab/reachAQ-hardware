@@ -50,24 +50,11 @@ check_formatting:
     - cp build/${MODULE}/zephyr/zephyr.signed.hex ../${MODULE}_fw.hex
     - cp build/mcuboot/zephyr/zephyr.hex ../${MODULE}_bootloader.hex
 
-# Build the firmware for the nucleo_g474re board- will update this once we're developing on real hardware
-build_pellet_nucleo_firmware:
-  <<: *build_firmware_template
-  variables:
-    MODULE: pellet_module
-    BOARD: nucleo_g474re
-
 build_pellet_firmware:
   <<: *build_firmware_template
   variables:
     MODULE: pellet_module
     BOARD: cerebellumlab_pellet_module
-
-build_magnet_nucleo_firmware:
-  <<: *build_firmware_template
-  variables:
-    MODULE: magnet_module
-    BOARD: nucleo_g474re
 
 build_magnet_firmware:
   <<: *build_firmware_template
