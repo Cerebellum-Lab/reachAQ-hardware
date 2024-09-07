@@ -337,7 +337,7 @@
 
 &fdcan3 {
 	clocks = <&rcc STM32_CLOCK_BUS_APB1 0x02000000>,
-			 <&rcc STM32_SRC_HSE FDCAN_SEL(0)>;
+			 <&rcc STM32_SRC_PCLK FDCAN_SEL(1)>;
 	pinctrl-0 = <&fdcan3_rx_pb3 &fdcan3_tx_pb4>;
 	pinctrl-names = "default";
 	status = "okay";
