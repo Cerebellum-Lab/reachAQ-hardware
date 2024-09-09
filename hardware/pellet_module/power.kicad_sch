@@ -2490,7 +2490,7 @@
 		)
 		(uuid "b5bc8a08-247d-4321-97f3-c05313f62de9")
 	)
-	(text "Vf = 3.2V\nIf = 4mA"
+	(text "Vf = 3.2V\nIf = 2.6mA"
 		(exclude_from_sim no)
 		(at 78.74 45.72 0)
 		(effects
@@ -2785,7 +2785,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "2.2k"
+		(property "Value" "3.3k"
 			(at 66.04 50.7999 0)
 			(effects
 				(font
@@ -2821,7 +2821,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF2201T5E"
+		(property "MPN" "0603WAF3301T5E"
 			(at 63.5 49.53 0)
 			(effects
 				(font
@@ -2830,7 +2830,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C4190"
+		(property "LCSC" "C22978"
 			(at 63.5 49.53 0)
 			(effects
 				(font
