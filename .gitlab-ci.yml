@@ -79,8 +79,16 @@ build_magnet_firmware:
   before_script:
     - export PATH=$PATH:/home/kiri/.local/share/kiri/bin/:/home/kiri/.local/share/kiri/submodules/KiCad-Diff/bin:/home/kiri/bin
     - export TERM=xterm
+    - apt update && apt install -y curl
+    - export
   script:
     - kiri --no-server -o $(git rev-parse --short $CI_MERGE_REQUEST_DIFF_BASE_SHA) $PROJECT_DIR/$PROJECT_FILE
+    - >-
+      curl --location \
+           --request POST "https://gitlab.leaflabs.com/api/v4/projects/$CI_MERGE_REQUEST_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/notes" \
+           --header "PRIVATE-TOKEN: $PROJECT_ACCESS_TOKEN" \
+           --header "Content-Type: application/json" \
+           --data-raw "{ \"body\": \"Board Diff for [$PROJECT_DIR - $CI_PIPELINE_ID](https://$CI_PROJECT_NAMESPACE.pages.leaflabs.com/-/autotrainer/-/jobs/$CI_JOB_ID/artifacts/$PROJECT_DIR/.kiri/web/index.html)\" }"
 
 generate_pellet_diffs:
   <<: *generate_hardware_diffs_template
