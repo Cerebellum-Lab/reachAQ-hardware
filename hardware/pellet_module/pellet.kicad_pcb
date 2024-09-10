@@ -10542,15 +10542,15 @@
 			(pintype "passive")
 			(uuid "7b42434f-53fa-4471-b5bc-9f575e444c56")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_Molex.3dshapes/Molex_PicoBlade_53048-0410_1x04_P1.25mm_Horizontal.wrl"
+		(model "${LEAF_3DMODEL_DIR}/Molex_PicoBlade_530480410.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 1.85 -3.5 2)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 -180)
 			)
 		)
 	)
@@ -17936,13 +17936,24 @@
 		)
 		(model "${KICAD8_3DMODEL_DIR}/Connector_Molex.3dshapes/Molex_PicoBlade_53048-0410_1x04_P1.25mm_Horizontal.wrl"
 			(offset
-				(xyz 0 0 0)
+				(xyz 1.85 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
 				(xyz 0 0 0)
+			)
+		)
+		(model "${LEAF_3DMODEL_DIR}/Molex_PicoBlade_530480410.step"
+			(offset
+				(xyz 1.85 -3.5 2)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -22888,7 +22899,7 @@
 		(descr "Potentiometer, vertical, Bourns 3386P, https://www.bourns.com/pdfs/3386.pdf")
 		(tags "Potentiometer vertical Bourns 3386P")
 		(property "Reference" "RV1"
-			(at 5.75 1.4 180)
+			(at 5.75 1.4 360)
 			(layer "F.SilkS")
 			(uuid "3a6effa4-4643-45cc-bacc-df1e94ae40d3")
 			(effects
@@ -23183,6 +23194,17 @@
 			)
 			(rotate
 				(xyz 0 0 0)
+			)
+		)
+		(model "${LEAF_3DMODEL_DIR}/Potentiometer_Bourns_3386P.step"
+			(offset
+				(xyz 0 2.5 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz -90 0 -90)
 			)
 		)
 	)
@@ -32246,15 +32268,15 @@
 			(pintype "passive")
 			(uuid "0b47d21c-2cad-4917-a414-eabdc56e476b")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_Molex.3dshapes/Molex_PicoBlade_53048-0410_1x04_P1.25mm_Horizontal.wrl"
+		(model "${LEAF_3DMODEL_DIR}/Molex_PicoBlade_530480410.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 1.85 -3.5 2)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 -180)
 			)
 		)
 	)
