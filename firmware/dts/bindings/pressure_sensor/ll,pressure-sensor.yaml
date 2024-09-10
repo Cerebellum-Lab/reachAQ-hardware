@@ -7,14 +7,10 @@ include:
   - name: base.yaml
 
 properties:
-  adc:
-    type: phandle
+  io-channels:
+    type: phandle-array
     required: true
-    description: ADC peripheral instance
-  adc-channel:
-    type: int
-    required: true
-    description: ADC channel number
+    description: ADC peripheral instance and channel number
   sample-rate:
     type: int
     required: true

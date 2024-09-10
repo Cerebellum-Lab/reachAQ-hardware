@@ -15,17 +15,28 @@
 #define MIN_PRESSURE_ADC_COUNTS VOLTAGE_TO_ADC_COUNTS(MIN_PRESSURE_VOLTAGE)
 #define MAX_PRESSURE_ADC_COUNTS VOLTAGE_TO_ADC_COUNTS(MAX_PRESSURE_VOLTAGE)
 
-enum {
+typedef enum {
     PRESSURE_SENSOR_NO_ERROR,
     PRESSURE_SENSOR_NOT_INITIALIZED,
     PRESSURE_SENSOR_NOT_ENABLED,
     PRESSURE_SENSOR_ALREADY_DISABLED,
     PRESSURE_SENSOR_ALREADY_ENABLED,
     PRESSURE_SENSOR_INVALID_INSTANCE,
+    PRESSURE_SENSOR_ADC_ERROR,
+} ll_pressure_sensor_error_t;
+
+__attribute__((used)) static const char *pressure_sensor_error_to_str[] = {
+    [PRESSURE_SENSOR_NO_ERROR] = "No error",
+    [PRESSURE_SENSOR_NOT_INITIALIZED] = "Pressure sensor not initialized",
+    [PRESSURE_SENSOR_NOT_ENABLED] = "Pressure sensor not enabled",
+    [PRESSURE_SENSOR_ALREADY_DISABLED] = "Pressure sensor already disabled",
+    [PRESSURE_SENSOR_ALREADY_ENABLED] = "Pressure sensor already enabled",
+    [PRESSURE_SENSOR_INVALID_INSTANCE] = "Invalid pressure sensor instance",
+    [PRESSURE_SENSOR_ADC_ERROR] = "ADC error",
 };
 
-int ll_pressure_sensor_get_pressure(const struct device *dev);
+ll_pressure_sensor_error_t ll_pressure_sensor_get_pressure(const struct device *dev, uint16_t *value);
 
-int ll_pressure_sensor_enable(const struct device *dev);
+ll_pressure_sensor_error_t ll_pressure_sensor_enable(const struct device *dev);
 
-int ll_pressure_sensor_disable(const struct device *dev);
+ll_pressure_sensor_error_t ll_pressure_sensor_disable(const struct device *dev);

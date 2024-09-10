@@ -2,6 +2,7 @@
 
 #include <errno.h>
 #include <zephyr/device.h>
+#include <zephyr/devicetree.h>
 #include <zephyr/drivers/adc.h>
 #include <zephyr/logging/log.h>
 
@@ -55,59 +56,59 @@ static int ll_pressure_sensor_init(const struct device *dev) {
     ll_pressure_sensor_data_t *data = dev->data;
     LOG_INF("Initializing Pressure Sensor...");
 
-    int ret;
-
     /* Initialize the ADC peripheral */
-    ret = ll_pressure_sensor_adc_init(dev);
+    int ret = ll_pressure_sensor_adc_init(dev);
     if (ret != 0) {
         LOG_ERR("Failed to initialize ADC: %d", ret);
-        return ret;
+        return PRESSURE_SENSOR_ADC_ERROR;
     }
 
     data->initialized = true;
-    return ret;
+
+    return ll_pressure_sensor_enable(dev);
 }
 
 /* Returns the last recorded pressure */
-int ll_pressure_sensor_get_pressure(const struct device *dev) {
+ll_pressure_sensor_error_t ll_pressure_sensor_get_pressure(const struct device *dev, uint16_t *value) {
     ll_pressure_sensor_data_t *data = dev->data;
     if (!data->initialized) {
-        return -PRESSURE_SENSOR_NOT_INITIALIZED;
+        return PRESSURE_SENSOR_NOT_INITIALIZED;
     }
 
     if (!data->enabled) {
-        return -PRESSURE_SENSOR_NOT_ENABLED;
+        return PRESSURE_SENSOR_NOT_ENABLED;
     }
 
-    return ADC_COUNTS_TO_MV(data->raw_data);
+    *value = ADC_COUNTS_TO_MV(data->raw_data);
+
+    return PRESSURE_SENSOR_NO_ERROR;
 }
 
 /* Enables the given pressure sensor */
-int ll_pressure_sensor_enable(const struct device *dev) {
+ll_pressure_sensor_error_t ll_pressure_sensor_enable(const struct device *dev) {
     const ll_pressure_sensor_cfg_t *cfg = dev->config;
     ll_pressure_sensor_data_t *data = dev->data;
-    int ret;
 
     LOG_INF("Enabling pressure sensor...");
 
     if (!data->initialized) {
         LOG_ERR("Pressure sensor must be initialized to enable");
-        return -PRESSURE_SENSOR_NOT_INITIALIZED;
+        return PRESSURE_SENSOR_NOT_INITIALIZED;
     }
 
     if (data->enabled) {
         LOG_ERR("Pressure sensor already enabled");
-        return -PRESSURE_SENSOR_ALREADY_ENABLED;
+        return PRESSURE_SENSOR_ALREADY_ENABLED;
     }
 
     /* Set ADC action to repeat (continuous sampling) */
     data->adc_action = ADC_ACTION_REPEAT;
 
     /* Trigger asynchronous ADC sampling */
-    ret = adc_read_async(cfg->adc_dev, &cfg->sequence, NULL);
+    int ret = adc_read_async(cfg->adc_dev, &cfg->sequence, NULL);
     if (ret != 0) {
         LOG_ERR("Failed to start ADC continuous conversion with DMA (err %d)", ret);
-        return ret;
+        return PRESSURE_SENSOR_ADC_ERROR;
     }
 
     data->enabled = true;
@@ -118,17 +119,18 @@ int ll_pressure_sensor_enable(const struct device *dev) {
 }
 
 /* Disables the given pressure sensor */
-int ll_pressure_sensor_disable(const struct device *dev) {
+ll_pressure_sensor_error_t ll_pressure_sensor_disable(const struct device *dev) {
     ll_pressure_sensor_data_t *data = dev->data;
     LOG_INF("Disabling pressure sensor...");
 
     if (!data->initialized) {
         LOG_ERR("Pressure sensor must be initialized to disable");
-        return -PRESSURE_SENSOR_NOT_INITIALIZED;
+        return PRESSURE_SENSOR_NOT_INITIALIZED;
     }
 
     if (!data->enabled) {
-        return -PRESSURE_SENSOR_ALREADY_DISABLED;
+        LOG_ERR("Pressure sensor already disabled");
+        return PRESSURE_SENSOR_ALREADY_DISABLED;
     }
 
     /* Set ADC action to finish (stop sampling) */
@@ -156,18 +158,18 @@ int ll_pressure_sensor_disable(const struct device *dev) {
         .interval_us = FREQ_HZ_TO_PER_US(DT_INST_PROP(idx, sample_rate)),                                              \
     };                                                                                                                 \
     static const ll_pressure_sensor_cfg_t pressure_sensor_cfg_##idx = {                                                \
-        .adc_dev = DEVICE_DT_GET(DT_PHANDLE(DT_DRV_INST(idx), adc)),                                                   \
+        .adc_dev = DEVICE_DT_GET(DT_INST_IO_CHANNELS_CTLR(idx)),                                                       \
         .adc_channel_cfg =                                                                                             \
             {                                                                                                          \
                 .gain = ADC_GAIN_1,                                                                                    \
                 .reference = ADC_REF_INTERNAL,                                                                         \
                 .acquisition_time = ADC_ACQ_TIME_DEFAULT,                                                              \
-                .channel_id = DT_INST_PROP(idx, adc_channel),                                                          \
+                .channel_id = DT_INST_IO_CHANNELS_INPUT(idx),                                                          \
                 .differential = 0,                                                                                     \
             },                                                                                                         \
         .sequence =                                                                                                    \
             {                                                                                                          \
-                .channels = BIT(DT_INST_PROP(idx, adc_channel)),                                                       \
+                .channels = BIT(DT_INST_IO_CHANNELS_INPUT(idx)),                                                       \
                 .buffer = &((pressure_sensor_data_##idx).raw_data),                                                    \
                 .buffer_size = sizeof(uint16_t),                                                                       \
                 .resolution = ADC_RESOLUTION,                                                                          \

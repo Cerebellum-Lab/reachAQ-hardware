@@ -14,16 +14,22 @@ K_THREAD_STACK_DEFINE(dump_stack, STACK_SIZE);
 /* Print the most recent pressure reading from the given pressure sensor, or the associated error, to the shell */
 static void pressure_sensor_print_pressure_or_error(const struct shell *shell, const struct device *pressure_sensor,
                                                     int id) {
-    int32_t pressure = ll_pressure_sensor_get_pressure(pressure_sensor);
-    switch (pressure) {
-        case -PRESSURE_SENSOR_NOT_INITIALIZED:
-            shell_print(shell, "Error reading pressure_sensor%d: pressure sensor not initialized", id);
+    uint16_t pressure;
+    ll_pressure_sensor_error_t error = ll_pressure_sensor_get_pressure(pressure_sensor, &pressure);
+    switch (error) {
+        case PRESSURE_SENSOR_NO_ERROR:
+            shell_print(shell, "pressure_sensor%d: %dmV", id, pressure);
             break;
-        case -PRESSURE_SENSOR_NOT_ENABLED:
-            shell_print(shell, "Error reading pressure_sensor%d: pressure sensor not enabled", id);
+        case PRESSURE_SENSOR_NOT_INITIALIZED:  /* fall-through */
+        case PRESSURE_SENSOR_NOT_ENABLED:      /* fall-through */
+        case PRESSURE_SENSOR_ALREADY_DISABLED: /* fall-through */
+        case PRESSURE_SENSOR_ALREADY_ENABLED:  /* fall-through */
+        case PRESSURE_SENSOR_INVALID_INSTANCE: /* fall-through */
+        case PRESSURE_SENSOR_ADC_ERROR:
+            shell_print(shell, "Error reading pressure_sensor%d: %s", id, pressure_sensor_error_to_str[error]);
             break;
         default:
-            shell_print(shell, "pressure_sensor%d: %dmV", id, pressure);
+            shell_print(shell, "Error reading pressure_sensor%d: Unknown error - %d", id, error);
             break;
     }
 }
@@ -104,23 +110,26 @@ static int cmd_pressure_sensor_enable(const struct shell *shell, size_t argc, ch
         return -EINVAL;
     }
 
-    int ret = ll_pressure_sensor_enable(pressure_sensor_devs[pressure_sensor]);
-    switch (ret) {
+    ll_pressure_sensor_error_t error = ll_pressure_sensor_enable(pressure_sensor_devs[pressure_sensor]);
+    switch (error) {
         case PRESSURE_SENSOR_NO_ERROR:
             shell_print(shell, "Enabled pressure_sensor%d", pressure_sensor);
             break;
-        case -PRESSURE_SENSOR_NOT_INITIALIZED:
-            shell_print(shell, "Error enabling pressure_sensor%d: pressure sensor not initialized", pressure_sensor);
-            break;
-        case -PRESSURE_SENSOR_ALREADY_ENABLED:
-            shell_print(shell, "Error enabling pressure_sensor%d: pressure sensor already enabled", pressure_sensor);
+        case PRESSURE_SENSOR_NOT_INITIALIZED:  /* fall-through */
+        case PRESSURE_SENSOR_NOT_ENABLED:      /* fall-through */
+        case PRESSURE_SENSOR_ALREADY_DISABLED: /* fall-through */
+        case PRESSURE_SENSOR_ALREADY_ENABLED:  /* fall-through */
+        case PRESSURE_SENSOR_INVALID_INSTANCE: /* fall-through */
+        case PRESSURE_SENSOR_ADC_ERROR:
+            shell_print(shell, "Error enabling pressure_sensor%d: %s", pressure_sensor,
+                        pressure_sensor_error_to_str[error]);
             break;
         default:
-            shell_print(shell, "Error enabling pressure_sensor%d: unknown error", pressure_sensor);
+            shell_print(shell, "Error enabling pressure_sensor%d: Unknown error - %d", pressure_sensor, error);
             break;
     }
 
-    return ret;
+    return error;
 }
 
 /* Disable the given pressure sensor */
@@ -138,23 +147,26 @@ static int cmd_pressure_sensor_disable(const struct shell *shell, size_t argc, c
         return -EINVAL;
     }
 
-    int ret = ll_pressure_sensor_disable(pressure_sensor_devs[pressure_sensor]);
-    switch (ret) {
+    ll_pressure_sensor_error_t error = ll_pressure_sensor_disable(pressure_sensor_devs[pressure_sensor]);
+    switch (error) {
         case PRESSURE_SENSOR_NO_ERROR:
             shell_print(shell, "Disabled pressure_sensor%d", pressure_sensor);
             break;
-        case -PRESSURE_SENSOR_NOT_INITIALIZED:
-            shell_print(shell, "Error disabling pressure_sensor%d: pressure sensor not initialized", pressure_sensor);
-            break;
-        case -PRESSURE_SENSOR_ALREADY_DISABLED:
-            shell_print(shell, "Error disabling pressure_sensor%d: pressure sensor already disabled", pressure_sensor);
+        case PRESSURE_SENSOR_NOT_INITIALIZED:  /* fall-through */
+        case PRESSURE_SENSOR_NOT_ENABLED:      /* fall-through */
+        case PRESSURE_SENSOR_ALREADY_DISABLED: /* fall-through */
+        case PRESSURE_SENSOR_ALREADY_ENABLED:  /* fall-through */
+        case PRESSURE_SENSOR_INVALID_INSTANCE: /* fall-through */
+        case PRESSURE_SENSOR_ADC_ERROR:
+            shell_print(shell, "Error disabling pressure_sensor%d: %s", pressure_sensor,
+                        pressure_sensor_error_to_str[error]);
             break;
         default:
-            shell_print(shell, "Error disabling pressure_sensor%d: unknown error", pressure_sensor);
+            shell_print(shell, "Error disabling pressure_sensor%d: Unknown error - %d", pressure_sensor, error);
             break;
     }
 
-    return ret;
+    return error;
 }
 
 SHELL_STATIC_SUBCMD_SET_CREATE(

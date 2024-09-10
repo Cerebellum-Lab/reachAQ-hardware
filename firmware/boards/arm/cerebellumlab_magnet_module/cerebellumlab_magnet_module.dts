@@ -58,9 +58,7 @@
 	pressure_sensor: pressure_sensor {
 		compatible = "ll,pressure-sensor";
 		status = "okay";
-
-		adc = <&adc1>;
-		adc-channel = <15>;
+		io-channels = <&adc1 15>;
 		sample-rate = <1000>;
 	};
 
