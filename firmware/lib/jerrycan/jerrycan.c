@@ -3,11 +3,14 @@
 #include <generic_gpios.h>
 #include <zephyr/drivers/can.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/slist.h>
 
 const struct device *can_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_canbus));
 static const struct device *gpio_dev = DEVICE_DT_GET_ANY(ll_generic_gpios);
 
 LOG_MODULE_REGISTER(jerrycan, LOG_LEVEL_DBG);
+
+static sys_slist_t can_rx_callbacks_list;
 
 CAN_MSGQ_DEFINE(jerrycan_msgq, 10);
 
@@ -18,7 +21,7 @@ static uint8_t can_node_id;
 
 static inline uint16_t can_id(jerrycan_cmd_type_t msg_type) { return (uint16_t)msg_type << 5 | can_node_id; }
 
-int jerrycan_rx_poll(jerrycan_msg_t *msg, k_timeout_t timeout) {
+static int jerrycan_rx_poll(jerrycan_msg_t *msg, k_timeout_t timeout) {
     struct can_frame frame;
 
     // Get a CAN frame off of the message queue
@@ -109,8 +112,37 @@ static int jerrycan_set_bitrates(uint32_t bitrate, uint32_t data_bitrate) {
     return 0;
 }
 
+int jerrycan_run(k_timeout_t timeout) {
+    jerrycan_msg_t msg;
+    int ret = jerrycan_rx_poll(&msg, timeout);
+    if (ret) {
+        return ret;
+    }
+
+    LOG_DBG("RX: type=0x%02x", msg.type);
+
+    // Call all of the registered callbacks for this message type
+    sys_snode_t *snode;
+    SYS_SLIST_FOR_EACH_NODE(&can_rx_callbacks_list, snode) {
+        jerrycan_rx_callback_t *callback = CONTAINER_OF(snode, jerrycan_rx_callback_t, node);
+        if (callback->filter_msg_type == msg.type) {
+            callback->func(&msg);
+        }
+    }
+
+    return 0;
+}
+
+int jerrycan_register_rx_callback(jerrycan_rx_callback_t *callback) {
+    sys_slist_append(&can_rx_callbacks_list, &callback->node);
+    return 0;
+}
+
 static int jerrycan_init() {
     int ret;
+
+    // Initialize the linked list that will hold the callbacks to be called on RX frame
+    sys_slist_init(&can_rx_callbacks_list);
 
     // Read this device type and address from GPIOS
     can_node_id = get_can_node_id();

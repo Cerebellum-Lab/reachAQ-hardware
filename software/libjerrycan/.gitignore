@@ -1,0 +1,8 @@
+.idea/
+cmake-build-*/
+venv
+__pycache__/
+src/pyjerrycan.cpython*
+src/pyjerrycan.egg-info
+pyjerrycan.egg-info
+

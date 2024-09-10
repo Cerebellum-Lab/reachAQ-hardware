@@ -1,0 +1,15 @@
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+    "ninja",
+    "cmake",
+    "mypy",
+    "pytest",
+]
+
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyjerrycan"
+version = "0.1.0"

@@ -4,6 +4,20 @@ menuconfig LIB_JERRYCAN
     help
       Enable the library that handles CAN communication for the the MouseGym system.
 
+menuconfig LIB_JERRYCAN_STATUS_TX_RATE
+    int "Status TX Rate"
+    default 1000
+    depends on LIB_JERRYCAN
+    help
+      The rate at which the status message is transmitted in milliseconds.
+
+menuconfig LIB_JERRYCAN_TEMPERATURE_TX_RATE
+    int "Temperature TX Rate"
+    default 1000
+    depends on LIB_JERRYCAN
+    help
+      The rate at which the temperature message is transmitted in milliseconds.
+
 menuconfig LIB_JERRYCAN_SHELL
     bool "Enable the shell for the JerryCAN library"
     default n
@@ -12,3 +26,10 @@ menuconfig LIB_JERRYCAN_SHELL
     depends on CAN
     help
       Enable the shell for the JerryCAN library
+
+menuconfig LIB_JERRYCAN_INIT_PRIORITY
+    int "Initialization Priority"
+    default 91
+    depends on LIB_JERRYCAN
+    help
+      The initialization priority of the JerryCAN library.
