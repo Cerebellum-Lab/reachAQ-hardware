@@ -4484,6 +4484,98 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_02x02_Odd_Even")
+		(at 48.26 58.42 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "65b45f39-1c5f-496e-9fa6-b16f77b9b43b")
+		(property "Reference" "J2"
+			(at 49.53 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Conn_02x02_Odd_Even"
+			(at 49.53 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105314-xx04_2x02_P2.50mm_Horizontal"
+			(at 48.26 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 48.26 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, double row, 02x02, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 48.26 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C841207"
+			(at 48.26 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "1053141104"
+			(at 48.26 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "2b08298c-f233-424c-8743-406531cabd8f")
+		)
+		(pin "1"
+			(uuid "04a91e4f-f5bc-42c9-a506-b88ea73541de")
+		)
+		(pin "4"
+			(uuid "35a9244a-8c93-4cf4-9ff5-bc1df654c7ce")
+		)
+		(pin "3"
+			(uuid "b8a4ea22-3b06-45d5-a930-38afc5a5476b")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/06f3621d-3ec0-4d63-9ba9-06465b135ad7"
+					(reference "J2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_02x02_Odd_Even")
 		(at 48.26 39.37 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -4508,7 +4600,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical"
+		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105314-xx04_2x02_P2.50mm_Horizontal"
 			(at 48.26 39.37 0)
 			(effects
 				(font
@@ -4535,7 +4627,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C5271185"
+		(property "LCSC" "C841207"
 			(at 48.26 39.37 0)
 			(effects
 				(font
@@ -4544,7 +4636,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "1053101104"
+		(property "MPN" "1053141104"
 			(at 48.26 39.37 0)
 			(effects
 				(font
@@ -5408,97 +5500,6 @@
 			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/06f3621d-3ec0-4d63-9ba9-06465b135ad7"
 					(reference "C1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_02x02_Odd_Even")
-		(at 48.26 58.42 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "e7c1ed87-1fea-4195-a0a8-000557820e92")
-		(property "Reference" "J2"
-			(at 49.53 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Conn_02x02_Odd_Even"
-			(at 49.53 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical"
-			(at 48.26 58.42 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 48.26 58.42 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, double row, 02x02, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 48.26 58.42 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C5271185"
-			(at 48.26 58.42 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "1053101104"
-			(at 48.26 58.42 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "185ce1e5-cc21-4f1d-873d-1f68f4273dc4")
-		)
-		(pin "1"
-			(uuid "8a580417-1532-4cd3-b5ef-df23d998cc16")
-		)
-		(pin "4"
-			(uuid "6217d37c-b3dc-4e6f-a2ee-cdc5adaf1092")
-		)
-		(pin "3"
-			(uuid "48fb5534-e425-4ab3-8b30-c70cc03fac89")
-		)
-		(instances
-			(project "magnet"
-				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/06f3621d-3ec0-4d63-9ba9-06465b135ad7"
-					(reference "J2")
 					(unit 1)
 				)
 			)

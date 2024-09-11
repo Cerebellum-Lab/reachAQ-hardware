@@ -3664,7 +3664,7 @@
 				)
 			)
 		)
-		(property "Value" "691137710004"
+		(property "Value" "S4B-XH-A-1(LF)(SN)"
 			(at 47.752 64.77 0)
 			(effects
 				(font
@@ -3672,7 +3672,7 @@
 				)
 			)
 		)
-		(property "Footprint" "TerminalBlock_RND:TerminalBlock_RND_205-00003_1x04_P5.00mm_Horizontal"
+		(property "Footprint" "Connector_JST:JST_XH_S4B-XH-A-1_1x04_P2.50mm_Horizontal"
 			(at 46.99 71.12 0)
 			(effects
 				(font
@@ -3699,7 +3699,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "691137710004"
+		(property "MPN" "S4B-XH-A-1(LF)(SN)"
 			(at 46.99 71.12 0)
 			(effects
 				(font
@@ -3708,7 +3708,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7032066"
+		(property "LCSC" "C163037"
 			(at 46.99 71.12 0)
 			(effects
 				(font

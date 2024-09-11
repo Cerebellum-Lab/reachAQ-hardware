@@ -1333,7 +1333,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105309-xx02_1x02_P2.50mm_Vertical"
+		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105313-xx02_1x02_P2.50mm_Horizontal"
 			(at 137.16 102.87 0)
 			(effects
 				(font
@@ -1360,7 +1360,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "1053091102"
+		(property "MPN" "1053131102"
 			(at 137.16 102.87 0)
 			(effects
 				(font
@@ -1369,7 +1369,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C2938824"
+		(property "LCSC" "C564339"
 			(at 137.16 102.87 0)
 			(effects
 				(font
@@ -1388,6 +1388,95 @@
 			(project ""
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/f6a6e864-0822-4ae4-be84-ceba396b8425"
 					(reference "J13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:Conn_01x02_Pin")
+		(at 137.16 119.38 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7fb8c498-e693-4487-9031-bf1d2b2964e8")
+		(property "Reference" "J11"
+			(at 138.43 119.3799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "Conn_01x02_Pin"
+			(at 138.43 121.9199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105313-xx02_1x02_P2.50mm_Horizontal"
+			(at 137.16 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 137.16 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 137.16 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "1053131102"
+			(at 137.16 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C564339"
+			(at 137.16 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "13cc54a0-0fd0-4957-9764-d5132c545390")
+		)
+		(pin "2"
+			(uuid "6dd0e24a-cda9-4e3f-b935-b0594ce1fdbc")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/f6a6e864-0822-4ae4-be84-ceba396b8425"
+					(reference "J11")
 					(unit 1)
 				)
 			)
@@ -1507,7 +1596,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_SH_BM04B-SRSS-TB_1x04-1MP_P1.00mm_Vertical"
+		(property "Footprint" "Connector_JST:JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal"
 			(at 147.32 54.61 0)
 			(effects
 				(font
@@ -1534,7 +1623,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "BM04B-SRSS-TB"
+		(property "MPN" "SM04B-SRSS-TB"
 			(at 147.32 54.61 0)
 			(effects
 				(font
@@ -1543,7 +1632,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C160390"
+		(property "LCSC" "C160404"
 			(at 147.32 54.61 0)
 			(effects
 				(font
@@ -1637,95 +1726,6 @@
 			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/f6a6e864-0822-4ae4-be84-ceba396b8425"
 					(reference "#PWR055")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:Conn_01x02_Pin")
-		(at 137.16 119.38 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "b5bd00ff-2123-492c-814d-b7016a6b64bb")
-		(property "Reference" "J14"
-			(at 138.43 119.3799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "Conn_01x02_Pin"
-			(at 138.43 121.9199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "Connector_Molex:Molex_Nano-Fit_105309-xx02_1x02_P2.50mm_Vertical"
-			(at 137.16 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 137.16 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated"
-			(at 137.16 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "1053091102"
-			(at 137.16 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C2938824"
-			(at 137.16 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "de822bb6-a162-417b-805d-bb10f577044b")
-		)
-		(pin "2"
-			(uuid "cb9a974a-ce70-4b63-ab50-86f8076b182f")
-		)
-		(instances
-			(project "magnet"
-				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/f6a6e864-0822-4ae4-be84-ceba396b8425"
-					(reference "J14")
 					(unit 1)
 				)
 			)

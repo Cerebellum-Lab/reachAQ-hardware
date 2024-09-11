@@ -2172,101 +2172,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic_MountingPin:Conn_01x04_MountingPin")
-		(at 101.6 152.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "c100cf80-c8b3-470b-90c7-d023ba5d2cd1")
-		(property "Reference" "J5"
-			(at 101.6 146.812 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Conn_01x04_Pin"
-			(at 101.6 146.05 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_SH_BM04B-SRSS-TB_1x04-1MP_P1.00mm_Vertical"
-			(at 101.6 152.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 101.6 152.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connectable mounting pin connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 101.6 152.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "BM04B-SRSS-TB"
-			(at 101.6 152.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C160390"
-			(at 101.6 152.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "9fd7ce73-5a44-453d-8d64-73d82b455a68")
-		)
-		(pin "4"
-			(uuid "b0548206-18c8-421f-9468-2f2e8e54e941")
-		)
-		(pin "2"
-			(uuid "7d2926a7-9a06-452c-95ce-760ce31ffa94")
-		)
-		(pin "3"
-			(uuid "e7f95907-d232-4a36-8c3a-a8d8b77e6347")
-		)
-		(pin "MP"
-			(uuid "65e5bb93-8eef-40f7-886b-deb72e4db91e")
-		)
-		(instances
-			(project "magnet"
-				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
-					(reference "J5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Connector:Conn_01x02_Pin")
 		(at 48.26 48.26 0)
 		(unit 1)
@@ -2284,7 +2189,7 @@
 				)
 			)
 		)
-		(property "Value" "Conn_01x02_Pin"
+		(property "Value" "0530480210"
 			(at 48.895 45.72 0)
 			(effects
 				(font
@@ -2292,7 +2197,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
+		(property "Footprint" "Connector_Molex:Molex_PicoBlade_53048-0210_1x02_P1.25mm_Horizontal"
 			(at 48.26 48.26 0)
 			(effects
 				(font
@@ -2319,7 +2224,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "DW254W-11-02-85"
+		(property "MPN" "0530480210"
 			(at 48.26 48.26 0)
 			(effects
 				(font
@@ -2328,7 +2233,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C2935992"
+		(property "LCSC" "C505099"
 			(at 48.26 48.26 0)
 			(effects
 				(font
@@ -2412,6 +2317,101 @@
 			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
 					(reference "#PWR052")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic_MountingPin:Conn_01x04_MountingPin")
+		(at 101.6 152.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e7bbc239-95be-45ae-a391-d4a73f318cc8")
+		(property "Reference" "J5"
+			(at 101.6 146.812 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Conn_01x04_Pin"
+			(at 101.6 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "Connector_JST:JST_SH_SM04B-SRSS-TB_1x04-1MP_P1.00mm_Horizontal"
+			(at 101.6 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 101.6 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connectable mounting pin connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 101.6 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "SM04B-SRSS-TB"
+			(at 101.6 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C160404"
+			(at 101.6 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "84f8b9d9-9347-4eac-a900-efed7bae42f3")
+		)
+		(pin "4"
+			(uuid "18d54aee-69b9-47b1-b6e3-f86ec9e6d2b0")
+		)
+		(pin "2"
+			(uuid "23baa4f8-306b-4ac0-b122-327eb4298b1b")
+		)
+		(pin "3"
+			(uuid "8f3499c8-bef6-4109-a245-68ef899cfbd0")
+		)
+		(pin "MP"
+			(uuid "4ef16ed1-c768-4d7e-9c8b-55d3a256fee7")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/e000c084-d810-4b09-99a2-5de4c8100884"
+					(reference "J5")
 					(unit 1)
 				)
 			)

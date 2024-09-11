@@ -539,7 +539,7 @@
       "plot": "",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "magnet.step",
+      "step": "magnet_conn_only.step",
       "svg": "",
       "vrml": ""
     },
