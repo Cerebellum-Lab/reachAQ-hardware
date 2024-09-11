@@ -2604,6 +2604,16 @@
 	)
 	(wire
 		(pts
+			(xy 129.54 97.79) (xy 127 97.79)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "151e44ac-c04a-4832-acc6-5027f64c0b1d")
+	)
+	(wire
+		(pts
 			(xy 78.74 154.94) (xy 78.74 157.48)
 		)
 		(stroke
@@ -2671,6 +2681,16 @@
 			(type default)
 		)
 		(uuid "23e37c33-d011-48f5-8c45-d109e61a9a30")
+	)
+	(wire
+		(pts
+			(xy 129.54 106.68) (xy 127 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "243eb06b-dd89-41e0-8331-132bf3a44b96")
 	)
 	(wire
 		(pts
@@ -2824,6 +2844,16 @@
 	)
 	(wire
 		(pts
+			(xy 87.63 181.61) (xy 85.09 181.61)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7946b8d7-bdbf-44c2-8014-4ac0a5bcaebc")
+	)
+	(wire
+		(pts
 			(xy 165.1 74.93) (xy 163.83 74.93)
 		)
 		(stroke
@@ -2951,6 +2981,16 @@
 			(type default)
 		)
 		(uuid "cce70024-95f1-4d35-adfa-abf830fad76e")
+	)
+	(wire
+		(pts
+			(xy 87.63 190.5) (xy 85.09 190.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d62204df-dedf-46a2-9924-353da1acd8c1")
 	)
 	(wire
 		(pts
@@ -3183,6 +3223,17 @@
 		)
 		(uuid "047c9001-c9de-48ce-993d-a9ef0bc417f6")
 	)
+	(label "RX"
+		(at 129.54 106.68 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "13dd785f-d012-48db-83bd-f5d0e2ff1f86")
+	)
 	(label "CAN_PWR_IN"
 		(at 148.59 152.4 0)
 		(fields_autoplaced yes)
@@ -3260,6 +3311,17 @@
 		)
 		(uuid "408582bd-5552-4153-941a-c3fe81eebd44")
 	)
+	(label "DP"
+		(at 87.63 190.5 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "40f001fc-c638-4b3a-8fc7-3b159b1c7934")
+	)
 	(label "CAN_PWR_IN"
 		(at 35.56 52.07 180)
 		(fields_autoplaced yes)
@@ -3304,6 +3366,17 @@
 		)
 		(uuid "642ee117-3ac1-406b-a4fb-fed955df39b4")
 	)
+	(label "CANL"
+		(at 148.59 97.79 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "70f6dfe6-6265-4bf3-9158-730518a4f8d8")
+	)
 	(label "TX"
 		(at 128.27 72.39 0)
 		(fields_autoplaced yes)
@@ -3314,6 +3387,17 @@
 			(justify left bottom)
 		)
 		(uuid "77bcc33e-5741-4005-9505-05b3dd719e72")
+	)
+	(label "TX"
+		(at 129.54 97.79 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "9cb08174-eb2e-452f-af29-927b7313c6c6")
 	)
 	(label "CANH"
 		(at 259.08 99.06 0)
@@ -3336,6 +3420,17 @@
 			(justify left bottom)
 		)
 		(uuid "a2213dfd-87ef-468e-b8dd-d5e97ace46ea")
+	)
+	(label "DN"
+		(at 87.63 181.61 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "a78d3a11-cd5e-459d-ab05-b66586e9bc69")
 	)
 	(label "CANL"
 		(at 148.59 179.07 0)
@@ -3391,6 +3486,17 @@
 			(justify left bottom)
 		)
 		(uuid "e9958207-63e3-4097-9c27-e89892e82046")
+	)
+	(label "CANH"
+		(at 148.59 106.68 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ed59f320-2c28-480c-a916-dca7b9ea439f")
 	)
 	(hierarchical_label "12V"
 		(shape output)
@@ -4954,6 +5060,71 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 148.59 97.79 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "65a98149-5e90-4d7f-8b8a-57a6a6574703")
+		(property "Reference" "TP23"
+			(at 145.288 92.71 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 145.288 95.25 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
+			(at 148.59 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 148.59 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 148.59 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5f885f49-f909-41cd-9868-3067e9d548fc")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
+					(reference "TP23")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:PWR_FLAG")
 		(at 59.69 81.28 0)
 		(mirror y)
@@ -5079,6 +5250,136 @@
 			(project "pellet"
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
 					(reference "TP7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 127 106.68 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8016bbf8-911a-4a23-a903-e272872ca906")
+		(property "Reference" "TP22"
+			(at 123.698 101.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 123.698 104.14 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
+			(at 127 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 127 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 127 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5091db0b-75af-40ea-94d2-1bb8e0fd32a2")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
+					(reference "TP22")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 85.09 190.5 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8888fc62-6c8a-4a34-ba21-df6563513a8b")
+		(property "Reference" "TP20"
+			(at 81.788 185.42 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 81.788 187.96 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
+			(at 85.09 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 85.09 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 85.09 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3b18c5d4-20ba-4833-b484-457328cb48a8")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
+					(reference "TP20")
 					(unit 1)
 				)
 			)
@@ -5291,6 +5592,71 @@
 			(project ""
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
 					(reference "D3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 85.09 181.61 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "9c03b41f-dcaf-4478-b562-4cd457d06d12")
+		(property "Reference" "TP19"
+			(at 81.788 176.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 81.788 179.07 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
+			(at 85.09 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 85.09 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 85.09 181.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2f6cdc4b-dc94-4b2f-8305-341711e95dfe")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
+					(reference "TP19")
 					(unit 1)
 				)
 			)
@@ -5561,6 +5927,71 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 148.59 106.68 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d3252f0d-738b-4217-b7b9-742f6e5f10b6")
+		(property "Reference" "TP24"
+			(at 145.288 101.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 145.288 104.14 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
+			(at 148.59 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 148.59 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 148.59 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9ad8464b-8ea2-48a3-9844-d79d2e651129")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
+					(reference "TP24")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector_Generic:Conn_02x02_Odd_Even")
 		(at 40.64 52.07 0)
 		(unit 1)
@@ -5702,6 +6133,71 @@
 			(project "pellet"
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
 					(reference "TP10")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 127 97.79 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ef86ca9f-d237-4999-9fac-89b4aa7e6afb")
+		(property "Reference" "TP21"
+			(at 123.698 92.71 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 123.698 95.25 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
+			(at 127 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 127 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 127 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c81cd581-c154-46ac-b7cd-6e3f3fc53136")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/cbf5c982-6a1d-4f6d-8fb5-67d1f731220e"
+					(reference "TP21")
 					(unit 1)
 				)
 			)
