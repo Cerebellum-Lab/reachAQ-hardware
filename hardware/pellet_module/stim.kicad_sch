@@ -3024,6 +3024,95 @@
 	)
 	(symbol
 		(lib_id "Connector:Conn_01x02_Pin")
+		(at 59.69 116.84 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "41a5f3db-bf0d-4d00-b4ad-7b39cf77efe6")
+		(property "Reference" "J14"
+			(at 60.96 116.8399 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "Conn_01x02_Pin"
+			(at 60.96 119.3799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Connector_Molex:Molex_PicoBlade_53048-0210_1x02_P1.25mm_Horizontal"
+			(at 59.69 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 59.69 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 59.69 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "0530480210"
+			(at 59.69 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C505099"
+			(at 59.69 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "76667730-b255-40b9-a3fc-2d9a233fc78c")
+		)
+		(pin "1"
+			(uuid "a43b0eaa-b1f4-4639-b8ad-59053d92bdc2")
+		)
+		(instances
+			(project "pellet"
+				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
+					(reference "J14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:Conn_01x02_Pin")
 		(at 59.69 101.6 0)
 		(mirror y)
 		(unit 1)
@@ -3032,7 +3121,7 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "5d52abac-88fd-40b0-ba74-759b1c6f3667")
+		(uuid "5fe1734b-5d1b-446e-885f-9f9f0df798b5")
 		(property "Reference" "J13"
 			(at 60.96 101.5999 0)
 			(effects
@@ -3051,7 +3140,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
+		(property "Footprint" "Connector_Molex:Molex_PicoBlade_53048-0210_1x02_P1.25mm_Horizontal"
 			(at 59.69 101.6 0)
 			(effects
 				(font
@@ -3078,7 +3167,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" " A2005WR-2P"
+		(property "MPN" "0530480210"
 			(at 59.69 101.6 0)
 			(effects
 				(font
@@ -3087,7 +3176,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C225269"
+		(property "LCSC" "C505099"
 			(at 59.69 101.6 0)
 			(effects
 				(font
@@ -3097,10 +3186,10 @@
 			)
 		)
 		(pin "2"
-			(uuid "37d56657-f7ff-46dd-9ee6-ee87b624876b")
+			(uuid "aba04776-e6ac-4f6c-bcba-fbaac28e2297")
 		)
 		(pin "1"
-			(uuid "4568cdd6-5cad-43d7-9435-6fdb528e2ba3")
+			(uuid "a0ccdac0-12d7-44b2-8305-bad4c25fa3ab")
 		)
 		(instances
 			(project "pellet"
@@ -3206,7 +3295,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
+		(property "Footprint" "Connector_Molex:Molex_PicoBlade_53048-0210_1x02_P1.25mm_Horizontal"
 			(at 59.69 86.36 0)
 			(effects
 				(font
@@ -3233,7 +3322,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" " A2005WR-2P"
+		(property "MPN" "0530480210"
 			(at 59.69 86.36 0)
 			(effects
 				(font
@@ -3242,7 +3331,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C225269"
+		(property "LCSC" "C505099"
 			(at 59.69 86.36 0)
 			(effects
 				(font
@@ -3503,95 +3592,6 @@
 			(project "pellet"
 				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
 					(reference "J17")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:Conn_01x02_Pin")
-		(at 59.69 116.84 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "c1025043-f215-494e-9437-4b342cf290e4")
-		(property "Reference" "J14"
-			(at 60.96 116.8399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "Conn_01x02_Pin"
-			(at 60.96 119.3799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
-			(at 59.69 116.84 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 59.69 116.84 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated"
-			(at 59.69 116.84 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" " A2005WR-2P"
-			(at 59.69 116.84 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C225269"
-			(at 59.69 116.84 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "169d7e1d-bf27-415a-95e9-b637930373f8")
-		)
-		(pin "1"
-			(uuid "15df0145-ae2f-46bd-bcef-9c54c939dfd1")
-		)
-		(instances
-			(project "pellet"
-				(path "/48650363-a452-429d-997e-1ddabb69aad0/b8597be6-0cb3-4e54-9f55-240b87344e85"
-					(reference "J14")
 					(unit 1)
 				)
 			)
