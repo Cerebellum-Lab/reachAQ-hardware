@@ -289,6 +289,16 @@
 		)
 		(uuid "14c9a81a-a6ac-49c1-9347-fbe2fd4cd157")
 	)
+	(wire
+		(pts
+			(xy 101.6 110.49) (xy 127 110.49)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "18412472-50f1-4ece-935d-d27c1e4ac529")
+	)
 	(bus
 		(pts
 			(xy 101.6 106.68) (xy 127 106.68)
@@ -1372,6 +1382,16 @@
 			)
 			(uuid "2b38b6dd-ea3b-45b5-9670-2c6daf1aa84f")
 		)
+		(pin "MIC_IN" input
+			(at 127 110.49 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "ec413de4-74c6-492b-9075-5a00fa5c4cac")
+		)
 		(instances
 			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095"
@@ -1585,7 +1605,7 @@
 	)
 	(sheet
 		(at 71.12 99.06)
-		(size 30.48 12.7)
+		(size 30.48 15.24)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -1605,7 +1625,7 @@
 			)
 		)
 		(property "Sheetfile" "sensors.kicad_sch"
-			(at 71.12 112.0906 0)
+			(at 71.12 114.8846 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1652,6 +1672,16 @@
 				(justify left)
 			)
 			(uuid "f1c8437f-6751-44c7-bb42-023adcb1a50e")
+		)
+		(pin "MIC_OUT" output
+			(at 101.6 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "576134de-f9b0-4dc0-9cab-bcbfc7c8a75f")
 		)
 		(instances
 			(project "magnet"

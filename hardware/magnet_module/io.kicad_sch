@@ -172,6 +172,108 @@
 				)
 			)
 		)
+		(symbol "Connector:TestPoint"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0.762) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "TP"
+				(at 0 6.858 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TestPoint"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 5.08 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 5.08 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "test point"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "test point tp"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Pin* Test*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "TestPoint_0_1"
+				(circle
+					(center 0 3.302)
+					(radius 0.762)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TestPoint_1_1"
+				(pin passive line
+					(at 0 0 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Connector_Generic_MountingPin:Conn_01x04_MountingPin"
 			(pin_names
 				(offset 1.016) hide)
@@ -633,6 +735,18 @@
 		(uuid "63f17230-df9e-460b-8ff7-320baa4bcbb0")
 	)
 	(junction
+		(at 115.57 57.15)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "64cdcdd4-c7c3-443e-bb57-d9d0a0ae0819")
+	)
+	(junction
+		(at 120.65 105.41)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "68b9b9d1-0064-4cd9-9880-89e641e4c1b9")
+	)
+	(junction
 		(at 121.92 59.69)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -649,6 +763,18 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "c977f01f-1dbc-4429-8283-29d7a741fbfc")
+	)
+	(junction
+		(at 125.73 59.69)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d4095372-0fe4-4bba-96ab-a408c8094a6a")
+	)
+	(junction
+		(at 121.92 121.92)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "ea60c8a0-61e7-4663-be71-e087a4b91776")
 	)
 	(bus_entry
 		(at 95.25 57.15)
@@ -680,6 +806,16 @@
 	)
 	(wire
 		(pts
+			(xy 125.73 59.69) (xy 142.24 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "285f7acf-c0a0-4ac8-b45a-91e7a9de2f55")
+	)
+	(wire
+		(pts
 			(xy 115.57 120.65) (xy 115.57 121.92)
 		)
 		(stroke
@@ -690,7 +826,7 @@
 	)
 	(wire
 		(pts
-			(xy 115.57 121.92) (xy 132.08 121.92)
+			(xy 115.57 121.92) (xy 121.92 121.92)
 		)
 		(stroke
 			(width 0)
@@ -770,6 +906,26 @@
 	)
 	(wire
 		(pts
+			(xy 121.92 121.92) (xy 132.08 121.92)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "875b6e24-e8cc-4c1b-ba2c-86f32ddd1c3e")
+	)
+	(wire
+		(pts
+			(xy 125.73 60.96) (xy 125.73 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8ffbdd29-ac50-4965-abef-871d698016d8")
+	)
+	(wire
+		(pts
 			(xy 113.03 121.92) (xy 115.57 121.92)
 		)
 		(stroke
@@ -790,7 +946,7 @@
 	)
 	(wire
 		(pts
-			(xy 121.92 59.69) (xy 142.24 59.69)
+			(xy 121.92 59.69) (xy 125.73 59.69)
 		)
 		(stroke
 			(width 0)
@@ -800,7 +956,7 @@
 	)
 	(wire
 		(pts
-			(xy 113.03 57.15) (xy 142.24 57.15)
+			(xy 113.03 57.15) (xy 115.57 57.15)
 		)
 		(stroke
 			(width 0)
@@ -810,13 +966,23 @@
 	)
 	(wire
 		(pts
-			(xy 115.57 105.41) (xy 132.08 105.41)
+			(xy 115.57 105.41) (xy 120.65 105.41)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "cd9299b2-e9e5-45b4-a497-a7d2a79707f2")
+	)
+	(wire
+		(pts
+			(xy 115.57 57.15) (xy 115.57 60.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ceb0eaff-3fd0-4741-8c49-b48a40587d1c")
 	)
 	(bus
 		(pts
@@ -830,6 +996,16 @@
 	)
 	(wire
 		(pts
+			(xy 120.65 105.41) (xy 132.08 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f30fd9f5-73db-43a0-bda1-2b40ea545436")
+	)
+	(wire
+		(pts
 			(xy 113.03 52.07) (xy 113.03 57.15)
 		)
 		(stroke
@@ -837,6 +1013,16 @@
 			(type default)
 		)
 		(uuid "f34d7c22-a247-4600-a5a4-d1bd4c696e57")
+	)
+	(wire
+		(pts
+			(xy 115.57 57.15) (xy 142.24 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f8364268-4296-4aa5-b18a-4f31947ca18b")
 	)
 	(rectangle
 		(start 71.12 38.1)
@@ -1305,6 +1491,70 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 115.57 60.96 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "50706614-5434-46ab-86c5-7f74df99e8ef")
+		(property "Reference" "TP24"
+			(at 112.014 70.104 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 112.014 67.564 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
+			(at 110.49 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 110.49 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 115.57 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6e5f7826-dd79-4ffa-8806-4ffdea286cfc")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/f6a6e864-0822-4ae4-be84-ceba396b8425"
+					(reference "TP24")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector:Conn_01x02_Pin")
 		(at 137.16 102.87 0)
 		(mirror y)
@@ -1726,6 +1976,198 @@
 			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/f6a6e864-0822-4ae4-be84-ceba396b8425"
 					(reference "#PWR055")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 120.65 105.41 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "c169bca8-bc4a-404f-ac4f-2a94f3ad7a15")
+		(property "Reference" "TP23"
+			(at 124.206 96.266 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 124.206 98.806 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
+			(at 125.73 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 125.73 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 120.65 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "454b77a8-2af2-4289-9d6a-3734ab244f98")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/f6a6e864-0822-4ae4-be84-ceba396b8425"
+					(reference "TP23")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 125.73 60.96 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "c81982bc-0c16-479f-91c5-9004220fcf2c")
+		(property "Reference" "TP25"
+			(at 122.174 70.104 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 122.174 67.564 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
+			(at 120.65 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 120.65 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 125.73 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a8a41b56-2d53-4186-95fb-03450e0d11b7")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/f6a6e864-0822-4ae4-be84-ceba396b8425"
+					(reference "TP25")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 121.92 121.92 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "cef01de0-b1e0-432a-8ef4-d8884fd0d86a")
+		(property "Reference" "TP22"
+			(at 125.476 112.776 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 125.476 115.316 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm"
+			(at 127 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 127 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 121.92 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "51a72c2a-7df7-423a-a9dd-f438df37cb5b")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/f6a6e864-0822-4ae4-be84-ceba396b8425"
+					(reference "TP22")
 					(unit 1)
 				)
 			)
