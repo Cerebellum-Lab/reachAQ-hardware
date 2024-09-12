@@ -2682,7 +2682,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" ""
+		(property "MPN" "CL10B102KB8NNNC"
 			(at 34.29 179.07 0)
 			(effects
 				(font
@@ -2691,7 +2691,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
+		(property "LCSC" "C1588"
 			(at 34.29 179.07 0)
 			(effects
 				(font
@@ -3093,7 +3093,7 @@
 				)
 			)
 		)
-		(property "Footprint" "RHLGA5_3P5X2P65X0P98_STM"
+		(property "Footprint" "Leaf_Microphone:RHLGA5_3P5X2P65X0P98_STM"
 			(at 50.8 167.64 0)
 			(effects
 				(font
@@ -3114,6 +3114,24 @@
 			)
 		)
 		(property "Description" ""
+			(at 50.8 167.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C3171746"
+			(at 50.8 167.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "IMP23ABSUTR"
 			(at 50.8 167.64 0)
 			(effects
 				(font
