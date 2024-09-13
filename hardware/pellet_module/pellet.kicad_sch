@@ -740,6 +740,16 @@
 	)
 	(bus
 		(pts
+			(xy 127 127) (xy 143.51 127)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "50094759-5899-4d27-9915-c7578c089ab8")
+	)
+	(bus
+		(pts
 			(xy 204.47 57.15) (xy 213.36 57.15)
 		)
 		(stroke
@@ -930,6 +940,16 @@
 	)
 	(bus
 		(pts
+			(xy 127 129.54) (xy 143.51 129.54)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ceeb79d0-f24e-48d4-a9ea-3b862d9fdc7c")
+	)
+	(bus
+		(pts
 			(xy 207.01 76.2) (xy 213.36 76.2)
 		)
 		(stroke
@@ -957,6 +977,16 @@
 			(type default)
 		)
 		(uuid "e8f34c9b-bd6b-45f9-9517-8bc2f6791505")
+	)
+	(wire
+		(pts
+			(xy 127 132.08) (xy 143.51 132.08)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f60b4d39-3b5d-4ef2-aadb-9d08886afc83")
 	)
 	(bus
 		(pts
@@ -1053,6 +1083,17 @@
 			(justify right bottom)
 		)
 		(uuid "203c9ec7-67bd-4cdb-82e3-c740675b437d")
+	)
+	(label "12V"
+		(at 102.87 121.92 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "2fee7436-c4a4-4465-b399-15dfa756254e")
 	)
 	(label "12V"
 		(at 240.03 53.34 90)
@@ -2342,7 +2383,7 @@
 	)
 	(sheet
 		(at 143.51 77.47)
-		(size 39.37 49.784)
+		(size 39.37 57.658)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -2362,7 +2403,7 @@
 			)
 		)
 		(property "Sheetfile" "mcu.kicad_sch"
-			(at 143.51 127.8386 0)
+			(at 143.51 135.7126 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2509,6 +2550,36 @@
 				(justify left)
 			)
 			(uuid "55cadac4-08f6-4a7e-ab9d-e7c8b3ca9e6c")
+		)
+		(pin "DOOR[0..2]" input
+			(at 143.51 127 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "39b14609-6eda-4086-8a15-6e9b1d1f5d0d")
+		)
+		(pin "{LED}" output
+			(at 143.51 129.54 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "4ebc0847-11e5-4d8a-b0e5-b25affcdd28d")
+		)
+		(pin "LED_FAULT" input
+			(at 143.51 132.08 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "25bb58cf-ff24-442f-9cec-666f8d5c981a")
 		)
 		(instances
 			(project "pellet"
@@ -2852,7 +2923,7 @@
 	)
 	(sheet
 		(at 102.87 114.3)
-		(size 24.13 12.954)
+		(size 24.13 20.828)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -2872,7 +2943,7 @@
 			)
 		)
 		(property "Sheetfile" "stim.kicad_sch"
-			(at 102.87 127.8386 0)
+			(at 102.87 135.7126 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2948,6 +3019,46 @@
 				(justify right)
 			)
 			(uuid "390f8ed4-68eb-4185-85db-2a4acd8a0729")
+		)
+		(pin "DOOR[0..2]" output
+			(at 127 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "ca7d4673-3fcc-40cd-aba0-1553be1c37e4")
+		)
+		(pin "{LED}" input
+			(at 127 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "f5c4c92b-76d5-4bc6-8553-65292bb78914")
+		)
+		(pin "LED_FAULT" output
+			(at 127 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "e6ddde61-9dee-4448-95d6-2baa190503dd")
+		)
+		(pin "12V" input
+			(at 102.87 121.92 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "108122f0-950d-48ec-b944-824b5adf3a06")
 		)
 		(instances
 			(project "pellet"
