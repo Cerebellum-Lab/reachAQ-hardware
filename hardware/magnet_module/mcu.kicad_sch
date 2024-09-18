@@ -3994,12 +3994,12 @@
 		(uuid "df3c0e4a-2c8d-4bb9-99d1-4381273341ef")
 	)
 	(no_connect
-		(at 171.45 53.34)
-		(uuid "039e56d2-12cf-4c9e-b925-e48b8a16b82a")
-	)
-	(no_connect
 		(at 171.45 104.14)
 		(uuid "2b21e7b1-b7d9-4704-96cd-e54476ac0baf")
+	)
+	(no_connect
+		(at 171.45 91.44)
+		(uuid "2cf5adf2-3133-4b21-8ccd-fef2c407d9c1")
 	)
 	(no_connect
 		(at 21.59 82.55)
@@ -4008,10 +4008,6 @@
 	(no_connect
 		(at 171.45 111.76)
 		(uuid "4fa186ad-9cef-418d-aa52-e014808d68ee")
-	)
-	(no_connect
-		(at 135.89 96.52)
-		(uuid "68858f25-ca97-4c73-8ae5-2d2f9472bcbc")
 	)
 	(no_connect
 		(at 135.89 76.2)
@@ -4088,10 +4084,6 @@
 	(no_connect
 		(at 171.45 55.88)
 		(uuid "f9e4b071-f350-4e2c-aecf-34158772436b")
-	)
-	(no_connect
-		(at 135.89 91.44)
-		(uuid "fed79e8a-bfb5-4bda-b2b7-827452259955")
 	)
 	(bus_entry
 		(at 189.23 101.6)
@@ -5204,6 +5196,17 @@
 		)
 		(uuid "28deb75b-e48f-4c72-91d0-08bfb9d8dfb7")
 	)
+	(text "I2S3_CK"
+		(exclude_from_sim no)
+		(at 120.65 90.17 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "29156346-4b40-42f2-a2e6-923ead7fa4cc")
+	)
 	(text "SWCLK-JTCK"
 		(exclude_from_sim no)
 		(at 179.07 78.74 0)
@@ -5267,7 +5270,7 @@
 	)
 	(text "I2C1_SDA"
 		(exclude_from_sim no)
-		(at 187.198 108.204 0)
+		(at 186.69 107.95 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5277,7 +5280,7 @@
 	)
 	(text "ADC1_IN15"
 		(exclude_from_sim no)
-		(at 192.024 86.614 0)
+		(at 191.77 86.36 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5307,7 +5310,7 @@
 	)
 	(text "I2C1_SCL"
 		(exclude_from_sim no)
-		(at 186.182 80.518 0)
+		(at 186.69 80.01 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5335,16 +5338,6 @@
 		)
 		(uuid "7cc05ecf-7307-4a2e-8573-b6bb9715e063")
 	)
-	(text "ADC2_IN12"
-		(exclude_from_sim no)
-		(at 191.77 91.44 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "7d6cc807-1b70-4ead-be0f-aac64b47209a")
-	)
 	(text "Module Address"
 		(exclude_from_sim no)
 		(at 163.83 165.1 0)
@@ -5357,7 +5350,7 @@
 	)
 	(text "Programming Flash"
 		(exclude_from_sim no)
-		(at 221.234 102.87 0)
+		(at 220.98 102.87 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5384,6 +5377,27 @@
 			)
 		)
 		(uuid "b686344a-2cf7-42a9-8e6b-c0753c3fcbb7")
+	)
+	(text "I2S3_WS"
+		(exclude_from_sim no)
+		(at 184.15 52.07 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "b94952b9-17e2-454d-8c8e-e2d7dd98bfd0")
+	)
+	(text "I2S3_SD"
+		(exclude_from_sim no)
+		(at 120.65 95.25 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c4172fde-9760-4079-83fe-b137e71753f8")
 	)
 	(text "SPI2_SCK"
 		(exclude_from_sim no)
@@ -5417,7 +5431,7 @@
 	)
 	(text "SWDIO-JTMS"
 		(exclude_from_sim no)
-		(at 185.166 75.692 0)
+		(at 185.42 76.2 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5799,6 +5813,16 @@
 		)
 		(uuid "6d714920-224d-4b39-a262-326e344ce2bc")
 	)
+	(label "WS"
+		(at 171.45 53.34 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "6daefc9a-092d-4d36-a4f0-7a084f71ace2")
+	)
 	(label "3V3"
 		(at 62.23 138.43 90)
 		(fields_autoplaced yes)
@@ -5997,6 +6021,17 @@
 		)
 		(uuid "b7e10771-6f6a-4248-9cbb-b1f9b1fb2671")
 	)
+	(label "SD"
+		(at 135.89 96.52 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "b8006372-6c44-4320-b7e2-f2a4f49d9421")
+	)
 	(label "3V3"
 		(at 217.17 138.43 90)
 		(fields_autoplaced yes)
@@ -6162,6 +6197,17 @@
 		)
 		(uuid "f5cedeae-49bf-47dc-9dc0-ede7bf5d28f5")
 	)
+	(label "CLK"
+		(at 135.89 91.44 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "f8e9911a-ee11-4faf-9d7f-844b4077bbe0")
+	)
 	(label "3V3"
 		(at 21.59 138.43 90)
 		(fields_autoplaced yes)
@@ -6244,6 +6290,18 @@
 		)
 		(uuid "53257ec0-17d3-4616-bd39-b70f91f3d6a3")
 	)
+	(hierarchical_label "{I2S}"
+		(shape input)
+		(at 265.43 45.72 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "7920a2d1-0da5-48ce-bb08-ce90e048679d")
+	)
 	(hierarchical_label "CONT0"
 		(shape bidirectional)
 		(at 135.89 101.6 180)
@@ -6315,18 +6373,6 @@
 			(justify left)
 		)
 		(uuid "c872da7f-78f0-4e59-ae07-62ac7b8b7626")
-	)
-	(hierarchical_label "MIC_IN"
-		(shape input)
-		(at 171.45 91.44 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "f3c82ab3-919b-4f89-9e48-97c1e1c82e70")
 	)
 	(netclass_flag ""
 		(length 2.54)
@@ -6893,7 +6939,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "36b565fe-7362-4f52-be36-f35575ffc3d3")
-		(property "Reference" "U3"
+		(property "Reference" "U15"
 			(at 264.16 143.5099 0)
 			(effects
 				(font
@@ -6979,6 +7025,14 @@
 		)
 		(pin "1"
 			(uuid "0bf44f62-a514-469d-af7e-11c63b060847")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095/286cc8bf-34fd-48cd-9d6c-58653d0694aa"
+					(reference "U15")
+					(unit 1)
+				)
+			)
 		)
 	)
 	(symbol

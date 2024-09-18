@@ -289,16 +289,6 @@
 		)
 		(uuid "14c9a81a-a6ac-49c1-9347-fbe2fd4cd157")
 	)
-	(wire
-		(pts
-			(xy 101.6 110.49) (xy 127 110.49)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "18412472-50f1-4ece-935d-d27c1e4ac529")
-	)
 	(bus
 		(pts
 			(xy 101.6 106.68) (xy 127 106.68)
@@ -318,6 +308,16 @@
 			(type default)
 		)
 		(uuid "3d0a1da9-2b8e-43b7-971a-b8e56c26ef51")
+	)
+	(bus
+		(pts
+			(xy 101.6 125.73) (xy 127 125.73)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5b890121-0773-4b10-a383-a6ab60a09c79")
 	)
 	(wire
 		(pts
@@ -462,6 +462,17 @@
 			(justify left bottom)
 		)
 		(uuid "3f5826fc-bff1-495d-8b7f-eeb7df428f2f")
+	)
+	(label "3V3"
+		(at 71.12 125.73 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "40076694-40ae-4b87-a2bc-4856b844c762")
 	)
 	(label "5V"
 		(at 175.26 44.45 0)
@@ -1382,15 +1393,15 @@
 			)
 			(uuid "2b38b6dd-ea3b-45b5-9670-2c6daf1aa84f")
 		)
-		(pin "MIC_IN" input
-			(at 127 110.49 180)
+		(pin "{I2S}" input
+			(at 127 125.73 180)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "ec413de4-74c6-492b-9075-5a00fa5c4cac")
+			(uuid "d8911216-ff17-4a85-82cc-8751fe075355")
 		)
 		(instances
 			(project "magnet"
@@ -1463,6 +1474,64 @@
 			(project "magnet"
 				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095"
 					(page "8")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 71.12 121.285)
+		(size 30.48 8.255)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "752d54b8-61b3-428a-9afb-d0685f3f5b35")
+		(property "Sheetname" "Microphone"
+			(at 71.12 120.5734 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "microphone.kicad_sch"
+			(at 71.12 130.1246 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "{I2S}" output
+			(at 101.6 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "2d53e62d-25f9-479a-9a22-ea9c24b36309")
+		)
+		(pin "3V3" input
+			(at 71.12 125.73 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "e9324841-7a8d-496a-8d3e-1692d66e24d3")
+		)
+		(instances
+			(project "magnet"
+				(path "/aa5044b8-67cd-4b5a-a593-0df9431eb095"
+					(page "9")
 				)
 			)
 		)
@@ -1672,16 +1741,6 @@
 				(justify left)
 			)
 			(uuid "f1c8437f-6751-44c7-bb42-023adcb1a50e")
-		)
-		(pin "MIC_OUT" output
-			(at 101.6 110.49 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "576134de-f9b0-4dc0-9cab-bcbfc7c8a75f")
 		)
 		(instances
 			(project "magnet"

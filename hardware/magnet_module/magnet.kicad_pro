@@ -539,7 +539,7 @@
       "plot": "",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "magnet_09112024.step",
+      "step": "magnet.step",
       "svg": "",
       "vrml": ""
     },
@@ -726,6 +726,10 @@
     [
       "2d556af5-2e8e-4584-962b-364bdedf6f87",
       "Power"
+    ],
+    [
+      "752d54b8-61b3-428a-9afb-d0685f3f5b35",
+      "Microphone"
     ],
     [
       "f6a6e864-0822-4ae4-be84-ceba396b8425",
