@@ -12,7 +12,8 @@ LOG_MODULE_REGISTER(jerrycan, LOG_LEVEL_DBG);
 
 static sys_slist_t can_rx_callbacks_list;
 
-CAN_MSGQ_DEFINE(jerrycan_msgq, 10);
+CAN_MSGQ_DEFINE(jerrycan_rx_msgq, 10);
+K_MSGQ_DEFINE(jerrycan_tx_msgq, sizeof(jerrycan_msg_t), 25, 4);
 
 // CAN_ID[10:0] = { MsgID[5:0], DeviceType[2:0], ModuleAddr[1:0] }
 // The combination of DeviceType and ModuleAddr uniquely identifies this device (NODE_ID)
@@ -25,7 +26,7 @@ static int jerrycan_rx_poll(jerrycan_msg_t *msg, k_timeout_t timeout) {
     struct can_frame frame;
 
     // Get a CAN frame off of the message queue
-    int ret = k_msgq_get(&jerrycan_msgq, &frame, timeout);
+    int ret = k_msgq_get(&jerrycan_rx_msgq, &frame, timeout);
     if (ret) {
         return ret;
     }
@@ -45,6 +46,30 @@ static int jerrycan_rx_poll(jerrycan_msg_t *msg, k_timeout_t timeout) {
     return 0;
 }
 
+static int jerrycan_handle_tx() {
+    jerrycan_msg_t msg;
+
+    int ret = k_msgq_get(&jerrycan_tx_msgq, &msg, K_NO_WAIT);
+
+    if (ret == 0) {
+        static struct can_frame frame;
+        frame.id = can_id(msg.type);
+        frame.dlc = sizeof(msg.payload);
+
+        // Check that size of frame.data is not less than size of msg->payload?
+
+        memcpy(frame.data, msg.payload, sizeof(msg.payload));
+
+        ret = can_send(can_dev, &frame, K_FOREVER, NULL, NULL);
+    }
+
+    return ret;
+}
+
+// Add a jerrycan message to the TX queue- these messages will be processed by the main jerrycan_run() loop
+// This allows any thread or interrupt to generate an outgoing CAN message which will then be handled by the main task
+int jerrycan_tx(jerrycan_msg_t *msg) { return k_msgq_put(&jerrycan_tx_msgq, msg, K_FOREVER); }
+
 static uint8_t get_can_node_id() {
     // Read the DeviceType bits to make sure this is a Pellet Module
     uint32_t device_type;
@@ -59,17 +84,6 @@ static uint8_t get_can_node_id() {
     LOG_INF("CAN_ID: 0x%X", (node_id << 2) | device_type);
 
     return ((node_id << 2) | device_type) & NODE_ID_MASK;
-}
-
-int jerrycan_tx(jerrycan_msg_t *msg) {
-    struct can_frame frame = {
-        .id = can_id(msg->type),
-        .dlc = sizeof(msg->payload),
-    };
-
-    memcpy(frame.data, msg->payload, sizeof(msg->payload));
-
-    return can_send(can_dev, &frame, K_FOREVER, NULL, NULL);
 }
 
 static int jerrycan_set_bitrates(uint32_t bitrate, uint32_t data_bitrate) {
@@ -114,6 +128,12 @@ static int jerrycan_set_bitrates(uint32_t bitrate, uint32_t data_bitrate) {
 
 int jerrycan_run(k_timeout_t timeout) {
     jerrycan_msg_t msg;
+
+    // Process any outgoing messages
+    while (k_msgq_num_used_get(&jerrycan_tx_msgq) > 0) {
+        jerrycan_handle_tx();
+    }
+
     int ret = jerrycan_rx_poll(&msg, timeout);
     if (ret) {
         return ret;
@@ -173,7 +193,7 @@ static int jerrycan_init() {
         .mask = NODE_ID_MASK,
     };
 
-    ret = can_add_rx_filter_msgq(can_dev, &jerrycan_msgq, &jerrycan_rx_filter);
+    ret = can_add_rx_filter_msgq(can_dev, &jerrycan_rx_msgq, &jerrycan_rx_filter);
     if (ret < 0) {
         LOG_ERR("Failed to add CAN filter: %d", ret);
         return ret;
@@ -186,7 +206,7 @@ static int jerrycan_init() {
         .mask = NODE_ID_MASK,
     };
 
-    ret = can_add_rx_filter_msgq(can_dev, &jerrycan_msgq, &jerrycan_broadcast_filter);
+    ret = can_add_rx_filter_msgq(can_dev, &jerrycan_rx_msgq, &jerrycan_broadcast_filter);
     if (ret < 0) {
         LOG_ERR("Failed to add CAN filter: %d", ret);
         return ret;
