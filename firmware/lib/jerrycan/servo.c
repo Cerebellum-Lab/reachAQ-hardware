@@ -51,7 +51,7 @@ static void servo_cfg_read_handler(jerrycan_msg_t *msg) {
 
     // TODO: Read the actual servo settings from the motor library
 
-    jerrycan_tx(&rsp);
+    jerrycan_tx(&rsp, K_FOREVER);
 }
 
 static jerrycan_rx_callback_t servo_cfg_read_callback = {

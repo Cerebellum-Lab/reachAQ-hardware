@@ -68,7 +68,7 @@ static int jerrycan_handle_tx() {
 
 // Add a jerrycan message to the TX queue- these messages will be processed by the main jerrycan_run() loop
 // This allows any thread or interrupt to generate an outgoing CAN message which will then be handled by the main task
-int jerrycan_tx(jerrycan_msg_t *msg) { return k_msgq_put(&jerrycan_tx_msgq, msg, K_FOREVER); }
+int jerrycan_tx(jerrycan_msg_t *msg, k_timeout_t timeout) { return k_msgq_put(&jerrycan_tx_msgq, msg, timeout); }
 
 static uint8_t get_can_node_id() {
     // Read the DeviceType bits to make sure this is a Pellet Module

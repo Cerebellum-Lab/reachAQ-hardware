@@ -50,7 +50,7 @@ static void stepper_cfg_read_handler(jerrycan_msg_t *msg) {
 
     // TODO: Read the actual stepper settings from the motor library
 
-    jerrycan_tx(&rsp);
+    jerrycan_tx(&rsp, K_FOREVER);
 }
 
 static jerrycan_rx_callback_t stepper_cfg_read_callback = {

@@ -14,4 +14,4 @@ int jerrycan_run(k_timeout_t timeout);
 int jerrycan_register_rx_callback(jerrycan_rx_callback_t *callback);
 
 // Send a CAN message
-int jerrycan_tx(jerrycan_msg_t *msg);
+int jerrycan_tx(jerrycan_msg_t *msg, k_timeout_t timeout);

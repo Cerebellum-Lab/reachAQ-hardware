@@ -27,7 +27,7 @@ void jerrycan_status_tx() {
             },
     };
 
-    jerrycan_tx(&msg);
+    jerrycan_tx(&msg, K_NO_WAIT);
 }
 
 K_TIMER_DEFINE(jerrycan_status_timer, jerrycan_status_tx, NULL);
