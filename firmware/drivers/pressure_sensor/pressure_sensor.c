@@ -12,7 +12,7 @@ LOG_MODULE_REGISTER(ll_pressure_sensor, CONFIG_LL_PRESSURE_SENSOR_LOG_LEVEL);
 
 /* Pressure Sensor configuration structure */
 typedef struct {
-    struct device *adc_dev;
+    const struct device *adc_dev;
     struct adc_channel_cfg adc_channel_cfg;
     struct adc_sequence sequence;
 } ll_pressure_sensor_cfg_t;
