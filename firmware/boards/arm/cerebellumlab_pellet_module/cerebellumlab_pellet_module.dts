@@ -63,10 +63,10 @@
 	generic-gpios {
 		status = "okay";
 		compatible = "ll,generic-gpios";
-		input-gpios = <&gpioc 4 GPIO_ACTIVE_HIGH>,
-					  <&gpioc 5 GPIO_ACTIVE_HIGH>,
-					  <&gpiob 0 GPIO_ACTIVE_HIGH>,
-					  <&gpiob 1 GPIO_ACTIVE_HIGH>;
+		input-gpios = <&gpioc 4 GPIO_ACTIVE_LOW>,  // CAN_ID[0]
+					  <&gpioc 5 GPIO_ACTIVE_LOW>,  // CAN_ID[1]
+					  <&gpiob 0 GPIO_ACTIVE_HIGH>, // CAN_ID[2]
+					  <&gpiob 1 GPIO_ACTIVE_HIGH>; // CAN_ID[3]
 		input-gpio-names = "CAN_ID[0]",
 						   "CAN_ID[1]",
 						   "CAN_ID[2]",
