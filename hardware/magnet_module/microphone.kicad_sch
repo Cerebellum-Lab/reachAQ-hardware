@@ -5,8 +5,8 @@
 	(uuid "f6c6cdcf-ad03-4b9e-be07-00d93ed96162")
 	(paper "A4")
 	(title_block
-		(date "2024-08-12")
-		(rev "v1.0")
+		(date "2024-10-02")
+		(rev "v1.1")
 		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
 	)

@@ -6,8 +6,8 @@
 	(paper "A4")
 	(title_block
 		(title "Autotrainer Magnet Module - MCU")
-		(date "2024-08-12")
-		(rev "v1.0")
+		(date "2024-10-02")
+		(rev "v1.1")
 		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
 	)
@@ -5815,6 +5815,7 @@
 	)
 	(label "WS"
 		(at 171.45 53.34 0)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)

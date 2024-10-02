@@ -1,0 +1,29 @@
+ERC report (2024-10-02T13:01:07-0400, Encoding UTF8)
+
+***** Sheet /
+
+***** Sheet /MCU/
+[multiple_net_names]: Both GND and CANID3 are attached to the same items; GND will be used in the netlist
+    ; warning
+    @(2800.00 mils, 4200.00 mils): Symbol #PWR05 Pin 1 [Power input, Line]
+    @(6750.00 mils, 1800.00 mils): Label 'CANID3'
+
+***** Sheet /Power & Data Connections/
+
+***** Sheet /Servos/
+
+***** Sheet /Load Cell/
+
+***** Sheet /Sensors/
+
+***** Sheet /Power/
+[pin_to_pin]: Pins of type Power output and Bidirectional are connected
+    ; warning
+    @(1550.00 mils, 1300.00 mils): Symbol #FLG06 Pin 1 [Power output, Line]
+    @(6750.00 mils, 1800.00 mils): Symbol U8 Pin 13 [PA1, Bidirectional, Line]
+
+***** Sheet /Microphone/
+
+***** Sheet /Extra IO/
+
+ ** ERC messages: 2  Errors 0  Warnings 2
