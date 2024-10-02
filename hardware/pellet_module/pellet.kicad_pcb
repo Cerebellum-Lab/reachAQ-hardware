@@ -9,7 +9,7 @@
 	(paper "A4")
 	(title_block
 		(title "Autotrainer Pellet Module")
-		(date "2024-09-03")
+		(date "2024-10-02")
 		(rev "v1.1")
 		(company "Christie Lab, CU Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
@@ -3676,7 +3676,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R34"
-			(at 2.925 0 360)
+			(at 2.925 0 0)
 			(layer "F.SilkS")
 			(uuid "5d75c127-e5b3-47fa-9861-61db80725454")
 			(effects
@@ -3687,7 +3687,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "c7ed3268-fcde-4860-8247-b3d80acff535")
 			(effects
@@ -3868,7 +3868,7 @@
 			(uuid "40ed1013-b75d-4c20-95e5-eb6995e4d816")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "dcd6c17e-bd50-47fa-a1a5-ff52ca853d04")
 			(effects
@@ -15391,7 +15391,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R32"
-			(at 1.025 1.7 360)
+			(at 1.025 1.7 0)
 			(layer "F.SilkS")
 			(uuid "1089cf39-a8b0-4d47-80ac-175e06a9ba9c")
 			(effects
@@ -15402,7 +15402,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "19aeeff4-a5e4-4f44-8862-a9c5809dca16")
 			(effects
@@ -15583,7 +15583,7 @@
 			(uuid "c0b1f318-6951-48b0-93b5-372039cc50a6")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "49f40549-5252-4a3e-9588-1dab6352cc19")
 			(effects
@@ -27362,7 +27362,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R33"
-			(at 2.925 0 360)
+			(at 2.925 0 0)
 			(layer "F.SilkS")
 			(uuid "8913d6d4-7972-4b72-ac79-b004a227e352")
 			(effects
@@ -27373,7 +27373,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 1.43 360)
+			(at 0 1.43 0)
 			(layer "F.Fab")
 			(uuid "a2c8c91d-bfa9-48b3-a8f1-687f93650b9d")
 			(effects
@@ -27554,7 +27554,7 @@
 			(uuid "5819f7e9-5927-46d0-af3e-b232fde5acbe")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "59b6fbf7-805a-4caf-8cfa-f39bad16364e")
 			(effects
