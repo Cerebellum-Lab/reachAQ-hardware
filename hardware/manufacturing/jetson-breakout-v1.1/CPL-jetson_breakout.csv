@@ -1,0 +1,19 @@
+Designator,Val,Package,Mid X,Mid Y,Rotation,Layer
+C1,0.1uF,C_0603_1608Metric,53.175,13.2,90.0,top
+C2,0.1uF,C_0603_1608Metric,15.2,13.375,90.0,top
+C3,0.1uF,C_0603_1608Metric,59.825,8.875,-90.0,top
+C4,0.1uF,C_0603_1608Metric,24.275,12.0,90.0,top
+D2,150060GS75000,D_0603_1608Metric,4.4125,12.7,180.0,top
+J1,Jetson AGX Orin 40pin Header,PinSocket_2x20_P2.54mm_Vertical,36.87,19.83,90.0,bottom
+J2,Conn_01x03_Pin,PinHeader_1x03_P2.54mm_Vertical,47.74,11.975,90.0,top
+J3,Conn_01x03_Pin,PinHeader_1x03_P2.54mm_Vertical,29.76,11.95,90.0,top
+J4,Barrel_Jack_Switch,BarrelJack_GCT_DCJ200-10-A_Horizontal,10.95,4.65,-90.0,top
+J5,Conn_02x02_Odd_Even,Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical,43.75,5.53,90.0,top
+J6,Conn_02x02_Odd_Even,Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical,31.65,5.53,90.0,top
+J9,Conn_02x02_Odd_Even,Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical,54.75,5.53,90.0,top
+J10,Conn_02x02_Odd_Even,Molex_Nano-Fit_105310-xx04_2x02_P2.50mm_Vertical,20.65,5.53,90.0,top
+R1,120,R_0603_1608Metric,49.0,8.2,-90.0,top
+R2,2.2k,R_0603_1608Metric,7.525,12.7,0.0,top
+R3,120,R_0603_1608Metric,26.125,8.9,180.0,top
+U1,ATA6561,SOIC-8_3.9x4.9mm_P1.27mm,57.65,13.17,0.0,top
+U2,ATA6561,SOIC-8_3.9x4.9mm_P1.27mm,19.725,13.21,0.0,top
