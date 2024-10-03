@@ -12,3 +12,4 @@ config LL_MOTOR_INIT_PRIORITY
 
 rsource "Kconfig.servo"
 rsource "Kconfig.stepper"
+rsource "Kconfig.adi_tmc2209"

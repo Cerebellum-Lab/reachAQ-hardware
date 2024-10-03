@@ -1,54 +1,43 @@
 #pragma once
 
-#include <stddef.h>
-#include <stdint.h>
-#include <sys/types.h>
+#include "motor_math.h"
+#include "motor_motion_workq.h"
 
-typedef struct motor_motion_context {
-    // Parameters from the paper
-    float start_pos;
-    float end_pos;
-    float a_max;
-    float v_max;
-    float sgn;
-    float y_f;
-    float y_s;
-    float y_aux;
-    float y_a;
-    float v_w;
-    float t_o;
-    float t_a;
-    float omega;
-    float k_s;
-    float t_k;
-    float t_s;
-    float t_t;
-
-    // Servo-specific parameters
-    uint32_t servo_multiplier;
-    uint32_t servo_offset;
-
-    // Internal state
-    float servo_last_time_generated;
-} motor_motion_context_t;
+/* ***** Helper Functions ***** */
 
 /*
- * Initializes the context struct with the parameters from the paper. `start` and `end`
- * should be the position in degrees of the servo at the start and end of the motion. `max_velocity`
- * and `max_acceleration` are the maximum velocity and acceleration of the servo in degrees per second
- * and degrees per second squared respectively. `servo_multiplier` and `servo_offset` are the parameters
- * for converting degrees to pulse width. Returns 0 on success, -errno on error.
+ * Set the radius of the rotor of any motor.
  */
-int motor_motion_init_context_struct(float start, float end, float max_velocity, float max_acceleration,
-                                     uint32_t servo_multiplier, uint32_t servo_offset, motor_motion_context_t *context);
+void motor_motion_set_radius(motor_motion_profile_t *motion_profile, float radius);
 
 /*
- * Generates a table of servo displacements for a sinusoidal motion profile
- * uses a fixed increment of 0.02 seconds but will never exceed the size of the table given.
- * Runs based on the `servo_last_time_generated` field in the context struct, to allow for multiple
- * calls (for instance, one can send a pre-generated table to the servo driver, then call this function on
- * a different buffer to generate the next table).
- * Returns the number of entries generated or -1 on error.
+ * Simple helper function to convert meters to steps.
  */
-ssize_t motor_motion_generate_servo_displacement_table(uint32_t *table, size_t table_size,
-                                                       motor_motion_context_t *context);
+float motor_motion_stepper_length_to_steps(const stepper_motor_context_t *context, float length);
+
+/*
+ * Set the current position of the stepper motor. Useful especially when we have 'home' and wish
+ * to set this position as zero without continuing to move the motor.
+ */
+void motor_motion_stepper_set_current_position(stepper_motor_context_t *context, float position);
+
+/*
+ * Simple helper function to convert meters to degrees (for servos).
+ */
+float motor_motion_servo_length_to_degrees(const servo_motor_context_t *context, float length);
+
+/*
+ * Set the current position of the stepper motor. It does this by setting the angle_adjustment.
+ */
+void motor_motion_servo_set_current_position(servo_motor_context_t *context, float position);
+
+/*
+ * Stop the motor by stopping the timer and the DMA. This does not affect the internal state of the motion library.
+ */
+void stepper_motor_stop(const struct device *dev);
+void servo_motor_stop(const struct device *dev);
+
+/*
+ * Stop all motors! Uses a static list of all motors to stop them, so is very fast.
+ */
+void motors_all_stop(void);

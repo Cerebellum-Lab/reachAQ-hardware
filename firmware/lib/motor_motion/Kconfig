@@ -1,8 +1,16 @@
 menuconfig LIB_MOTOR_MOTION
     bool "Enable the motor motion mathematics library"
     default n
+    depends on FPU
     help
       Enable the library that calculates motor motion based on sinusoidal motion profiles.
+
+menuconfig LIB_MOTOR_MOTION_LOG_LEVEL
+    int "Log level for the motor motion mathematics library"
+    default 4
+    depends on LIB_MOTOR_MOTION
+    help
+      Set the log level for the motor motion math library.
 
 menuconfig LIB_MOTOR_MOTION_SHELL
     bool "Enable the shell for the motor motion mathematics library"

@@ -68,6 +68,12 @@ static int ll_servo_init(const struct device *dev) {
     return 0;
 }
 
+int ll_servo_dma_stop(const struct device *dev) {
+    const ll_motor_cfg_t *cfg = dev->config;
+    const ll_motor_data_t *data = dev->data;
+    return dma_stop(cfg->dma_dev, data->dma_channel);
+}
+
 #define SERVO_INST(idx)                                                                             \
     PINCTRL_DT_INST_DEFINE(idx);                                                                    \
                                                                                                     \
@@ -83,6 +89,7 @@ static int ll_servo_init(const struct device *dev) {
         .msgq = &servo_msgq##idx,                                                                   \
         .timer_dma_reg = channel_to_ccr_map[DT_INST_PROP(idx, pwm_channel) - 1],                    \
         .stop_on_dma_complete = false,                                                              \
+        .limit_switch_pin = DT_INST_PHA_OR(idx, limit_switch_gpios, 0, {0}),                        \
     };                                                                                              \
                                                                                                     \
     static ll_motor_data_t servo_data##idx = {                                                      \
@@ -100,6 +107,8 @@ static int ll_servo_init(const struct device *dev) {
                 .channel_priority = STM32_DMA_CONFIG_PRIORITY(STM32_DMA_CHANNEL_CONFIG(idx, tx)),   \
                 .dma_callback = ll_motor_dma_tx_callback,                                           \
             },                                                                                      \
+        .limit_switch_cb = {0},                                                                     \
+        .motor_device = NULL,                                                                       \
     };                                                                                              \
                                                                                                     \
     DEVICE_DT_INST_DEFINE(idx, ll_servo_init, NULL, &servo_data##idx, &servo_cfg##idx, POST_KERNEL, \

@@ -40,6 +40,8 @@ typedef struct {
     struct dma_config dma_cfg;
     int dma_channel;
     sys_slist_t callbacks;
+    const struct device *motor_device;  // Horrible kludge but necessary to overcome deficiencies with GPIO driver.
+    struct gpio_callback limit_switch_cb;
 } ll_motor_data_t;
 
 typedef struct {
@@ -52,6 +54,7 @@ typedef struct {
     struct k_msgq *msgq;
     uint32_t timer_dma_reg;
     bool stop_on_dma_complete;
+    struct gpio_dt_spec limit_switch_pin;
     struct gpio_dt_spec dir_pin;  // Used for the stepper driver
 } ll_motor_cfg_t;
 

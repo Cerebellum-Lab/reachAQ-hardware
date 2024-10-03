@@ -17,3 +17,7 @@ properties:
   pwm-channel:
     type: int
     required: true
+
+  limit-switch-gpios:
+    type: phandle-array
+    required: false

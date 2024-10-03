@@ -1,0 +1,8 @@
+menuconfig ADI_TMC2209
+        bool "Support Analog Devices, Inc. TMC2209 Stepper Motor Driver"
+        default y
+        depends on DT_HAS_ADI_TMC2209_ENABLED
+        select UART
+        select PIPES
+        help
+            Enable support for the Analog Devices TMC2209 Stepper Motor Driver

@@ -83,6 +83,23 @@ static int ll_stepper_init(const struct device *dev) {
     return 0;
 }
 
+/*
+ * The correspondent `enable` function is not necessary because it is done in the function
+ * which sends the DMA.
+ */
+int ll_stepper_disable(const struct device *dev) {
+    const ll_motor_cfg_t *cfg = dev->config;
+    LL_TIM_CC_DisableChannel(cfg->timer, cfg->channel);
+
+    return 0;
+}
+
+int ll_stepper_dma_stop(const struct device *dev) {
+    const ll_motor_cfg_t *cfg = dev->config;
+    const ll_motor_data_t *data = dev->data;
+    return dma_stop(cfg->dma_dev, data->dma_channel);
+}
+
 #define STEPPER_INST(idx)                                                                                 \
     BUILD_ASSERT(IS_TIM_PULSEONCOMPARE_INSTANCE(TIM(idx)),                                                \
                  "Stepper driver requires a timer with pulse-on-compare mode");                           \
@@ -103,6 +120,7 @@ static int ll_stepper_init(const struct device *dev) {
         .msgq = &stepper_msgq##idx,                                                                       \
         .timer_dma_reg = LL_TIM_DMABURST_BASEADDR_ARR,                                                    \
         .stop_on_dma_complete = true,                                                                     \
+        .limit_switch_pin = DT_INST_PHA_OR(idx, limit_switch_gpios, 0, {0}),                              \
         .dir_pin = GPIO_DT_SPEC_INST_GET(idx, dir_gpios),                                                 \
     };                                                                                                    \
                                                                                                           \
@@ -121,6 +139,8 @@ static int ll_stepper_init(const struct device *dev) {
                 .channel_priority = STM32_DMA_CONFIG_PRIORITY(STM32_DMA_CHANNEL_CONFIG(idx, tx)),         \
                 .dma_callback = ll_motor_dma_tx_callback,                                                 \
             },                                                                                            \
+        .limit_switch_cb = {0},                                                                           \
+        .motor_device = NULL,                                                                             \
     };                                                                                                    \
                                                                                                           \
     DEVICE_DT_INST_DEFINE(idx, ll_stepper_init, NULL, &stepper_data##idx, &stepper_cfg##idx, POST_KERNEL, \

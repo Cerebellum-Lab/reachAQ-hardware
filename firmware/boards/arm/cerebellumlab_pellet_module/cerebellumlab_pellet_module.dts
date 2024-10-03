@@ -403,3 +403,35 @@
 &vbat {
 	status = "okay";
 };
+
+&usart2 {
+	current-speed = <9600>;
+	/delete-property/ hw-flow-control;
+	parity = "none";
+	stop-bits = "1";
+	data-bits = <8>;
+	pinctrl-0 = <&usart2_tx_pa2>;
+	pinctrl-names = "default";
+	#size-cells = <0>;
+	#address-cells = <1>;
+	status = "okay";
+	single-wire;
+
+	stepper_driver0: stepper_driver0@0 {
+		compatible = "adi,tmc2209";
+		reg = <0x00>;
+		status = "okay";
+	};
+
+	stepper_driver1: stepper_driver1@1 {
+		compatible = "adi,tmc2209";
+		reg = <0x01>;
+		status = "okay";
+	};
+
+	stepper_driver2: stepper_driver2@2 {
+		compatible = "adi,tmc2209";
+		reg = <0x02>;
+		status = "okay";
+	};
+};

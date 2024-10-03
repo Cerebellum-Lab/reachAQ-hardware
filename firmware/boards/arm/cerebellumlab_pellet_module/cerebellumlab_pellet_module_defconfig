@@ -19,3 +19,7 @@ CONFIG_HW_STACK_PROTECTION=y
 
 # enable pin controller
 CONFIG_PINCTRL=y
+
+# Enable the FPU. Enable FPU Sharing to avoid cortex-M4 bug with context switches.
+CONFIG_FPU=y
+CONFIG_FPU_SHARING=y

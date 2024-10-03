@@ -40,6 +40,17 @@ void ll_motor_dma_tx_callback(const struct device *dma_dev, void *arg, uint32_t 
     }
 }
 
+void ll_motor_limit_switch_callback(const struct device *port, struct gpio_callback *gpio_cb, gpio_port_pins_t pins) {
+    (void)port;
+    (void)pins;
+
+    ll_motor_data_t *data = CONTAINER_OF(gpio_cb, ll_motor_data_t, limit_switch_cb);
+    ll_motor_cb_t *cb;
+    SYS_SLIST_FOR_EACH_CONTAINER(&data->callbacks, cb, node) {
+        cb->func(data->motor_device, LL_MOTOR_EVENT_LIMIT_SWITCH, NULL, cb->user_data);
+    }
+}
+
 int ll_motor_register_callback(const struct device *dev, ll_motor_cb_t *cb) {
     ll_motor_data_t *data = dev->data;
 
@@ -122,6 +133,29 @@ int ll_motor_queue_data(const struct device *dev, uint32_t *buf, size_t len, k_t
 int ll_motor_init(const struct device *dev) {
     const ll_motor_cfg_t *cfg = dev->config;
     ll_motor_data_t *data = dev->data;
+
+    data->motor_device = dev;
+
+    // Initialize the limit switch GPIO if it exists
+    if (cfg->limit_switch_pin.port != NULL) {
+        gpio_init_callback(&data->limit_switch_cb, ll_motor_limit_switch_callback, BIT(cfg->limit_switch_pin.pin));
+
+        int ret = gpio_pin_configure_dt(&cfg->limit_switch_pin, GPIO_INPUT);
+        if (ret < 0) {
+            LOG_WRN("Failed to configure limit switch pin: %d", ret);
+            // Continue because the rest of the driver should still work
+        }
+
+        ret = gpio_add_callback_dt(&cfg->limit_switch_pin, &data->limit_switch_cb);
+        if (ret < 0) {
+            LOG_WRN("Failed to configure limit switch callback: %d", ret);
+        }
+
+        ret = gpio_pin_interrupt_configure_dt(&cfg->limit_switch_pin, GPIO_INT_EDGE_TO_ACTIVE);
+        if (ret < 0) {
+            LOG_WRN("Failed to configure limit switch interrupt: %d", ret);
+        }
+    }
 
     // Initialize the callbacks list
     sys_slist_init(&data->callbacks);

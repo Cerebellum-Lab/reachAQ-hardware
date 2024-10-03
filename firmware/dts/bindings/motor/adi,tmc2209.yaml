@@ -1,0 +1,10 @@
+description: |
+    Analog TMC2209 stepper motor controller
+
+compatible: adi,tmc2209
+
+include:
+  - name: base.yaml
+  - name: uart-device.yaml
+
+# Has no properties of its own, inherits from a uart device of which it is the child.
