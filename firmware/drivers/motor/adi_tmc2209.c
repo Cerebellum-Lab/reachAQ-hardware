@@ -92,9 +92,8 @@ typedef union read_reply_datagram {
 BUILD_ASSERT(sizeof(struct read_reply_datagram_fields) == sizeof(read_reply_datagram_t));
 BUILD_ASSERT(sizeof(read_reply_datagram_t) == 8U);
 
-/*
- * Calculates crc of `data[0 : size]` and returns it.
- * (Polynomial is x^8 + x^2 + x + 1.)
+/**
+ * @returns crc of `data[0 : size]` (Polynomial is x^8 + x^2 + x + 1.)
  */
 static uint8_t calculate_crc(const uint8_t *const data, const size_t size) {
     uint8_t crc = 0;
@@ -115,11 +114,16 @@ static uint8_t calculate_crc(const uint8_t *const data, const size_t size) {
     return crc;
 }
 
-/*
+/**
  * Write the crc of `data[0 : size - 1]` to `data[size - 1]`.
- * Returns 0 on success, or -EINVAL if `size` is less than 2.
+ *
+ * @param data must have at least `size` bytes.
+ * @param size must be at least 2.
+ *
+ * @retval 0 on success
+ * @retval -EINVAL if `size` is less than 2.
  */
-static int store_crc(uint8_t *data, size_t size) {
+static int store_crc(uint8_t *data, const size_t size) {
     if (size < 2) {
         return -EINVAL;
     }
@@ -128,9 +132,11 @@ static int store_crc(uint8_t *data, size_t size) {
     return 0;
 }
 
-/*
+/**
  * Check that the crc of `data[0 : size - 1]` matches `data[size - 1]`.
- * Returns `true` on success or `false` on failure.
+ *
+ * @retval `true` on success.
+ * @retval `false` on failure.
  */
 static bool check_crc(const uint8_t *data, const size_t size) {
     if (size < 2) {
@@ -150,7 +156,7 @@ static int read_single_line_uart(const struct device *dev, uint8_t *buf, const s
         int j = 0;
         do {
             if (j > UART_READ_TRIES) {
-                LOG_ERR("Timed out reading byte %d of datagram.", i);
+                LOG_DBG("Timed out reading byte %d", i);
                 return -ETIMEDOUT;
             }
             ret = uart_poll_in(config->uart_dev, &byte);
@@ -158,7 +164,7 @@ static int read_single_line_uart(const struct device *dev, uint8_t *buf, const s
         } while (ret == NO_BYTE_WAITING);
 
         if (ret != 0) {
-            LOG_ERR("Failed to read byte %d of datagram: %d", i, ret);
+            LOG_DBG("Failed to read byte %d: %d", i, ret);
             return ret;
         }
 
@@ -169,9 +175,14 @@ static int read_single_line_uart(const struct device *dev, uint8_t *buf, const s
 }
 
 static int write_single_line_uart_and_flush_read(const struct device *dev, const uint8_t *buf, const size_t size) {
+    /* Write the datagram to the UART. The driver will echo the datagram back to us so we go ahead
+     * and read it to flush it from the buffer. Occasionally, the second byte (aka, byte 1) will be
+     * missing from the re-read. This is very odd! And it happens despite `single-wire` setting or
+     * speed setting in the device tree. The code detects this and takes care of either
+     * the case where it omits the second byte or the case where we read the full datagram.
+     */
     const adi_tmc2209_config_t *config = dev->config;
     uint8_t rx_buf[8];
-    int ret;
     if (size > sizeof(rx_buf)) {
         LOG_ERR("Datagram too large for rx buffer.");
         return -EINVAL;
@@ -182,20 +193,38 @@ static int write_single_line_uart_and_flush_read(const struct device *dev, const
     }
 
     // Wait for the datagram we just sent to be "received" by the driver.
-    read_single_line_uart(dev, rx_buf, size);
-    for (size_t i = 0; i < size; i++) {
-        if (rx_buf[i] != buf[i]) {
-            LOG_ERR("Mismatched word %d of datagram: expected %02X, got %02X", i, buf[i], rx_buf[i]);
-            return -EIO;
+    size_t bytes_read = 0;
+    while (bytes_read < size) {
+        const int ret = read_single_line_uart(dev, &rx_buf[bytes_read], 1);
+        if (ret == -ETIMEDOUT) {
+            // Write was in all likelihood successful and no more bytes are waiting.
+            LOG_DBG("Timed out while trying to re-read written data.");
+            return 0;
         }
+        if (rx_buf[bytes_read] != buf[bytes_read]) {
+            // Assume we missed the previous byte.
+            rx_buf[bytes_read + 1] = rx_buf[bytes_read];
+            rx_buf[bytes_read] = buf[bytes_read];
+            if (bytes_read == 1 || (bytes_read == 2 && buf[1] == buf[2])) {
+                // This is the "normal" case of missing the byte 1. Note the second conditional which is necessary
+                // if buf[1] == buf[2]. Do ~nothing.
+                LOG_DBG("Missed byte 1 over single line uart (somewhat frequent/expected).");
+            } else {
+                LOG_ERR("Missed byte %d over single line uart.", bytes_read);
+            }
+            bytes_read++;
+        }
+        bytes_read++;
     }
 
     return 0;
 }
 
-/*
+/**
  * Write `data` to `reg_address` on this device. Data is 4 bytes long!
- * Returns 0 on success, -errno on error.
+ *
+ * @retval 0 on success,
+ * @retval -errno on error.
  */
 static int adi_tmc2209_write(const struct device *dev, const uint8_t reg_address, const uint8_t *data) {
     const adi_tmc2209_config_t *config = dev->config;
@@ -212,16 +241,18 @@ static int adi_tmc2209_write(const struct device *dev, const uint8_t reg_address
 
     store_crc(datagram.raw, sizeof(datagram.raw));
 
-    for (size_t i = 0; i < sizeof(datagram.raw); i++) {
-        uart_poll_out(config->uart_dev, datagram.raw[i]);
-    }
+    write_single_line_uart_and_flush_read(dev, datagram.raw, sizeof(datagram.raw));
 
     return 0;
 }
 
-/*
- * Read `data` from `reg_address` on `device`. `data` must have room for 4 bytes!
- * Returns 0 on success, -errno on error.
+/**
+ * Read `data` from `reg_address` on `device`.
+ *
+ * @param data must be at least 4 bytes long.
+ *
+ * @retval 0 on success
+ * @retval -errno on error.
  */
 static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address, uint8_t *data) {
     const adi_tmc2209_config_t *config = dev->config;
@@ -236,9 +267,6 @@ static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address,
     }};
 
     store_crc(datagram.raw, sizeof(datagram.raw));
-
-    LOG_ERR("Sending read datagram: %02X %02X %02X %02X", datagram.raw[0], datagram.raw[1], datagram.raw[2],
-            datagram.raw[3]);
 
     write_single_line_uart_and_flush_read(dev, datagram.raw, sizeof(datagram.raw));
 

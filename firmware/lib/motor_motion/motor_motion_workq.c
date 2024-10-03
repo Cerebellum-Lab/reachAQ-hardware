@@ -1,8 +1,10 @@
 #include "motor_motion_workq.h"
 
+#include <math.h>
 #include <stdatomic.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/settings/settings.h>
 
 #include "motor_common.h"
 #include "motor_motion.h"
@@ -11,43 +13,7 @@
 
 LOG_MODULE_DECLARE(motor_motion, CONFIG_LIB_MOTOR_MOTION_LOG_LEVEL);
 
-/* ***** Structs ***** */
-#define SERVO_BUFFER_SIZE 256
-#define STEPPER_BUFFER_SIZE 1024
-#define BUFS_PER_MOTOR 2
-
-typedef uint32_t servo_buffer_set[BUFS_PER_MOTOR][SERVO_BUFFER_SIZE];
-typedef uint32_t stepper_buffer_set[BUFS_PER_MOTOR][STEPPER_BUFFER_SIZE];
-
-struct servo_work_context {
-    const struct device *dev;
-    servo_motor_context_t context;
-    servo_buffer_set buffers;
-    size_t current_buffer;
-    ssize_t last_calculation_ret;
-    atomic_flag dma_in_use;
-    bool motion_calculation_done;
-    struct k_work calculation_work;
-    struct k_work_delayable submission_work;
-    ll_servo_cb_t servo_cb;
-};
-
-struct stepper_work_context {
-    const struct device *dev;
-    stepper_motor_context_t context;
-    stepper_buffer_set buffers;
-    size_t current_buffer;
-    ssize_t last_calculation_ret;
-    atomic_flag dma_in_use;
-    bool motion_calculation_done;
-    struct k_work calculation_work;
-    struct k_work_delayable submission_work;
-    struct k_work_delayable check_driver_work;
-    ll_stepper_cb_t stepper_cb;
-};
-
 /* ***** Callbacks ***** */
-
 static void stepper_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
                                          void *user_data) {
     switch (event) {
@@ -63,10 +29,10 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
             break;
         }
         case LL_MOTOR_EVENT_LIMIT_SWITCH:
+            LOG_DBG("Limit switch event");
             stepper_motor_stop(dev);
             stepper_cancel_all_work(dev);
             stepper_set_position_to_zero(dev);
-            // For stepper, no need to re-enable.
             break;
         default:
             LOG_WRN("Unknown stepper motor event: %d", event);
@@ -81,7 +47,9 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
             break;
         case LL_MOTOR_EVENT_DMA_QUEUE_EMPTY: {
             struct servo_work_context *context = user_data;
-            atomic_flag_clear(&context->dma_in_use);
+            if (context != NULL) {
+                atomic_flag_clear(&context->dma_in_use);
+            }
             break;
         }
         case LL_MOTOR_EVENT_LIMIT_SWITCH:
@@ -97,10 +65,10 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
 
 /* ***** Static Context Structs Used Throughout ***** */
 
-// Default 'offset' of servo PWM (minimal number of pulses in the period)
-#define SERVO_DEFAULT_OFFSET 1000U
-// Default 'multiplier' of servo PWM (number of pulses per second)
-#define SERVO_DEFAULT_MULTIPLIER 2000U
+// Default pwm duration of the minimum angle
+#define SERVO_DEFAULT_MIN_ANGLE_PWM 1000.0f
+// Default pwm duration of the maximum angle
+#define SERVO_DEFAULT_MAX_ANGLE_PWM 2000.0f
 // Default minimum angle of servo
 #define SERVO_DEFAULT_MIN_ANGLE 0.0f
 // Default maximum angle of servo
@@ -115,30 +83,30 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
 // Default 'steps_per_revolution' of stepper
 #define STEPPER_DEFAULT_STEPS_PER_REVOLUTION 400
 
-#define DEV_DEFINE_SERVO_CONTEXT(id)                             \
-    {.dev = DEVICE_DT_GET(id),                                   \
-     .context =                                                  \
-         {                                                       \
-             .motion_profile = {0},                              \
-             .min_angle = SERVO_DEFAULT_MIN_ANGLE,               \
-             .max_angle = SERVO_DEFAULT_MAX_ANGLE,               \
-             .angle_adjustment = SERVO_DEFAULT_ANGLE_ADJUSTMENT, \
-             .servo_multiplier = SERVO_DEFAULT_MULTIPLIER,       \
-             .servo_offset = SERVO_DEFAULT_OFFSET,               \
-             .last_time_generated = 0.0f,                        \
-             .last_position_generated = 0.0f,                    \
-         },                                                      \
-     .buffers = {0},                                             \
-     .current_buffer = 0,                                        \
-     .last_calculation_ret = 0,                                  \
-     .dma_in_use = ATOMIC_FLAG_INIT,                             \
-     .motion_calculation_done = true,                            \
-     .calculation_work = {0},                                    \
-     .submission_work = {0},                                     \
-     .servo_cb = {                                               \
-         .func = servo_motor_event_callback,                     \
-         .user_data = NULL,                                      \
-         .node = {0},                                            \
+#define DEV_DEFINE_SERVO_CONTEXT(id)                                                        \
+    {.dev = DEVICE_DT_GET(id),                                                              \
+     .context =                                                                             \
+         {                                                                                  \
+             .motion_profile = {0},                                                         \
+             .min_angle = SERVO_DEFAULT_MIN_ANGLE,                                          \
+             .max_angle = SERVO_DEFAULT_MAX_ANGLE,                                          \
+             .min_angle_pwm = SERVO_DEFAULT_MIN_ANGLE_PWM,                                  \
+             .max_angle_pwm = SERVO_DEFAULT_MAX_ANGLE_PWM,                                  \
+             .pwm_timer_increment = (DT_PROP(DT_PARENT(id), st_prescaler) + 1.0f) / 170.0f, \
+             .last_time_generated = 0.0f,                                                   \
+             .last_position_generated = 0.0f,                                               \
+         },                                                                                 \
+     .buffers = {0},                                                                        \
+     .current_buffer = 0,                                                                   \
+     .last_calculation_ret = 0,                                                             \
+     .dma_in_use = ATOMIC_FLAG_INIT,                                                        \
+     .motion_calculation_done = true,                                                       \
+     .calculation_work = {0},                                                               \
+     .submission_work = {0},                                                                \
+     .servo_cb = {                                                                          \
+         .func = servo_motor_event_callback,                                                \
+         .user_data = NULL,                                                                 \
+         .node = {0},                                                                       \
      }},
 
 #define DEV_DEFINE_STEPPER_CONTEXT(id)                                                  \
@@ -174,7 +142,7 @@ static K_THREAD_STACK_DEFINE(motor_workq_stack, 1024);
 
 /* ***** Helper Functions ***** */
 
-static struct servo_work_context *find_servo_context_from_device(const struct device *dev) {
+struct servo_work_context *find_servo_context_from_device(const struct device *dev) {
     for (size_t i = 0; i < ARRAY_SIZE(servo_contexts); i++) {
         if (servo_contexts[i].dev == dev) {
             return &servo_contexts[i];
@@ -184,7 +152,7 @@ static struct servo_work_context *find_servo_context_from_device(const struct de
     return NULL;
 }
 
-static struct stepper_work_context *find_stepper_context_from_device(const struct device *dev) {
+struct stepper_work_context *find_stepper_context_from_device(const struct device *dev) {
     for (size_t i = 0; i < ARRAY_SIZE(stepper_contexts); i++) {
         if (stepper_contexts[i].dev == dev) {
             return &stepper_contexts[i];
@@ -225,12 +193,16 @@ void stepper_cancel_all_work(const struct device *dev) {
     k_work_cancel(&context->calculation_work);
     k_work_cancel_delayable(&context->submission_work);
     k_work_cancel_delayable(&context->check_driver_work);
+    atomic_flag_clear(&context->dma_in_use);
+    context->motion_calculation_done = false;
 }
 
 void servo_cancel_all_work(const struct device *dev) {
     struct servo_work_context *context = find_servo_context_from_device(dev);
     k_work_cancel(&context->calculation_work);
     k_work_cancel_delayable(&context->submission_work);
+    atomic_flag_clear(&context->dma_in_use);
+    context->motion_calculation_done = false;
 }
 
 static void servo_work_calculation_handler(struct k_work *work) {
@@ -247,7 +219,9 @@ static void servo_work_calculation_handler(struct k_work *work) {
         context->motion_calculation_done = true;
     }
 
-    k_work_schedule_for_queue(&motor_workq, &context->submission_work, K_NO_WAIT);
+    if (ret > 0) {
+        k_work_schedule_for_queue(&motor_workq, &context->submission_work, K_NO_WAIT);
+    }
 }
 
 static void servo_work_submission_handler(struct k_work *work) {
@@ -282,7 +256,9 @@ static void stepper_work_calculation_handler(struct k_work *work) {
         context->motion_calculation_done = true;
     }
 
-    k_work_schedule_for_queue(&motor_workq, &context->submission_work, K_NO_WAIT);
+    if (ret > 0) {
+        k_work_schedule_for_queue(&motor_workq, &context->submission_work, K_NO_WAIT);
+    }
 }
 
 static void stepper_work_submission_handler(struct k_work *work) {
@@ -344,6 +320,16 @@ static int motor_workq_init_and_start(void) {
         k_work_init_delayable(&servo_contexts[i].submission_work, servo_work_submission_handler);
     }
 
+    int ret = settings_subsys_init();
+    if (ret < 0) {
+        LOG_ERR("error: settings_subsys_init: %d", ret);
+    } else {
+        ret = settings_load();
+        if (ret < 0) {
+            LOG_ERR("error: settings_load: %d", ret);
+        }
+    }
+
     k_work_queue_start(&motor_workq, motor_workq_stack, K_THREAD_STACK_SIZEOF(motor_workq_stack), K_PRIO_COOP(7), NULL);
     return 0;
 }
@@ -354,7 +340,7 @@ SYS_INIT(motor_workq_init_and_start, APPLICATION, 99);
 
 #define UNCHANGED_UINT32 ((uint32_t) - 1)
 int servo_set_parameters(const struct device *dev, const float max_velocity, const float max_acceleration,
-                         const uint32_t servo_multiplier, const uint32_t servo_offset) {
+                         const float min_angle_pwm, const float max_angle_pwm) {
     struct servo_work_context *const context = find_servo_context_from_device(dev);
     if (context == NULL) {
         return -ENODEV;
@@ -368,14 +354,27 @@ int servo_set_parameters(const struct device *dev, const float max_velocity, con
         context->context.motion_profile.a_max = max_acceleration;
     }
 
-    if (servo_multiplier != UNCHANGED_UINT32) {
-        context->context.servo_multiplier = servo_multiplier;
+    if (min_angle_pwm > 0.0f) {
+        context->context.min_angle_pwm = min_angle_pwm;
     }
 
-    if (servo_offset != UNCHANGED_UINT32) {
-        context->context.servo_offset = servo_offset;
+    if (max_angle_pwm > 0.0f) {
+        context->context.max_angle_pwm = max_angle_pwm;
     }
 
+    settings_save();
+
+    return 0;
+}
+
+int servo_set_angle_parameters(const struct device *dev, const float min_angle, const float max_angle) {
+    struct servo_work_context *const context = find_servo_context_from_device(dev);
+    if (context == NULL) {
+        return -ENODEV;
+    }
+
+    context->context.min_angle = min_angle;
+    context->context.max_angle = max_angle;
     return 0;
 }
 
@@ -393,7 +392,7 @@ int servo_move_to_position(const struct device *dev, const float target_position
 
     const int ret = motor_motion_servo_init_context_struct(
         context->context.last_position_generated, target_position, context->context.motion_profile.v_max,
-        context->context.motion_profile.a_max, context->context.servo_multiplier, context->context.servo_offset,
+        context->context.motion_profile.a_max, context->context.min_angle_pwm, context->context.max_angle_pwm,
         &context->context);
 
     if (ret != 0) {
@@ -406,6 +405,12 @@ int servo_move_to_position(const struct device *dev, const float target_position
     k_work_submit_to_queue(&motor_workq, &context->calculation_work);
 
     return 0;
+}
+
+int servo_move_relative(const struct device *dev, const float delta_position) {
+    struct servo_work_context *context = find_servo_context_from_device(dev);
+    return context == NULL ? -ENODEV
+                           : servo_move_to_position(dev, context->context.last_position_generated + delta_position);
 }
 
 int stepper_set_parameters(const struct device *dev, const float max_velocity, const float max_acceleration,
@@ -430,6 +435,8 @@ int stepper_set_parameters(const struct device *dev, const float max_velocity, c
     if (steps_per_revolution > 0.0f) {
         context->context.steps_per_revolution = steps_per_revolution;
     }
+
+    settings_save();
     return 0;
 }
 
@@ -443,6 +450,17 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
     if (context->motion_calculation_done == false) {
         LOG_ERR("Attempted to move motor while already in motion.");
         return -EBUSY;
+    }
+
+    if (fabsf(target_position - context->context.last_position_generated) < context->context.min_step) {
+        LOG_WRN("Target position is the same as current position.");
+        return 0;
+    }
+
+    if (target_position < context->context.last_position_generated) {
+        ll_stepper_set_direction(dev, LL_STEPPER_DIR_BACKWARD);
+    } else {
+        ll_stepper_set_direction(dev, LL_STEPPER_DIR_FORWARD);
     }
 
     const int ret = motor_motion_stepper_init_context_struct(
@@ -462,42 +480,104 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
     return 0;
 }
 
-int stepper_go_home_slowly(const struct device *dev, bool forward) {
-    const float IMPOSSIBLE_POSITION = 1e6f;
-    const float SLOW_VELOCITY = 100.0f;
-    const float SLOW_ACCELERATION = 10.0f;
+int stepper_move_relative(const struct device *dev, const float delta_position) {
     struct stepper_work_context *context = find_stepper_context_from_device(dev);
-    const ll_motor_cfg_t *cfg = dev->config;
+    return context == NULL ? -ENODEV
+                           : stepper_move_to_position(dev, context->context.last_position_generated + delta_position);
+}
 
+int stepper_go_home_slowly(const struct device *dev, bool forward) {
+    struct stepper_work_context *work_context = find_stepper_context_from_device(dev);
+    stepper_motor_context_t *context = &work_context->context;
     if (context == NULL) {
-        LOG_ERR("Stepper context not found for device");
         return -ENODEV;
     }
+
+    const ll_motor_cfg_t *cfg = dev->config;
 
     if (cfg->limit_switch_pin.port == NULL) {
         LOG_ERR("Limit switch pin not set");
         return -ENOTSUP;
     }
 
-    if (context->motion_calculation_done == false) {
+    if (work_context->motion_calculation_done == false) {
         LOG_ERR("Attempted to move motor while already in motion.");
         return -EBUSY;
     }
+    /*
+     * Choose an "impossible position" that is far enough away from the current position that the motor will never
+     * reach it (or, indeed, leave the constant velocity section of the motor motion profile). This is based on the
+     * 500 revolutions around the radius of the motor, or 1e6 steps. Approach this via a slow velocity and acceleration,
+     * each 1/10th of the max. We then rely on the limit switch/callback behavior to stop the motor and set the
+     * position.
+     */
+    const float IMPOSSIBLE_POSITION =
+        context->motion_profile.radius > 0.0f ? context->motion_profile.radius * 1e3f : 1e6f;
+    const float SLOW_VELOCITY = context->motion_profile.v_max * 0.1f;
+    const float SLOW_ACCELERATION = context->motion_profile.a_max * 0.1f;
 
-    const float last_position = context->context.last_position_generated;
+    const float last_position = context->last_position_generated;
 
-    const int ret = motor_motion_stepper_init_context_struct(
+    int ret = motor_motion_stepper_init_context_struct(
         last_position, forward ? IMPOSSIBLE_POSITION : -IMPOSSIBLE_POSITION, SLOW_VELOCITY, SLOW_ACCELERATION,
-        context->context.min_step, context->context.timer_increment, &context->context);
+        context->min_step, context->timer_increment, context);
 
     if (ret != 0) {
         LOG_ERR("Failed to initialize context struct: %d", ret);
         return -EDOM;
     }
 
-    context->motion_calculation_done = false;
+    work_context->motion_calculation_done = false;
 
-    k_work_submit_to_queue(&motor_workq, &context->calculation_work);
+    ret = settings_load();
+    if (ret != 0) {
+        LOG_ERR("Failed to load settings: %d", ret);
+    }
+
+    k_work_submit_to_queue(&motor_workq, &work_context->calculation_work);
 
     return 0;
+}
+
+static void motor_motion_set_radius(motor_motion_profile_t *motion_profile, const float radius) {
+    motion_profile->radius = radius;
+}
+
+void motor_motion_stepper_set_radius(const struct device *dev, const float new_radius) {
+    stepper_motor_context_t *context = &find_stepper_context_from_device(dev)->context;
+    const float old_radius = context->motion_profile.radius;
+
+    if (old_radius == new_radius) {
+        return;
+    }
+
+    const float old_last_position = context->last_position_generated;
+    if (old_radius == 0.0f) {
+        context->last_position_generated = old_last_position / context->steps_per_revolution * 2 * M_PI * new_radius;
+    } else {
+        context->last_position_generated = old_last_position / old_radius * new_radius;
+    }
+    LOG_DBG("Converted last position from %f to %f", old_last_position, context->last_position_generated);
+
+    motor_motion_set_radius(&context->motion_profile, new_radius);
+}
+
+void motor_motion_servo_set_radius(const struct device *dev, const float new_radius) {
+    servo_motor_context_t *context = &find_servo_context_from_device(dev)->context;
+    const float old_radius = context->motion_profile.radius;
+
+    if (old_radius == new_radius) {
+        return;
+    }
+
+    const float old_last_position = context->last_position_generated;
+
+    if (old_radius == 0.0f) {
+        context->last_position_generated = old_last_position / 180.0f * M_PI * new_radius;
+    } else {
+        context->last_position_generated = old_last_position / old_radius * new_radius;
+    }
+    LOG_DBG("Converted last position from %f to %f", old_last_position, context->last_position_generated);
+
+    motor_motion_set_radius(&context->motion_profile, new_radius);
 }

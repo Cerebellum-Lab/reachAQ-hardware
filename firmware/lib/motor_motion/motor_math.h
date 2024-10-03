@@ -12,8 +12,10 @@ typedef struct motor_motion_profile {
     /* Parameters from the paper:
      * https://studylib.net/doc/8267759/sinusoidal-velocity-profiles-for-motion-control
      *
-     * For stepper motors, these parameters are in units of steps, steps per second, etc.
-     * For servo motors, these parameters are in units of degrees, degrees per second, etc.
+     * If `radius` is nonzero, then the units of the start, end, max_velocity, and max_acceleration are assumed
+     * to be meters (and meters per second and meters per second squared). Otherwise, they are assumed to be
+     * degrees (and degrees per second and degrees per second squared) in the case of the servo motor and
+     * steps (and steps per second and steps per second squared) in the case of the stepper motor.
      */
 
     float start_pos;
@@ -45,12 +47,14 @@ typedef struct servo_motor_context {
     float angle_adjustment;  // Nominal angle for "home". Sometimes they are a few degrees off of 0.0.
 
     // PWM Parameters
-    uint32_t servo_multiplier;
-    uint32_t servo_offset;
+    float min_angle_pwm;        // PWM pulse duration (in us) for the minimum angle
+    float max_angle_pwm;        // PWM pulse duration (in us) for the maximum angle
+    float pwm_timer_increment;  // PWM pulse duration increment (in us) for each additional timer step
+                                // (1 / freq of timer peripheral)
 
     // Servo-specific internal state
-    float last_time_generated;
-    float last_position_generated;
+    float last_time_generated;      // In seconds
+    float last_position_generated;  // In degrees or meters, depending on the motion_profile.radius
 } servo_motor_context_t;
 
 typedef struct stepper_motor_context {
@@ -62,44 +66,76 @@ typedef struct stepper_motor_context {
     float steps_per_revolution;  // Number of steps per 360 degree/2pi radian revolution of the stepper motor
 
     // Stepper-specific internal state
-    float last_time_generated;
-    float last_position_generated;
+    float last_time_generated;      // In seconds
+    float last_position_generated;  // In either steps or meters, depending on the motion_profile.radius
 } stepper_motor_context_t;
 
-/*
- * Initializes the context struct with the parameters from the paper. `start` and `end`
- * should be the position in degrees of the servo at the start and end of the motion. `max_velocity`
- * and `max_acceleration` are the maximum velocity and acceleration of the servo in degrees per second
- * and degrees per second squared respectively. `servo_multiplier` and `servo_offset` are the parameters
- * for converting degrees to pulse width. Returns 0 on success, -errno on error.
+/**
+ * Initializes the context struct with the parameters from the paper.
+ *
+ * @param start start position of the motor. See note in the struct definition for units.
+ * @param end end position of the motor. See note in the struct definition for units.
+ * @param max_velocity maximum velocity of the motor. See note in the struct definition for units.
+ * @param max_acceleration maximum acceleration of the motor. See note in the struct definition for units.
+ * @param min_angle_pwm the pulse duration in microseconds for the minimum angle.
+ * @param max_angle_pwm the pulse duration in microseconds for the maximum angles.
+ *
+ * @retval 0 on success
+ * @retval -errno on error
  */
 int motor_motion_servo_init_context_struct(float start, float end, float max_velocity, float max_acceleration,
-                                           uint32_t servo_multiplier, uint32_t servo_offset,
-                                           servo_motor_context_t *context);
+                                           float min_angle_pwm, float max_angle_pwm, servo_motor_context_t *context);
 
-/*
- * Initializes the context struct with the parameters from the paper. `start` and `end`
- * should be the position in steps of the stepper at the start and end of the motion. `max_velocity`
- * and `max_acceleration` are the maximum velocity and acceleration of the stepper in steps per second
- * and steps per second squared respectively. `min_step` is the minimum step size of the stepper (usually
- * 1, 0.5, 0.25, 0.125, etc.). Returns 0 on success, -errno on error.
+/**
+ * Initialize the context struct with the parameters from the paper.
+ *
+ * @param start start position of the motor. See note in the struct definition for units.
+ * @param end end position of the motor. See note in the struct definition for units.
+ * @param max_velocity maximum velocity of the motor. See note in the struct definition for units.
+ * @param max_acceleration maximum acceleration of the motor. See note in the struct definition for units.
+ * @param min_step step size that the motor turns for every rising edge on the DIR pin. With microstepping,
+ * this usually ends up being 0.5, 0.25, etc.
+ * @param timer_increment is the inverse of the frequency of the timer peripheral used for the stepper.
+ *
+ * @retval 0 on success
+ * @retval -errno on error
  */
 int motor_motion_stepper_init_context_struct(float start, float end, float max_velocity, float max_acceleration,
                                              float min_step, float timer_increment, stepper_motor_context_t *context);
 
-/*
- * Generates a table of servo displacements for a sinusoidal motion profile
- * uses a fixed increment of 0.02 seconds but will never exceed the size of the table given.
+/**
+ * Generates a table of servo displacements for a sinusoidal motion profile uses a fixed increment of 0.02 seconds
+ * but will never exceed the size of the table given.
+ *
  * Runs based on the `servo_last_time_generated` field in the context struct, to allow for multiple
  * calls (for instance, one can send a pre-generated table to the servo driver, then call this function on
- * a different buffer to generate the next table).
- * Returns the number of entries generated or -1 on error.
+ * a different buffer to generate the next table). See note in the struct definition for units.
+ *
+ * @return the number of entries generated or -1 on error.
  */
 ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, size_t table_size,
                                                        servo_motor_context_t *context);
 
-/*
+/**
  * Generates a table of values with a pulse at the correct time for each stamp.
+ *
+ * @return the number of entries generated or -1 on error.
  */
 ssize_t motor_motion_stepper_generate_timing_table(uint32_t *table, size_t table_size,
                                                    stepper_motor_context_t *context);
+
+/*
+ * Simple helper function to convert meters to degrees (for servos).
+ */
+float motor_motion_servo_length_to_degrees(const servo_motor_context_t *context, float length);
+
+/*
+ * Simple helper function to convert meters to steps.
+ */
+float motor_motion_stepper_length_to_steps(const stepper_motor_context_t *context, float length);
+
+/*
+ * Opposite conversions.
+ */
+float motor_motion_steps_to_stepper_length(const stepper_motor_context_t *context, float steps);
+float motor_motion_degrees_to_servo_length(const servo_motor_context_t *context, float degrees);

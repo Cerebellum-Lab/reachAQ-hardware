@@ -120,7 +120,7 @@ int ll_stepper_dma_stop(const struct device *dev) {
         .msgq = &stepper_msgq##idx,                                                                       \
         .timer_dma_reg = LL_TIM_DMABURST_BASEADDR_ARR,                                                    \
         .stop_on_dma_complete = true,                                                                     \
-        .limit_switch_pin = DT_INST_PHA_OR(idx, limit_switch_gpios, 0, {0}),                              \
+        .limit_switch_pin = GPIO_DT_SPEC_INST_GET_OR(idx, limit_switch_gpios, {0}),                       \
         .dir_pin = GPIO_DT_SPEC_INST_GET(idx, dir_gpios),                                                 \
     };                                                                                                    \
                                                                                                           \

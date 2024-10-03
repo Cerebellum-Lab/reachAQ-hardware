@@ -14,6 +14,7 @@ target_sources(motor_motion_test
 
 target_include_directories(motor_motion_test
     PRIVATE
+        "./"
         "../"
 )
 

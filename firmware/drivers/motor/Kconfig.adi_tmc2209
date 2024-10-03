@@ -6,3 +6,11 @@ menuconfig ADI_TMC2209
         select PIPES
         help
             Enable support for the Analog Devices TMC2209 Stepper Motor Driver
+
+menuconfig ADI_TMC2209_SHELL
+        bool "Support shell for Analog Devices, Inc. TMC2209 Stepper Motor Driver"
+        default n
+        depends on ADI_TMC2209
+        depends on SHELL
+        help
+            Enable shell support for the Analog Devices TMC2209 Stepper Motor Driver

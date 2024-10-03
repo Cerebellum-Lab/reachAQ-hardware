@@ -230,6 +230,8 @@
 
 		dmas = <&dmamux1 3 46 STM32_DMA_PRIORITY_MEDIUM>;
 		dma-names = "tx";
+
+		limit-switch-gpios = <&gpioa 8 GPIO_ACTIVE_LOW>;
 	};
 };
 
@@ -252,6 +254,8 @@
 
 		dmas = <&dmamux1 4 53 STM32_DMA_PRIORITY_MEDIUM>;
 		dma-names = "tx";
+
+		limit-switch-gpios = <&gpioa 9 GPIO_ACTIVE_LOW>;
 	};
 };
 
@@ -274,6 +278,8 @@
 
 		dmas = <&dmamux1 5 90 STM32_DMA_PRIORITY_MEDIUM>;
 		dma-names = "tx";
+
+		limit-switch-gpios = <&gpioa 10 GPIO_ACTIVE_LOW>;
 	};
 };
 
@@ -405,7 +411,7 @@
 };
 
 &usart2 {
-	current-speed = <9600>;
+	current-speed = <115200>;
 	/delete-property/ hw-flow-control;
 	parity = "none";
 	stop-bits = "1";

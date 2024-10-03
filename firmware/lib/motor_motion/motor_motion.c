@@ -10,30 +10,8 @@
 
 LOG_MODULE_REGISTER(motor_motion);
 
-void motor_motion_set_radius(motor_motion_profile_t *motion_profile, const float radius) {
-    motion_profile->radius = radius;
-}
-
-float motor_motion_stepper_length_to_steps(const stepper_motor_context_t *context, const float length) {
-    const float radius = context->motion_profile.radius;
-    if (radius == 0.0f) {
-        LOG_ERR("Radius not set for motor context.");
-        return NAN;
-    }
-    return length * context->steps_per_revolution / (2.0f * M_PI * radius);
-}
-
 void motor_motion_stepper_set_current_position(stepper_motor_context_t *context, const float position) {
     context->motion_profile.start_pos = position;
-}
-
-float motor_motion_servo_length_to_degrees(const servo_motor_context_t *context, const float length) {
-    const float radius = context->motion_profile.radius;
-    if (radius == 0.0f) {
-        LOG_ERR("Radius not set for motor context.");
-        return NAN;
-    }
-    return length * 180.0f / (M_PI * radius);
 }
 
 void motor_motion_servo_set_current_position(servo_motor_context_t *context, const float position) {

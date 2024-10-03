@@ -8,20 +8,8 @@
 
 #ifdef BENCH_TEST
 // For bench testing
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "test.h"
-
-#define PRINT_ERR(...) fprintf(stderr, __VA_ARGS__)
-
-#define LOG_ERR(...) PRINT_ERR(__VA_ARGS__)
-#define LOG_WRN(...) PRINT_ERR(__VA_ARGS__)
-#define LOG_DBG(...) PRINT_ERR(__VA_ARGS__)
-#define LOG_INF(...) PRINT_ERR(__VA_ARGS__)
-
 #else
-
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_DECLARE(motor_motion, CONFIG_LIB_MOTOR_MOTION_LOG_LEVEL);
@@ -98,17 +86,18 @@ static int motor_motion_init_context_struct(const float start, const float end, 
 }
 
 int motor_motion_servo_init_context_struct(const float start, const float end, const float max_velocity,
-                                           const float max_acceleration, const uint32_t servo_multiplier,
-                                           const uint32_t servo_offset, servo_motor_context_t *context) {
-    int ret = motor_motion_init_context_struct(start, end, max_velocity, max_acceleration, &context->motion_profile);
+                                           const float max_acceleration, const float min_angle_pwm,
+                                           const float max_angle_pwm, servo_motor_context_t *context) {
+    const int ret =
+        motor_motion_init_context_struct(start, end, max_velocity, max_acceleration, &context->motion_profile);
     if (ret != 0) {
         return ret;
     }
 
     context->last_position_generated = start;
     context->last_time_generated = 0.0f;
-    context->servo_multiplier = servo_multiplier;
-    context->servo_offset = servo_offset;
+    context->min_angle_pwm = min_angle_pwm;
+    context->max_angle_pwm = max_angle_pwm;
     return 0;
 }
 
@@ -281,14 +270,24 @@ static float time_at_position(const float position, const float min_step, const 
     return time;
 }
 
-static uint32_t degrees_to_pulse_width(const servo_motor_context_t *context, const float degree) {
-    return (uint32_t)(degree / 180.0f) * context->servo_multiplier + context->servo_offset;
+static uint32_t degrees_to_pwm_count(const servo_motor_context_t *context, const float degree) {
+    return (uint32_t)roundf(
+        (((degree - context->min_angle) * (context->max_angle_pwm - context->min_angle_pwm)) + context->min_angle_pwm) /
+        context->pwm_timer_increment);
 }
 
-ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, size_t table_size,
+static float length_to_degrees(const motor_motion_profile_t *context, const float length) {
+    return context->radius > 0.0f ? length * 180.0f / (M_PI * context->radius) : length;
+}
+
+ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, const size_t table_size,
                                                        servo_motor_context_t *context) {
-    size_t n_entries =
-        (size_t)((context->motion_profile.t_t - context->last_time_generated) * 50.0f);  // 50 = 1 / time_step
+    const float servo_time_step = 0.02f;
+    const float servo_entries_per_second = 50.0f;
+    BUILD_ASSERT(servo_time_step == 1.0f / servo_entries_per_second,
+                 "Stepper time step must be 1 / stepper_entries_per_second");
+    size_t n_entries = (size_t)((context->motion_profile.t_t - context->last_time_generated) *
+                                servo_entries_per_second);  // 50 = 1 / time_step
     if (n_entries > table_size) {
         n_entries = table_size;
     }
@@ -297,10 +296,10 @@ ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, size_t t
     float displacement_now = displacement(time, &context->motion_profile);
 
     for (size_t i = 0; i < n_entries; i++) {
-        const float time_step = 0.02f;
-        time = time_step * (float)(i + 1) + context->last_time_generated;
+        time = servo_time_step * (float)(i + 1) + context->last_time_generated;
         displacement_now = displacement(time, &context->motion_profile) + context->motion_profile.start_pos;
-        table[i] = degrees_to_pulse_width(context, displacement_now);
+        const float degrees = length_to_degrees(&context->motion_profile, displacement_now);
+        table[i] = degrees_to_pwm_count(context, degrees);
     }
 
     context->last_time_generated = time;
@@ -309,11 +308,18 @@ ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, size_t t
     return (ssize_t)n_entries;
 }
 
+static float length_to_steps(const stepper_motor_context_t *context, const float length) {
+    return context->motion_profile.radius > 0.0f
+               ? length * context->steps_per_revolution / (2.0f * M_PI * context->motion_profile.radius)
+               : length;
+}
+
 ssize_t motor_motion_stepper_generate_timing_table(uint32_t *table, const size_t table_size,
                                                    stepper_motor_context_t *context) {
     const float time_step = context->timer_increment;
-    ssize_t n_entries =
-        (ssize_t)((context->motion_profile.end_pos - context->last_position_generated) / context->min_step);
+    const float n_steps_to_finish =
+        length_to_steps(context, context->motion_profile.end_pos - context->last_position_generated);
+    ssize_t n_entries = (ssize_t)fabsf(n_steps_to_finish / context->min_step);
 
     if (n_entries > table_size) {
         n_entries = (ssize_t)table_size;
@@ -324,7 +330,8 @@ ssize_t motor_motion_stepper_generate_timing_table(uint32_t *table, const size_t
     float this_time = context->last_time_generated;
     float this_position = context->last_position_generated;
     for (size_t i = 0; i < n_entries; i++) {
-        this_position = context->last_position_generated + (float)(i + 1) * context->min_step;
+        this_position =
+            context->last_position_generated + context->motion_profile.sgn * (float)(i + 1) * context->min_step;
         this_time =
             time_at_position(this_position, context->min_step, context->timer_increment, &context->motion_profile);
 
@@ -334,10 +341,9 @@ ssize_t motor_motion_stepper_generate_timing_table(uint32_t *table, const size_t
         if (time_delta >= (float)UINT16_MAX) {
             // This is the maximum value that can be sent over the DMA. The upper word is completely unused.
             table[i] = UINT16_MAX;
-        } else if (time_delta <= 1.0f) {
-            // Sending even a single zero over the DMA will stop the timer, so we need to send at least 1.
-            // Negative numbers also cannot be handled here and should (theoretically) never happen, but
-            // we prepare for the worst.
+        } else if (time_delta <= 1.0f || isnan(time_delta) || isinf(time_delta)) {
+            // Sending even a single zero over the DMA will stop the timer, and negative numbers
+            // should (theoretically) never happen. In either case, just send the minimum value.
             table[i] = 1;
         } else {
             table[i] = (uint32_t)time_delta;
@@ -350,4 +356,40 @@ ssize_t motor_motion_stepper_generate_timing_table(uint32_t *table, const size_t
     context->last_time_generated = this_time;
 
     return n_entries;
+}
+
+float motor_motion_stepper_length_to_steps(const stepper_motor_context_t *context, const float length) {
+    const float radius = context->motion_profile.radius;
+    if (radius == 0.0f) {
+        LOG_ERR("Radius not set for motor context.");
+        return NAN;
+    }
+    return length * context->steps_per_revolution / (2.0f * M_PI * radius);
+}
+
+float motor_motion_servo_length_to_degrees(const servo_motor_context_t *context, const float length) {
+    const float radius = context->motion_profile.radius;
+    if (radius == 0.0f) {
+        LOG_ERR("Radius not set for motor context.");
+        return NAN;
+    }
+    return length * 180.0f / (M_PI * radius);
+}
+
+float motor_motion_steps_to_stepper_length(const stepper_motor_context_t *context, const float steps) {
+    const float radius = context->motion_profile.radius;
+    if (radius == 0.0f) {
+        LOG_ERR("Radius not set for motor context.");
+        return NAN;
+    }
+    return steps * 2.0f * M_PI * radius / context->steps_per_revolution;
+}
+
+float motor_motion_degrees_to_servo_length(const servo_motor_context_t *context, const float degrees) {
+    const float radius = context->motion_profile.radius;
+    if (radius == 0.0f) {
+        LOG_ERR("Radius not set for motor context.");
+        return NAN;
+    }
+    return degrees * M_PI * radius / 180.0f;
 }

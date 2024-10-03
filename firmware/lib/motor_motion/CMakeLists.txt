@@ -5,6 +5,7 @@ zephyr_include_directories(.)
 zephyr_library_sources(
         motor_math.c
         motor_motion_workq.c
+        motor_settings.c
         motor_motion.c
 )
 

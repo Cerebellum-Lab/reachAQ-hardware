@@ -24,15 +24,15 @@ static int cmd_servo_set_pwm_parameters(const struct shell *shell, size_t argc, 
         return -EINVAL;
     }
 
-    const int pwm_offset = strtol(argv[2], &endptr, 10);
+    const float pwm_min_angle = strtof(argv[2], &endptr);
     if (*endptr != '\0') {
-        shell_print(shell, "Couldn't parse pwm offset");
+        shell_print(shell, "Couldn't parse pwm min angle");
         return -EINVAL;
     }
 
-    const int pwm_multiplier = strtol(argv[3], &endptr, 10);
+    const float pwm_max_angle = strtof(argv[3], &endptr);
     if (*endptr != '\0') {
-        shell_print(shell, "Couldn't parse pwm multiplier");
+        shell_print(shell, "Couldn't parse pwm max angle");
         return -EINVAL;
     }
 
@@ -43,10 +43,51 @@ static int cmd_servo_set_pwm_parameters(const struct shell *shell, size_t argc, 
 
     const struct device *servo_dev = servo_devs[servo];
 
-    const int ret = servo_set_parameters(servo_dev, 0.0f, 0.0f, pwm_offset, pwm_multiplier);
+    const int ret = servo_set_parameters(servo_dev, 0.0f, 0.0f, pwm_min_angle, pwm_max_angle);
     if (ret != 0) {
         shell_print(shell, "Failed to set servo parameters: %d", ret);
         return -EINVAL;
+    }
+
+    return 0;
+}
+
+static int cmd_servo_set_angle_parameters(const struct shell *shell, const size_t argc, char **argv) {
+    if (argc != 4) {
+        shell_print(shell, "Invalid number of arguments");
+        return -EINVAL;
+    }
+
+    char *end;
+    const int servo = strtol(argv[1], &end, 10);
+    if (*end != '\0') {
+        shell_print(shell, "Couldn't parse servo number");
+        return -EINVAL;
+    }
+
+    if (servo < 0 || servo >= ARRAY_SIZE(servo_devs)) {
+        shell_print(shell, "Servo number out of range");
+        return -ENODEV;
+    }
+
+    const float min_angle = strtof(argv[2], &end);
+    if (*end != '\0') {
+        shell_print(shell, "Couldn't parse min angle");
+        return -EINVAL;
+    }
+
+    const float max_angle = strtof(argv[3], &end);
+    if (*end != '\0') {
+        shell_print(shell, "Couldn't parse max angle");
+        return -EINVAL;
+    }
+
+    const struct device *const dev = servo_devs[servo];
+
+    const int ret = servo_set_angle_parameters(dev, min_angle, max_angle);
+    if (ret != 0) {
+        shell_print(shell, "Couldn't set angle parameters: %d", ret);
+        return ret;
     }
 
     return 0;
@@ -125,6 +166,61 @@ static int cmd_servo_move(const struct shell *shell, size_t argc, char **argv) {
         return -EINVAL;
     }
 
+    return 0;
+}
+
+static int cmd_servo_stop(const struct shell *shell, size_t argc, char **argv) {
+    if (argc != 2) {
+        shell_print(shell, "Invalid number of arguments");
+        return -EINVAL;
+    }
+
+    char *endptr;
+    const int servo = strtol(argv[1], &endptr, 10);
+    if (*endptr != '\0') {
+        shell_print(shell, "Couldn't parse stepper number");
+        return -EINVAL;
+    }
+
+    if (servo < 0 || servo >= ARRAY_SIZE(servo_devs)) {
+        shell_print(shell, "Invalid servo number");
+        return -EINVAL;
+    }
+
+    const struct device *const servo_dev = stepper_devs[servo];
+
+    servo_motor_stop(servo_dev);
+    servo_cancel_all_work(servo_dev);
+    return 0;
+}
+
+static int cmd_servo_set_radius(const struct shell *shell, size_t argc, char **argv) {
+    if (argc != 3) {
+        shell_print(shell, "Invalid number of arguments");
+        return -EINVAL;
+    }
+
+    char *endptr;
+    const int servo = strtol(argv[1], &endptr, 10);
+    if (*endptr != '\0') {
+        shell_print(shell, "Couldn't parse servo number");
+        return -EINVAL;
+    }
+
+    if (servo < 0 || servo >= ARRAY_SIZE(servo_devs)) {
+        shell_print(shell, "Servo out of range");
+        return -EINVAL;
+    }
+
+    const float new_radius = strtof(argv[2], &endptr);
+    if (*endptr != '\0') {
+        shell_print(shell, "Couldn't parse radius");
+        return -EINVAL;
+    }
+
+    const struct device *dev = servo_devs[servo];
+
+    motor_motion_servo_set_radius(dev, new_radius);
     return 0;
 }
 
@@ -241,19 +337,81 @@ static int cmd_stepper_move(const struct shell *shell, size_t argc, char **argv)
     return 0;
 }
 
+static int cmd_stepper_stop(const struct shell *shell, size_t argc, char **argv) {
+    if (argc != 2) {
+        shell_print(shell, "Invalid number of arguments");
+        return -EINVAL;
+    }
+
+    char *endptr;
+    const int stepper = strtol(argv[1], &endptr, 10);
+    if (*endptr != '\0') {
+        shell_print(shell, "Couldn't parse stepper number");
+        return -EINVAL;
+    }
+
+    if (stepper < 0 || stepper >= ARRAY_SIZE(stepper_devs)) {
+        shell_print(shell, "Invalid stepper number");
+        return -EINVAL;
+    }
+
+    const struct device *const stepper_dev = stepper_devs[stepper];
+
+    stepper_motor_stop(stepper_dev);
+    stepper_cancel_all_work(stepper_dev);
+    return 0;
+}
+
+static int cmd_stepper_set_radius(const struct shell *shell, size_t argc, char **argv) {
+    if (argc != 3) {
+        shell_print(shell, "Invalid number of arguments");
+        return -EINVAL;
+    }
+
+    char *endptr;
+    const int stepper = strtol(argv[1], &endptr, 10);
+    if (*endptr != '\0') {
+        shell_print(shell, "Couldn't parse stepper number");
+        return -EINVAL;
+    }
+
+    if (stepper < 0 || stepper >= ARRAY_SIZE(stepper_devs)) {
+        shell_print(shell, "Stepper out of range");
+        return -EINVAL;
+    }
+
+    const float new_radius = strtof(argv[2], &endptr);
+    if (*endptr != '\0') {
+        shell_print(shell, "Couldn't parse radius");
+        return -EINVAL;
+    }
+
+    const struct device *dev = stepper_devs[stepper];
+
+    motor_motion_stepper_set_radius(dev, new_radius);
+    return 0;
+}
+
 SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_motor_math,
+    SHELL_CMD_ARG(servo_set_pwm, NULL,
+                  "Set the PWM parameters (duration in us for the minimum and maximum angle) for a servo.\nUsage: "
+                  "servo_set_pwm <servo> "
+                  "<pwm_min_angle_us> <pwm_max_angle_us>",
+                  cmd_servo_set_pwm_parameters, 4, 0),
     SHELL_CMD_ARG(
-        servo_set_pwm, NULL,
-        "Set the PWM parameters (half-revolution multiple and offset) for a servo.\nUsage: servo_set_pwm <servo> "
-        "<pwm_offset> <pwm_pulses_per_half_revolution>",
-        cmd_servo_set_pwm_parameters, 4, 0),
+        servo_set_angles, NULL,
+        "Set the minimum and maximum angles for a servo.\nUsage: servo_set_angles <servo> <min_angle> <max_angle>",
+        cmd_servo_set_angle_parameters, 4, 0),
     SHELL_CMD_ARG(servo_set_physical, NULL,
                   "Set the Physical parameters (max velocity and acceleration) for a servo.\nUsage: servo_set_physical "
                   "<servo> <max_velocity> <max_acceleration>",
                   cmd_servo_set_physical_parameters, 4, 0),
+    SHELL_CMD_ARG(servo_set_radius, NULL, "Set the radius of a servo\nUsage: servo_set_radius <servo> <radius>",
+                  cmd_servo_set_radius, 3, 0),
     SHELL_CMD_ARG(servo_move, NULL, "Set a servo position sinusoidally\nUsage: servo_move <servo> <position>",
                   cmd_servo_move, 3, 0),
+    SHELL_CMD_ARG(servo_stop, NULL, "Stop a servo\nUsage: servo_stop <servo>", cmd_servo_stop, 2, 0),
     SHELL_CMD_ARG(
         stepper_set_steps, NULL,
         "Set the steps per revolution and minimum step for a stepper motor.\nUsage: stepper_set_steps <stepper> "
@@ -263,9 +421,12 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
                   "Set the Physical parameters (max velocity and acceleration) for a stepper motor.\nUsage: "
                   "stepper_set_physical <stepper> <max_velocity> <max_acceleration>",
                   cmd_stepper_set_physical_parameters, 4, 0),
+    SHELL_CMD_ARG(stepper_set_radius, NULL, "Set the radius of a stepper\nUsage: stepper_set_radius <stepper> <radius>",
+                  cmd_stepper_set_radius, 3, 0),
     SHELL_CMD_ARG(
         stepper_move, NULL,
         "Move a stepper motor to the specified position sinusoidally.\nUsage: stepper_move <stepper> <position",
         cmd_stepper_move, 3, 0),
+    SHELL_CMD_ARG(stepper_stop, NULL, "Stop a stepper motor\nUsage: stepper_stop <stepper>", cmd_stepper_stop, 2, 0),
     SHELL_SUBCMD_SET_END);
 SHELL_CMD_REGISTER(motor_math, &sub_motor_math, "Motor math motion commands", NULL);

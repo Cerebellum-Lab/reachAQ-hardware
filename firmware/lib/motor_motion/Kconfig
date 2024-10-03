@@ -2,6 +2,9 @@ menuconfig LIB_MOTOR_MOTION
     bool "Enable the motor motion mathematics library"
     default n
     depends on FPU
+    select SETTINGS
+    select LL_SERVO
+    select LL_STEPPER
     help
       Enable the library that calculates motor motion based on sinusoidal motion profiles.
 
@@ -16,6 +19,5 @@ menuconfig LIB_MOTOR_MOTION_SHELL
     bool "Enable the shell for the motor motion mathematics library"
     default n
     depends on LIB_MOTOR_MOTION
-    depends on LL_SERVO
     help
       Enable the shell for the motor motion math library
