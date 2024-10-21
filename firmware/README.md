@@ -10,15 +10,14 @@ https://docs.zephyrproject.org/latest/develop/getting_started/index.html
 
 It is recommended to do `west config build.sysbuild True` to have West default to using sysbuild at all times.
 
-Once West is installed, you must initialize the project workspace by switching into the `<board>_module` directory and
-then doing a checkout of zephyr and all dependent modules:
+Once West is installed, you must initialize the project workspace from the `firmware` directory by doing a checkout of zephyr and all dependent modules:
 
 ```bash
 west init -l
 west update
 ```
 
-And, inside of a venv, you should install the python requirements:
+And you should install the python requirements:
 ```bash
 pip install -r requirements.txt
 ```
@@ -32,8 +31,10 @@ The first time building the project (or if you ever delete the `build` directory
 the `<board>_module` directory:
 
 ```bash
-west build --sysbuild --board cerebellum_<board>_module -p
+west build --sysbuild --board cerebellumlab_<board>_module -p
 ```
+
+Note that this may not work inside a venv.
 
 Subsequent builds can just be run using `west build`
 
