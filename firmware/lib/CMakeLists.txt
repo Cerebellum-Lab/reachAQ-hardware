@@ -1,2 +1,3 @@
 add_subdirectory_ifdef(CONFIG_LIB_MOTOR_MOTION motor_motion)
 add_subdirectory_ifdef(CONFIG_LIB_JERRYCAN jerrycan)
+add_subdirectory_ifdef(CONFIG_LIB_FFT fft)

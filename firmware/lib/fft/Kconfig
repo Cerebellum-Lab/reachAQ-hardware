@@ -1,0 +1,17 @@
+menuconfig LIB_FFT
+    bool "Enable FFT support"
+    default n
+    select CMSIS_DSP
+    select CMSIS_DSP_COMPLEXMATH
+    select CMSIS_DSP_TRANSFORM
+    help
+      Enable the library that calculates FFTs
+
+config LIB_FFT_SHELL
+    bool "Enable the shell for the FFT library"
+    default n
+    select SHELL
+    select LIB_FFT
+    select LL_GENERIC_GPIO
+    help
+      Enable the shell for testing the FFT support library

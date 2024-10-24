@@ -30,3 +30,8 @@ __pycache__
 # Autorouter files (exported from Pcbnew)
 *.dsn
 *.ses
+
+.venv/
+build/
+**/cmake-build-debug/
+
