@@ -26,3 +26,13 @@ void servo_motor_stop(const struct device *dev);
  * Stop all motors! Uses a static list of all motors to stop them, so is very fast.
  */
 void motors_all_stop(void);
+
+/*
+ * Get the stepper motor device by its ID. This is useful for the shell commands and CAN commands.
+ */
+const struct device *stepper_motor_by_id(size_t id);
+
+/*
+ * Get the servo motor device by its ID. This is useful for the shell commands and CAN commands.
+ */
+const struct device *servo_motor_by_id(size_t id);

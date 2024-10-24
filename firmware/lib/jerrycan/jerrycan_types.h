@@ -67,14 +67,19 @@ typedef struct __attribute__((packed)) {
 
 BUILD_ASSERT(sizeof(jerrycan_cmd_status_t) == 8, "jerrycan_cmd_status_t should be 8 bytes");
 
+typedef enum __attribute__((packed)) {
+    JERRYCAN_MOVE_ABSOLUTE = 0,
+    JERRYCAN_MOVE_RELATIVE = 1,
+} abs_or_rel_t;
+
 typedef struct __attribute__((packed)) {
     struct {
         uint8_t motor_id : 2;
         uint8_t rsvd0 : 5;
-        uint8_t abs_or_rel : 1;
+        abs_or_rel_t abs_or_rel : 1;
     };
     uint8_t rsvd1;
-    uint16_t position;
+    int16_t position;
     uint16_t max_velocity;
     uint16_t max_acceleration;
 } jerrycan_cmd_stepper_move_t;
@@ -89,24 +94,27 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CFG_SERVO,
 } jerrycan_cfg_type_t;
 
-// FIXME: This is just a placeholder- need to figure out the real settings to save for the motors
 typedef struct __attribute__((packed)) {
     struct __attribute__((packed)) {
         uint8_t motor_id : 2;
-        uint8_t rsvd0 : 6;
+        uint8_t error : 1;
+        uint8_t rsvd0 : 5;
     };
-    uint16_t min_position;
-    uint16_t mid_position;
-    uint16_t max_position;
+    int16_t min_position;
+    int16_t max_position;
+    uint16_t min_pwm_duration_us;
+    uint16_t max_pwm_duration_us;
 } jerrycan_servo_cfg_t;
 
 typedef struct __attribute__((packed)) {
     struct __attribute__((packed)) {
         uint8_t motor_id : 2;
-        uint8_t rsvd0 : 6;
+        uint8_t error : 1;
+        uint8_t rsvd0 : 5;
     };
-    uint16_t min_position;  // FIXME: Placeholder setting only- need to figure out the real ones
-    uint16_t max_position;
+    uint16_t min_step_inverse;  // Power of 2 representing microstepping. Thus 2 represents 1/2 steps, 4 represents 1/4
+                                // steps, etc.
+    uint16_t steps_per_revolution;
 } jerrycan_stepper_cfg_t;
 
 typedef struct __attribute__((packed)) {
@@ -117,7 +125,7 @@ typedef struct __attribute__((packed)) {
     };
 } jerrycan_cmd_cfg_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_cfg_t) == 8, "jerrycan_cmd_cfg_t should be 8 bytes");
+BUILD_ASSERT(sizeof(jerrycan_cmd_cfg_t) == 10, "jerrycan_cmd_cfg_t should be 10 bytes");
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;

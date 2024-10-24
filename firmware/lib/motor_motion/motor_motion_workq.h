@@ -120,10 +120,60 @@ void servo_set_position_to_zero(const struct device *dev);
  * Find the work contexts, given the device.
  */
 struct servo_work_context *find_servo_context_from_device(const struct device *dev);
+
+/*
+ * Find the work contexts, given the device.
+ */
 struct stepper_work_context *find_stepper_context_from_device(const struct device *dev);
 
 /*
  * Set the per-device radii and update the current position based on the new radius.
  */
 void motor_motion_stepper_set_radius(const struct device *dev, float new_radius);
+
+/*
+ * Set the per-device radii and update the current position based on the new radius.
+ */
 void motor_motion_servo_set_radius(const struct device *dev, float new_radius);
+
+/**
+ * Get the minimum step size for the stepper motor.
+ *
+ * @returns 0 on success, -ENODEV if the device is not found.
+ */
+int motor_motion_stepper_get_min_step(const struct device *dev, float *min_step);
+
+/**
+ * Get the number of steps per revolution for the stepper motor.
+ *
+ * @returns 0 on success, -ENODEV if the device is not found.
+ */
+int motor_motion_stepper_get_steps_per_revolution(const struct device *dev, float *steps_per_revolution);
+
+/**
+ * Get the minimum PWM duration for the minimum angle of the servo motor.
+ *
+ * @returns 0 on success, -ENODEV if the device is not found.
+ */
+int motor_motion_servo_get_min_angle_pwm(const struct device *dev, float *min_angle_pwm);
+
+/**
+ * Get the maximum PWM duration for the maximum angle of the servo motor.
+ *
+ * @returns 0 on success, -ENODEV if the device is not found.
+ */
+int motor_motion_servo_get_max_angle_pwm(const struct device *dev, float *max_angle_pwm);
+
+/**
+ * Get the minimum angle of the servo motor.
+ *
+ * @returns 0 on success, -ENODEV if the device is not found.
+ */
+int motor_motion_servo_get_min_angle(const struct device *dev, float *min_angle);
+
+/**
+ * Get the maximum angle of the servo motor.
+ *
+ * @returns 0 on success, -ENODEV if the device is not found.
+ */
+int motor_motion_servo_get_max_angle(const struct device *dev, float *max_angle);

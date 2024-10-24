@@ -581,3 +581,64 @@ void motor_motion_servo_set_radius(const struct device *dev, const float new_rad
 
     motor_motion_set_radius(&context->motion_profile, new_radius);
 }
+
+/* ***** Getters ***** */
+int motor_motion_stepper_get_min_step(const struct device *dev, float *min_step) {
+    struct stepper_work_context *context = find_stepper_context_from_device(dev);
+    if (context == NULL) {
+        return -ENODEV;
+    }
+
+    *min_step = context->context.min_step;
+    return 0;
+}
+
+int motor_motion_stepper_get_steps_per_revolution(const struct device *dev, float *steps_per_revolution) {
+    struct stepper_work_context *context = find_stepper_context_from_device(dev);
+    if (context == NULL) {
+        return -ENODEV;
+    }
+
+    *steps_per_revolution = context->context.steps_per_revolution;
+    return 0;
+}
+
+int motor_motion_servo_get_min_angle_pwm(const struct device *dev, float *min_angle_pwm) {
+    struct servo_work_context *context = find_servo_context_from_device(dev);
+    if (context == NULL) {
+        return -ENODEV;
+    }
+
+    *min_angle_pwm = context->context.min_angle_pwm;
+    return 0;
+}
+
+int motor_motion_servo_get_max_angle_pwm(const struct device *dev, float *max_angle_pwm) {
+    struct servo_work_context *context = find_servo_context_from_device(dev);
+    if (context == NULL) {
+        return -ENODEV;
+    }
+
+    *max_angle_pwm = context->context.max_angle_pwm;
+    return 0;
+}
+
+int motor_motion_servo_get_min_angle(const struct device *dev, float *min_angle) {
+    struct servo_work_context *context = find_servo_context_from_device(dev);
+    if (context == NULL) {
+        return -ENODEV;
+    }
+
+    *min_angle = context->context.min_angle;
+    return 0;
+}
+
+int motor_motion_servo_get_max_angle(const struct device *dev, float *max_angle) {
+    struct servo_work_context *context = find_servo_context_from_device(dev);
+    if (context == NULL) {
+        return -ENODEV;
+    }
+
+    *max_angle = context->context.max_angle;
+    return 0;
+}

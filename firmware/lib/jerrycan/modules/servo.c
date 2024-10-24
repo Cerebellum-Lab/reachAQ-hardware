@@ -33,18 +33,42 @@
 
 #include "jerrycan.h"
 #include "motor_motion.h"
+#include "motor_motion_workq.h"
 
 LOG_MODULE_DECLARE(jerrycan, LOG_LEVEL_DBG);
 
+#define CAN_TIMEOUT K_MSEC(100)
+
 static void servo_handler(jerrycan_msg_t *msg) {
     // If we receive a servo message, we should move the servo
-
-    // FIXME: Need to update this to actually integrate with the high level motion library
     LOG_INF(
         "Received servo move message: motor_id=%d, abs_or_rel=%d, position=%d, max_velocity=%d, "
         "max_acceleration=%d",
         msg->servo_move.motor_id, msg->servo_move.abs_or_rel, msg->servo_move.position, msg->servo_move.max_velocity,
         msg->servo_move.max_acceleration);
+
+    const struct device *dev = servo_motor_by_id(msg->servo_move.motor_id);
+    if (dev == NULL) {
+        LOG_ERR("Invalid servo device number: %d", msg->servo_move.motor_id);
+        return;
+    }
+
+    servo_set_parameters(dev, msg->servo_move.max_velocity, msg->servo_move.max_acceleration, 0.0f, 0.0f);
+
+    switch (msg->servo_move.abs_or_rel) {
+        case JERRYCAN_MOVE_ABSOLUTE:
+            // Move the servo to the absolute position
+            servo_move_to_position(dev, msg->servo_move.position);
+            break;
+
+        case JERRYCAN_MOVE_RELATIVE:
+            // Move the servo to the relative position
+            servo_move_relative(dev, msg->servo_move.position);
+            break;
+
+        default:
+            LOG_ERR("Invalid move type: %d", msg->servo_move.abs_or_rel);
+    }
 }
 
 static jerrycan_rx_callback_t servo_callback = {
@@ -58,10 +82,21 @@ static void servo_cfg_write_handler(jerrycan_msg_t *msg) {
         return;
     }
 
-    // Update the servo config settings
-    LOG_INF("Received servo config write message: motor_id=%d, min_position=%d, mid_position=%d, max_position=%d",
-            msg->cfg_write.servo.motor_id, msg->cfg_write.servo.min_position, msg->cfg_write.servo.mid_position,
-            msg->cfg_write.servo.max_position);
+    LOG_INF(
+        "Received servo config write message: motor_id=%d, min_position=%d, max_position=%d, min_pwm_duration_us=%d, "
+        "max_pwm_duration_us=%d",
+        msg->cfg_write.servo.motor_id, msg->cfg_write.servo.min_position, msg->cfg_write.servo.max_position,
+        msg->cfg_write.servo.min_pwm_duration_us, msg->cfg_write.servo.max_pwm_duration_us);
+
+    const struct device *dev = servo_motor_by_id(msg->cfg_write.servo.motor_id);
+    if (dev == NULL) {
+        LOG_ERR("Invalid servo device number: %d", msg->cfg_write.servo.motor_id);
+        return;
+    }
+
+    servo_set_angle_parameters(dev, msg->cfg_write.servo.min_position, msg->cfg_write.servo.max_position);
+    servo_set_parameters(dev, 0.0f, 0.0f, (float)msg->cfg_write.servo.min_pwm_duration_us,
+                         (float)msg->cfg_write.servo.max_pwm_duration_us);
 }
 
 static jerrycan_rx_callback_t servo_cfg_write_callback = {
@@ -79,10 +114,50 @@ static void servo_cfg_read_handler(jerrycan_msg_t *msg) {
     rsp.type = JERRYCAN_CMD_CFG_RESPONSE;
     rsp.cfg_response.type = JERRYCAN_CFG_SERVO;
     rsp.cfg_response.servo.motor_id = msg->cfg_write.servo.motor_id;
+    rsp.cfg_response.servo.error = false;
 
-    // TODO: Read the actual servo settings from the motor library
+    const struct device *dev = servo_motor_by_id(msg->cfg_write.servo.motor_id);
+    if (dev == NULL) {
+        LOG_ERR("Invalid servo device number: %d", msg->cfg_write.servo.motor_id);
+        rsp.cfg_response.servo.error = true;
+        goto send_response;
+    }
 
-    jerrycan_tx(&rsp, K_FOREVER);
+    float min_angle;
+    float max_angle;
+    float min_pwm;
+    float max_pwm;
+
+    int ret = motor_motion_servo_get_min_angle(dev, &min_angle);
+    if (ret < 0) {
+        LOG_ERR("Failed to get min angle: %d", ret);
+        rsp.cfg_response.servo.error = true;
+    }
+    rsp.cfg_response.servo.min_position = (int16_t)min_angle;
+
+    ret = motor_motion_servo_get_max_angle(dev, &max_angle);
+    if (ret < 0) {
+        LOG_ERR("Failed to get max angle: %d", ret);
+        rsp.cfg_response.servo.error = true;
+    }
+    rsp.cfg_response.servo.max_position = (int16_t)max_angle;
+
+    ret = motor_motion_servo_get_min_angle_pwm(dev, &min_pwm);
+    if (ret < 0) {
+        LOG_ERR("Failed to get min pwm: %d", ret);
+        rsp.cfg_response.servo.error = true;
+    }
+    rsp.cfg_response.servo.min_pwm_duration_us = (uint16_t)min_pwm;
+
+    ret = motor_motion_servo_get_max_angle_pwm(dev, &max_pwm);
+    if (ret < 0) {
+        LOG_ERR("Failed to get max pwm: %d", ret);
+        rsp.cfg_response.servo.error = true;
+    }
+    rsp.cfg_response.servo.max_pwm_duration_us = (uint16_t)max_pwm;
+
+send_response:
+    jerrycan_tx(&rsp, CAN_TIMEOUT);
 }
 
 static jerrycan_rx_callback_t servo_cfg_read_callback = {

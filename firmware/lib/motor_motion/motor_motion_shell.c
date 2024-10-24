@@ -6,11 +6,6 @@
 
 LOG_MODULE_REGISTER(motor_math, LOG_LEVEL_DBG);
 
-#define DEV_GET_COMMA(id) DEVICE_DT_GET(id),
-
-static const struct device *const servo_devs[] = {DT_FOREACH_STATUS_OKAY(ll_servo, DEV_GET_COMMA)};
-static const struct device *const stepper_devs[] = {DT_FOREACH_STATUS_OKAY(ll_stepper, DEV_GET_COMMA)};
-
 static int cmd_servo_set_pwm_parameters(const struct shell *shell, size_t argc, char **argv) {
     if (argc != 4) {
         shell_print(shell, "Invalid number of arguments");
@@ -36,12 +31,11 @@ static int cmd_servo_set_pwm_parameters(const struct shell *shell, size_t argc, 
         return -EINVAL;
     }
 
-    if (servo < 0 || servo >= ARRAY_SIZE(servo_devs)) {
+    const struct device *servo_dev = servo_motor_by_id(servo);
+    if (servo_dev == NULL) {
         shell_print(shell, "Invalid servo number");
         return -EINVAL;
     }
-
-    const struct device *servo_dev = servo_devs[servo];
 
     const int ret = servo_set_parameters(servo_dev, 0.0f, 0.0f, pwm_min_angle, pwm_max_angle);
     if (ret != 0) {
@@ -65,11 +59,6 @@ static int cmd_servo_set_angle_parameters(const struct shell *shell, const size_
         return -EINVAL;
     }
 
-    if (servo < 0 || servo >= ARRAY_SIZE(servo_devs)) {
-        shell_print(shell, "Servo number out of range");
-        return -ENODEV;
-    }
-
     const float min_angle = strtof(argv[2], &end);
     if (*end != '\0') {
         shell_print(shell, "Couldn't parse min angle");
@@ -82,9 +71,13 @@ static int cmd_servo_set_angle_parameters(const struct shell *shell, const size_
         return -EINVAL;
     }
 
-    const struct device *const dev = servo_devs[servo];
+    const struct device *servo_dev = servo_motor_by_id(servo);
+    if (servo_dev == NULL) {
+        shell_print(shell, "Invalid servo number");
+        return -EINVAL;
+    }
 
-    const int ret = servo_set_angle_parameters(dev, min_angle, max_angle);
+    const int ret = servo_set_angle_parameters(servo_dev, min_angle, max_angle);
     if (ret != 0) {
         shell_print(shell, "Couldn't set angle parameters: %d", ret);
         return ret;
@@ -118,12 +111,11 @@ static int cmd_servo_set_physical_parameters(const struct shell *shell, size_t a
         return -EINVAL;
     }
 
-    if (servo < 0 || servo >= ARRAY_SIZE(servo_devs)) {
+    const struct device *servo_dev = servo_motor_by_id(servo);
+    if (servo_dev == NULL) {
         shell_print(shell, "Invalid servo number");
         return -EINVAL;
     }
-
-    const struct device *servo_dev = servo_devs[servo];
 
     const int ret = servo_set_parameters(servo_dev, max_velocity, max_acceleration, -1, -1);
     if (ret != 0) {
@@ -146,12 +138,11 @@ static int cmd_servo_move(const struct shell *shell, size_t argc, char **argv) {
         return -EINVAL;
     }
 
-    if (servo < 0 || servo >= ARRAY_SIZE(servo_devs)) {
+    const struct device *servo_dev = servo_motor_by_id(servo);
+    if (servo_dev == NULL) {
         shell_print(shell, "Invalid servo number");
         return -EINVAL;
     }
-
-    const struct device *servo_dev = servo_devs[servo];
 
     const float position = strtof(argv[2], &endptr);
     if (*endptr != '\0') {
@@ -182,12 +173,11 @@ static int cmd_servo_stop(const struct shell *shell, size_t argc, char **argv) {
         return -EINVAL;
     }
 
-    if (servo < 0 || servo >= ARRAY_SIZE(servo_devs)) {
+    const struct device *servo_dev = servo_motor_by_id(servo);
+    if (servo_dev == NULL) {
         shell_print(shell, "Invalid servo number");
         return -EINVAL;
     }
-
-    const struct device *const servo_dev = stepper_devs[servo];
 
     servo_motor_stop(servo_dev);
     servo_cancel_all_work(servo_dev);
@@ -207,20 +197,19 @@ static int cmd_servo_set_radius(const struct shell *shell, size_t argc, char **a
         return -EINVAL;
     }
 
-    if (servo < 0 || servo >= ARRAY_SIZE(servo_devs)) {
-        shell_print(shell, "Servo out of range");
-        return -EINVAL;
-    }
-
     const float new_radius = strtof(argv[2], &endptr);
     if (*endptr != '\0') {
         shell_print(shell, "Couldn't parse radius");
         return -EINVAL;
     }
 
-    const struct device *dev = servo_devs[servo];
+    const struct device *servo_dev = servo_motor_by_id(servo);
+    if (servo_dev == NULL) {
+        shell_print(shell, "Invalid servo number");
+        return -EINVAL;
+    }
 
-    motor_motion_servo_set_radius(dev, new_radius);
+    motor_motion_servo_set_radius(servo_dev, new_radius);
     return 0;
 }
 
@@ -249,12 +238,11 @@ static int cmd_stepper_set_steps(const struct shell *shell, size_t argc, char **
         return -EINVAL;
     }
 
-    if (stepper < 0 || stepper >= ARRAY_SIZE(stepper_devs)) {
+    const struct device *const stepper_dev = stepper_motor_by_id(stepper);
+    if (stepper_dev == NULL) {
         shell_print(shell, "Invalid stepper number");
         return -EINVAL;
     }
-
-    const struct device *const stepper_dev = stepper_devs[stepper];
 
     const int ret = stepper_set_parameters(stepper_dev, 0.0f, 0.0f, min_step, steps_per_revolution);
 
@@ -289,12 +277,11 @@ static int cmd_stepper_set_physical_parameters(const struct shell *shell, size_t
         return -EINVAL;
     }
 
-    if (stepper < 0 || stepper >= ARRAY_SIZE(stepper_devs)) {
+    const struct device *const stepper_dev = stepper_motor_by_id(stepper);
+    if (stepper_dev == NULL) {
         shell_print(shell, "Invalid stepper number");
         return -EINVAL;
     }
-
-    const struct device *const stepper_dev = stepper_devs[stepper];
 
     const int ret = stepper_set_parameters(stepper_dev, max_velocity, max_acceleration, -1, -1);
     if (ret != 0) {
@@ -322,12 +309,11 @@ static int cmd_stepper_move(const struct shell *shell, size_t argc, char **argv)
         return -EINVAL;
     }
 
-    if (stepper < 0 || stepper >= ARRAY_SIZE(stepper_devs)) {
+    const struct device *const stepper_dev = stepper_motor_by_id(stepper);
+    if (stepper_dev == NULL) {
         shell_print(shell, "Invalid stepper number");
         return -EINVAL;
     }
-
-    const struct device *const stepper_dev = stepper_devs[stepper];
 
     const int ret = stepper_move_to_position(stepper_dev, position);
     if (ret != 0) {
@@ -350,12 +336,11 @@ static int cmd_stepper_stop(const struct shell *shell, size_t argc, char **argv)
         return -EINVAL;
     }
 
-    if (stepper < 0 || stepper >= ARRAY_SIZE(stepper_devs)) {
+    const struct device *const stepper_dev = stepper_motor_by_id(stepper);
+    if (stepper_dev == NULL) {
         shell_print(shell, "Invalid stepper number");
         return -EINVAL;
     }
-
-    const struct device *const stepper_dev = stepper_devs[stepper];
 
     stepper_motor_stop(stepper_dev);
     stepper_cancel_all_work(stepper_dev);
@@ -375,20 +360,19 @@ static int cmd_stepper_set_radius(const struct shell *shell, size_t argc, char *
         return -EINVAL;
     }
 
-    if (stepper < 0 || stepper >= ARRAY_SIZE(stepper_devs)) {
-        shell_print(shell, "Stepper out of range");
-        return -EINVAL;
-    }
-
     const float new_radius = strtof(argv[2], &endptr);
     if (*endptr != '\0') {
         shell_print(shell, "Couldn't parse radius");
         return -EINVAL;
     }
 
-    const struct device *dev = stepper_devs[stepper];
+    const struct device *const stepper_dev = stepper_motor_by_id(stepper);
+    if (stepper_dev == NULL) {
+        shell_print(shell, "Invalid stepper number");
+        return -EINVAL;
+    }
 
-    motor_motion_stepper_set_radius(dev, new_radius);
+    motor_motion_stepper_set_radius(stepper_dev, new_radius);
     return 0;
 }
 

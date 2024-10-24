@@ -33,18 +33,42 @@
 
 #include "jerrycan.h"
 #include "motor_motion.h"
+#include "motor_motion_workq.h"
 
 LOG_MODULE_DECLARE(jerrycan, LOG_LEVEL_DBG);
 
+#define CAN_TIMEOUT K_MSEC(100)
+
 static void stepper_handler(jerrycan_msg_t *msg) {
     // If we receive a stepper message, we should move the stepper
-
-    // FIXME: Need to update this to actually integrate with the high level motion library
     LOG_INF(
         "Received stepper move message: motor_id=%d, abs_or_rel=%d, position=%d, max_velocity=%d, "
         "max_acceleration=%d",
         msg->stepper_move.motor_id, msg->stepper_move.abs_or_rel, msg->stepper_move.position,
         msg->stepper_move.max_velocity, msg->stepper_move.max_acceleration);
+
+    const struct device *dev = stepper_motor_by_id(msg->stepper_move.motor_id);
+    if (dev == NULL) {
+        LOG_ERR("Invalid servo device number: %d", msg->servo_move.motor_id);
+        return;
+    }
+
+    stepper_set_parameters(dev, msg->servo_move.max_velocity, msg->servo_move.max_acceleration, 0.0f, 0.0f);
+
+    switch (msg->stepper_move.abs_or_rel) {
+        case JERRYCAN_MOVE_ABSOLUTE:
+            // Move the servo to the absolute position
+            stepper_move_to_position(dev, msg->servo_move.position);
+            break;
+
+        case JERRYCAN_MOVE_RELATIVE:
+            // Move the servo to the relative position
+            stepper_move_relative(dev, msg->servo_move.position);
+            break;
+
+        default:
+            LOG_ERR("Invalid move type: %d", msg->servo_move.abs_or_rel);
+    }
 }
 
 static jerrycan_rx_callback_t stepper_callback = {
@@ -58,9 +82,18 @@ static void stepper_cfg_write_handler(jerrycan_msg_t *msg) {
         return;
     }
 
-    // Update the stepper config settings
-    LOG_INF("Received stepper config write message: motor_id=%d, min_position=%d, max_position=%d",
-            msg->cfg_write.stepper.motor_id, msg->cfg_write.stepper.min_position, msg->cfg_write.stepper.max_position);
+    LOG_INF("Received stepper config write message: motor_id=%d, min_step_inverse=%d, steps_per_revolution=%d",
+            msg->cfg_write.stepper.motor_id, msg->cfg_write.stepper.min_step_inverse,
+            msg->cfg_write.stepper.steps_per_revolution);
+
+    const struct device *dev = stepper_motor_by_id(msg->cfg_write.stepper.motor_id);
+    if (dev == NULL) {
+        LOG_ERR("Invalid stepper device number: %d", msg->cfg_write.stepper.motor_id);
+        return;
+    }
+
+    stepper_set_parameters(dev, 0.0f, 0.0f, 1.0f / (float)msg->cfg_write.stepper.min_step_inverse,
+                           (float)msg->cfg_write.stepper.steps_per_revolution);
 }
 
 static jerrycan_rx_callback_t stepper_cfg_write_callback = {
@@ -78,10 +111,34 @@ static void stepper_cfg_read_handler(jerrycan_msg_t *msg) {
     rsp.type = JERRYCAN_CMD_CFG_RESPONSE;
     rsp.cfg_response.type = JERRYCAN_CFG_STEPPER;
     rsp.cfg_response.stepper.motor_id = msg->cfg_write.stepper.motor_id;
+    rsp.cfg_response.stepper.error = false;
 
-    // TODO: Read the actual stepper settings from the motor library
+    int ret;
+    float min_step;
+    float steps_per_revolution;
+    const struct device *dev = stepper_motor_by_id(msg->cfg_write.stepper.motor_id);
+    if (dev == NULL) {
+        LOG_ERR("Invalid stepper device number: %d", msg->cfg_write.stepper.motor_id);
+        rsp.cfg_response.stepper.error = true;
+        goto send_response;
+    }
 
-    jerrycan_tx(&rsp, K_FOREVER);
+    ret = motor_motion_stepper_get_min_step(dev, &min_step);
+    if (ret < 0) {
+        LOG_ERR("Failed to get min step: %d", ret);
+        rsp.cfg_response.stepper.error = true;
+    }
+    rsp.cfg_response.stepper.min_step_inverse = (uint16_t)(1.0f / min_step);
+
+    ret = motor_motion_stepper_get_steps_per_revolution(dev, &steps_per_revolution);
+    if (ret < 0) {
+        LOG_ERR("Failed to get steps per revolution: %d", ret);
+        rsp.cfg_response.stepper.error = true;
+    }
+    rsp.cfg_response.stepper.steps_per_revolution = (uint16_t)steps_per_revolution;
+
+send_response:
+    jerrycan_tx(&rsp, CAN_TIMEOUT);
 }
 
 static jerrycan_rx_callback_t stepper_cfg_read_callback = {
