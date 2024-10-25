@@ -1,3 +1,34 @@
+/**
+ * @file servo.c
+ * @brief JerryCAN Servo Motor Message Handling
+ *
+ * This file handles the reception and processing of servo motor control messages
+ * recieved via the JerryCAN library. It provides functionality to move the servo,
+ * as well as to read and write servo configuration settings over CAN. The module
+ * integrates with the motor library for controlling and configuring servo movements.
+ *
+ * Key Functions:
+ * - `servo_handler()`: Processes incoming servo movement commands and logs the
+ *    motion parameters. (Integration with the motor library is pending)
+ * - `servo_cfg_write_handler()`: Handles configuration write messages for setting
+ *    servo parameters, such as minimum, middle, and maximum positions.
+ * - `servo_cfg_read_handler()`: Responds to configuration read requests by sending
+ *    the current servo configuration parameters back over CAN. (Actual config read
+ *    from the motor library is pending)
+ * - `jerrycan_servo_init()`: Registers the above message handlers and initializes
+ *    the servo handling module.
+ *
+ * Dependencies:
+ * - `jerrycan_register_rx_callback()`: Registers a CAN message callback in the JerryCAN system.
+ * - `jerrycan_tx()`: Transmits CAN messages via the JerryCAN library.
+ *
+ * Usage:
+ * This module is initialized at startup using Zephyr’s SYS_INIT macro. It registers
+ * callbacks to handle servo control messages, configuration write requests, and
+ * configuration read requests. Actual servo control and configuration functionality
+ * will be fully realized upon integration with the high-level motor library.
+ */
+
 #include <zephyr/logging/log.h>
 
 #include "jerrycan.h"

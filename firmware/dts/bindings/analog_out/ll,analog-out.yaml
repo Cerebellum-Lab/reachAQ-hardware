@@ -1,7 +1,7 @@
 description: |
-  Analog status output using DAC peripheral.
+  Analog output using DAC peripheral.
 
-compatible: "ll,analog-status"
+compatible: "ll,analog-out"
 
 include:
   - name: base.yaml
@@ -10,7 +10,7 @@ properties:
   io-channels:
     type: phandle-array
     required: true
-    description: DAC peripheral instance and channel for outputting analog status
+    description: DAC peripheral instance and channel for outputting analog output
   
   resolution:
     type: int

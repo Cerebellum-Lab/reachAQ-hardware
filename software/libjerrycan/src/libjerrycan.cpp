@@ -113,13 +113,9 @@ int JerryCAN::EStop(bool enable) {
         .type = JERRYCAN_CMD_ESTOP,
         .estop =
             {
-                .payload = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+                .payload = 0xFF,
             },
     };
-
-    if (enable) {
-        msg.estop.payload[0] = 0x01;
-    }
 
     return SendMessage(msg, 0x1F);
 }
@@ -185,6 +181,36 @@ int JerryCAN::CfgRead(uint8_t dst_id, jerrycan_cmd_cfg_t &cfg) {
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_CFG_READ,
         .cfg_read = cfg,
+    };
+
+    return SendMessage(msg, dst_id);
+}
+
+int JerryCAN::GPIOWrite(uint8_t dst_id, jerrycan_cmd_gpio_write_t &gpio_write) {
+    // Send a GPIO Write Message
+    jerrycan_msg_t msg = {
+        .type = JERRYCAN_CMD_GPIO_WRITE,
+        .gpio_write = gpio_write,
+    };
+
+    return SendMessage(msg, dst_id);
+}
+
+int JerryCAN::ToneWrite(uint8_t dst_id, jerrycan_cmd_tone_t &tone) {
+    // Send a GPIO Write Message
+    jerrycan_msg_t msg = {
+        .type = JERRYCAN_CMD_TONE,
+        .tone = tone,
+    };
+
+    return SendMessage(msg, dst_id);
+}
+
+int JerryCAN::AnalogOutWrite(uint8_t dst_id, jerrycan_cmd_analog_out_t &analog_out) {
+    // Send an Analog Out Message
+    jerrycan_msg_t msg = {
+        .type = JERRYCAN_CMD_ANALOG_OUT,
+        .analog_out = analog_out,
     };
 
     return SendMessage(msg, dst_id);

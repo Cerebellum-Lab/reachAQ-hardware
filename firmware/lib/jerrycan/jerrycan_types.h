@@ -22,13 +22,20 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_CFG_WRITE = 0x05,
     JERRYCAN_CMD_CFG_READ = 0x06,
     JERRYCAN_CMD_CFG_RESPONSE = 0x07,
+    JERRYCAN_CMD_PRESSURE_READ = 0x08,
+    JERRYCAN_CMD_TEMP_HUM_READ = 0x09,
+    JERRYCAN_CMD_GPIO_READ = 0x0A,
+    JERRYCAN_CMD_GPIO_WRITE = 0x0B,
+    JERRYCAN_CMD_TONE = 0X0C,
+    JERRYCAN_CMD_ANALOG_OUT = 0X0D,
+    JERRYCAN_CMD_LOAD_CELL_READ = 0x0E,
 } jerrycan_cmd_type_t;
 
 typedef struct __attribute__((packed)) {
-    uint8_t payload[8];
+    uint8_t payload;
 } jerrycan_cmd_estop_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_estop_t) == 8, "jerrycan_cmd_estop_t should be 8 bytes");
+BUILD_ASSERT(sizeof(jerrycan_cmd_estop_t) == 1, "jerrycan_cmd_estop_t should be 1 bytes");
 
 typedef struct __attribute__((packed)) {
     uint8_t rsvd;
@@ -38,25 +45,20 @@ BUILD_ASSERT(sizeof(jerrycan_cmd_heartbeat_t) == 1, "jerrycan_cmd_heartbeat_t sh
 
 typedef struct __attribute__((packed)) {
     struct {
-        uint8_t rsvd : 7;
         uint8_t estop_active : 1;
+        uint8_t limit_switch0 : 1;
+        uint8_t limit_switch1 : 1;
+        uint8_t limit_switch2 : 1;
+        uint8_t button0 : 1;
+        uint8_t rsvd0 : 3;
     };
+    uint8_t rsvd1;
     uint8_t stepper_status0;
     uint8_t stepper_status1;
     uint8_t stepper_status2;
     uint8_t servo_status0;
     uint8_t servo_status1;
     uint8_t servo_status2;
-    struct {
-        uint8_t limit_switch0 : 1;
-        uint8_t limit_switch1 : 1;
-        uint8_t limit_switch2 : 1;
-        uint8_t button0 : 1;
-        uint8_t stim0 : 1;
-        uint8_t stim1 : 1;
-        uint8_t stim2 : 1;
-        uint8_t stim3 : 1;
-    };
 } jerrycan_cmd_status_t;
 
 BUILD_ASSERT(sizeof(jerrycan_cmd_status_t) == 8, "jerrycan_cmd_status_t should be 8 bytes");
@@ -114,6 +116,78 @@ typedef struct __attribute__((packed)) {
 BUILD_ASSERT(sizeof(jerrycan_cmd_cfg_t) == 8, "jerrycan_cmd_cfg_t should be 8 bytes");
 
 typedef struct __attribute__((packed)) {
+    uint8_t instance;
+    uint8_t error;
+    uint32_t pressure_mv;
+} jerrycan_cmd_pressure_read_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_pressure_read_t) == 6, "jerrycan_cmd_pressure_read_t should be 6 bytes");
+
+/*
+    Scale factor for temperature and humidity transmission
+    (provides 2 significant decimal digits of precision)
+*/
+#define TEMPHUM_SCALE_FACTOR 100
+
+typedef struct __attribute__((packed)) {
+    uint8_t instance;
+    /*
+        SI7021 Temperature Range -40C to +125C - Sensor data temperature field is a float.
+        This field will contain (uint16_t)(temperature * 100) to provided two decimal
+        places of precision without bloating the struct beyond the 8 byte limit. As such, the
+        recieving end must perform (float)(temperature / 100.0) to acquire the temperature value.
+    */
+    uint16_t temperature;
+    /*
+        SI7021 Humidity Range 0% to 100% - Sensor data humidity field is a float.
+        This field will contain (uint16_t)(humidity * 100) to provided two decimal
+        places of precision without bloating the struct beyond the 8 byte limit. As such, the
+        recieving end must perform (float)(humidity / 100.0) to acquire the humidity value.
+    */
+    uint16_t humidity;
+} jerrycan_cmd_temp_hum_read_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_temp_hum_read_t) == 5, "jerrycan_cmd_temp_hum_read_t should be 5 bytes");
+
+typedef struct __attribute__((packed)) {
+    uint8_t instance;
+    uint32_t state;
+} jerrycan_cmd_gpio_read_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_gpio_read_t) == 5, "jerrycan_cmd_gpio_read_t should be 5 bytes");
+
+typedef struct __attribute__((packed)) {
+    uint8_t instance;
+    uint16_t gpio_idx;
+    bool state : 1;
+    uint8_t rsvd0 : 7;
+} jerrycan_cmd_gpio_write_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_gpio_write_t) == 4, "jerrycan_cmd_gpio_write_t should be 4 bytes");
+
+typedef struct __attribute__((packed)) {
+    uint8_t instance;
+    uint16_t frequency_hz;
+    uint16_t duration_ms;
+} jerrycan_cmd_tone_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_tone_t) == 5, "jerrycan_cmd_tone_t should be 5 bytes");
+
+typedef struct __attribute__((packed)) {
+    uint8_t instance;
+    uint16_t value_mv;
+} jerrycan_cmd_analog_out_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_analog_out_t) == 3, "jerrycan_cmd_analog_out_t should be 3 bytes");
+
+typedef struct __attribute__((packed)) {
+    uint8_t instance;
+    int16_t load_mv;
+} jerrycan_cmd_load_cell_read_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_load_cell_read_t) == 3, "jerrycan_cmd_load_cell_read_t should be 3 bytes");
+
+typedef struct __attribute__((packed)) {
     jerrycan_cmd_type_t type;
     uint8_t dst_id;
     union {
@@ -125,6 +199,13 @@ typedef struct __attribute__((packed)) {
         jerrycan_cmd_cfg_t cfg_write;
         jerrycan_cmd_cfg_t cfg_response;
         jerrycan_cmd_cfg_t cfg_read;
+        jerrycan_cmd_pressure_read_t pressure_read;
+        jerrycan_cmd_temp_hum_read_t temp_hum_read;
+        jerrycan_cmd_gpio_read_t gpio_read;
+        jerrycan_cmd_gpio_write_t gpio_write;
+        jerrycan_cmd_tone_t tone;
+        jerrycan_cmd_analog_out_t analog_out;
+        jerrycan_cmd_load_cell_read_t load_cell_read;
         uint8_t payload[8];
     };
 } jerrycan_msg_t;

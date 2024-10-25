@@ -5,6 +5,7 @@
 #include <zephyr/drivers/clock_control/stm32_clock_control.h>
 #include <zephyr/drivers/dma.h>
 #include <zephyr/drivers/dma/dma_stm32.h>
+#include <zephyr/drivers/gpio.h>
 #include <zephyr/dt-bindings/dma/stm32_dma.h>
 #include <zephyr/logging/log.h>
 
@@ -86,11 +87,13 @@ typedef struct {
     uint32_t dac_channel;
     uint32_t dac_resolution;
     uint32_t dma_channel;
+    const struct gpio_dt_spec enable_pin;
 } ll_tone_generator_cfg_t;
 
 typedef struct {
     bool initialized;
     bool enabled;
+    unsigned int frequency_hz;
     struct dma_config dma_cfg;
     struct k_timer duration_timer;
 } ll_tone_generator_data_t;
@@ -103,7 +106,7 @@ static void dma_callback(const struct device *dma_dev, void *user_data, uint32_t
     }
 }
 
-/*  Kernel Timer Expirey Callback function*/
+/*  Kernel Timer Expirey Callback function */
 static void duration_expiry_cb(struct k_timer *timer) {
     LOG_DBG("Duration Timer Expired");
     ll_tone_generator_abort_tone((const struct device *)timer->user_data);
@@ -223,10 +226,21 @@ static int ll_tone_generator_dac_init(const struct device *dev) {
 
 /* Tone Generator Initialization Function */
 static int ll_tone_generator_init(const struct device *dev) {
+    const ll_tone_generator_cfg_t *cfg = dev->config;
     ll_tone_generator_data_t *data = dev->data;
     int ret;
 
     LOG_INF("Initializing Tone Generator...");
+
+    ret = gpio_pin_configure_dt(&cfg->enable_pin, GPIO_OUTPUT);
+    if (ret != 0) {
+        LOG_ERR("Failed to configure enable pin - %d", ret);
+    }
+
+    ret = gpio_pin_set_dt(&cfg->enable_pin, 0);
+    if (ret != 0) {
+        LOG_ERR("Failed to clear enable pin - %d", ret);
+    }
 
     /* Initialize the duration timer */
     k_timer_init(&data->duration_timer, duration_expiry_cb, NULL);
@@ -292,6 +306,12 @@ int ll_tone_generator_play_tone(const struct device *dev, unsigned int frequency
                 TONE_GENERATOR_MIN_FREQUENCY, TONE_GENERATOR_MAX_FREQUENCY);
     }
 
+    /* Enable the audio amplifier */
+    ret = gpio_pin_set_dt(&cfg->enable_pin, 1);
+    if (ret != 0) {
+        LOG_ERR("Failed to set enable pin - %d", ret);
+    }
+
     /* Start the DMA transfer */
     ret = dma_start(cfg->dma_dev, cfg->dma_channel);
     if (ret != 0) {
@@ -318,6 +338,8 @@ int ll_tone_generator_play_tone(const struct device *dev, unsigned int frequency
 
     /* Start the duration timer to expire after the given duration in milliseconds in one-shot mode */
     k_timer_start(&data->duration_timer, K_MSEC(duration_ms), K_NO_WAIT);
+
+    data->frequency_hz = frequency_hz;
 
     /* Set the enabled flag to true */
     data->enabled = true;
@@ -369,9 +391,31 @@ int ll_tone_generator_abort_tone(const struct device *dev) {
 
     /* Disable the DAC */
     LL_DAC_Disable(cfg->dac, cfg->dac_channel);
+
+    /* Disable the audio amplifier */
+    ret = gpio_pin_set_dt(&cfg->enable_pin, 0);
+    if (ret != 0) {
+        LOG_ERR("Failed to set clear pin - %d", ret);
+    }
+
+    data->frequency_hz = 0;
     data->enabled = false;
 
     return ret;
+}
+
+/* Returns the amount time in ms remaining for the current tone */
+uint32_t ll_tone_generator_get_time_remaining(const struct device *dev) {
+    ll_tone_generator_data_t *data = dev->data;
+
+    return k_timer_remaining_get(&data->duration_timer);
+}
+
+/* Returns the frequency in Hz of the current tone */
+uint32_t ll_tone_generator_get_frequency(const struct device *dev) {
+    ll_tone_generator_data_t *data = dev->data;
+
+    return data->frequency_hz;
 }
 
 #define TONE_GENERATOR_INST(idx)                                                                                    \
@@ -396,6 +440,7 @@ int ll_tone_generator_abort_tone(const struct device *dev) {
         .dma_dev = DEVICE_DT_GET(DT_INST_DMAS_CTLR(idx)),                                                           \
         .dac_channel = DAC_CHANNEL_NUM_TO_LL_MAP(DT_INST_PROP(idx, dac_channel)),                                   \
         .dma_channel = DT_INST_DMAS_CELL_BY_NAME(idx, tx, channel),                                                 \
+        .enable_pin = GPIO_DT_SPEC_INST_GET(idx, enable_gpios),                                                     \
     };                                                                                                              \
                                                                                                                     \
     static ll_tone_generator_data_t tone_generator_data_##idx = {                                                   \
@@ -418,6 +463,7 @@ int ll_tone_generator_abort_tone(const struct device *dev) {
                 .user_data = NULL,                                                                                  \
                 .cyclic = true,                                                                                     \
             },                                                                                                      \
+        .frequency_hz = 0,                                                                                          \
     };                                                                                                              \
                                                                                                                     \
     DEVICE_DT_INST_DEFINE(idx, ll_tone_generator_init, NULL, &tone_generator_data_##idx, &tone_generator_cfg_##idx, \

@@ -28,6 +28,12 @@ class JerryCAN {
 
     int CfgRead(uint8_t dst_id, jerrycan_cmd_cfg_t &cfg);
 
+    int GPIOWrite(uint8_t dst_id, jerrycan_cmd_gpio_write_t &gpio_write);
+
+    int ToneWrite(uint8_t dst_id, jerrycan_cmd_tone_t &tone);
+
+    int AnalogOutWrite(uint8_t dst_id, jerrycan_cmd_analog_out_t &analog_out);
+
    private:
     int _can_socket_handle;
 };

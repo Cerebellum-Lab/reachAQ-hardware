@@ -269,7 +269,7 @@ static int ll_load_cell_init(const struct device *dev) {
     static const ll_load_cell_cfg_t load_cell_cfg_##idx = {                                                       \
         .adc_channel = (nau7802_chs_t)DT_INST_ENUM_IDX(idx, adc_channel),                                         \
         .ldo_voltage = (nau7802_vldo_t)DT_INST_ENUM_IDX(idx, ldo_voltage),                                        \
-        .gain = (nau7802_gains_t)DT_INST_PROP(idx, gain),                                                         \
+        .gain = (nau7802_gains_t)DT_INST_ENUM_IDX(idx, gain),                                                     \
         .conversion_rate = CONVERSION_RATE_FROM_ENUM_IDX(DT_INST_ENUM_IDX(idx, conversion_rate)),                 \
         .drdy_pin = GPIO_DT_SPEC_INST_GET(idx, drdy_gpios),                                                       \
     };                                                                                                            \

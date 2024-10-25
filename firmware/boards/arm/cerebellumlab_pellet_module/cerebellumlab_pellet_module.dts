@@ -63,18 +63,18 @@
 	generic-gpios {
 		status = "okay";
 		compatible = "ll,generic-gpios";
-		input-gpios = <&gpioc 4 GPIO_ACTIVE_LOW>,  // CAN_ID[0]
-					  <&gpioc 5 GPIO_ACTIVE_LOW>,  // CAN_ID[1]
-					  <&gpiob 0 GPIO_ACTIVE_HIGH>, // CAN_ID[2]
-					  <&gpiob 1 GPIO_ACTIVE_HIGH>; // CAN_ID[3]
+		input-gpios = <&gpioc 4 GPIO_ACTIVE_LOW>,  // CAN_ID[0] / NodeNumber[0]
+					  <&gpioc 5 GPIO_ACTIVE_LOW>,  // CAN_ID[1] / NodeNumber[1]
+					  <&gpiob 0 GPIO_ACTIVE_HIGH>, // CAN_ID[2] / DeviceType[0]
+					  <&gpiob 1 GPIO_ACTIVE_HIGH>; // CAN_ID[3] / DeviceType[1]
 		input-gpio-names = "CAN_ID[0]",
 						   "CAN_ID[1]",
 						   "CAN_ID[2]",
 						   "CAN_ID[3]";
-		output-gpios = <&gpiob 11 GPIO_ACTIVE_HIGH>,
-					   <&gpiob 12 GPIO_ACTIVE_HIGH>,
-					   <&gpiob 13 GPIO_ACTIVE_HIGH>,
-					   <&gpiob 14 GPIO_ACTIVE_HIGH>;
+		output-gpios = <&gpiob 11 GPIO_ACTIVE_HIGH>, // STIM0
+					   <&gpiob 12 GPIO_ACTIVE_HIGH>, // STIM1
+					   <&gpiob 13 GPIO_ACTIVE_HIGH>, // STIM2
+					   <&gpiob 14 GPIO_ACTIVE_HIGH>; // STIM3
 		output-gpio-names = "STIM0",
 						    "STIM1",
 						    "STIM2",
@@ -90,10 +90,13 @@
 		dac-channel = <1>;
 		dmas = <&dmamux1 6 6 STM32_DMA_PRIORITY_HIGH>;
 		dma-names = "tx";
+		enable-gpios = <&gpioa 7 GPIO_ACTIVE_HIGH>;
+
+		status = "okay";
 	};
 
-	analog_status: analog_status {
-		compatible = "ll,analog-status";
+	analog_out: analog_out {
+		compatible = "ll,analog-out";
 		status = "okay";
 		io-channels = <&dac2 1>;
 		resolution = <12>;

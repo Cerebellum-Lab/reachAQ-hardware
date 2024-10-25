@@ -40,3 +40,7 @@ ll_pressure_sensor_error_t ll_pressure_sensor_get_pressure(const struct device *
 ll_pressure_sensor_error_t ll_pressure_sensor_enable(const struct device *dev);
 
 ll_pressure_sensor_error_t ll_pressure_sensor_disable(const struct device *dev);
+
+bool ll_pressure_sensor_is_initialized(const struct device *dev);
+
+bool ll_pressure_sensor_is_enabled(const struct device *dev);

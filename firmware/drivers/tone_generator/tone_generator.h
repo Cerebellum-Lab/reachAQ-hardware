@@ -17,3 +17,9 @@ int ll_tone_generator_play_tone_blocking(const struct device *dev, unsigned int 
 
 /* Halts the tone generation proccess on the given tone generator */
 int ll_tone_generator_abort_tone(const struct device *dev);
+
+/* Returns the amount time in ms remaining for the current tone */
+uint32_t ll_tone_generator_get_time_remaining(const struct device *dev);
+
+/* Returns the frequency in Hz of the current tone */
+uint32_t ll_tone_generator_get_frequency(const struct device *dev);

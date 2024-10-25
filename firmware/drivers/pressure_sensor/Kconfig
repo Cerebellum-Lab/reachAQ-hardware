@@ -17,7 +17,6 @@ menuconfig LL_PRESSURE_SENSOR
         select USE_STM32_LL_GPIO
         select ADC
         select ADC_ASYNC
-        select DMA
         help
             Enable support for the pressure sensor
 

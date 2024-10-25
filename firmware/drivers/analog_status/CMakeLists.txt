@@ -1,7 +1,0 @@
-zephyr_library()
-
-zephyr_include_directories(.)
-
-zephyr_library_sources_ifdef(CONFIG_LL_ANALOG_STATUS analog_status.c)
-
-zephyr_library_sources_ifdef(CONFIG_LL_ANALOG_STATUS_SHELL analog_status_shell.c)

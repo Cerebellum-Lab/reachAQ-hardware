@@ -1,3 +1,34 @@
+/**
+ * @file stepper.c
+ * @brief JerryCAN Stepper Motor Message Handling
+ *
+ * This file handles the reception and processing of stepper motor control messages
+ * recieved via the JerryCAN library. It provides functionality to move the stepper,
+ * as well as to read and write stepper configuration settings over CAN. The module
+ * integrates with the motor library for controlling and configuring stepper movements.
+ *
+ * Key Functions:
+ * - `stepper_handler()`: Processes incoming stepper movement commands and logs the
+ *    motion parameters. Integration with the motion library is pending.
+ * - `stepper_cfg_write_handler()`: Handles configuration write messages to set
+ *    stepper parameters such as minimum and maximum positions.
+ * - `stepper_cfg_read_handler()`: Responds to configuration read requests by sending
+ *    current stepper configuration parameters back over CAN. Reading actual values
+ *    from the motor library is pending.
+ * - `jerrycan_stepper_init()`: Registers callbacks to handle CAN messages related
+ *    to stepper movement, configuration write, and configuration read operations.
+ *
+ * Dependencies:
+ * - `jerrycan_register_rx_callback()`: Registers a CAN message callback in the JerryCAN system.
+ * - `jerrycan_tx()`: Transmits CAN messages via the JerryCAN library.
+ *
+ * Usage:
+ * This module initializes at startup using Zephyr’s SYS_INIT macro. It registers
+ * callbacks for handling movement and configuration messages related to stepper motors.
+ * Future integration with the high-level motion library will allow actual motor movements
+ * and configurations.
+ */
+
 #include <zephyr/logging/log.h>
 
 #include "jerrycan.h"

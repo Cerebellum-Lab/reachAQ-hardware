@@ -42,6 +42,8 @@ typedef struct {
     pin_names_t valid_output_names;
     uint8_t num_valid_input_names;
     uint8_t num_valid_output_names;
+    struct gpio_callback state_change_callback;
+    void (*state_change_handler)(void);
 } ll_generic_gpio_data_t;
 
 typedef struct {
@@ -424,8 +426,44 @@ static void ll_generic_gpio_populate_valid_names(const struct device *dev) {
     LOG_INF("GPIO names validated and mapped successfully");
 }
 
+/* ISR to be called on state change, if a state change handler has been enabled  */
+static void ll_generic_gpio_state_change_isr(const struct device *port, struct gpio_callback *cb,
+                                             gpio_port_pins_t pins) {
+    ll_generic_gpio_data_t *data = CONTAINER_OF(cb, ll_generic_gpio_data_t, state_change_callback);
+
+    /* Confirm that the registered state change handler is not NULL before calling */
+    if (data->state_change_handler != NULL) {
+        data->state_change_handler();
+    }
+}
+
+int ll_generic_gpio_register_state_change_handler(const struct device *dev, void (*handler)()) {
+    ll_generic_gpio_data_t *data = dev->data;
+
+    /* Assign the state change handler to be called by the ISR */
+    data->state_change_handler = handler;
+
+    /* Grab all pins (readable includes inputs and outputs) */
+    uint8_t pin_count = ll_generic_gpio_get_num_readable_pins(dev);
+    const struct gpio_dt_spec *pins = ll_generic_gpio_get_readable_pins(dev);
+
+    /* Enable the interrupt on each pin */
+    int ret;
+    for (int i = 0; i < pin_count; i++) {
+        ret = gpio_pin_interrupt_configure_dt(&pins[i], GPIO_INT_ENABLE | GPIO_INT_EDGE_BOTH);
+        if (ret != 0) {
+            LOG_ERR("Failed to register state change handler: Error configuring interrupt for pin <%s> - %d",
+                    ll_generic_gpio_lookup_readable_pin_name(dev, i), ret);
+            return ret;
+        }
+    }
+
+    return 0;
+}
+
 static int ll_generic_gpio_init(const struct device *dev) {
     const ll_generic_gpio_cfg_t *cfg = dev->config;
+    ll_generic_gpio_data_t *data = dev->data;
     int ret;
 
     /* Initialize the outputs as outputs */
@@ -447,6 +485,25 @@ static int ll_generic_gpio_init(const struct device *dev) {
         "valid" forms of the names provided in the device tree.
     */
     ll_generic_gpio_populate_valid_names(dev);
+
+    uint8_t pin_count = ll_generic_gpio_get_num_readable_pins(dev);
+    const struct gpio_dt_spec *pins = ll_generic_gpio_get_readable_pins(dev);
+
+    gpio_port_pins_t pin_mask = 0;
+    for (int i = 0; i < pin_count; i++) {
+        pin_mask |= BIT(pins[i].pin);
+    }
+
+    /* Setup interrupts for state change but leave interrupts disabled */
+    gpio_init_callback(&data->state_change_callback, ll_generic_gpio_state_change_isr, pin_mask);
+    for (int i = 0; i < pin_count; i++) {
+        ret = gpio_add_callback_dt(&pins[i], &data->state_change_callback);
+        if (ret != 0) {
+            LOG_ERR("Failed to register state change handler: Error adding callback for pin <%s> - %d",
+                    ll_generic_gpio_lookup_readable_pin_name(dev, i), ret);
+            return ret;
+        }
+    }
 
     return 0;
 }
@@ -470,6 +527,7 @@ static int ll_generic_gpio_init(const struct device *dev) {
         .valid_output_names = &valid_pin_names##idx[DT_INST_PROP_LEN(idx, input_gpios)],                          \
         .num_valid_input_names = 0,                                                                               \
         .num_valid_output_names = 0,                                                                              \
+        .state_change_handler = NULL,                                                                             \
     };                                                                                                            \
     static const ll_generic_gpio_cfg_t ll_generic_gpio_cfg##idx = {                                               \
         .inputs = pin_dt_specs##idx,                                                                              \

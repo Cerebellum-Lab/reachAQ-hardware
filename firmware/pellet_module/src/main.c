@@ -9,10 +9,11 @@ LOG_MODULE_REGISTER(app);
 
 int main() {
     LOG_INF("Autotrainer Pellet Module v%s", APP_VERSION_STRING);
-
     while (true) {
-        // This runs the main CAN RX loop
-        // Callbacks registered for specific messages types will be called when those messages are received
-        jerrycan_run(K_MSEC(100));
+        jerrycan_run(K_FOREVER);
+    }
+error:
+    while (true) {
+        k_msleep(500);
     }
 }

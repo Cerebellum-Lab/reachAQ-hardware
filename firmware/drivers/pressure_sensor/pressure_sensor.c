@@ -142,6 +142,18 @@ ll_pressure_sensor_error_t ll_pressure_sensor_disable(const struct device *dev) 
     return PRESSURE_SENSOR_NO_ERROR;
 }
 
+bool ll_pressure_sensor_is_initialized(const struct device *dev) {
+    ll_pressure_sensor_data_t *data = dev->data;
+
+    return data->initialized;
+}
+
+bool ll_pressure_sensor_is_enabled(const struct device *dev) {
+    ll_pressure_sensor_data_t *data = dev->data;
+
+    return data->enabled;
+}
+
 /* Convert frequency in hertz to period in microseconds */
 #define FREQ_HZ_TO_PER_US(__freq__) (uint32_t)(1000000.0f / __freq__)
 

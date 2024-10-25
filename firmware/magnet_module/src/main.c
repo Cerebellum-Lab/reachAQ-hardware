@@ -4,15 +4,15 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
+#include "jerrycan.h"
+
 LOG_MODULE_REGISTER(app);
 
 int main() {
     LOG_INF("Autotrainer Magnet Module v%s", APP_VERSION_STRING);
-
     while (true) {
-        k_msleep(1000);
+        jerrycan_run(K_FOREVER);
     }
-
 error:
     while (true) {
         k_msleep(500);
