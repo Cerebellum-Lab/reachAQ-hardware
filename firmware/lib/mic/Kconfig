@@ -1,0 +1,21 @@
+config LIB_MIC_LOG_LEVEL
+    int "Log level (0-4)"
+        default 4
+        help
+            Set the log level for generic GPIO driver
+
+menuconfig LIB_MIC
+        bool "Support Magnet Module microphone capability"
+        default y if $(dt_alias_enabled,i2s_mic)
+        select I2S
+        select CONFIG_I2S_STM32
+        help
+           Enable support for the magnet module microphone
+
+config LIB_MIC_SHELL
+        bool "Enable shell commands for magnet module microphone"
+        default n
+        depends on SHELL
+        depends on LIB_MIC
+        help
+            Enable shell commands for magnet module microphone

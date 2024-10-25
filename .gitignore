@@ -34,4 +34,3 @@ __pycache__
 .venv/
 build/
 **/cmake-build-debug/
-

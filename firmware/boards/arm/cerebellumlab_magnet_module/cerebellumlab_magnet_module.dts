@@ -52,7 +52,7 @@
 		output-gpios = <&gpioc 14 GPIO_ACTIVE_HIGH>, // GPIO0 (input or output?)
 					   <&gpioc 15 GPIO_ACTIVE_HIGH>; // GPIO1 (input or output?)
 		output-gpio-names = "CONT0",
-					 		"CONT1";
+							"CONT1";
 	};
 
 	pressure_sensor: pressure_sensor {
@@ -62,10 +62,28 @@
 		sample-rate = <1000>;
 	};
 
+	i2s3: i2s@40003c00 {		// Address per datasheet, pg 86
+		compatible = "st,stm32-i2s";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x40003c00 0x400>; 	// Address and size per datasheet, pg 86
+		clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00008000>,
+			 <&rcc STM32_SRC_PLL_Q I2S23_SEL(0)>;
+		dmas = <&dmamux1 2 15 (STM32_DMA_PERIPH_TX | STM32_DMA_PRIORITY_HIGH)>,
+			<&dmamux1 3 14 (STM32_DMA_PERIPH_RX | STM32_DMA_PRIORITY_HIGH)>;
+		dma-names = "tx", "rx";
+		interrupt-parent = <&nvic>;
+		interrupts = <51 0>;
+		pinctrl-0 = <&i2s3_ck_pc10 &i2s3_sd_pc12 &i2s3_ws_pa4>;
+		pinctrl-names = "default";
+		status = "okay";
+	};
+
 	aliases {
 		led0 = &status_led;
 		mcuboot-led0 = &status_led;
 		watchdog0 = &iwdg;
+		i2s-mic = &i2s3;
 	};
 };
 
