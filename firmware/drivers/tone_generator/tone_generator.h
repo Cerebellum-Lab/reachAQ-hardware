@@ -1,8 +1,8 @@
 #pragma once
 #include <zephyr/device.h>
 
-/* Can technically go up to ~50kHz, but limiting to highest required frequency */
-#define MAX_FREQUENCY 20000
+#define TONE_GENERATOR_MIN_FREQUENCY 1
+#define TONE_GENERATOR_MAX_FREQUENCY 25500
 
 /**
  * Generates a tone with the given frequency and duration on the provided tone generator.

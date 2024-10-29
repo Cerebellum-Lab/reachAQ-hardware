@@ -83,17 +83,13 @@
 
 	tone_generator {
 		compatible = "ll,tone-generator";
+		status = "okay";
 
 		sample-rate-timer = <&timers2>;
-
 		dac = <&dac1>;
-
 		dac-channel = <1>;
-
 		dmas = <&dmamux1 6 6 STM32_DMA_PRIORITY_HIGH>;
 		dma-names = "tx";
-
-		status = "okay";
 	};
 
 	analog_status: analog_status {
@@ -383,23 +379,6 @@
 	pinctrl-0 = <&fdcan3_rx_pb3 &fdcan3_tx_pb4>;
 	pinctrl-names = "default";
 	status = "okay";
-};
-
-/ {
-	tone_generator {
-		compatible = "ll,tone-generator";
-
-		sample-rate-timer = <&timers2>;
-
-		dac = <&dac1>;
-
-		dac-channel = <1>;
-
-		dmas = <&dmamux1 6 6 STM32_DMA_PRIORITY_HIGH>;
-		dma-names = "tx";
-
-		status = "okay";
-	};
 };
 
 &vref {

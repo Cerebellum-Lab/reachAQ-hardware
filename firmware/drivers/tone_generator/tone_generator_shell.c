@@ -22,15 +22,16 @@ static int cmd_tone_generator_play_tone(const struct shell *shell, size_t argc, 
         return -EINVAL;
     }
 
-    /* Ensure that the frequency is between 1Hz and MAX_FREQUENCY Hz */
-    if (frequency < 1 || frequency > MAX_FREQUENCY) {
-        shell_print(shell, "Invalid frequency; expected [1...%d]", MAX_FREQUENCY);
+    /* Ensure that the frequency is between TONE_GENERATOR_MIN_FREQUENCY and TONE_GENERATOR_MAX_FREQUENCY */
+    if (frequency < TONE_GENERATOR_MIN_FREQUENCY || frequency > TONE_GENERATOR_MAX_FREQUENCY) {
+        shell_print(shell, "Invalid frequency <%d> - expected [%d...%d]", frequency, TONE_GENERATOR_MIN_FREQUENCY,
+                    TONE_GENERATOR_MAX_FREQUENCY);
         return -EINVAL;
     }
 
     /* Ensure that the duration is valid */
     if (duration_ms < 1) {
-        shell_print(shell, "Invalid duration; expected [1...4,294,967,295]");
+        shell_print(shell, "Invalid duration; expected [1...%ld]", __UINT32_MAX__);
         return -EINVAL;
     }
 
