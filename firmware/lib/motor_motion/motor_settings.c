@@ -29,6 +29,7 @@ LOG_MODULE_REGISTER(motor_settings);
 #define MIN_STEP_KEY "s_min"
 #define STEPS_PER_REVOLUTION_KEY "s_rev"
 
+#if CONFIG_DT_HAS_LL_SERVO_ENABLED
 /* ***** Settings Handler ***** */
 static int servo_settings_set(const char *key, size_t len, settings_read_cb read_cb, void *cb_arg,
                               struct servo_work_context *context) {
@@ -246,7 +247,9 @@ DT_FOREACH_OKAY_INST_ll_servo(DEFINE_SERVO_DEVICE_SETTINGS_FUNCTION);
 DT_FOREACH_OKAY_INST_ll_servo(DEFINE_SERVO_DEVICE_SETTINGS_EXPORT_FUNCTION);
 
 DT_FOREACH_OKAY_INST_ll_servo(DEFINE_SERVO_DEVICE_SETTINGS_HANDLERS);
+#endif
 
+#if CONFIG_DT_HAS_LL_STEPPER_ENABLED
 static int stepper_settings_set(const char *key, size_t len, settings_read_cb read_cb, void *cb_arg,
                                 struct stepper_work_context *context) {
     if (strncmp(key, MAX_VELOCITY_KEY, sizeof(MAX_VELOCITY_KEY) - 1) == 0) {
@@ -400,3 +403,4 @@ DT_FOREACH_OKAY_INST_ll_stepper(DEFINE_STEPPER_DEVICE_SETTINGS_FUNCTION);
 DT_FOREACH_OKAY_INST_ll_stepper(DEFINE_STEPPER_DEVICE_SETTINGS_EXPORT_FUNCTION);
 
 DT_FOREACH_OKAY_INST_ll_stepper(DEFINE_STEPPER_DEVICE_SETTINGS_HANDLERS);
+#endif
