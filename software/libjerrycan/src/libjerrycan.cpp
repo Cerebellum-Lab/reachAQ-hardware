@@ -63,13 +63,84 @@ int JerryCAN::Close() {
     return 0;
 }
 
+// Return the payload size for a given message type
+static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
+    switch (msg_type) {
+        case JERRYCAN_CMD_ESTOP:
+            return sizeof(jerrycan_cmd_estop_t);
+        case JERRYCAN_CMD_HEARTBEAT:
+            return sizeof(jerrycan_cmd_heartbeat_t);
+        case JERRYCAN_CMD_STATUS:
+            return sizeof(jerrycan_cmd_status_t);
+        case JERRYCAN_CMD_STEPPER_MOVE:
+            return sizeof(jerrycan_cmd_stepper_move_t);
+        case JERRYCAN_CMD_SERVO_MOVE:
+            return sizeof(jerrycan_cmd_servo_move_t);
+        // FIXME: Needs to be implemented
+        // case JERRYCAN_CMD_STEPPER_HOME:
+        //    return sizeof(jerrycan_cmd_stepper_home_t);
+        case JERRYCAN_CMD_CFG_WRITE:
+            return sizeof(jerrycan_cmd_cfg_t);
+        case JERRYCAN_CMD_CFG_RESPONSE:
+            return sizeof(jerrycan_cmd_cfg_t);
+        case JERRYCAN_CMD_CFG_READ:
+            return sizeof(jerrycan_cmd_cfg_t);
+        case JERRYCAN_CMD_PRESSURE_READ:
+            return sizeof(jerrycan_cmd_pressure_read_t);
+        case JERRYCAN_CMD_TEMP_HUM_READ:
+            return sizeof(jerrycan_cmd_temp_hum_read_t);
+        case JERRYCAN_CMD_GPIO_READ:
+            return sizeof(jerrycan_cmd_gpio_read_t);
+        case JERRYCAN_CMD_GPIO_WRITE:
+            return sizeof(jerrycan_cmd_gpio_write_t);
+        case JERRYCAN_CMD_TONE:
+            return sizeof(jerrycan_cmd_tone_t);
+        case JERRYCAN_CMD_ANALOG_OUT:
+            return sizeof(jerrycan_cmd_analog_out_t);
+        case JERRYCAN_CMD_LOAD_CELL_READ:
+            return sizeof(jerrycan_cmd_load_cell_read_t);
+        default:
+            return 0;
+    }
+}
+
+// Convert from number of bytes to Data Length Code (DLC)
+static inline uint8_t can_bytes_to_dlc(uint8_t num_bytes) {
+    return num_bytes <= 8    ? num_bytes
+           : num_bytes <= 12 ? 9
+           : num_bytes <= 16 ? 10
+           : num_bytes <= 20 ? 11
+           : num_bytes <= 24 ? 12
+           : num_bytes <= 32 ? 13
+           : num_bytes <= 48 ? 14
+                             : 15;
+}
+
+// Convert from Data Length Code (DLC) to the number of data bytes
+static inline uint8_t can_dlc_to_bytes(uint8_t dlc) {
+    static const uint8_t dlc_table[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64};
+    static const uint8_t dlc_table_len = (sizeof(dlc_table) / sizeof(dlc_table[0])) - 1;
+
+    if (dlc < dlc_table_len) {
+        return dlc_table[dlc];
+    } else {
+        return dlc_table[dlc_table_len];
+    }
+}
+
 int JerryCAN::SendMessage(jerrycan_msg_t &msg, uint16_t dst_id) {
     // Send the message
     struct can_frame frame = {0};
+    uint8_t payload_size = jerrycan_msg_get_payload_size(msg.type);
     frame.can_id = ((msg.type & 0x3F) << 5) | (dst_id & 0x1F);
-    frame.can_dlc = sizeof(msg.payload);
+    frame.can_dlc = can_bytes_to_dlc(payload_size);
 
-    memcpy(frame.data, msg.payload, sizeof(msg.payload));
+    memcpy(frame.data, msg.payload, payload_size);
+
+    // For payload sizes > 8, DLC no longer maps 1:1 to the number of bytes in the payload
+    // If the actual payload size is less than the number of bytes indicated by DLC, pad the rest with 0
+    uint8_t dlc_bytes = can_dlc_to_bytes(frame.can_dlc);
+    memset(&frame.data[payload_size], 0, dlc_bytes - payload_size);
 
     auto ret = write(_can_socket_handle, &frame, sizeof(frame));
     if (ret < 0) {
@@ -93,7 +164,8 @@ int JerryCAN::ReceiveMessage(jerrycan_msg_t &msg) {
 
     msg.type = static_cast<jerrycan_cmd_type_t>((frame.can_id >> 5) & 0x3F);
     msg.dst_id = frame.can_id & 0x1F;
-    memcpy(msg.payload, frame.data, sizeof(msg.payload));
+    uint8_t msg_len = jerrycan_msg_get_payload_size(msg.type);
+    memcpy(msg.payload, frame.data, msg_len);
 
     return 0;
 }

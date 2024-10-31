@@ -12,6 +12,8 @@ extern "C" {
 typedef void* sys_snode_t;
 #endif
 
+#define JERRYCAN_MAX_PAYLOAD_SIZE 64
+
 typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_ESTOP = 0x00,
     JERRYCAN_CMD_HEARTBEAT = 0x3F,
@@ -29,6 +31,8 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_TONE = 0X0C,
     JERRYCAN_CMD_ANALOG_OUT = 0X0D,
     JERRYCAN_CMD_LOAD_CELL_READ = 0x0E,
+    JERRYCAN_CMD_MIN = 0x00,
+    JERRYCAN_CMD_MAX = 0x3F,
 } jerrycan_cmd_type_t;
 
 typedef struct __attribute__((packed)) {
@@ -206,11 +210,12 @@ typedef struct __attribute__((packed)) {
         jerrycan_cmd_tone_t tone;
         jerrycan_cmd_analog_out_t analog_out;
         jerrycan_cmd_load_cell_read_t load_cell_read;
-        uint8_t payload[8];
+        uint8_t payload[JERRYCAN_MAX_PAYLOAD_SIZE];
     };
 } jerrycan_msg_t;
 
-BUILD_ASSERT(sizeof(jerrycan_msg_t) == 10, "jerrycan_msg_t should be 10 bytes");
+BUILD_ASSERT(sizeof(jerrycan_msg_t) == JERRYCAN_MAX_PAYLOAD_SIZE + sizeof(jerrycan_cmd_type_t) + sizeof(uint8_t),
+             "jerrycan_msg_t size should be max payload size + header fields size");
 
 typedef void (*jerrycan_rx_callback_fn_t)(jerrycan_msg_t* msg);
 

@@ -38,6 +38,35 @@ static uint8_t get_can_node_id() {
     return ((node_id << 2) | device_type) & NODE_ID_MASK;
 }
 
+// Return the payload size for a given message type
+static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
+    static const uint8_t jerrycan_size_map[] = {
+        [JERRYCAN_CMD_ESTOP] = sizeof(jerrycan_cmd_estop_t),
+        [JERRYCAN_CMD_HEARTBEAT] = sizeof(jerrycan_cmd_heartbeat_t),
+        [JERRYCAN_CMD_STATUS] = sizeof(jerrycan_cmd_status_t),
+        [JERRYCAN_CMD_STEPPER_MOVE] = sizeof(jerrycan_cmd_stepper_move_t),
+        [JERRYCAN_CMD_SERVO_MOVE] = sizeof(jerrycan_cmd_servo_move_t),
+        // FIXME: Needs to be implemented
+        //[JERRYCAN_CMD_STEPPER_HOME] = sizeof(jerrycan_cmd_stepper_home_t),
+        [JERRYCAN_CMD_CFG_WRITE] = sizeof(jerrycan_cmd_cfg_t),
+        [JERRYCAN_CMD_CFG_RESPONSE] = sizeof(jerrycan_cmd_cfg_t),
+        [JERRYCAN_CMD_CFG_READ] = sizeof(jerrycan_cmd_cfg_t),
+        [JERRYCAN_CMD_PRESSURE_READ] = sizeof(jerrycan_cmd_pressure_read_t),
+        [JERRYCAN_CMD_TEMP_HUM_READ] = sizeof(jerrycan_cmd_temp_hum_read_t),
+        [JERRYCAN_CMD_GPIO_READ] = sizeof(jerrycan_cmd_gpio_read_t),
+        [JERRYCAN_CMD_GPIO_WRITE] = sizeof(jerrycan_cmd_gpio_write_t),
+        [JERRYCAN_CMD_TONE] = sizeof(jerrycan_cmd_tone_t),
+        [JERRYCAN_CMD_ANALOG_OUT] = sizeof(jerrycan_cmd_analog_out_t),
+        [JERRYCAN_CMD_LOAD_CELL_READ] = sizeof(jerrycan_cmd_load_cell_read_t),
+    };
+
+    if (msg_type > JERRYCAN_CMD_MAX || msg_type < JERRYCAN_CMD_MIN) {
+        return 0;
+    }
+
+    return jerrycan_size_map[msg_type];
+}
+
 // Add a jerrycan message to the TX queue- these messages will be processed by the main jerrycan_run() loop
 // This allows any thread or interrupt to generate an outgoing CAN message which will then be handled by the main task
 int jerrycan_tx(jerrycan_msg_t *msg, k_timeout_t timeout) {
@@ -75,10 +104,21 @@ int jerrycan_run(k_timeout_t timeout) {
     // TX processing
     if (events[0].state == K_POLL_STATE_MSGQ_DATA_AVAILABLE) {
         while (k_msgq_get(&jerrycan_tx_msgq, &msg, K_NO_WAIT) == 0) {
+            uint8_t payload_size = jerrycan_msg_get_payload_size(msg.type);
             frame.id = can_id(msg.type);
-            frame.dlc = sizeof(msg.payload);
+            frame.dlc = can_bytes_to_dlc(payload_size);
 
-            memcpy(frame.data, msg.payload, sizeof(msg.payload));
+            // Enable CAN FD frames and Bit Rate Switching
+            frame.flags = CAN_FRAME_FDF | CAN_FRAME_BRS;
+
+            // Copy the payload into the CAN frame
+            memcpy(frame.data, msg.payload, payload_size);
+
+            // For payload sizes > 8, DLC no longer maps 1:1 to the number of bytes in the payload
+            // If the actual payload size is less than the number of bytes indicated by DLC, pad the rest with 0
+            uint8_t dlc_bytes = can_dlc_to_bytes(frame.dlc);
+            memset(&frame.data[payload_size], 0, dlc_bytes - payload_size);
+
             ret = can_send(can_dev, &frame, K_FOREVER, NULL, NULL);
             if (ret != 0) {
                 LOG_ERR("Failed to send CAN frame: %d", ret);
@@ -90,8 +130,7 @@ int jerrycan_run(k_timeout_t timeout) {
     if (events[1].state == K_POLL_STATE_MSGQ_DATA_AVAILABLE) {
         while (k_msgq_get(&jerrycan_rx_msgq, &frame, K_NO_WAIT) == 0) {
             msg.type = frame.id >> 5;
-            uint8_t msg_len = MIN(frame.dlc, sizeof(msg.payload));
-            memset(msg.payload, 0, sizeof(msg.payload));
+            uint8_t msg_len = jerrycan_msg_get_payload_size(msg.type);
             memcpy(msg.payload, frame.data, msg_len);
 
             sys_snode_t *snode;
@@ -129,6 +168,12 @@ static int jerrycan_init() {
     if (!device_is_ready(can_dev)) {
         LOG_ERR("CAN device not ready");
         return -ENODEV;
+    }
+
+    ret = can_set_mode(can_dev, CAN_MODE_FD);
+    if (ret < 0) {
+        LOG_ERR("Failed to set CAN bus to FD Mode");
+        return ret;
     }
 
     // Set up the arbitration-phase bitrate for the CAN device to be 1 Mbps
