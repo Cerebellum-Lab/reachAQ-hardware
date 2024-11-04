@@ -192,8 +192,8 @@ int JerryCAN::EStop(bool enable) {
     return SendMessage(msg, 0x1F);
 }
 
-int JerryCAN::StepperMove(uint8_t dst_id, uint8_t stepper_id, uint16_t position, uint16_t max_velocity,
-                          uint16_t max_acceleration, bool abs_or_rel) {
+int JerryCAN::StepperMove(uint8_t dst_id, uint8_t stepper_id, int16_t position, uint16_t max_velocity,
+                          uint16_t max_acceleration, abs_or_rel_t abs_or_rel) {
     // Send a stepper move message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_STEPPER_MOVE,
@@ -210,8 +210,8 @@ int JerryCAN::StepperMove(uint8_t dst_id, uint8_t stepper_id, uint16_t position,
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::ServoMove(uint8_t dst_id, uint8_t servo_id, uint16_t position, uint16_t max_velocity,
-                        uint16_t max_acceleration, bool abs_or_rel) {
+int JerryCAN::ServoMove(uint8_t dst_id, uint8_t servo_id, int16_t position, uint16_t max_velocity,
+                        uint16_t max_acceleration, abs_or_rel_t abs_or_rel) {
     // Send a servo move message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_SERVO_MOVE,

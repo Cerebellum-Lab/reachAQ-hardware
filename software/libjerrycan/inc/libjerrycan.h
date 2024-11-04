@@ -16,11 +16,11 @@ class JerryCAN {
 
     int EStop(bool enable);
 
-    int StepperMove(uint8_t dst_id, uint8_t stepper_id, uint16_t position, uint16_t max_velocity,
-                    uint16_t max_acceleration, bool abs_or_rel);
+    int StepperMove(uint8_t dst_id, uint8_t stepper_id, int16_t position, uint16_t max_velocity,
+                    uint16_t max_acceleration, abs_or_rel_t abs_or_rel);
 
-    int ServoMove(uint8_t dst_id, uint8_t servo_id, uint16_t position, uint16_t max_velocity, uint16_t max_acceleration,
-                  bool abs_or_rel);
+    int ServoMove(uint8_t dst_id, uint8_t servo_id, int16_t position, uint16_t max_velocity, uint16_t max_acceleration,
+                  abs_or_rel_t abs_or_rel);
 
     int StepperHome(uint8_t dst_id, uint8_t stepper_id);
 

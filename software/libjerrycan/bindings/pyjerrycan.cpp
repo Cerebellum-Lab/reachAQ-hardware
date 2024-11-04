@@ -107,7 +107,6 @@ PYBIND11_MODULE(pyjerrycan, m) {
             [](const jerrycan_servo_cfg_t &a) { return a.motor_id; },
             [](jerrycan_servo_cfg_t &a, uint8_t v) { a.motor_id = v; })
         .def_readwrite("min_position", &jerrycan_servo_cfg_t::min_position)
-        .def_readwrite("mid_position", &jerrycan_servo_cfg_t::mid_position)
         .def_readwrite("max_position", &jerrycan_servo_cfg_t::max_position)
     ;
 
@@ -116,8 +115,8 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_property("motor_id",
             [](const jerrycan_stepper_cfg_t &a) { return a.motor_id; },
             [](jerrycan_stepper_cfg_t &a, uint8_t v) { a.motor_id = v; })
-        .def_readwrite("min_position", &jerrycan_stepper_cfg_t::min_position)
-        .def_readwrite("max_position", &jerrycan_stepper_cfg_t::max_position)
+        .def_readwrite("min_step_inverse", &jerrycan_stepper_cfg_t::min_step_inverse)
+        .def_readwrite("steps_per_revolution", &jerrycan_stepper_cfg_t::steps_per_revolution)
     ;
 
     py::class_<jerrycan_cmd_pressure_read_t>(m, "PressureRead")
