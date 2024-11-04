@@ -92,6 +92,41 @@ typedef union read_reply_datagram {
 BUILD_ASSERT(sizeof(struct read_reply_datagram_fields) == sizeof(read_reply_datagram_t));
 BUILD_ASSERT(sizeof(read_reply_datagram_t) == 8U);
 
+/* Register addresses and contents tables */
+/* Bytes are sent MSB first (so the bytes look backwards from the datasheet, but the bits are in the right order) */
+
+#define REG_GCONF 0x00U
+struct __attribute__((packed)) GCONF_data_fields {
+    uint8_t : 8;
+    uint8_t : 8;
+
+    uint8_t multistep_filt : 1;
+    uint8_t test_mode_DO_NOT_USE : 1;
+    uint8_t : 6;
+
+    uint8_t i_scale_analog : 1;
+    uint8_t internal_Rsense : 1;
+    uint8_t en_spreadcycle : 1;
+    uint8_t shaft : 1;
+    uint8_t index_otpw : 1;
+    uint8_t index_step : 1;
+    uint8_t pdn_disable : 1;
+    uint8_t mstep_reg_select : 1;
+};
+
+#define REG_IHOLD_IRUN 0x10U
+struct __attribute__((packed)) IHOLD_IRUN_data_fields {
+    uint8_t : 8;
+    uint8_t iholddelay : 4;  // 0 = instant power down, 1..15 = n * 2^18 clocks
+    uint8_t : 4;
+    uint8_t irun : 5;  // 0 = 1/32 ... 31 = 32/32
+    uint8_t : 3;
+    uint8_t ihold : 5;  // 0 = 1/32 ... 31 = 32/32
+    uint8_t : 3;
+};
+
+BUILD_ASSERT(sizeof(struct IHOLD_IRUN_data_fields) == 4U);
+
 /**
  * @returns crc of `data[0 : size]` (Polynomial is x^8 + x^2 + x + 1.)
  */
@@ -241,6 +276,8 @@ static int adi_tmc2209_write(const struct device *dev, const uint8_t reg_address
 
     store_crc(datagram.raw, sizeof(datagram.raw));
 
+    LOG_INF("data: %02X %02X %02X %02X", data[0], data[1], data[2], data[3]);
+
     write_single_line_uart_and_flush_read(dev, datagram.raw, sizeof(datagram.raw));
 
     return 0;
@@ -300,7 +337,57 @@ static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address,
     return 0;
 }
 
-static int adi_tmc2209_init(const struct device *dev) { return 0; }
+int adi_tmc2209_set_ihold_irun(const struct device *dev, const uint8_t hold_current, const uint8_t run_current,
+                               const uint8_t hold_delay) {
+    if (hold_current > 32 || hold_current < 1 || run_current > 32 || run_current < 1 || hold_delay > 15) {
+        LOG_ERR("Invalid arguments for setting IHOLD_IRUN register.");
+        return -EINVAL;
+    }
+
+    struct IHOLD_IRUN_data_fields data = {
+        .ihold = hold_current - 1,
+        .irun = run_current - 1,
+        .iholddelay = hold_delay,
+    };
+
+    return adi_tmc2209_write(dev, REG_IHOLD_IRUN, (unsigned char *)&data);
+}
+
+static int adi_tmc2209_init(const struct device *dev) {
+    const int default_hold_current = 4;
+    const int default_run_current = 6;
+    const int default_hold_delay = 0;  // Set the delay to the minimum to save power.
+
+    struct GCONF_data_fields gconf_data = {0};
+    int ret = adi_tmc2209_read(dev, REG_GCONF, (unsigned char *)&gconf_data);
+
+    if (ret < 0) {
+        LOG_WRN("Couldn't read GCONF. Setting defaults.");
+        memset(&gconf_data, 0, sizeof(gconf_data));  // There may be garbage in the struct.
+    }
+
+    if (gconf_data.test_mode_DO_NOT_USE) {
+        LOG_ERR("Test mode is enabled on the chip. This is not supported.");
+        return -ENOTSUP;
+    }
+
+    gconf_data.i_scale_analog = 0;   // Use internal voltage reference. VREF is disconnected on the board.
+    gconf_data.internal_Rsense = 0;  // External sense resistors are connected.
+    gconf_data.en_spreadcycle = 0;   // We are using StealthChop
+    gconf_data.shaft = 0;            // Do not invert the direction of the motor.
+    // Don't set or unset index_otpw or index_step. The INDEX register is not read in this driver.
+    gconf_data.pdn_disable = 1;       // Using UART so set this per datasheet.
+    gconf_data.mstep_reg_select = 1;  // MS1 and MS2 are not connected so use UART registers.
+    gconf_data.multistep_filt = 1;    // Enable the filter for the multistep pulse. (Done by default.)
+    ret = adi_tmc2209_write(dev, REG_GCONF, (unsigned char *)&gconf_data);
+
+    if (ret < 0) {
+        LOG_ERR("Couldn't write GCONF. Defaults may be wrong!");
+    }
+
+    ret = adi_tmc2209_set_ihold_irun(dev, default_hold_current, default_run_current, default_hold_delay);
+    return ret;
+}
 
 static struct adi_tmc2209_driver_api adi_tmc2209_driver_api = {
     .write = adi_tmc2209_write,
