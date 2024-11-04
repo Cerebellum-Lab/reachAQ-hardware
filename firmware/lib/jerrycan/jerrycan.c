@@ -66,6 +66,9 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
         [JERRYCAN_CMD_PRESSURE_SENSOR_TARE] = sizeof(jerrycan_cmd_pressure_sensor_tare_t),
         [JERRYCAN_CMD_RGB_LED] = sizeof(jerrycan_cmd_rgb_led_t),
         [JERRYCAN_CMD_DOOR_SENSOR] = sizeof(jerrycan_cmd_door_closed_t),
+        [JERRYCAN_CMD_BOOTLOADER_COMMAND] = sizeof(jerrycan_cmd_bootloader_command_t),
+        [JERRYCAN_CMD_BOOTLOADER_RESPONSE] = sizeof(jerrycan_cmd_bootloader_response_t),
+        [JERRYCAN_CMD_BOOTLOADER_DATA] = sizeof(jerrycan_cmd_bootloader_data_t),
     };
 
     if (msg_type > JERRYCAN_CMD_MAX || msg_type < JERRYCAN_CMD_MIN) {

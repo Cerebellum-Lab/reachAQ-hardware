@@ -49,6 +49,10 @@ class JerryCAN {
 
     int RGBLEDWrite(uint8_t dst_id, uint8_t red, uint8_t green, uint8_t blue);
 
+    int BootloaderCommand(uint8_t dst_id, jerrycan_bootloader_subcmd_t subcmd);
+
+    int BootloaderData(uint8_t dst_id, jerrycan_cmd_bootloader_data_t &data);
+
    private:
     int _can_socket_handle;
 };

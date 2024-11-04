@@ -66,3 +66,7 @@ zephyr_library_sources_ifdef(CONFIG_LIB_JERRYCAN_RGB_LED
 zephyr_library_sources_ifdef(CONFIG_LIB_JERRYCAN_SHELL
 	       jerrycan_shell.c
 )
+
+zephyr_library_sources_ifdef(CONFIG_BOOTLOADER_MCUBOOT
+        modules/bootloader.c
+)

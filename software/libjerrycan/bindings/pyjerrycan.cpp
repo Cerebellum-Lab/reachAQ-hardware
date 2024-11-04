@@ -34,6 +34,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def("LoadCellTare", &JerryCAN::LoadCellTare, py::arg("dst_id"), py::arg("instance"))
         .def("PressureSensorTare", &JerryCAN::PressureSensorTare, py::arg("dst_id"), py::arg("instance"))
         .def("RGBLEDWrite", &JerryCAN::RGBLEDWrite, py::arg("dst_id"), py::arg("red"), py::arg("green"), py::arg("blue"))
+        .def("BootloaderCommand", &JerryCAN::BootloaderCommand, py::arg("dst_id"), py::arg("subcmd"))
     ;
 
     py::class_<jerrycan_msg_t>(m, "JerryCANMsg")
@@ -64,6 +65,9 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("doors", &jerrycan_msg_t::doors)
         .def_readwrite("audio_data_cmd", &jerrycan_msg_t::audio_data_cmd)
         .def_readwrite("audio_data", &jerrycan_msg_t::audio_data)
+        .def_readwrite("bootloader_command", &jerrycan_msg_t::bootloader_command)
+        .def_readwrite("bootloader_response", &jerrycan_msg_t::bootloader_response)
+        .def_readwrite("bootloader_data", &jerrycan_msg_t::bootloader_data)
     ;
 
     py::class_<jerrycan_cmd_status_t>(m, "Status")
@@ -270,6 +274,46 @@ PYBIND11_MODULE(pyjerrycan, m) {
             [](jerrycan_cmd_audio_data_t &a, uint8_t v[JERRYCAN_MAX_PAYLOAD_SIZE]) { std::memcpy(a.payload, v, JERRYCAN_MAX_PAYLOAD_SIZE); })
     ;
 
+    py::class_<jerrycan_cmd_bootloader_command_t> bootloader_command(m, "JerryCANBootloaderCmd");
+    bootloader_command.def(py::init<>())
+        .def_readwrite("type", &jerrycan_cmd_bootloader_command_t::type)
+    ;
+
+    py::enum_<jerrycan_bootloader_subcmd_t>(bootloader_command, "SubCommand")
+        .value("VERSION", JERRYCAN_BOOTLOADER_SUBCMD_VERSION)
+        .value("START", JERRYCAN_BOOTLOADER_SUBCMD_START)
+        .value("END", JERRYCAN_BOOTLOADER_SUBCMD_END)
+        .value("REBOOT", JERRYCAN_BOOTLOADER_SUBCMD_REBOOT)
+        .value("FINALIZE", JERRYCAN_BOOTLOADER_SUBCMD_FINALIZE)
+        .value("ACK", JERRYCAN_BOOTLOADER_SUBCMD_ACK)
+        .value("NACK", JERRYCAN_BOOTLOADER_SUBCMD_NACK)
+        .export_values()
+    ;
+
+    py::class_<jerrycan_cmd_bootloader_response_t>(m, "BootloaderResponse")
+        .def(py::init<>())
+        .def_readwrite("type", &jerrycan_cmd_bootloader_response_t::type)
+        .def_readwrite("version", &jerrycan_cmd_bootloader_response_t::version)
+        .def_readwrite("status", &jerrycan_cmd_bootloader_response_t::status)
+    ;
+
+    py::class_<jerrycan_cmd_bootloader_version_t>(m, "BootloaderVersion")
+        .def(py::init<>())
+        .def_readwrite("running_major", &jerrycan_cmd_bootloader_version_t::running_version_major)
+        .def_readwrite("running_minor", &jerrycan_cmd_bootloader_version_t::running_version_minor)
+        .def_readwrite("running_patch", &jerrycan_cmd_bootloader_version_t::running_version_patch)
+        .def_readwrite("slot1_major", &jerrycan_cmd_bootloader_version_t::slot1_version_major)
+        .def_readwrite("slot1_minor", &jerrycan_cmd_bootloader_version_t::slot1_version_minor)
+        .def_readwrite("slot1_patch", &jerrycan_cmd_bootloader_version_t::slot1_version_patch)
+    ;
+
+    py::class_<jerrycan_cmd_bootloader_data_t>(m, "BootloaderData")
+        .def(py::init<>())
+        .def_property("data",
+            [](const jerrycan_cmd_bootloader_data_t &a) { return a.data; },
+            [](jerrycan_cmd_bootloader_data_t &a, uint8_t v[JERRYCAN_MAX_PAYLOAD_SIZE]) { std::memcpy(a.data, v, JERRYCAN_MAX_PAYLOAD_SIZE); })
+    ;
+
 
     py::enum_<jerrycan_cmd_type_t>(m, "JerryCANCmdType")
         .value("ESTOP", JERRYCAN_CMD_ESTOP)
@@ -297,6 +341,9 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .value("AUDIO_MAGNITUDE_DATA_BEGIN", JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_BEGIN)
         .value("AUDIO_MAGNITUDE_DATA_CONT", JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_CONT)
         .value("AUDIO_MAGNITUDE_DATA_END", JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_END)
+        .value("BOOTLOADER_COMMAND", JERRYCAN_CMD_BOOTLOADER_COMMAND)
+        .value("BOOTLOADER_RESPONSE", JERRYCAN_CMD_BOOTLOADER_RESPONSE)
+        .value("BOOTLOADER_DATA", JERRYCAN_CMD_BOOTLOADER_DATA)
         .export_values()
     ;
 }

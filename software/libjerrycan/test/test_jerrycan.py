@@ -1,7 +1,7 @@
 import pytest
 import time
 
-from pyjerrycan import JerryCAN, JerryCANMsg, JerryCANCmdType, JerryCANCfgMsg
+from pyjerrycan import JerryCAN, JerryCANMsg, JerryCANCmdType, JerryCANCfgMsg, JerryCANBootloaderCmd
 
 DESTINATION_NODE = 0x00
 
@@ -95,3 +95,21 @@ def test_cfg_write(jc):
     msg.servo.max_position = 180
 
     jc.CfgWrite(DESTINATION_NODE, msg)
+
+
+def test_bootloader_version(jc):
+    jc.BootloaderCommand(DESTINATION_NODE, JerryCANBootloaderCmd.VERSION)
+
+    # Wait for the next BootloaderResponse type to come back
+    while True:
+        msg = jc.ReceiveMessage()
+        if msg and msg.type == JerryCANCmdType.BOOTLOADER_RESPONSE and msg.dst_id == DESTINATION_NODE:
+            assert msg.bootloader_response.type == JerryCANBootloaderCmd.VERSION
+            print(msg.bootloader_response.version.running_major)
+            print(msg.bootloader_response.version.running_minor)
+            print(msg.bootloader_response.version.running_patch)
+            print(msg.bootloader_response.version.slot1_major)
+            print(msg.bootloader_response.version.slot1_minor)
+            print(msg.bootloader_response.version.slot1_patch)
+            break
+        time.sleep(0.001)

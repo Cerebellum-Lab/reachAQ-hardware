@@ -40,6 +40,9 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_PRESSURE_SENSOR_TARE = 0x15,
     JERRYCAN_CMD_STEPPER_STATUS = 0x16,
     JERRYCAN_CMD_SERVO_STATUS = 0x17,
+    JERRYCAN_CMD_BOOTLOADER_COMMAND = 0x18,
+    JERRYCAN_CMD_BOOTLOADER_RESPONSE = 0x19,
+    JERRYCAN_CMD_BOOTLOADER_DATA = 0x1A,
     JERRYCAN_CMD_MIN = 0x00,
     JERRYCAN_CMD_MAX = 0x3F,
 } jerrycan_cmd_type_t;
@@ -273,6 +276,56 @@ typedef struct __attribute__((packed)) {
 
 BUILD_ASSERT(sizeof(jerrycan_cmd_servo_status_t) == 6, "jerrycan_cmd_servo_status_t should be 6 bytes");
 
+typedef enum __attribute__((packed)) {
+    JERRYCAN_BOOTLOADER_SUBCMD_VERSION,
+    JERRYCAN_BOOTLOADER_SUBCMD_START,
+    JERRYCAN_BOOTLOADER_SUBCMD_END,
+    JERRYCAN_BOOTLOADER_SUBCMD_REBOOT,
+    JERRYCAN_BOOTLOADER_SUBCMD_FINALIZE,
+    JERRYCAN_BOOTLOADER_SUBCMD_ACK,
+    JERRYCAN_BOOTLOADER_SUBCMD_NACK,
+} jerrycan_bootloader_subcmd_t;
+
+typedef struct __attribute__((packed)) {
+    jerrycan_bootloader_subcmd_t type;
+} jerrycan_cmd_bootloader_command_t;
+
+typedef struct __attribute__((packed)) {
+        uint8_t running_version_major;
+        uint8_t running_version_minor;
+        uint8_t running_version_patch;
+        uint8_t slot1_version_major;
+        uint8_t slot1_version_minor;
+        uint8_t slot1_version_patch;
+} jerrycan_cmd_bootloader_version_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_bootloader_version_t) == 6, "jerrycan_cmd_bootloader_version_t should be 6 bytes");
+
+typedef struct __attribute__((packed)) {
+    uint8_t active : 1;
+    uint8_t : 7;
+    uint32_t bytes_written;
+} jerrycan_cmd_bootloader_status_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_bootloader_status_t) == 5, "jerrycan_cmd_bootloader_status_t should be 5 bytes");
+
+typedef struct __attribute__((packed)) {
+    jerrycan_bootloader_subcmd_t type;
+    union {
+        jerrycan_cmd_bootloader_version_t version;
+        jerrycan_cmd_bootloader_status_t status;
+    };
+} jerrycan_cmd_bootloader_response_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_bootloader_response_t) == 7, "jerrycan_cmd_bootloader_response_t should be 7 bytes");
+
+typedef struct {
+    uint8_t data[JERRYCAN_MAX_PAYLOAD_SIZE];
+} jerrycan_cmd_bootloader_data_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_bootloader_data_t) == JERRYCAN_MAX_PAYLOAD_SIZE,
+             "jerrycan_bootloader_data_t should be 64 bytes");
+
 typedef struct __attribute__((packed)) {
     jerrycan_cmd_type_t type;
     uint8_t dst_id;
@@ -301,6 +354,9 @@ typedef struct __attribute__((packed)) {
         jerrycan_cmd_rgb_led_t rgb_led;
         jerrycan_cmd_load_cell_tare_t load_cell_tare;
         jerrycan_cmd_pressure_sensor_tare_t pressure_sensor_tare;
+        jerrycan_cmd_bootloader_command_t bootloader_command;
+        jerrycan_cmd_bootloader_response_t bootloader_response;
+        jerrycan_cmd_bootloader_data_t bootloader_data;
         uint8_t payload[JERRYCAN_MAX_PAYLOAD_SIZE];
     };
 } jerrycan_msg_t;

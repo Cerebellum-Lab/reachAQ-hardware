@@ -1,0 +1,2 @@
+add_subdirectory(libjerrycan)
+add_subdirectory(jerrycan_updater)

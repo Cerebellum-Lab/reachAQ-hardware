@@ -120,6 +120,12 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
             return sizeof(jerrycan_cmd_audio_data_t);
         case JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_END:
             return sizeof(jerrycan_cmd_audio_data_cmd_t);
+        case JERRYCAN_CMD_BOOTLOADER_COMMAND:
+            return sizeof(jerrycan_cmd_bootloader_command_t);
+        case JERRYCAN_CMD_BOOTLOADER_RESPONSE:
+            return sizeof(jerrycan_cmd_bootloader_response_t);
+        case JERRYCAN_CMD_BOOTLOADER_DATA:
+            return sizeof(jerrycan_cmd_bootloader_data_t);
         default:
             return 0;
     }
@@ -414,6 +420,28 @@ int JerryCAN::RGBLEDWrite(uint8_t dst_id, uint8_t red, uint8_t green, uint8_t bl
                 .blue = blue,
             },
     };
+
+    return SendMessage(msg, dst_id);
+}
+
+int JerryCAN::BootloaderCommand(uint8_t dst_id, jerrycan_bootloader_subcmd_t subcmd) {
+    jerrycan_msg_t msg = {
+        .type = JERRYCAN_CMD_BOOTLOADER_COMMAND,
+        .bootloader_command =
+            {
+                .type = subcmd,
+            },
+    };
+
+    return SendMessage(msg, dst_id);
+}
+
+int JerryCAN::BootloaderData(uint8_t dst_id, jerrycan_cmd_bootloader_data_t &data) {
+    jerrycan_msg_t msg = {
+        .type = JERRYCAN_CMD_BOOTLOADER_DATA,
+    };
+
+    msg.bootloader_data = data;
 
     return SendMessage(msg, dst_id);
 }
