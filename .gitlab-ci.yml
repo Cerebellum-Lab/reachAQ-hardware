@@ -62,6 +62,20 @@ build_magnet_firmware:
     MODULE: magnet_module
     BOARD: cerebellumlab_magnet_module
 
+# Build pyjerrycan/libjerrycan
+build_libjerrycan:
+  image: registry.gitlab.leaflabs.com/cuanschutz/autotrainer/pybind11
+  stage: build
+  tags:
+    - linux
+  rules:
+    - changes:
+        - software/libjerrycan/**/*
+        - docker/pybind11/**/*
+  script:
+    - cd software/libjerrycan
+    - pip3 wheel .
+
 # Generate diffs for PCB projects
 .generate_hardware_diffs_template: &generate_hardware_diffs_template
   image:
