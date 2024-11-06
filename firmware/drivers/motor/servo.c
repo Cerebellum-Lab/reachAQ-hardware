@@ -107,7 +107,12 @@ int ll_servo_dma_stop(const struct device *dev) {
                 .channel_priority = STM32_DMA_CONFIG_PRIORITY(STM32_DMA_CHANNEL_CONFIG(idx, tx)),   \
                 .dma_callback = ll_motor_dma_tx_callback,                                           \
             },                                                                                      \
-        .limit_switch_cb = {0},                                                                     \
+        .limit_switch_cb =                                                                          \
+            {                                                                                       \
+                .node = {NULL},                                                                     \
+                .handler = NULL,                                                                    \
+                .pin_mask = 0,                                                                      \
+            },                                                                                      \
         .motor_device = NULL,                                                                       \
     };                                                                                              \
                                                                                                     \

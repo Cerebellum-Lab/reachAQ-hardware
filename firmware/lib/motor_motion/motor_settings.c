@@ -40,7 +40,7 @@ static int servo_settings_set(const char *key, size_t len, settings_read_cb read
             LOG_ERR("Failed to read max_velocity from settings: %d", ret);
             return ret;
         }
-        LOG_DBG("restored max_velocity: %f", max_velocity);
+        LOG_DBG("restored max_velocity: %f", (double)max_velocity);
         if (max_velocity > 0.0f) {
             context->context.motion_profile.v_max = max_velocity;
         }
@@ -51,7 +51,7 @@ static int servo_settings_set(const char *key, size_t len, settings_read_cb read
             LOG_ERR("Failed to read max_acceleration from settings: %d", ret);
             return ret;
         }
-        LOG_DBG("restored max_acceleration: %f", max_acceleration);
+        LOG_DBG("restored max_acceleration: %f", (double)max_acceleration);
         if (max_acceleration > 0.0f) {
             context->context.motion_profile.a_max = max_acceleration;
         }
@@ -62,7 +62,7 @@ static int servo_settings_set(const char *key, size_t len, settings_read_cb read
             LOG_ERR("Failed to read last_position from settings: %d", ret);
             return ret;
         }
-        LOG_DBG("restored last_position: %u", last_position);
+        LOG_DBG("restored last_position: %f", (double)last_position);
         context->context.last_position_generated = last_position;
     } else if (strncmp(key, MIN_ANGLE_KEY, sizeof(MIN_ANGLE_KEY) - 1) == 0) {
         float min_angle;
@@ -71,7 +71,7 @@ static int servo_settings_set(const char *key, size_t len, settings_read_cb read
             LOG_ERR("Failed to read min_angle from settings: %d", ret);
             return ret;
         }
-        LOG_DBG("restored min_angle: %f", min_angle);
+        LOG_DBG("restored min_angle: %f", (double)min_angle);
         context->context.min_angle = min_angle;
     } else if (strncmp(key, MAX_ANGLE_KEY, sizeof(MAX_ANGLE_KEY) - 1) == 0) {
         float max_angle;
@@ -80,7 +80,7 @@ static int servo_settings_set(const char *key, size_t len, settings_read_cb read
             LOG_ERR("Failed to read max_angle from settings: %d", ret);
             return ret;
         }
-        LOG_DBG("restored max_angle: %f", max_angle);
+        LOG_DBG("restored max_angle: %f", (double)max_angle);
         context->context.max_angle = max_angle;
     } else if (strncmp(key, ANGLE_ADJUSTMENT_KEY, sizeof(ANGLE_ADJUSTMENT_KEY) - 1) == 0) {
         float angle_adjustment;
@@ -89,7 +89,7 @@ static int servo_settings_set(const char *key, size_t len, settings_read_cb read
             LOG_ERR("Failed to read angle_adjustment from settings: %d", ret);
             return ret;
         }
-        LOG_DBG("Restored angle_adjustment: %f", angle_adjustment);
+        LOG_DBG("Restored angle_adjustment: %f", (double)angle_adjustment);
         if (angle_adjustment > 0.0f) {
             context->context.angle_adjustment = angle_adjustment;
         }
@@ -100,7 +100,7 @@ static int servo_settings_set(const char *key, size_t len, settings_read_cb read
             LOG_ERR("Failed to read min_angle_pwm from settings: %d", ret);
             return ret;
         }
-        LOG_DBG("restored min_angle_pwm: %f", pwm_min_angle);
+        LOG_DBG("restored min_angle_pwm: %f", (double)pwm_min_angle);
         if (pwm_min_angle > 0.0f) {
             context->context.min_angle_pwm = pwm_min_angle;
         }
@@ -111,7 +111,7 @@ static int servo_settings_set(const char *key, size_t len, settings_read_cb read
             LOG_ERR("Failed to read max_angle_pwm from settings: %d", ret);
             return ret;
         }
-        LOG_DBG("restored max_angle_pwm: %u", pwm_max_angle);
+        LOG_DBG("restored max_angle_pwm: %f", (double)pwm_max_angle);
         if (pwm_max_angle > 0.0f) {
             context->context.max_angle_pwm = pwm_max_angle;
         }
@@ -155,7 +155,7 @@ int servo_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write max_velocity to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved max_velocity: %f", context->context.motion_profile.v_max);
+    LOG_DBG("Saved max_velocity: %f", (double)context->context.motion_profile.v_max);
 
     static char max_acceleration_key[] = GENERATE_SERVO_TEMPLATE(MAX_ACCELERATION_KEY);
     max_acceleration_key[id_number_index] = itoa(dt_id);
@@ -165,7 +165,7 @@ int servo_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write max_acceleration to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved max_acceleration: %f", context->context.motion_profile.a_max);
+    LOG_DBG("Saved max_acceleration: %f", (double)context->context.motion_profile.a_max);
 
     static char last_position_key[] = GENERATE_SERVO_TEMPLATE(LAST_POSITION_KEY);
     last_position_key[id_number_index] = itoa(dt_id);
@@ -175,7 +175,7 @@ int servo_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write last_position_generated to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved last_position_generated: %f", context->context.last_position_generated);
+    LOG_DBG("Saved last_position_generated: %f", (double)context->context.last_position_generated);
 
     static char min_angle_key[] = GENERATE_SERVO_TEMPLATE(MIN_ANGLE_KEY);
     min_angle_key[id_number_index] = itoa(dt_id);
@@ -184,7 +184,7 @@ int servo_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write min_angle to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved min_angle: %f", context->context.min_angle);
+    LOG_DBG("Saved min_angle: %f", (double)context->context.min_angle);
 
     static char max_angle_key[] = GENERATE_SERVO_TEMPLATE(MAX_ANGLE_KEY);
     max_angle_key[id_number_index] = itoa(dt_id);
@@ -193,7 +193,7 @@ int servo_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write max_angle to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved max_angle: %f", context->context.max_angle);
+    LOG_DBG("Saved max_angle: %f", (double)context->context.max_angle);
 
     static char angle_adjustment_key[] = GENERATE_SERVO_TEMPLATE(ANGLE_ADJUSTMENT_KEY);
     angle_adjustment_key[id_number_index] = itoa(dt_id);
@@ -203,7 +203,7 @@ int servo_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write angle_adjustment to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved angle_adjustment: %f", context->context.angle_adjustment);
+    LOG_DBG("Saved angle_adjustment: %f", (double)context->context.angle_adjustment);
 
     static char max_angle_pwm_key[] = GENERATE_SERVO_TEMPLATE(SERVO_MAX_ANGLE_PWM_KEY);
     max_angle_pwm_key[id_number_index] = itoa(dt_id);
@@ -212,7 +212,7 @@ int servo_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write max_angle_pwm to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved max_angle_pwm: %f", context->context.max_angle_pwm);
+    LOG_DBG("Saved max_angle_pwm: %f", (double)context->context.max_angle_pwm);
 
     static char servo_offset_key[] = GENERATE_SERVO_TEMPLATE(SERVO_MIN_ANGLE_PWM_KEY);
     servo_offset_key[id_number_index] = itoa(dt_id);
@@ -221,7 +221,7 @@ int servo_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write min_angle_pwm to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved min_angle_pwm: %f", context->context.min_angle_pwm);
+    LOG_DBG("Saved min_angle_pwm: %f", (double)context->context.min_angle_pwm);
 
     return 0;
 }
@@ -259,7 +259,7 @@ static int stepper_settings_set(const char *key, size_t len, settings_read_cb re
             LOG_ERR("Failed to read max_velocity from settings: %d", ret);
             return -EINVAL;
         }
-        LOG_DBG("restored max_velocity: %f", max_velocity);
+        LOG_DBG("restored max_velocity: %f", (double)max_velocity);
         if (max_velocity > 0.0f) {
             context->context.motion_profile.v_max = max_velocity;
         }
@@ -270,7 +270,7 @@ static int stepper_settings_set(const char *key, size_t len, settings_read_cb re
             LOG_ERR("Failed to read max_acceleration from settings: %d", ret);
             return -EINVAL;
         }
-        LOG_DBG("restored max_acceleration: %f", max_acceleration);
+        LOG_DBG("restored max_acceleration: %f", (double)max_acceleration);
         if (max_acceleration > 0.0f) {
             context->context.motion_profile.a_max = max_acceleration;
         }
@@ -281,7 +281,7 @@ static int stepper_settings_set(const char *key, size_t len, settings_read_cb re
             LOG_ERR("Failed to read last_position from settings: %d", ret);
             return -EINVAL;
         }
-        LOG_DBG("restored last_position: %f", last_position);
+        LOG_DBG("restored last_position: %f", (double)last_position);
         context->context.last_position_generated = last_position;
     } else if (strncmp(key, MIN_STEP_KEY, sizeof(MIN_STEP_KEY) - 1) == 0) {
         float min_step;
@@ -290,7 +290,7 @@ static int stepper_settings_set(const char *key, size_t len, settings_read_cb re
             LOG_ERR("Failed to read min_step from settings: %d", ret);
             return -EINVAL;
         }
-        LOG_DBG("restored min_step: %f", min_step);
+        LOG_DBG("restored min_step: %f", (double)min_step);
         if (min_step > 0.0f) {
             context->context.min_step = min_step;
         }
@@ -301,7 +301,7 @@ static int stepper_settings_set(const char *key, size_t len, settings_read_cb re
             LOG_ERR("Failed to read steps_per_revolution from settings: %d", ret);
             return -EINVAL;
         }
-        LOG_DBG("restored steps_per_revolution: %f", steps_per_revolution);
+        LOG_DBG("restored steps_per_revolution: %f", (double)steps_per_revolution);
         if (steps_per_revolution > 0.0f) {
             context->context.steps_per_revolution = steps_per_revolution;
         }
@@ -338,7 +338,7 @@ static int stepper_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write max_velocity to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved max_velocity: %f", context->context.motion_profile.v_max);
+    LOG_DBG("Saved max_velocity: %f", (double)context->context.motion_profile.v_max);
 
     static char max_acceleration_key[] = GENERATE_STEPPER_TEMPLATE(MAX_ACCELERATION_KEY);
     max_acceleration_key[id_number_index] = itoa(dt_id);
@@ -348,7 +348,7 @@ static int stepper_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write max_acceleration to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved max_acceleration: %f", context->context.motion_profile.a_max);
+    LOG_DBG("Saved max_acceleration: %f", (double)context->context.motion_profile.a_max);
 
     static char last_position_key[] = GENERATE_STEPPER_TEMPLATE(LAST_POSITION_KEY);
     last_position_key[id_number_index] = itoa(dt_id);
@@ -358,7 +358,7 @@ static int stepper_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write last_position to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved last_position: %f", context->context.last_position_generated);
+    LOG_DBG("Saved last_position: %f", (double)context->context.last_position_generated);
 
     static char min_step_key[] = GENERATE_STEPPER_TEMPLATE(MIN_STEP_KEY);
     min_step_key[id_number_index] = itoa(dt_id);
@@ -367,7 +367,7 @@ static int stepper_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write min_step to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved min_step: %f", context->context.min_step);
+    LOG_DBG("Saved min_step: %f", (double)context->context.min_step);
 
     static char steps_per_revolution_key[] = GENERATE_STEPPER_TEMPLATE(STEPS_PER_REVOLUTION_KEY);
     steps_per_revolution_key[id_number_index] = itoa(dt_id);
@@ -377,7 +377,7 @@ static int stepper_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write steps_per_revolution to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved steps_per_revolution: %f", context->context.steps_per_revolution);
+    LOG_DBG("Saved steps_per_revolution: %f", (double)context->context.steps_per_revolution);
 
     return 0;
 }

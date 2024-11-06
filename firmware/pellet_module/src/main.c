@@ -12,8 +12,4 @@ int main() {
     while (true) {
         jerrycan_run(K_FOREVER);
     }
-error:
-    while (true) {
-        k_msleep(500);
-    }
 }
