@@ -32,6 +32,9 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_ANALOG_OUT = 0X0D,
     JERRYCAN_CMD_LOAD_CELL_READ = 0x0E,
     JERRYCAN_CMD_DOOR_SENSOR = 0x0F,
+    JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_BEGIN = 0x10,
+    JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_CONT = 0x11,
+    JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_END = 0x12,
     JERRYCAN_CMD_MIN = 0x00,
     JERRYCAN_CMD_MAX = 0x3F,
 } jerrycan_cmd_type_t;
@@ -207,6 +210,19 @@ typedef struct __attribute__((packed)) {
 } jerrycan_cmd_door_closed_t;
 
 typedef struct __attribute__((packed)) {
+    uint32_t stream_id;
+} jerrycan_cmd_audio_data_cmd_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_audio_data_cmd_t) == 4, "jerrycan_cmd_audio_data_cmd_t should be 4 bytes");
+
+typedef struct __attribute__((packed)) {
+    uint8_t payload[JERRYCAN_MAX_PAYLOAD_SIZE];
+} jerrycan_cmd_audio_data_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_audio_data_t) == JERRYCAN_MAX_PAYLOAD_SIZE,
+             "jerrycan_cmd_audio_data_t should be 64 bytes");
+
+typedef struct __attribute__((packed)) {
     jerrycan_cmd_type_t type;
     uint8_t dst_id;
     union {
@@ -226,6 +242,8 @@ typedef struct __attribute__((packed)) {
         jerrycan_cmd_analog_out_t analog_out;
         jerrycan_cmd_load_cell_read_t load_cell_read;
         jerrycan_cmd_door_closed_t doors;
+        jerrycan_cmd_audio_data_cmd_t audio_data_cmd;
+        jerrycan_cmd_audio_data_t audio_data;
         uint8_t payload[JERRYCAN_MAX_PAYLOAD_SIZE];
     };
 } jerrycan_msg_t;

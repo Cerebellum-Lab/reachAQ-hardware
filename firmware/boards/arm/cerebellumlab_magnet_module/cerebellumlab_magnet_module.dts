@@ -75,6 +75,15 @@
 		pinctrl-0 = <&i2s3_ck_pc10 &i2s3_sd_pc12 &i2s3_ws_pa4>;
 		pinctrl-names = "default";
 		status = "okay";
+
+		microphone: microphone@0 {
+			compatible = "ll,microphone";
+			status = "okay";
+			reg = <0>;
+			sampling-frequency = <192000>;
+			channel-count = <2>;
+			block-size = <64>;
+		};
 	};
 
 	aliases {

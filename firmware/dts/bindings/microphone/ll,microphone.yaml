@@ -1,0 +1,22 @@
+description: |
+  Microphone on the I2S bus
+
+compatible: ll,microphone
+
+include:
+  - name: base.yaml
+  - name: i2s-device.yaml
+
+properties:
+  sampling-frequency:
+    type: int
+    required: true
+    description: Sample frequency of microphone input.
+  channel-count:
+    type: int
+    required: true
+    description: Number of input channels.
+  block-size:
+    type: int
+    required: true
+    description: Size of blocks to read from microphone. As blocks are subjected to FFT, but be in range [16..4096], powers of two.

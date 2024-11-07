@@ -6,9 +6,10 @@ config LIB_MIC_LOG_LEVEL
 
 menuconfig LIB_MIC
         bool "Support Magnet Module microphone capability"
-        default y if $(dt_alias_enabled,i2s_mic)
+        default y
         select I2S
         select CONFIG_I2S_STM32
+        depends on DT_HAS_LL_MICROPHONE_ENABLED
         help
            Enable support for the magnet module microphone
 

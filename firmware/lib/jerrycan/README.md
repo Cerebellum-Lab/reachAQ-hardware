@@ -183,3 +183,19 @@ and launch contexts. Periods for configurable timers are set via `CONFIG_LIB_JER
 
 #### Notes
 - Periods configured via `CONFIG_LIB_JERRYCAN_*_TX_PERIOD_MS` can be adjusted in the Kconfig file.
+
+#### Unverified... trying to get fd to work on the PC with the canable device.
+
+- See if there is a can device after connecting the bridge to the PC:<br>
+`ip link show`
+<br>
+- For the Linux side, if the can0 device is missing, the USB to CAN bridge is probably
+    being associated with /dev/ttyACM#. To associate the tty with can0:<br>
+`sudo slcand -o -c -s8 -F ttyACM# can0`
+<br>
+- Bringing the CAN0 device using fd:
+<br>
+`sudo ip link set can0 type can bitrate 1000000 dbitrate 5000000 fd on`
+<br>
+`sudo ip link set can0 txqueuelen 1000`
+<br>

@@ -5,19 +5,19 @@
 #include "fft.h"
 #include "generic_gpios.h"
 
-static q31_t gFftBuffer[FFT_MAXIMUM_SAMPLE_SIZE * 2];
+static float gFftBuffer[FFT_MAXIMUM_SAMPLE_SIZE * 2];
 
-static q31_t gFftMagnitude[FFT_MAXIMUM_SAMPLE_SIZE];
+static float gFftMagnitude[FFT_MAXIMUM_SAMPLE_SIZE];
 
-void fft_timing_test(const int length) {
-    const struct device *gpio = DEVICE_DT_GET_ANY(ll_generic_gpios);
+bool fft_timing_test(const int length) {
+    static const struct device *gpio = DEVICE_DT_GET_ANY(ll_generic_gpios);
     Fft fft;
 
     // On failure, signal any logic analyzer that the sequence is complete.
     if (!fft_initialize(&fft, length)) {
         ll_generic_gpio_write_pin_by_name(gpio, "CONT0", 1);
         ll_generic_gpio_write_pin_by_name(gpio, "CONT0", 0);
-        return;
+        return false;
     }
 
     k_sched_lock();
@@ -26,11 +26,11 @@ void fft_timing_test(const int length) {
         ll_generic_gpio_write_pin_by_name(gpio, "CONT0", 1);
         ll_generic_gpio_write_pin_by_name(gpio, "CONT0", 0);
 
-        fft_process(&fft, gFftBuffer);
+        fft_calculate_frequency(&fft, gFftBuffer);
 
         ll_generic_gpio_write_pin_by_name(gpio, "CONT0", 1);
 
-        fft_process_magnitude(&fft, gFftBuffer, gFftMagnitude);
+        fft_calculate_magnitude(&fft, gFftBuffer, gFftMagnitude);
 
         ll_generic_gpio_write_pin_by_name(gpio, "CONT0", 0);
 
@@ -38,6 +38,8 @@ void fft_timing_test(const int length) {
     }
 
     k_sched_unlock();
+
+    return true;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -53,7 +55,10 @@ static int cmd_fft_timing_tests(const struct shell *shell, size_t, char **argv) 
         return -1;
     }
 
-    fft_timing_test(size);
+    if (!fft_timing_test(size)) {
+        shell_print(shell, "FFT Initialization Failed.");
+        return -1;
+    }
 
     return 0;
 }

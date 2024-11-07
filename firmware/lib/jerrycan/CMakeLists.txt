@@ -53,6 +53,11 @@ zephyr_library_sources(
 	       modules/door_sensor.c
 )
 
+# If this board has a microphone...
+zephyr_library_sources_ifdef(CONFIG_DT_HAS_LL_MICROPHONE_ENABLED
+	       modules/audio.c
+)
+
 zephyr_library_sources_ifdef(CONFIG_LIB_JERRYCAN_SHELL
 	       jerrycan_shell.c
 )

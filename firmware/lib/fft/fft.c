@@ -21,31 +21,31 @@ LOG_MODULE_REGISTER(fft);
 
     switch (length) {
         case 16:
-            rc = arm_cfft_init_16_q31(&(fft->fft));
+            rc = arm_cfft_init_16_f32(&(fft->fft));
             break;
         case 32:
-            rc = arm_cfft_init_32_q31(&(fft->fft));
+            rc = arm_cfft_init_32_f32(&(fft->fft));
             break;
         case 64:
-            rc = arm_cfft_init_64_q31(&(fft->fft));
+            rc = arm_cfft_init_64_f32(&(fft->fft));
             break;
         case 128:
-            rc = arm_cfft_init_128_q31(&(fft->fft));
+            rc = arm_cfft_init_128_f32(&(fft->fft));
             break;
         case 256:
-            rc = arm_cfft_init_256_q31(&(fft->fft));
+            rc = arm_cfft_init_256_f32(&(fft->fft));
             break;
         case 512:
-            rc = arm_cfft_init_512_q31(&(fft->fft));
+            rc = arm_cfft_init_512_f32(&(fft->fft));
             break;
         case 1024:
-            rc = arm_cfft_init_1024_q31(&(fft->fft));
+            rc = arm_cfft_init_1024_f32(&(fft->fft));
             break;
         case 2048:
-            rc = arm_cfft_init_2048_q31(&(fft->fft));
+            rc = arm_cfft_init_2048_f32(&(fft->fft));
             break;
         case 4096:
-            rc = arm_cfft_init_4096_q31(&(fft->fft));
+            rc = arm_cfft_init_4096_f32(&(fft->fft));
             break;
         default:
             LOG_ERR("FFT Init failed! Invalid length = %d", length);
@@ -63,8 +63,8 @@ LOG_MODULE_REGISTER(fft);
     return true;
 }
 
-void fft_process(const Fft* fft, q31_t* fftBuffer) { arm_cfft_q31(&(fft->fft), fftBuffer, 0, 1); }
+void fft_calculate_frequency(const Fft* fft, float* fftBuffer) { arm_cfft_f32(&(fft->fft), fftBuffer, 0, 1); }
 
-void fft_process_magnitude(const Fft* fft, const q31_t* fftBuffer, q31_t* fftMagnitude) {
-    arm_cmplx_mag_q31(fftBuffer, fftMagnitude, fft->length);
+void fft_calculate_magnitude(const Fft* fft, const float* fftBuffer, float* fftMagnitude) {
+    arm_cmplx_mag_f32(fftBuffer, fftMagnitude, fft->length);
 }
