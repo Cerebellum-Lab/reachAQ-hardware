@@ -64,6 +64,14 @@ menuconfig LIB_JERRYCAN_LOAD_CELL_TX_PERIOD_MS
     help
       The period at which the load cell message is transmitted in milliseconds.
 
+
+menuconfig LIB_JERRYCAN_DOOR_SENSOR_TX_PERIOD_MS
+    int "Door Sensor TX Period"
+    default 10
+    depends on LIB_JERRYCAN
+    help
+      The period at which the door sensor message is transmitted in milliseconds.
+
 menuconfig LIB_JERRYCAN_SHELL
     bool "Enable the shell for the JerryCAN library"
     default n

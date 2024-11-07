@@ -41,22 +41,25 @@
 			zephyr,code = <INPUT_KEY_1>;
 		};
 
-		limit_switch0: limit_switch0 {
-			label = "Limit Switch 0";
-			gpios = <&gpioa 8 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_2>;
+		door_sensor_1: door_sensor_1 {
+			label = "Door Closed 1";
+			gpios = <&gpioc 13 (GPIO_ACTIVE_HIGH)>;
+			zephyr,code = <INPUT_KEY_5>;
+			status = "okay";
 		};
 
-		limit_switch1: limit_switch1 {
-			label = "Limit Switch 1";
-			gpios = <&gpioa 9 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_3>;
+		door_sensor_2: door_sensor_2 {
+			label = "Door Closed 2";
+			gpios = <&gpioc 14 (GPIO_PULL_DOWN | GPIO_ACTIVE_HIGH)>;
+			zephyr,code = <INPUT_KEY_6>;
+			status = "okay";
 		};
 
-		limit_switch2: limit_switch2 {
-			label = "Limit Switch 2";
-			gpios = <&gpioa 10 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_4>;
+		door_sensor_3: door_sensor_3 {
+			label = "Door Closed 3";
+			gpios = <&gpioc 15 (GPIO_PULL_DOWN | GPIO_ACTIVE_HIGH)>;
+			zephyr,code = <INPUT_KEY_7>;
+			status = "okay";
 		};
 	};
 
