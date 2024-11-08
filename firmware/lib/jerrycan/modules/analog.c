@@ -72,11 +72,7 @@ static void jerrycan_analog_out_tx() {
                                   .value_mv = ll_analog_out_get_value_mv(analog_out),
                               }};
 
-        /* Transmit message */
-        int ret = jerrycan_tx(&msg, K_NO_WAIT);
-        if (ret != 0) {
-            LOG_ERR("Error sending CAN message for analog_out%d: %d", context->instance_number, ret);
-        }
+        jerrycan_tx(&msg, K_NO_WAIT);
     }
 }
 

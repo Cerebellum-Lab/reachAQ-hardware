@@ -14,6 +14,7 @@
 LOG_MODULE_DECLARE(motor_motion, CONFIG_LIB_MOTOR_MOTION_LOG_LEVEL);
 
 /* ***** Callbacks ***** */
+#ifdef CONFIG_DT_HAS_LL_STEPPER_ENABLED
 static void stepper_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
                                          void *user_data) {
     switch (event) {
@@ -39,7 +40,9 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
             break;
     }
 }
+#endif
 
+#ifdef CONFIG_DT_HAS_LL_SERVO_ENABLED
 static void servo_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
                                        void *user_data) {
     switch (event) {
@@ -62,6 +65,7 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
             break;
     }
 }
+#endif
 
 /* ***** Static Context Structs Used Throughout ***** */
 

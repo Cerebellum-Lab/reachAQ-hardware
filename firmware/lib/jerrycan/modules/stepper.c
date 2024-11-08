@@ -37,8 +37,6 @@
 
 LOG_MODULE_DECLARE(jerrycan, LOG_LEVEL_DBG);
 
-#define CAN_TIMEOUT K_MSEC(100)
-
 static void stepper_handler(jerrycan_msg_t *msg) {
     // If we receive a stepper message, we should move the stepper
     LOG_INF(
@@ -138,7 +136,7 @@ static void stepper_cfg_read_handler(jerrycan_msg_t *msg) {
     rsp.cfg_response.stepper.steps_per_revolution = (uint16_t)steps_per_revolution;
 
 send_response:
-    jerrycan_tx(&rsp, CAN_TIMEOUT);
+    jerrycan_tx(&rsp, K_NO_WAIT);
 }
 
 static jerrycan_rx_callback_t stepper_cfg_read_callback = {

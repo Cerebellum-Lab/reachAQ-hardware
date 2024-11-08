@@ -37,8 +37,6 @@
 
 LOG_MODULE_DECLARE(jerrycan, LOG_LEVEL_DBG);
 
-#define CAN_TIMEOUT K_MSEC(100)
-
 static void servo_handler(jerrycan_msg_t *msg) {
     // If we receive a servo message, we should move the servo
     LOG_INF(
@@ -157,7 +155,7 @@ static void servo_cfg_read_handler(jerrycan_msg_t *msg) {
     rsp.cfg_response.servo.max_pwm_duration_us = (uint16_t)max_pwm;
 
 send_response:
-    jerrycan_tx(&rsp, CAN_TIMEOUT);
+    jerrycan_tx(&rsp, K_NO_WAIT);
 }
 
 static jerrycan_rx_callback_t servo_cfg_read_callback = {

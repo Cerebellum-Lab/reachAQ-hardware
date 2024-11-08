@@ -81,33 +81,54 @@ static const jerrycan_temperature_sensor_tx_context_t tx_contexts[TEMPERATURE_SE
 static void jerrycan_temperature_sensor_tx_handler(struct k_work *work);
 static K_WORK_DEFINE(jerrycan_temperature_sensor_tx_work, jerrycan_temperature_sensor_tx_handler);
 
-static void jerrycan_temperature_sensor_tx_handler(struct k_work *work) {
+static void jerrycan_temperature_sensor_tx(struct k_timer *timer);
+K_TIMER_DEFINE(jerrycan_temperature_sensor_timer, jerrycan_temperature_sensor_tx, NULL);
+
+static void jerrycan_temperature_sensor_tx_handler(struct k_work *) {
+    static int timer_period = CONFIG_LIB_JERRYCAN_TEMPERATURE_TX_PERIOD_MS;
+    static bool invalidTemperature = false;
+    static bool invalidHumidity = false;
+    bool failedSample = false;
+
     /* For each temperature sensor, construct and send a temperature message*/
     for (int i = 0; i < TEMPERATURE_SENSOR_COUNT; i++) {
         const jerrycan_temperature_sensor_tx_context_t *tx_context = &tx_contexts[i];
         const struct device *temperature_sensor = tx_context->temperature_sensor;
         struct sensor_value temperature, humidity;
-        int ret;
 
         /* Fetch temperature and humidity */
-        ret = sensor_sample_fetch(temperature_sensor);
+        int ret = sensor_sample_fetch(temperature_sensor);
         if (ret != 0) {
-            LOG_ERR("Failed to send CAN message for temperature_sensor%d: Error fetching samples - %s",
-                    tx_context->instance_number, strerror(ret));
+            failedSample = true;
+            continue;
         }
 
         /* Get temperature value */
         ret = sensor_channel_get(temperature_sensor, SENSOR_CHAN_AMBIENT_TEMP, &temperature);
         if (ret != 0) {
-            LOG_ERR("Failed to send CAN message for temperature_sensor%d: Error getting temperature value - %s",
-                    tx_context->instance_number, strerror(ret));
+            temperature.val1 = 0;
+            temperature.val2 = 0;
+            if (!invalidTemperature) {
+                LOG_ERR("Failed to send CAN message for temperature_sensor%d: Error getting temperature value - %s",
+                        tx_context->instance_number, strerror(ret));
+                invalidTemperature = true;
+            }
+        } else {
+            invalidTemperature = false;
         }
 
         /* Get humidity value */
         ret = sensor_channel_get(temperature_sensor, SENSOR_CHAN_HUMIDITY, &humidity);
         if (ret != 0) {
-            LOG_ERR("Failed to send CAN message for temperature_sensor%d: Error getting humidity value - %s",
-                    tx_context->instance_number, strerror(ret));
+            humidity.val1 = 0;
+            humidity.val2 = 0;
+            if (!invalidHumidity) {
+                LOG_ERR("Failed to send CAN message for temperature_sensor%d: Error getting humidity value - %s",
+                        tx_context->instance_number, strerror(ret));
+                invalidHumidity = true;
+            }
+        } else {
+            invalidHumidity = false;
         }
 
         /*  Populate message with temperature and humidity values from sensor driver */
@@ -121,12 +142,18 @@ static void jerrycan_temperature_sensor_tx_handler(struct k_work *work) {
                 },
         };
 
-        /* Transmit message */
-        ret = jerrycan_tx(&msg, K_NO_WAIT);
-        if (ret != 0) {
-            LOG_ERR("Error sending CAN message for temperature_sensor%d: %d", tx_context->instance_number, ret);
-        }
+        jerrycan_tx(&msg, K_NO_WAIT);
     }
+
+    if (failedSample) {  // on failure, increase period at which data is collected.
+        timer_period *= 1.25;
+        timer_period = MIN(timer_period, 10 * 1000);  // 10 sec (in msec)
+    } else {  // on a successful send, resume (or keep) the shortest timeout period
+        timer_period = CONFIG_LIB_JERRYCAN_TEMPERATURE_TX_PERIOD_MS;
+    }
+
+    k_timeout_t period = K_MSEC(timer_period);
+    k_timer_start(&jerrycan_temperature_sensor_timer, period, period);
 }
 
 static void jerrycan_temperature_sensor_tx(struct k_timer *timer) {
@@ -152,8 +179,6 @@ static void jerrycan_temperature_sensor_tx(struct k_timer *timer) {
             break;
     }
 }
-
-K_TIMER_DEFINE(jerrycan_temperature_sensor_timer, jerrycan_temperature_sensor_tx, NULL);
 
 static int jerrycan_temperature_sensor_init() {
     // Start the timer that will send the status message periodically

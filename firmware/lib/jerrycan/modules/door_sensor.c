@@ -116,6 +116,4 @@ static int door_init() {
 
 SYS_INIT(door_init, APPLICATION, CONFIG_LIB_JERRYCAN_INIT_PRIORITY);
 
-#else
-#warning "Door Sensor support disabled."
 #endif

@@ -73,10 +73,19 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
 // Add a jerrycan message to the TX queue- these messages will be processed by the main jerrycan_run() loop
 // This allows any thread or interrupt to generate an outgoing CAN message which will then be handled by the main task
 int jerrycan_tx(jerrycan_msg_t *msg, k_timeout_t timeout) {
+    static size_t failureCount = 0;
+
     // Place message in queue
-    int ret = k_msgq_put(&jerrycan_tx_msgq, msg, timeout);
+    const int ret = k_msgq_put(&jerrycan_tx_msgq, msg, timeout);
     if (ret != 0) {
-        LOG_ERR("jerrycan_tx failed to place message in queue: %d", ret);
+        if (!failureCount++) {
+            LOG_ERR("jerrycan_tx failed to place message in queue: %d", ret);
+        }
+    } else {
+        if (failureCount) {
+            LOG_ERR("jerrycan transmissions restored. %d lost packets.", failureCount);
+        }
+        failureCount = 0;
     }
 
     return ret;

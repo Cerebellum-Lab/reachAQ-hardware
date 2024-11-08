@@ -83,11 +83,7 @@ static void jerrycan_generic_gpio_tx() {
                                   .state = state,
                               }};
 
-        /* Transmit message */
-        int ret = jerrycan_tx(&msg, K_NO_WAIT);
-        if (ret != 0) {
-            LOG_ERR("Error sending CAN message for generic_gpio%d: %d", context->instance_number, ret);
-        }
+        jerrycan_tx(&msg, K_NO_WAIT);
     }
 }
 

@@ -71,11 +71,7 @@ static void jerrycan_load_cell_tx() {
                                   .load_mv = ll_load_cell_get_load_mv(load_cell),
                               }};
 
-        /* Transmit message */
-        int ret = jerrycan_tx(&msg, K_NO_WAIT);
-        if (ret != 0) {
-            LOG_ERR("Error sending CAN message for load_cell%d: %d", tx_context->instance_number, ret);
-        }
+        jerrycan_tx(&msg, K_NO_WAIT);
     }
 }
 
