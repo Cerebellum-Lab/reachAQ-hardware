@@ -72,6 +72,24 @@ menuconfig LIB_JERRYCAN_DOOR_SENSOR_TX_PERIOD_MS
     help
       The period at which the door sensor message is transmitted in milliseconds.
 
+menuconfig LIB_JERRYCAN_DOOR_SENSOR
+    bool "Enable Door Sensors"
+    default n
+    select CONFIG_INPUT
+    select CONFIG_INPUT_GPIO_KEYS
+    select EVENTS
+    help
+      Enable the Door Sensors functionality on the pellet module
+
+menuconfig LIB_JERRYCAN_RGB_LED
+    bool "Enable RGB LED"
+    default n
+    select PWM
+    select LED
+    select LED_PWM
+    help
+      Enable the RGB LED functionality on the pellet module
+
 menuconfig LIB_JERRYCAN_SHELL
     bool "Enable the shell for the JerryCAN library"
     default n

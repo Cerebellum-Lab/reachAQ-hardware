@@ -36,6 +36,7 @@ Message modules are responsible for handling incoming and outgoing messages rela
 - **Stepper Module (`modules/stepper.c`)**: Manages the transmission and reception of stepper-related messages.
 - **Temperature Sensor Module (`modules/temperature.c`)**: Manages the transmission of temperature and humudity sensor data.
 - **Tone Generator Module (`modules/tone.c`)**: Manages the transmission and reception of tone generator related messages.
+- **RGB LED Control Module ('modules/rgb_led.c')** Manages the control of the brighness of the RGB LEDs.
 
 Each module leverages `jerrycan.c` for core message handling functionality. Transmission rates for each module can be configured via Kconfig settings, making JerryCAN flexible and adaptable to various embedded applications. This modular structure also supports easy expansion, allowing developers to add new modules to handle additional data types as needed.
 
@@ -110,9 +111,10 @@ static void heartbeat_handler(jerrycan_msg_t *msg) {
     heartbeat_led_start();
 }
 
-static jerrycan_rx_callback_t heartbeat_callback = {
+static jerrycan_rx_callback_t heartbeat_callback = {  // This must be static entity, not the stack
     .filter_msg_type = JERRYCAN_CMD_HEARTBEAT,
     .func = heartbeat_handler,
+    .node = { .next = NULL },
 };
 
 static int jerrycan_heartbeat_init() {

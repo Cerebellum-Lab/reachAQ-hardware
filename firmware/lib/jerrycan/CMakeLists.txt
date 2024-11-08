@@ -58,6 +58,11 @@ zephyr_library_sources_ifdef(CONFIG_DT_HAS_LL_MICROPHONE_ENABLED
 	       modules/audio.c
 )
 
+# If this board and an RGB LED
+zephyr_library_sources_ifdef(CONFIG_LIB_JERRYCAN_RGB_LED
+	       modules/rgb_led.c
+)
+
 zephyr_library_sources_ifdef(CONFIG_LIB_JERRYCAN_SHELL
 	       jerrycan_shell.c
 )

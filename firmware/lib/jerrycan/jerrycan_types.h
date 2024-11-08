@@ -35,6 +35,7 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_BEGIN = 0x10,
     JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_CONT = 0x11,
     JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_END = 0x12,
+    JERRYCAN_CMD_RGB_LED = 0x14,
     JERRYCAN_CMD_MIN = 0x00,
     JERRYCAN_CMD_MAX = 0x3F,
 } jerrycan_cmd_type_t;
@@ -209,6 +210,16 @@ typedef struct __attribute__((packed)) {
     uint8_t opened : DOOR_SENSOR_COUNT;  // bit flags: opened(1), closed(0)
 } jerrycan_cmd_door_closed_t;
 
+BUILD_ASSERT(sizeof(jerrycan_cmd_door_closed_t) == 1, "jerrycan_cmd_door_closed_t should be 1 bytes");
+
+typedef struct __attribute__((packed)) {
+    uint8_t red;    // (%)
+    uint8_t green;  // (%)
+    uint8_t blue;   // (%)
+} jerrycan_cmd_rgb_led_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_rgb_led_t) == 3, "jerrycan_cmd_rgb_led_t should be 3 bytes");
+
 typedef struct __attribute__((packed)) {
     uint32_t stream_id;
 } jerrycan_cmd_audio_data_cmd_t;
@@ -244,6 +255,7 @@ typedef struct __attribute__((packed)) {
         jerrycan_cmd_door_closed_t doors;
         jerrycan_cmd_audio_data_cmd_t audio_data_cmd;
         jerrycan_cmd_audio_data_t audio_data;
+        jerrycan_cmd_rgb_led_t rgb_led;
         uint8_t payload[JERRYCAN_MAX_PAYLOAD_SIZE];
     };
 } jerrycan_msg_t;

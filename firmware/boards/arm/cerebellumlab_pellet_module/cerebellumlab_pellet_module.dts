@@ -94,8 +94,6 @@
 		dmas = <&dmamux1 6 6 STM32_DMA_PRIORITY_HIGH>;
 		dma-names = "tx";
 		enable-gpios = <&gpioa 7 GPIO_ACTIVE_HIGH>;
-
-		status = "okay";
 	};
 
 	analog_out: analog_out {
@@ -103,6 +101,26 @@
 		status = "okay";
 		io-channels = <&dac2 1>;
 		resolution = <12>;
+	};
+
+	rgb_led: rgb-led {
+		compatible = "pwm-leds";
+		status = "okay";
+
+		red_pwm_led: red_pwm_led {
+			pwms = <&pwm3 2 PWM_MSEC(10) PWM_POLARITY_NORMAL>;	// channel #, not entry # in the pwm list in pwm3
+			label = "red";
+		};
+		
+		green_pwm_led: green_pwm_led {
+			pwms = <&pwm4 1 PWM_MSEC(10) PWM_POLARITY_NORMAL>;
+			label = "green";
+		};
+		
+		blue_pwm_led: blue_pwm_led {
+			pwms = <&pwm4 2 PWM_MSEC(10) PWM_POLARITY_NORMAL>;
+			label = "blue";
+		};
 	};
 
 	aliases {
@@ -157,6 +175,28 @@
 
 &dmamux1 {
 	status = "okay";
+};
+
+&timers3 {
+	st,prescaler = <84>; // 170 MHz / (84 + 1) = 2 MHz
+	status = "okay";
+
+	pwm3: pwm {
+		status = "okay";
+		pinctrl-0 = <&tim3_ch2_pb5>;
+		pinctrl-names = "default";
+	};
+};
+
+&timers4 {
+  st,prescaler = <84>; // 170 MHz / (84 + 1) = 2 MHz
+  status = "okay";
+
+  pwm4: pwm {
+    status = "okay";
+    pinctrl-0 = <&tim4_ch1_pb6  &tim4_ch2_pb7>;
+    pinctrl-names = "default";
+  };
 };
 
 &timers5 {
