@@ -7,7 +7,7 @@
 
 #include "jerrycan.h"
 
-LOG_MODULE_DECLARE(jerrycan, LOG_LEVEL_DBG);
+LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
 #define DOOR_1_NODE_ID DT_NODELABEL(door_sensor_1)
 #define DOOR_1 DEVICE_DT_GET(DOOR_1_NODE_ID)

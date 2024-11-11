@@ -8,7 +8,7 @@
 static const struct device *can_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_canbus));
 static const struct device *gpio_dev = DEVICE_DT_GET_ANY(ll_generic_gpios);
 
-LOG_MODULE_REGISTER(jerrycan, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
 static sys_slist_t can_rx_callbacks_list;
 

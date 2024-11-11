@@ -29,8 +29,11 @@
  */
 
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/logging/log.h>
 
 #include "jerrycan.h"
+
+LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
 void jerrycan_status_tx() {
     // Send a status message

@@ -41,7 +41,7 @@
 #define AUDIO_UPDATE_PERIOD (1000 / AUDIO_UPDATE_RATE)  // msec
 #define AUDIO_PRIORITY 10
 
-LOG_MODULE_REGISTER(audio_in, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(audio_in, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
 /**
  * Process the sampled audio data, transmitting it on the CAN bus when it's

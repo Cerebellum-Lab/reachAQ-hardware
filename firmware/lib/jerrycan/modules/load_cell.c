@@ -36,7 +36,7 @@
 
 #include "jerrycan.h"
 
-LOG_MODULE_DECLARE(jerrycan, LOG_LEVEL_DBG);
+LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
 #define DT_DRV_COMPAT ll_load_cell
 

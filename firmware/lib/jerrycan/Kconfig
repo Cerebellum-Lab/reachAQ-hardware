@@ -8,6 +8,12 @@ menuconfig LIB_JERRYCAN
     help
       Enable the library that handles CAN communication for the the MouseGym system.
 
+config LIB_JERRYCAN_LOG_LEVEL
+  int "Log level (0-4)"
+  default 3
+  help
+      Set the log level for the tone generator
+
 menuconfig LIB_JERRYCAN_HEARTBEAT_LED_DURATION_MS
   int "Heartbeat LED duration"
   default 100
