@@ -46,8 +46,6 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
         [JERRYCAN_CMD_STATUS] = sizeof(jerrycan_cmd_status_t),
         [JERRYCAN_CMD_STEPPER_MOVE] = sizeof(jerrycan_cmd_stepper_move_t),
         [JERRYCAN_CMD_SERVO_MOVE] = sizeof(jerrycan_cmd_servo_move_t),
-        // FIXME: Needs to be implemented
-        //[JERRYCAN_CMD_STEPPER_HOME] = sizeof(jerrycan_cmd_stepper_home_t),
         [JERRYCAN_CMD_CFG_WRITE] = sizeof(jerrycan_cmd_cfg_t),
         [JERRYCAN_CMD_CFG_RESPONSE] = sizeof(jerrycan_cmd_cfg_t),
         [JERRYCAN_CMD_CFG_READ] = sizeof(jerrycan_cmd_cfg_t),

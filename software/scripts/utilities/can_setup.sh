@@ -25,8 +25,8 @@ modprobe mttcan
 
 # set interface properties
 echo "Setting CAN interface properties"
-ip link set can0 up type can bitrate 500000 dbitrate 1000000 berr-reporting on fd on
-ip link set can1 up type can bitrate 500000 dbitrate 1000000 berr-reporting on fd on
+ip link set can0 up type can bitrate 1000000 dbitrate 5000000 berr-reporting on fd on
+ip link set can1 up type can bitrate 1000000 dbitrate 5000000 berr-reporting on fd on
 
 echo "Installing CAN utilities"
 apt install can-utils

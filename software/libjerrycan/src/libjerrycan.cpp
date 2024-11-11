@@ -1,6 +1,7 @@
 #include "libjerrycan.h"
 
 #include <linux/can.h>
+#include <linux/can/raw.h>
 #include <net/if.h>
 #include <spdlog/spdlog.h>
 #include <sys/ioctl.h>
@@ -25,6 +26,9 @@ int JerryCAN::Open() {
     tv.tv_sec = 0;
     tv.tv_usec = 1000;  // 1ms
     setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
+    int canfd_enabled = 1;
+    setsockopt(s, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_enabled, sizeof(canfd_enabled));
 
     // Find the CAN interface index
     struct ifreq ifr;
@@ -76,9 +80,6 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
             return sizeof(jerrycan_cmd_stepper_move_t);
         case JERRYCAN_CMD_SERVO_MOVE:
             return sizeof(jerrycan_cmd_servo_move_t);
-        // FIXME: Needs to be implemented
-        // case JERRYCAN_CMD_STEPPER_HOME:
-        //    return sizeof(jerrycan_cmd_stepper_home_t);
         case JERRYCAN_CMD_CFG_WRITE:
             return sizeof(jerrycan_cmd_cfg_t);
         case JERRYCAN_CMD_CFG_RESPONSE:
@@ -130,16 +131,16 @@ static inline uint8_t can_dlc_to_bytes(uint8_t dlc) {
 
 int JerryCAN::SendMessage(jerrycan_msg_t &msg, uint16_t dst_id) {
     // Send the message
-    struct can_frame frame = {0};
+    struct canfd_frame frame = {0};
     uint8_t payload_size = jerrycan_msg_get_payload_size(msg.type);
     frame.can_id = ((msg.type & 0x3F) << 5) | (dst_id & 0x1F);
-    frame.can_dlc = can_bytes_to_dlc(payload_size);
+    frame.len = payload_size;
 
     memcpy(frame.data, msg.payload, payload_size);
 
     // For payload sizes > 8, DLC no longer maps 1:1 to the number of bytes in the payload
     // If the actual payload size is less than the number of bytes indicated by DLC, pad the rest with 0
-    uint8_t dlc_bytes = can_dlc_to_bytes(frame.can_dlc);
+    uint8_t dlc_bytes = can_dlc_to_bytes(can_bytes_to_dlc(payload_size));
     memset(&frame.data[payload_size], 0, dlc_bytes - payload_size);
 
     auto ret = write(_can_socket_handle, &frame, sizeof(frame));
@@ -153,7 +154,7 @@ int JerryCAN::SendMessage(jerrycan_msg_t &msg, uint16_t dst_id) {
 
 int JerryCAN::ReceiveMessage(jerrycan_msg_t &msg) {
     // Receive a message
-    struct can_frame frame = {0};
+    struct canfd_frame frame = {0};
     auto ret = read(_can_socket_handle, &frame, sizeof(frame));
     if (ret <= 0) {
         if (errno != EAGAIN) {
@@ -174,6 +175,10 @@ int JerryCAN::Heartbeat() {
     // Send a heartbeat message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_HEARTBEAT,
+        .heartbeat =
+            {
+                .rsvd = 0xFF,
+            },
     };
 
     return SendMessage(msg, 0x1F);
@@ -192,14 +197,14 @@ int JerryCAN::EStop(bool enable) {
     return SendMessage(msg, 0x1F);
 }
 
-int JerryCAN::StepperMove(uint8_t dst_id, uint8_t stepper_id, int16_t position, uint16_t max_velocity,
+int JerryCAN::StepperMove(uint8_t dst_id, uint8_t motor_id, int16_t position, uint16_t max_velocity,
                           uint16_t max_acceleration, abs_or_rel_t abs_or_rel) {
     // Send a stepper move message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_STEPPER_MOVE,
         .stepper_move =
             {
-                .motor_id = stepper_id,
+                .motor_id = motor_id,
                 .abs_or_rel = abs_or_rel,
                 .position = position,
                 .max_velocity = max_velocity,
@@ -210,29 +215,19 @@ int JerryCAN::StepperMove(uint8_t dst_id, uint8_t stepper_id, int16_t position, 
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::ServoMove(uint8_t dst_id, uint8_t servo_id, int16_t position, uint16_t max_velocity,
+int JerryCAN::ServoMove(uint8_t dst_id, uint8_t motor_id, int16_t position, uint16_t max_velocity,
                         uint16_t max_acceleration, abs_or_rel_t abs_or_rel) {
     // Send a servo move message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_SERVO_MOVE,
         .servo_move =
             {
-                .motor_id = servo_id,
+                .motor_id = motor_id,
                 .abs_or_rel = abs_or_rel,
                 .position = position,
                 .max_velocity = max_velocity,
                 .max_acceleration = max_acceleration,
             },
-    };
-
-    return SendMessage(msg, dst_id);
-}
-
-int JerryCAN::StepperHome(uint8_t dst_id, uint8_t stepper_id) {
-    // Send a stepper home message
-    jerrycan_msg_t msg = {
-        .type = JERRYCAN_CMD_STEPPER_HOME,
-        // FIXME: FILL THIS IN!
     };
 
     return SendMessage(msg, dst_id);
@@ -258,31 +253,45 @@ int JerryCAN::CfgRead(uint8_t dst_id, jerrycan_cmd_cfg_t &cfg) {
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::GPIOWrite(uint8_t dst_id, jerrycan_cmd_gpio_write_t &gpio_write) {
+int JerryCAN::GPIOWrite(uint8_t dst_id, uint8_t instance, uint16_t gpio_idx, bool state) {
     // Send a GPIO Write Message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_GPIO_WRITE,
-        .gpio_write = gpio_write,
+        .gpio_write =
+            {
+                .instance = instance,
+                .gpio_idx = gpio_idx,
+                .state = state,
+            },
     };
 
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::ToneWrite(uint8_t dst_id, jerrycan_cmd_tone_t &tone) {
+int JerryCAN::ToneWrite(uint8_t dst_id, uint8_t instance, uint16_t frequency, uint16_t duration) {
     // Send a GPIO Write Message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_TONE,
-        .tone = tone,
+        .tone =
+            {
+                .instance = instance,
+                .frequency_hz = frequency,
+                .duration_ms = duration,
+            },
     };
 
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::AnalogOutWrite(uint8_t dst_id, jerrycan_cmd_analog_out_t &analog_out) {
+int JerryCAN::AnalogOutWrite(uint8_t dst_id, uint8_t instance, uint16_t value_mv) {
     // Send an Analog Out Message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_ANALOG_OUT,
-        .analog_out = analog_out,
+        .analog_out =
+            {
+                .instance = instance,
+                .value_mv = value_mv,
+            },
     };
 
     return SendMessage(msg, dst_id);

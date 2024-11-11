@@ -16,23 +16,21 @@ class JerryCAN {
 
     int EStop(bool enable);
 
-    int StepperMove(uint8_t dst_id, uint8_t stepper_id, int16_t position, uint16_t max_velocity,
+    int StepperMove(uint8_t dst_id, uint8_t motor_id, int16_t position, uint16_t max_velocity,
                     uint16_t max_acceleration, abs_or_rel_t abs_or_rel);
 
-    int ServoMove(uint8_t dst_id, uint8_t servo_id, int16_t position, uint16_t max_velocity, uint16_t max_acceleration,
+    int ServoMove(uint8_t dst_id, uint8_t motor_id, int16_t position, uint16_t max_velocity, uint16_t max_acceleration,
                   abs_or_rel_t abs_or_rel);
-
-    int StepperHome(uint8_t dst_id, uint8_t stepper_id);
 
     int CfgWrite(uint8_t dst_id, jerrycan_cmd_cfg_t &cfg);
 
     int CfgRead(uint8_t dst_id, jerrycan_cmd_cfg_t &cfg);
 
-    int GPIOWrite(uint8_t dst_id, jerrycan_cmd_gpio_write_t &gpio_write);
+    int GPIOWrite(uint8_t dst_id, uint8_t instance, uint16_t gpio_idx, bool state);
 
-    int ToneWrite(uint8_t dst_id, jerrycan_cmd_tone_t &tone);
+    int ToneWrite(uint8_t dst_id, uint8_t instance, uint16_t frequency, uint16_t duration);
 
-    int AnalogOutWrite(uint8_t dst_id, jerrycan_cmd_analog_out_t &analog_out);
+    int AnalogOutWrite(uint8_t dst_id, uint8_t instance, uint16_t value_mv);
 
    private:
     int _can_socket_handle;
