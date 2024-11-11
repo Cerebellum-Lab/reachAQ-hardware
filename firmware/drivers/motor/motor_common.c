@@ -153,7 +153,8 @@ int ll_motor_init(const struct device *dev) {
 
         ret = gpio_pin_interrupt_configure_dt(&cfg->limit_switch_pin, GPIO_INT_EDGE_TO_ACTIVE);
         if (ret < 0) {
-            LOG_WRN("Failed to configure limit switch interrupt: %d", ret);
+            LOG_WRN("Failed to configure limit switch interrupt for %s (%d): %d", dev->name, cfg->limit_switch_pin.pin,
+                    ret);
         }
     }
 

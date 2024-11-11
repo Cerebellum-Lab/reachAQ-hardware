@@ -35,12 +35,6 @@
 			zephyr,code = <INPUT_KEY_0>;
 		};
 
-		boot_button: boot_button {
-			label = "BOOT button";
-			gpios = <&gpiob 8 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_1>;
-		};
-
 		door_sensor_1: door_sensor_1 {
 			label = "Door Closed 1";
 			gpios = <&gpioc 13 (GPIO_ACTIVE_HIGH)>;
@@ -74,6 +68,7 @@
 						   "CAN_ID[1]",
 						   "CAN_ID[2]",
 						   "CAN_ID[3]";
+		input-gpio-interrupt-enable = "DISABLE", "DISABLE", "DISABLE", "DISABLE";
 		output-gpios = <&gpiob 11 GPIO_ACTIVE_HIGH>, // STIM0
 					   <&gpiob 12 GPIO_ACTIVE_HIGH>, // STIM1
 					   <&gpiob 13 GPIO_ACTIVE_HIGH>, // STIM2

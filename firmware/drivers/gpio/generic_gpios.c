@@ -51,6 +51,7 @@ typedef struct {
     const char **input_names;
     const uint8_t num_inputs;
     const uint8_t num_input_names;
+    const char **enable_input_interrupts;
     const struct gpio_dt_spec *outputs;
     const char **output_names;
     const uint8_t num_outputs;
@@ -438,19 +439,28 @@ static void ll_generic_gpio_state_change_isr(const struct device *port, struct g
 }
 
 int ll_generic_gpio_register_state_change_handler(const struct device *dev, void (*handler)()) {
+    const ll_generic_gpio_cfg_t *cfg = dev->config;
     ll_generic_gpio_data_t *data = dev->data;
 
     /* Assign the state change handler to be called by the ISR */
     data->state_change_handler = handler;
 
-    /* Grab all pins (readable includes inputs and outputs) */
-    uint8_t pin_count = ll_generic_gpio_get_num_readable_pins(dev);
-    const struct gpio_dt_spec *pins = ll_generic_gpio_get_readable_pins(dev);
+    /* Associate state change interrupts with input channels */
+    uint8_t pin_count = cfg->num_inputs;
+    const struct gpio_dt_spec *pins = cfg->inputs;
 
     /* Enable the interrupt on each pin */
-    int ret;
     for (int i = 0; i < pin_count; i++) {
-        ret = gpio_pin_interrupt_configure_dt(&pins[i], GPIO_INT_ENABLE | GPIO_INT_EDGE_BOTH);
+        uint32_t interrupt_type = GPIO_INT_DISABLE;
+        if (!strcmp(cfg->enable_input_interrupts[i], "RISING")) {
+            interrupt_type = GPIO_INT_EDGE_RISING;
+        } else if (!strcmp(cfg->enable_input_interrupts[i], "FALLING")) {
+            interrupt_type = GPIO_INT_EDGE_FALLING;
+        } else if (!strcmp(cfg->enable_input_interrupts[i], "BOTH")) {
+            interrupt_type = GPIO_INT_EDGE_BOTH;
+        }
+
+        const int ret = gpio_pin_interrupt_configure_dt(&pins[i], interrupt_type);
         if (ret != 0) {
             LOG_ERR("Failed to register state change handler: Error configuring interrupt for pin <%s> - %d",
                     ll_generic_gpio_lookup_readable_pin_name(dev, i), ret);
@@ -519,6 +529,10 @@ static int ll_generic_gpio_init(const struct device *dev) {
         DT_INST_FOREACH_PROP_ELEM_SEP(idx, output_gpio_names, DT_PROP_BY_IDX, (, )),                              \
     };                                                                                                            \
                                                                                                                   \
+    static const char *interrupt_enables##idx[] = {                                                               \
+        DT_INST_FOREACH_PROP_ELEM_SEP(idx, input_gpio_interrupt_enable, DT_PROP_BY_IDX, (, )),                    \
+    };                                                                                                            \
+                                                                                                                  \
     char valid_pin_names##idx[DT_INST_PROP_LEN(idx, input_gpios) + DT_INST_PROP_LEN(idx, output_gpios)]           \
                              [MAX_NAME_LENGTH];                                                                   \
                                                                                                                   \
@@ -534,6 +548,7 @@ static int ll_generic_gpio_init(const struct device *dev) {
         .input_names = pin_names##idx,                                                                            \
         .num_inputs = DT_INST_PROP_LEN(idx, input_gpios),                                                         \
         .num_input_names = DT_INST_PROP_LEN(idx, input_gpio_names),                                               \
+        .enable_input_interrupts = interrupt_enables##idx,                                                        \
         .outputs = &(pin_dt_specs##idx[DT_INST_PROP_LEN(idx, input_gpios)]),                                      \
         .output_names = &(pin_names##idx[DT_INST_PROP_LEN(idx, input_gpio_names)]),                               \
         .num_outputs = DT_INST_PROP_LEN(idx, output_gpios),                                                       \

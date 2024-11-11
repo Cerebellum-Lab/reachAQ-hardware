@@ -129,16 +129,12 @@ K_TIMER_DEFINE(jerrycan_generic_gpio_timer, jerrycan_generic_gpio_tx, NULL);
 
 static int jerrycan_generic_gpio_init() {
     /* Register generic gpio state change callback (send message immediately on state change) */
-    int ret;
     for (int i = 0; i < GENERIC_GPIO_COUNT; i++) {
-        ret = ll_generic_gpio_register_state_change_handler(contexts[i].generic_gpio, jerrycan_generic_gpio_tx);
-        if (ret != 0) {
-            LOG_ERR("Failed to register state change handler for generic gpio instance %d: %d", i, ret);
-        }
+        ll_generic_gpio_register_state_change_handler(contexts[i].generic_gpio, jerrycan_generic_gpio_tx);
     }
 
     /* Register gpio Rx callback */
-    ret = jerrycan_register_rx_callback(&gpio_callback);
+    int ret = jerrycan_register_rx_callback(&gpio_callback);
     if (ret < 0) {
         LOG_WRN("Failed to register gpio callback: %d", ret);
     }

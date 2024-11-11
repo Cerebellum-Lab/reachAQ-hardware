@@ -28,12 +28,6 @@
 
 	gpio_keys {
 		compatible = "gpio-keys";
-
-		boot_button: boot_button {
-			label = "BOOT button";
-			gpios = <&gpiob 8 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_1>;
-		};
 	};
 
 	generic-gpios {
@@ -47,6 +41,7 @@
 						   "CAN_ID[1]",
 						   "CAN_ID[2]",
 						   "CAN_ID[3]";
+		input-gpio-interrupt-enable = "DISABLE", "DISABLE", "DISABLE", "DISABLE";
 		output-gpios = <&gpioc 14 GPIO_ACTIVE_HIGH>, // CONT0
 					   <&gpioc 15 GPIO_ACTIVE_HIGH>; // CONT1
 		output-gpio-names = "CONT0",

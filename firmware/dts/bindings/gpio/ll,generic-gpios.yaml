@@ -10,6 +10,15 @@ properties:
     type: phandle-array
   input-gpio-names:
     type: string-array
+  input-gpio-interrupt-enable:
+    type: string-array
+# Future, if sting-array of enumerations are supported
+#    enum:
+#    - DISABLE
+#    - RISING
+#    - FALLING
+#    - BOTH
+    description: Array of interrupt enable states for each input GPIO. Valid values DISABLE, RISING, FALLING, or BOTH
   output-gpios:
     type: phandle-array
   output-gpio-names:
