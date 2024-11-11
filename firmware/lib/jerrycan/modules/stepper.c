@@ -29,6 +29,8 @@
  * and configurations.
  */
 
+#include "stepper.h"
+
 #include <zephyr/logging/log.h>
 
 #include "jerrycan.h"
@@ -36,6 +38,13 @@
 #include "motor_motion_workq.h"
 
 LOG_MODULE_DECLARE(jerrycan, LOG_LEVEL_DBG);
+
+#define DT_DRV_COMPAT ll_stepper
+
+/* Number of enabled steppers found in the device tree */
+#define STEPPER_COUNT DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT)
+
+#define CAN_TIMEOUT K_MSEC(100)
 
 static void stepper_handler(jerrycan_msg_t *msg) {
     // If we receive a stepper message, we should move the stepper
@@ -47,25 +56,25 @@ static void stepper_handler(jerrycan_msg_t *msg) {
 
     const struct device *dev = stepper_motor_by_id(msg->stepper_move.motor_id);
     if (dev == NULL) {
-        LOG_ERR("Invalid servo device number: %d", msg->servo_move.motor_id);
+        LOG_ERR("Invalid stepper device number: %d", msg->stepper_move.motor_id);
         return;
     }
 
-    stepper_set_parameters(dev, msg->servo_move.max_velocity, msg->servo_move.max_acceleration, 0.0f, 0.0f);
+    stepper_set_parameters(dev, msg->stepper_move.max_velocity, msg->stepper_move.max_acceleration, 0.0f, 0.0f);
 
     switch (msg->stepper_move.abs_or_rel) {
         case JERRYCAN_MOVE_ABSOLUTE:
-            // Move the servo to the absolute position
-            stepper_move_to_position(dev, msg->servo_move.position);
+            // Move the stepper to the absolute position
+            stepper_move_to_position(dev, msg->stepper_move.position);
             break;
 
         case JERRYCAN_MOVE_RELATIVE:
-            // Move the servo to the relative position
-            stepper_move_relative(dev, msg->servo_move.position);
+            // Move the stepper to the relative position
+            stepper_move_relative(dev, msg->stepper_move.position);
             break;
 
         default:
-            LOG_ERR("Invalid move type: %d", msg->servo_move.abs_or_rel);
+            LOG_ERR("Invalid move type: %d", msg->stepper_move.abs_or_rel);
     }
 }
 
@@ -144,6 +153,87 @@ static jerrycan_rx_callback_t stepper_cfg_read_callback = {
     .func = stepper_cfg_read_handler,
 };
 
+static void stepper_home_handler(jerrycan_msg_t *msg) {
+    const struct device *dev = stepper_motor_by_id(msg->stepper_home.motor_id);
+    if (dev == NULL) {
+        LOG_ERR("Failed to home stepper motor: Invalid stepper device number - %d", msg->stepper_home.motor_id);
+        return;
+    }
+
+    int ret = stepper_go_home_slowly(dev, msg->stepper_home.forward);
+    if (ret < 0) {
+        LOG_ERR("Failed to home stepper motor: %d", ret);
+    }
+}
+
+static jerrycan_rx_callback_t stepper_home_callback = {
+    .filter_msg_type = JERRYCAN_CMD_STEPPER_HOME,
+    .func = stepper_home_handler,
+};
+
+static void jerrycan_stepper_status_tx(const struct device *stepper) {
+    struct stepper_work_context *context = find_stepper_context_from_device(stepper);
+
+    uint8_t motor_id = ll_motor_get_id(stepper);
+    float position = context->context.last_position_generated;
+
+    jerrycan_msg_t msg = {.type = JERRYCAN_CMD_STEPPER_STATUS,
+                          .stepper_status = {
+                              .motor_id = motor_id,
+                              .status = 0,  // ll_motor_get_status(stepper), FIXME: Needs to be implemented or removed
+                              .homing_status = 0,  // FIXME: Needs to be implemented or removed
+                              .position = position,
+                              .limit_switch = ll_stepper_get_limit_switch_state(stepper),
+                          }};
+
+    /* Transmit message */
+    int ret = jerrycan_tx(&msg, K_NO_WAIT);
+    if (ret != 0) {
+        LOG_WRN("Failed to send Stepper Status CAN message for stepper%d: %d", motor_id, ret);
+    }
+}
+
+static void jerrycan_bulk_stepper_status_tx() {
+    for (int motor_id = 0; motor_id < STEPPER_COUNT; motor_id++) {
+        const struct device *stepper = stepper_motor_by_id(motor_id);
+
+        if (stepper == NULL) {
+            LOG_WRN("Failed to retrieve stepper for stepper_status_tx: Invalid stepper device number: %d", motor_id);
+            return;
+        }
+
+        jerrycan_stepper_status_tx(stepper);
+    }
+}
+
+static void jerrycan_limit_switch_handler(const struct device *dev, ll_motor_events_t event, void *arg,
+                                          void *user_data) {
+    // Send a status message if the limit switch is tripped
+    if (event == LL_MOTOR_EVENT_LIMIT_SWITCH) {
+        jerrycan_stepper_status_tx(dev);
+    }
+}
+
+#define STEPPER_LIMIT_SWITCH_CB(_)             \
+    {                                          \
+        .func = jerrycan_limit_switch_handler, \
+        .user_data = NULL,                     \
+        .node = {0},                           \
+    }
+
+#define STEPPER_LIMIT_SWITCH_CB_COMMA(idx) STEPPER_LIMIT_SWITCH_CB(idx),
+
+static ll_stepper_cb_t stepper_limit_switch_callbacks[STEPPER_COUNT] = {
+    DT_FOREACH_STATUS_OKAY(ll_stepper, STEPPER_LIMIT_SWITCH_CB_COMMA)};
+
+#define INSTALL_STEPPER_LIMIT_SWITCH_CB(idx)                                         \
+    do {                                                                             \
+        const struct device *stepper = stepper_motor_by_id(idx);                     \
+        ll_stepper_register_callback(stepper, &stepper_limit_switch_callbacks[idx]); \
+    } while (0)
+
+K_TIMER_DEFINE(jerrycan_stepper_status_tx_timer, jerrycan_bulk_stepper_status_tx, NULL);
+
 static int jerrycan_stepper_init() {
     int ret;
     ret = jerrycan_register_rx_callback(&stepper_callback);
@@ -160,6 +250,20 @@ static int jerrycan_stepper_init() {
     if (ret < 0) {
         LOG_WRN("Failed to register stepper config read callback: %d", ret);
     }
+
+    ret = jerrycan_register_rx_callback(&stepper_home_callback);
+    if (ret < 0) {
+        LOG_WRN("Failed to register stepper home callback: %d", ret);
+    }
+
+    // Install limit switch callback for each stepper motor
+    for (int motor_id = 0; motor_id < STEPPER_COUNT; motor_id++) {
+        INSTALL_STEPPER_LIMIT_SWITCH_CB(motor_id);
+    }
+
+    /* Start timer to send the stepper status messages periodically */
+    k_timer_start(&jerrycan_stepper_status_tx_timer, K_MSEC(100),
+                  K_MSEC(CONFIG_LIB_JERRYCAN_STEPPER_STATUS_TX_PERIOD_MS));
 
     return 0;
 }

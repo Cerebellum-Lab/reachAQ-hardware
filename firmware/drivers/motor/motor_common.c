@@ -130,6 +130,12 @@ int ll_motor_queue_data(const struct device *dev, uint32_t *buf, size_t len, k_t
     return ret;
 }
 
+uint8_t ll_motor_get_id(const struct device *dev) {
+    const ll_motor_cfg_t *cfg = dev->config;
+
+    return cfg->motor_id;
+}
+
 int ll_motor_init(const struct device *dev) {
     const ll_motor_cfg_t *cfg = dev->config;
     ll_motor_data_t *data = dev->data;

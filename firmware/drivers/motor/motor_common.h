@@ -56,6 +56,7 @@ typedef struct {
     bool stop_on_dma_complete;
     struct gpio_dt_spec limit_switch_pin;
     struct gpio_dt_spec dir_pin;  // Used for the stepper driver
+    uint8_t motor_id;
 } ll_motor_cfg_t;
 
 static inline int ll_motor_timer_enable_clock(const struct stm32_pclken *timer_clk) {
@@ -74,3 +75,4 @@ int ll_motor_queue_data(const struct device *dev, uint32_t *buf, size_t len, k_t
 int ll_motor_start_dma(const struct device *dev);
 int ll_motor_init(const struct device *dev);
 int ll_motor_register_callback(const struct device *dev, ll_motor_cb_t *cb);
+uint8_t ll_motor_get_id(const struct device *dev);

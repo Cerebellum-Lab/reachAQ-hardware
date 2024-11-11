@@ -21,7 +21,12 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def("EStop", &JerryCAN::EStop)
         .def("StepperMove", &JerryCAN::StepperMove, py::arg("dst_id"), py::arg("motor_id"), py::arg("position"), py::arg("max_velocity"), py::arg("max_acceleration"), py::arg("abs_or_rel"))
         .def("ServoMove", &JerryCAN::ServoMove, py::arg("dst_id"), py::arg("motor_id"), py::arg("position"), py::arg("max_velocity"), py::arg("max_acceleration"), py::arg("abs_or_rel"))
+        .def("StepperHome", &JerryCAN::StepperHome, py::arg("dst_id"), py::arg("motor_id"), py::arg("forward"))
         .def("CfgWrite", &JerryCAN::CfgWrite, py::arg("dst_id"), py::arg("cfg"))
+        .def("StepperCfgWrite", &JerryCAN::StepperCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("min_step_inverse"), py::arg("steps_per_revolution"))
+        .def("ServoCfgWrite", &JerryCAN::ServoCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("min_position"), py::arg("max_position"), py::arg("min_pwm_duration_us"), py::arg("max_pwm_duration_us"))
+        .def("StepperCfgRead", &JerryCAN::StepperCfgRead, py::arg("dst_id"), py::arg("motor_id"))
+        .def("ServoCfgRead", &JerryCAN::ServoCfgRead, py::arg("dst_id"), py::arg("motor_id"))
         .def("CfgRead", &JerryCAN::CfgRead, py::arg("dst_id"), py::arg("cfg"))
         .def("GPIOWrite", &JerryCAN::GPIOWrite, py::arg("dst_id"), py::arg("instance"), py::arg("gpio_idx"), py::arg("state"))
         .def("ToneWrite", &JerryCAN::ToneWrite, py::arg("dst_id"), py::arg("instance"), py::arg("frequency"), py::arg("duration"))
@@ -37,9 +42,12 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("heartbeat", &jerrycan_msg_t::heartbeat)
         .def_readwrite("stepper_move", &jerrycan_msg_t::stepper_move)
         .def_readwrite("servo_move", &jerrycan_msg_t::servo_move)
+        .def_readwrite("stepper_home", &jerrycan_msg_t::stepper_home)
         .def_readwrite("cfg_response", &jerrycan_msg_t::cfg_response)
         .def_readwrite("cfg_read", &jerrycan_msg_t::cfg_read)
         .def_readwrite("cfg_write", &jerrycan_msg_t::cfg_write)
+        .def_readwrite("stepper_status", &jerrycan_msg_t::stepper_status)
+        .def_readwrite("servo_status", &jerrycan_msg_t::servo_status)
         .def_readwrite("pressure_read", &jerrycan_msg_t::pressure_read)
         .def_readwrite("temp_hum_read", &jerrycan_msg_t::temp_hum_read)
         .def_readwrite("gpio_read", &jerrycan_msg_t::gpio_read)
@@ -188,6 +196,32 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("instance", &jerrycan_cmd_load_cell_read_t::instance)
         .def_readwrite("load_mv", &jerrycan_cmd_load_cell_read_t::load_mv)
     ;
+    
+    py::class_<jerrycan_cmd_stepper_home_t>(m, "StepperHome")
+        .def(py::init<>())
+        .def_property("motor_id",
+            [](const jerrycan_cmd_stepper_home_t &a) { return a.motor_id; },
+            [](jerrycan_cmd_stepper_home_t &a, uint8_t v) { a.motor_id = v; })
+        .def_property("forward",
+            [](const jerrycan_cmd_stepper_home_t &a) { return a.forward; },
+            [](jerrycan_cmd_stepper_home_t &a, uint8_t v) { a.forward = v; })
+    ;
+
+    py::class_<jerrycan_cmd_stepper_status_t>(m, "StepperStatus")
+        .def(py::init<>())
+        .def_readwrite("motor_id", &jerrycan_cmd_stepper_status_t::motor_id)
+        .def_readwrite("status", &jerrycan_cmd_stepper_status_t::status)
+        .def_readwrite("homing_status", &jerrycan_cmd_stepper_status_t::homing_status)
+        .def_readwrite("position", &jerrycan_cmd_stepper_status_t::position)
+        .def_readwrite("limit_switch", &jerrycan_cmd_stepper_status_t::limit_switch)
+    ;
+
+    py::class_<jerrycan_cmd_servo_status_t>(m, "ServoStatus")
+        .def(py::init<>())
+        .def_readwrite("motor_id", &jerrycan_cmd_servo_status_t::motor_id)
+        .def_readwrite("status", &jerrycan_cmd_servo_status_t::status)
+        .def_readwrite("position", &jerrycan_cmd_servo_status_t::position)
+    ;
 
     py::enum_<abs_or_rel_t>(m, "AbsOrRel")
         .value("ABSOLUTE", JERRYCAN_MOVE_ABSOLUTE)
@@ -201,9 +235,12 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .value("STATUS", JERRYCAN_CMD_STATUS)
         .value("STEPPER_MOVE", JERRYCAN_CMD_STEPPER_MOVE)
         .value("SERVO_MOVE", JERRYCAN_CMD_SERVO_MOVE)
+        .value("STEPPER_HOME", JERRYCAN_CMD_STEPPER_HOME)
         .value("CFG_WRITE", JERRYCAN_CMD_CFG_WRITE)
         .value("CFG_READ", JERRYCAN_CMD_CFG_READ)
         .value("CFG_RESPONSE", JERRYCAN_CMD_CFG_RESPONSE)
+        .value("STEPPER_STATUS", JERRYCAN_CMD_STEPPER_STATUS)
+        .value("SERVO_STATUS", JERRYCAN_CMD_SERVO_STATUS)
         .value("PRESSURE_READ", JERRYCAN_CMD_PRESSURE_READ)
         .value("TEMP_HUM_READ", JERRYCAN_CMD_TEMP_HUM_READ)
         .value("GPIO_READ", JERRYCAN_CMD_GPIO_READ)

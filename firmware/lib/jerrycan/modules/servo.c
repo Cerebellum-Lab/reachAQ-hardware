@@ -32,10 +32,18 @@
 #include <zephyr/logging/log.h>
 
 #include "jerrycan.h"
+#include "motor_common.h"
 #include "motor_motion.h"
 #include "motor_motion_workq.h"
 
 LOG_MODULE_DECLARE(jerrycan, LOG_LEVEL_DBG);
+
+#define DT_DRV_COMPAT ll_servo
+
+/* Number of enabled servos found in the device tree */
+#define SERVO_COUNT DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT)
+
+#define CAN_TIMEOUT K_MSEC(100)
 
 static void servo_handler(jerrycan_msg_t *msg) {
     // If we receive a servo message, we should move the servo
@@ -163,6 +171,34 @@ static jerrycan_rx_callback_t servo_cfg_read_callback = {
     .func = servo_cfg_read_handler,
 };
 
+static void jerrycan_servo_status_tx() {
+    for (int motor_id = 0; motor_id < SERVO_COUNT; motor_id++) {
+        const struct device *servo = servo_motor_by_id(motor_id);
+
+        if (servo == NULL) {
+            LOG_WRN("Failed to retreive servo for servo_status_tx: Invalid servo device number: %d", motor_id);
+            continue;
+        }
+        struct servo_work_context *context = find_servo_context_from_device(servo);
+        float position = context->context.last_position_generated;
+        jerrycan_msg_t msg = {
+            .type = JERRYCAN_CMD_SERVO_STATUS,
+            .servo_status = {
+                .motor_id = motor_id,
+                .status = 0,  // ll_motor_get_status(servo),  // FIXME: Needs to be implemented or removed
+                .position = position,
+            }};
+
+        /* Transmit message */
+        int ret = jerrycan_tx(&msg, K_NO_WAIT);
+        if (ret != 0) {
+            LOG_WRN("Failed to send servo Status CAN message for servo%d: %d", motor_id, ret);
+        }
+    }
+}
+
+K_TIMER_DEFINE(jerrycan_servo_status_tx_timer, jerrycan_servo_status_tx, NULL);
+
 static int jerrycan_servo_init() {
     int ret;
     ret = jerrycan_register_rx_callback(&servo_callback);
@@ -179,6 +215,9 @@ static int jerrycan_servo_init() {
     if (ret < 0) {
         LOG_WRN("Failed to register servo config read callback: %d", ret);
     }
+
+    /* Start timer to send the servo status messages periodically */
+    k_timer_start(&jerrycan_servo_status_tx_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_SERVO_STATUS_TX_PERIOD_MS));
 
     return 0;
 }

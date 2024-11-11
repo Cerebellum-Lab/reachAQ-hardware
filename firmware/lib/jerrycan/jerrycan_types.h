@@ -36,6 +36,8 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_CONT = 0x11,
     JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_END = 0x12,
     JERRYCAN_CMD_RGB_LED = 0x13,
+    JERRYCAN_CMD_STEPPER_STATUS = 0x16,
+    JERRYCAN_CMD_SERVO_STATUS = 0x17,
     JERRYCAN_CMD_MIN = 0x00,
     JERRYCAN_CMD_MAX = 0x3F,
 } jerrycan_cmd_type_t;
@@ -90,6 +92,13 @@ typedef struct __attribute__((packed)) {
 } jerrycan_cmd_stepper_move_t;
 
 BUILD_ASSERT(sizeof(jerrycan_cmd_stepper_move_t) == 8, "jerrycan_cmd_stepper_move_t should be 8 bytes");
+
+typedef struct __attribute__((packed)) {
+    uint8_t motor_id : 7;
+    uint8_t forward : 1;
+} jerrycan_cmd_stepper_home_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_stepper_home_t) == 1, "jerrycan_cmd_stepper_home_t should be 1 bytes");
 
 // I think the payload for this message can be the same format as the stepper move message
 typedef jerrycan_cmd_stepper_move_t jerrycan_cmd_servo_move_t;
@@ -234,6 +243,24 @@ BUILD_ASSERT(sizeof(jerrycan_cmd_audio_data_t) == JERRYCAN_MAX_PAYLOAD_SIZE,
              "jerrycan_cmd_audio_data_t should be 64 bytes");
 
 typedef struct __attribute__((packed)) {
+    uint8_t motor_id;
+    uint8_t status;
+    uint8_t homing_status;
+    uint8_t limit_switch;
+    int32_t position;
+} jerrycan_cmd_stepper_status_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_stepper_status_t) == 8, "jerrycan_cmd_stepper_status_t should be 8 bytes");
+
+typedef struct __attribute__((packed)) {
+    uint8_t motor_id;
+    uint8_t status;
+    int32_t position;
+} jerrycan_cmd_servo_status_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_servo_status_t) == 6, "jerrycan_cmd_servo_status_t should be 6 bytes");
+
+typedef struct __attribute__((packed)) {
     jerrycan_cmd_type_t type;
     uint8_t dst_id;
     union {
@@ -242,9 +269,12 @@ typedef struct __attribute__((packed)) {
         jerrycan_cmd_status_t status;
         jerrycan_cmd_stepper_move_t stepper_move;
         jerrycan_cmd_servo_move_t servo_move;
+        jerrycan_cmd_stepper_home_t stepper_home;
         jerrycan_cmd_cfg_t cfg_write;
         jerrycan_cmd_cfg_t cfg_response;
         jerrycan_cmd_cfg_t cfg_read;
+        jerrycan_cmd_stepper_status_t stepper_status;
+        jerrycan_cmd_servo_status_t servo_status;
         jerrycan_cmd_pressure_read_t pressure_read;
         jerrycan_cmd_temp_hum_read_t temp_hum_read;
         jerrycan_cmd_gpio_read_t gpio_read;

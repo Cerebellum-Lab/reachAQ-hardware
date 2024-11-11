@@ -64,7 +64,6 @@ menuconfig LIB_JERRYCAN_LOAD_CELL_TX_PERIOD_MS
     help
       The period at which the load cell message is transmitted in milliseconds.
 
-
 menuconfig LIB_JERRYCAN_DOOR_SENSOR_TX_PERIOD_MS
     int "Door Sensor TX Period"
     default 10
@@ -89,6 +88,22 @@ menuconfig LIB_JERRYCAN_RGB_LED
     select LED_PWM
     help
       Enable the RGB LED functionality on the pellet module
+
+menuconfig LIB_JERRYCAN_STEPPER_STATUS_TX_PERIOD_MS
+    int "Stepper Status TX Period"
+    default 1000
+    depends on LIB_JERRYCAN
+    depends on DT_HAS_LL_STEPPER_ENABLED
+    help
+      The period at which each Stepper Status message is transmitted in milliseconds.
+
+menuconfig LIB_JERRYCAN_SERVO_STATUS_TX_PERIOD_MS
+    int "Servo Status TX Period"
+    default 1000
+    depends on LIB_JERRYCAN
+    depends on DT_HAS_LL_SERVO_ENABLED
+    help
+      The period at which each Servo Status message is transmitted in milliseconds.
 
 menuconfig LIB_JERRYCAN_SHELL
     bool "Enable the shell for the JerryCAN library"

@@ -90,6 +90,7 @@ int ll_servo_dma_stop(const struct device *dev) {
         .timer_dma_reg = channel_to_ccr_map[DT_INST_PROP(idx, pwm_channel) - 1],                    \
         .stop_on_dma_complete = false,                                                              \
         .limit_switch_pin = GPIO_DT_SPEC_INST_GET_OR(idx, limit_switch_gpios, {0}),                 \
+        .motor_id = idx,                                                                            \
     };                                                                                              \
                                                                                                     \
     static ll_motor_data_t servo_data##idx = {                                                      \

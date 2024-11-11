@@ -100,6 +100,19 @@ int ll_stepper_dma_stop(const struct device *dev) {
     return dma_stop(cfg->dma_dev, data->dma_channel);
 }
 
+int ll_stepper_get_limit_switch_state(const struct device *dev) {
+    const ll_motor_cfg_t *cfg = dev->config;
+
+    int ret = gpio_pin_get_dt(&cfg->limit_switch_pin);
+
+    if (ret < 0) {
+        LOG_ERR("Failed to get limit switch state: %d", ret);
+        return 0;  // Default to limit switch low on read fail?
+    }
+
+    return ret;
+}
+
 #define STEPPER_INST(idx)                                                                                 \
     BUILD_ASSERT(IS_TIM_PULSEONCOMPARE_INSTANCE(TIM(idx)),                                                \
                  "Stepper driver requires a timer with pulse-on-compare mode");                           \
@@ -122,6 +135,7 @@ int ll_stepper_dma_stop(const struct device *dev) {
         .stop_on_dma_complete = true,                                                                     \
         .limit_switch_pin = GPIO_DT_SPEC_INST_GET_OR(idx, limit_switch_gpios, {0}),                       \
         .dir_pin = GPIO_DT_SPEC_INST_GET(idx, dir_gpios),                                                 \
+        .motor_id = idx,                                                                                  \
     };                                                                                                    \
                                                                                                           \
     static ll_motor_data_t stepper_data##idx = {                                                          \

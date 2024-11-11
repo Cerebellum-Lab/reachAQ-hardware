@@ -4,6 +4,7 @@
 #include <zephyr/kernel.h>
 
 #include "motor_callbacks.h"
+#include "motor_common.h"
 
 typedef ll_motor_events_t ll_stepper_events_t;
 typedef ll_motor_event_callback_t ll_stepper_event_callback_t;
@@ -19,3 +20,4 @@ int ll_stepper_register_callback(const struct device *dev, ll_stepper_cb_t *cb);
 int ll_stepper_set_direction(const struct device *dev, ll_stepper_dir_t dir);
 int ll_stepper_disable(const struct device *dev);
 int ll_stepper_dma_stop(const struct device *dev);
+int ll_stepper_get_limit_switch_state(const struct device *dev);
