@@ -58,7 +58,7 @@ menuconfig LIB_JERRYCAN_ANALOG_OUT_TX_PERIOD_MS
       The period at which the analog output message is transmitted in milliseconds.
 
 menuconfig LIB_JERRYCAN_LOAD_CELL_TX_PERIOD_MS
-    int "Analog Out TX Period"
+    int "Load Cell TX Period"
     default 10
     depends on LIB_JERRYCAN
     help

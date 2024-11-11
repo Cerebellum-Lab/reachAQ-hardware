@@ -49,23 +49,23 @@ LOG_MODULE_DECLARE(jerrycan, LOG_LEVEL_DBG);
 typedef struct {
     uint16_t instance_number;
     const struct device *pressure_sensor;
-} jerrycan_pressure_sensor_tx_context_t;
+} jerrycan_pressure_sensor_context_t;
 
-#define PRESSURE_SENSOR_TX_CONTEXT(id) \
-    (jerrycan_pressure_sensor_tx_context_t) { .instance_number = id, .pressure_sensor = DEVICE_DT_INST_GET(id), }
+#define JERRYCAN_PRESSURE_SENSOR_CONTEXT(id) \
+    (jerrycan_pressure_sensor_context_t) { .instance_number = id, .pressure_sensor = DEVICE_DT_INST_GET(id), }
 
-#define PRESSURE_SENSOR_TX_CONTEXT_COMMA(id) PRESSURE_SENSOR_TX_CONTEXT(id),
+#define JERRYCAN_PRESSURE_SENSOR_CONTEXT_COMMA(id) JERRYCAN_PRESSURE_SENSOR_CONTEXT(id),
 
 /* Array of pressure sensor tx contexts for all enabled pressure sensor devices */
-static const jerrycan_pressure_sensor_tx_context_t tx_contexts[PRESSURE_SENSOR_COUNT] = {
-    DT_INST_FOREACH_STATUS_OKAY(PRESSURE_SENSOR_TX_CONTEXT_COMMA)};
+static const jerrycan_pressure_sensor_context_t contexts[PRESSURE_SENSOR_COUNT] = {
+    DT_INST_FOREACH_STATUS_OKAY(JERRYCAN_PRESSURE_SENSOR_CONTEXT_COMMA)};
 
 static void jerrycan_pressure_sensor_tx() {
     /* For each pressure sensor, construct and send a pressure message*/
     for (int i = 0; i < PRESSURE_SENSOR_COUNT; i++) {
-        const jerrycan_pressure_sensor_tx_context_t *tx_context = &tx_contexts[i];
-        const struct device *pressure_sensor = tx_context->pressure_sensor;
-        uint16_t instance_number = tx_context->instance_number;
+        const jerrycan_pressure_sensor_context_t *context = &contexts[i];
+        const struct device *pressure_sensor = context->pressure_sensor;
+        uint16_t instance_number = context->instance_number;
 
         /* Local variable for storing pressure value */
         uint16_t pressure_mv = 0;
@@ -76,17 +76,49 @@ static void jerrycan_pressure_sensor_tx() {
                                   .pressure_mv = pressure_mv,
                               }};
 
-        jerrycan_tx(&msg, K_NO_WAIT);
+        /* Transmit message */
+        int ret = jerrycan_tx(&msg, K_NO_WAIT);
+        if (ret != 0) {
+            LOG_ERR("Error sending CAN message for pressure_sensor%d: %d", context->instance_number, ret);
+        }
     }
 }
+
+static void jerrycan_pressure_sensor_tare_handler(jerrycan_msg_t *msg) {
+    for (int i = 0; i < PRESSURE_SENSOR_COUNT; i++) {
+        const jerrycan_pressure_sensor_context_t *context = &contexts[i];
+        const struct device *pressure_sensor = context->pressure_sensor;
+        uint16_t instance_number = context->instance_number;
+
+        if (msg->pressure_sensor_tare.instance == instance_number) {
+            int ret = ll_pressure_sensor_tare(pressure_sensor);
+            if (ret < 0) {
+                LOG_ERR("Failed to perform the requested pressure sensor tare operation: %d", ret);
+            } else {
+                LOG_INF("Successfully tared pressure_sensor%d", instance_number);
+            }
+            return;
+        }
+    }
+}
+
+static jerrycan_rx_callback_t pressure_sensor_tare_callback = {
+    .filter_msg_type = JERRYCAN_CMD_PRESSURE_SENSOR_TARE,
+    .func = jerrycan_pressure_sensor_tare_handler,
+};
 
 K_TIMER_DEFINE(jerrycan_pressure_sensor_timer, jerrycan_pressure_sensor_tx, NULL);
 
 static int jerrycan_pressure_sensor_init() {
+    int ret = jerrycan_register_rx_callback(&pressure_sensor_tare_callback);
+    if (ret < 0) {
+        LOG_WRN("Failed to register pressure sensor tare callback: %d", ret);
+    }
+
     /* Start timer to send the status messages periodically */
     k_timer_start(&jerrycan_pressure_sensor_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_PRESSURE_TX_PERIOD_MS));
 
-    return 0;
+    return ret;
 }
 
 SYS_INIT(jerrycan_pressure_sensor_init, APPLICATION, CONFIG_LIB_JERRYCAN_INIT_PRIORITY);

@@ -227,10 +227,37 @@ static int cmd_pressure_sensor_disable(const struct shell *shell, size_t argc, c
     return error;
 }
 
+/* Tare the specified pressure sensor */
+static int cmd_pressure_sensor_tare(const struct shell *shell, size_t argc, char **argv) {
+    if (argc != 2) {
+        shell_print(shell, "Usage: %s <pressure_sensor>", argv[0]);
+        return -EINVAL;
+    }
+
+    int pressure_sensor = atoi(argv[1]);
+
+    /* Make sure the specified tone generator exists */
+    if (pressure_sensor < 0 || pressure_sensor >= ARRAY_SIZE(pressure_sensor_devs)) {
+        shell_print(shell, "Invalid pressure sensor instance: %d", pressure_sensor);
+        return -EINVAL;
+    }
+
+    int ret = ll_pressure_sensor_tare(pressure_sensor_devs[pressure_sensor]);
+    if (ret != 0) {
+        shell_print(shell, "Failed to tare pressure_sensor%d: %s", pressure_sensor, pressure_sensor_error_to_str[ret]);
+        return ret;
+    }
+
+    shell_print(shell, "pressure_sensor%d tared successfully", pressure_sensor);
+
+    return 0;
+}
+
 SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_pressure_sensor, SHELL_CMD_ARG(read, NULL, "Read from a pressure sensor", cmd_pressure_sensor_read, 2, 0),
     SHELL_CMD_ARG(dump, NULL, "Dump all readings from all pressure sensors", cmd_pressure_sensor_dump, 1, 0),
     SHELL_CMD_ARG(enable, NULL, "Enable a pressure sensor", cmd_pressure_sensor_enable, 2, 0),
-    SHELL_CMD_ARG(disable, NULL, "Disable a pressure sensor", cmd_pressure_sensor_disable, 2, 0), SHELL_SUBCMD_SET_END);
+    SHELL_CMD_ARG(disable, NULL, "Disable a pressure sensor", cmd_pressure_sensor_disable, 2, 0),
+    SHELL_CMD_ARG(tare, NULL, "Tare a pressure sensor", cmd_pressure_sensor_tare, 2, 0), SHELL_SUBCMD_SET_END);
 
 SHELL_CMD_REGISTER(pressure_sensor, &sub_pressure_sensor, "Pressure Sensor commands", NULL);

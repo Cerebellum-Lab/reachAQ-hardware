@@ -135,8 +135,32 @@ static int cmd_load_cell_dump(const struct shell *shell, size_t argc, char **arg
     return ret;
 }
 
+static int cmd_load_cell_tare(const struct shell *shell, size_t argc, char **argv) {
+    if (argc != 2) {
+        shell_print(shell, "Usage: %s <load_cell>", argv[0]);
+        return -EINVAL;
+    }
+
+    int load_cell = atoi(argv[1]);
+
+    /* Make sure the specified tone generator exists */
+    if (load_cell < 0 || load_cell >= ARRAY_SIZE(load_cell_devs)) {
+        shell_print(shell, "Invalid load cell instance: %d", load_cell);
+        return -EINVAL;
+    }
+
+    int ret = ll_load_cell_tare(load_cell_devs[load_cell]);
+    if (ret < 0) {
+        shell_print(shell, "Failed to tare load_cell%d: %s", k_work_submit_error_to_str[-ret]);
+        return ret;
+    }
+
+    return 0;
+}
+
 SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_load_cell, SHELL_CMD_ARG(read, NULL, "Read from a load cell", cmd_load_cell_read, 2, 0),
-    SHELL_CMD_ARG(dump, NULL, "Dump all readings from all load cells", cmd_load_cell_dump, 1, 0), SHELL_SUBCMD_SET_END);
+    SHELL_CMD_ARG(dump, NULL, "Dump all readings from all load cells", cmd_load_cell_dump, 1, 0),
+    SHELL_CMD_ARG(tare, NULL, "Tare a load cell", cmd_load_cell_tare, 2, 0), SHELL_SUBCMD_SET_END);
 
 SHELL_CMD_REGISTER(load_cell, &sub_load_cell, "Load Cell commands", NULL);

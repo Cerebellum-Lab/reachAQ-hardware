@@ -106,6 +106,10 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
             return sizeof(jerrycan_cmd_analog_out_t);
         case JERRYCAN_CMD_LOAD_CELL_READ:
             return sizeof(jerrycan_cmd_load_cell_read_t);
+        case JERRYCAN_CMD_LOAD_CELL_TARE:
+            return sizeof(jerrycan_cmd_load_cell_tare_t);
+        case JERRYCAN_CMD_PRESSURE_SENSOR_TARE:
+            return sizeof(jerrycan_cmd_pressure_sensor_tare_t);
         default:
             return 0;
     }
@@ -361,6 +365,30 @@ int JerryCAN::AnalogOutWrite(uint8_t dst_id, uint8_t instance, uint16_t value_mv
             {
                 .instance = instance,
                 .value_mv = value_mv,
+            },
+    };
+
+    return SendMessage(msg, dst_id);
+}
+
+int JerryCAN::LoadCellTare(uint8_t dst_id, uint8_t instance) {
+    jerrycan_msg_t msg = {
+        .type = JERRYCAN_CMD_LOAD_CELL_TARE,
+        .load_cell_tare =
+            {
+                .instance = instance,
+            },
+    };
+
+    return SendMessage(msg, dst_id);
+}
+
+int JerryCAN::PressureSensorTare(uint8_t dst_id, uint8_t instance) {
+    jerrycan_msg_t msg = {
+        .type = JERRYCAN_CMD_PRESSURE_SENSOR_TARE,
+        .pressure_sensor_tare =
+            {
+                .instance = instance,
             },
     };
 

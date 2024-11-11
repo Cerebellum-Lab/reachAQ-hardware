@@ -23,6 +23,7 @@ typedef struct {
     bool enabled;
     enum adc_action adc_action;
     uint32_t raw_data;
+    uint16_t offset;
 } ll_pressure_sensor_data_t;
 
 /* ADC callback */
@@ -79,7 +80,7 @@ ll_pressure_sensor_error_t ll_pressure_sensor_get_pressure(const struct device *
         return PRESSURE_SENSOR_NOT_ENABLED;
     }
 
-    *value = ADC_COUNTS_TO_MV(data->raw_data);
+    *value = ADC_COUNTS_TO_MV(data->raw_data) - data->offset;
 
     return PRESSURE_SENSOR_NO_ERROR;
 }
@@ -154,6 +155,19 @@ bool ll_pressure_sensor_is_enabled(const struct device *dev) {
     return data->enabled;
 }
 
+int ll_pressure_sensor_tare(const struct device *dev) {
+    ll_pressure_sensor_data_t *data = dev->data;
+    uint16_t current_pressure;
+    ll_pressure_sensor_error_t ret = ll_pressure_sensor_get_pressure(dev, &current_pressure);
+    if (ret != PRESSURE_SENSOR_NO_ERROR) {
+        LOG_ERR("Failed to tare pressure_sensor: %s", pressure_sensor_error_to_str[ret]);
+    } else {
+        data->offset = current_pressure + data->offset;
+    }
+
+    return ret;
+}
+
 /* Convert frequency in hertz to period in microseconds */
 #define FREQ_HZ_TO_PER_US(__freq__) (uint32_t)(1000000.0f / __freq__)
 
@@ -162,6 +176,7 @@ bool ll_pressure_sensor_is_enabled(const struct device *dev) {
         .initialized = false,                                                                                          \
         .enabled = false,                                                                                              \
         .adc_action = ADC_ACTION_FINISH,                                                                               \
+        .offset = 0,                                                                                                   \
     };                                                                                                                 \
     static const struct adc_sequence_options pressure_sensor_sequence_opts_##idx = {                                   \
         .extra_samplings = 0,                                                                                          \

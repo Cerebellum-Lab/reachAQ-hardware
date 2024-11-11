@@ -62,6 +62,8 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
         [JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_BEGIN] = sizeof(jerrycan_cmd_audio_data_cmd_t),
         [JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_CONT] = sizeof(jerrycan_cmd_audio_data_t),
         [JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_END] = sizeof(jerrycan_cmd_audio_data_cmd_t),
+        [JERRYCAN_CMD_LOAD_CELL_TARE] = sizeof(jerrycan_cmd_load_cell_tare_t),
+        [JERRYCAN_CMD_PRESSURE_SENSOR_TARE] = sizeof(jerrycan_cmd_pressure_sensor_tare_t),
     };
 
     if (msg_type > JERRYCAN_CMD_MAX || msg_type < JERRYCAN_CMD_MIN) {

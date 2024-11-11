@@ -36,6 +36,8 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_CONT = 0x11,
     JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_END = 0x12,
     JERRYCAN_CMD_RGB_LED = 0x13,
+    JERRYCAN_CMD_LOAD_CELL_TARE = 0x14,
+    JERRYCAN_CMD_PRESSURE_SENSOR_TARE = 0x15,
     JERRYCAN_CMD_STEPPER_STATUS = 0x16,
     JERRYCAN_CMD_SERVO_STATUS = 0x17,
     JERRYCAN_CMD_MIN = 0x00,
@@ -149,6 +151,12 @@ typedef struct __attribute__((packed)) {
 
 BUILD_ASSERT(sizeof(jerrycan_cmd_pressure_read_t) == 6, "jerrycan_cmd_pressure_read_t should be 6 bytes");
 
+typedef struct __attribute__((packed)) {
+    uint8_t instance;
+} jerrycan_cmd_pressure_sensor_tare_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_pressure_sensor_tare_t) == 1, "jerrycan_cmd_pressure_sensor_tare_t should be 1 bytes");
+
 /*
     Scale factor for temperature and humidity transmission
     (provides 2 significant decimal digits of precision)
@@ -243,6 +251,12 @@ BUILD_ASSERT(sizeof(jerrycan_cmd_audio_data_t) == JERRYCAN_MAX_PAYLOAD_SIZE,
              "jerrycan_cmd_audio_data_t should be 64 bytes");
 
 typedef struct __attribute__((packed)) {
+    uint8_t instance;
+} jerrycan_cmd_load_cell_tare_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_load_cell_tare_t) == 1, "jerrycan_cmd_load_cell_tare_t should be 1 bytes");
+
+typedef struct __attribute__((packed)) {
     uint8_t motor_id;
     uint8_t status;
     uint8_t homing_status;
@@ -286,6 +300,8 @@ typedef struct __attribute__((packed)) {
         jerrycan_cmd_audio_data_cmd_t audio_data_cmd;
         jerrycan_cmd_audio_data_t audio_data;
         jerrycan_cmd_rgb_led_t rgb_led;
+        jerrycan_cmd_load_cell_tare_t load_cell_tare;
+        jerrycan_cmd_pressure_sensor_tare_t pressure_sensor_tare;
         uint8_t payload[JERRYCAN_MAX_PAYLOAD_SIZE];
     };
 } jerrycan_msg_t;

@@ -43,6 +43,10 @@ class JerryCAN {
 
     int AnalogOutWrite(uint8_t dst_id, uint8_t instance, uint16_t value_mv);
 
+    int LoadCellTare(uint8_t dst_id, uint8_t instance);
+
+    int PressureSensorTare(uint8_t dst_id, uint8_t instance);
+
    private:
     int _can_socket_handle;
 };

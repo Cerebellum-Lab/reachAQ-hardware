@@ -43,27 +43,27 @@ LOG_MODULE_DECLARE(jerrycan, LOG_LEVEL_DBG);
 /* Number of enabled load cells found in the device tree */
 #define LOAD_CELL_COUNT DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT)
 
-/* JerryCAN load cell tx context structure */
+/* JerryCAN load cell context structure */
 typedef struct {
     uint16_t instance_number;
     const struct device *load_cell;
-} jerrycan_load_cell_tx_context_t;
+} jerrycan_load_cell_context_t;
 
-#define LOAD_CELL_TX_CONTEXT(id) \
-    (jerrycan_load_cell_tx_context_t) { .instance_number = id, .load_cell = DEVICE_DT_INST_GET(id), }
+#define JERRYCAN_LOAD_CELL_CONTEXT(id) \
+    (jerrycan_load_cell_context_t) { .instance_number = id, .load_cell = DEVICE_DT_INST_GET(id), }
 
-#define LOAD_CELL_TX_CONTEXT_COMMA(id) LOAD_CELL_TX_CONTEXT(id),
+#define JERRYCAN_LOAD_CELL_CONTEXT_COMMA(id) JERRYCAN_LOAD_CELL_CONTEXT(id),
 
-/* Array of load cell tx contexts for all enabled load cell devices */
-static const jerrycan_load_cell_tx_context_t tx_contexts[LOAD_CELL_COUNT] = {
-    DT_INST_FOREACH_STATUS_OKAY(LOAD_CELL_TX_CONTEXT_COMMA)};
+/* Array of load cell contexts for all enabled load cell devices */
+static const jerrycan_load_cell_context_t contexts[LOAD_CELL_COUNT] = {
+    DT_INST_FOREACH_STATUS_OKAY(JERRYCAN_LOAD_CELL_CONTEXT_COMMA)};
 
 static void jerrycan_load_cell_tx() {
     /* For each load cell, construct and send a load cell read message*/
     for (int i = 0; i < LOAD_CELL_COUNT; i++) {
-        const jerrycan_load_cell_tx_context_t *tx_context = &tx_contexts[i];
-        const struct device *load_cell = tx_context->load_cell;
-        uint16_t instance_number = tx_context->instance_number;
+        const jerrycan_load_cell_context_t *context = &contexts[i];
+        const struct device *load_cell = context->load_cell;
+        uint16_t instance_number = context->instance_number;
 
         jerrycan_msg_t msg = {.type = JERRYCAN_CMD_LOAD_CELL_READ,
                               .load_cell_read = {
@@ -75,13 +75,41 @@ static void jerrycan_load_cell_tx() {
     }
 }
 
-K_TIMER_DEFINE(jerrycan_load_cell_timer, jerrycan_load_cell_tx, NULL);
+static void jerrycan_load_cell_tare_handler(jerrycan_msg_t *msg) {
+    for (int i = 0; i < LOAD_CELL_COUNT; i++) {
+        const jerrycan_load_cell_context_t *context = &contexts[i];
+        const struct device *load_cell = context->load_cell;
+        uint16_t instance_number = context->instance_number;
+
+        if (msg->load_cell_tare.instance == instance_number) {
+            int ret = ll_load_cell_tare(load_cell);
+            if (ret < 0) {
+                LOG_ERR("Failed to perform the requested load cell tare operation: %d", ret);
+            } else {
+                LOG_INF("Successfully tared load_cell%d", instance_number);
+            }
+            return;
+        }
+    }
+}
+
+static jerrycan_rx_callback_t load_cell_tare_callback = {
+    .filter_msg_type = JERRYCAN_CMD_LOAD_CELL_TARE,
+    .func = jerrycan_load_cell_tare_handler,
+};
+
+K_TIMER_DEFINE(jerrycan_load_cell_tx_timer, jerrycan_load_cell_tx, NULL);
 
 static int jerrycan_load_cell_init() {
-    /* Start timer to send the status messages periodically */
-    k_timer_start(&jerrycan_load_cell_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_LOAD_CELL_TX_PERIOD_MS));
+    int ret = jerrycan_register_rx_callback(&load_cell_tare_callback);
+    if (ret < 0) {
+        LOG_WRN("Failed to register load cell tare callback: %d", ret);
+    }
 
-    return 0;
+    /* Start timer to send the status messages periodically */
+    k_timer_start(&jerrycan_load_cell_tx_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_LOAD_CELL_TX_PERIOD_MS));
+
+    return ret;
 }
 
 SYS_INIT(jerrycan_load_cell_init, APPLICATION, CONFIG_LIB_JERRYCAN_INIT_PRIORITY);

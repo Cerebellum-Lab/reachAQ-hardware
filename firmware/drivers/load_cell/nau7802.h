@@ -72,8 +72,9 @@ typedef enum {
 } __attribute__((__packed__)) nau7802_oscs_t;
 
 /* Convert from signed 24-bit ADC counts to millivolts as a float */
-#define NAU7802_COUNTS_TO_MV(__counts__, __vldo__, __gains__) \
-    (((float)__counts__ / INT24_MAX) * (nau7802_vldo_to_mv_float[__vldo__] / NAU7802_GAINS_TO_SCALAR(__gains__)))
+#define NAU7802_COUNTS_TO_MV(__counts__, __vldo__, __gains__)     \
+    (((float)(__counts__ * nau7802_vldo_to_mv_float[__vldo__])) / \
+     ((float)(INT24_MAX * NAU7802_GAINS_TO_SCALAR(__gains__))))
 
 /*************/
 /* Registers */

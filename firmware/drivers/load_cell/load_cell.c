@@ -22,25 +22,14 @@ typedef struct {
 
 typedef struct {
     const struct i2c_dt_spec i2c;
-    struct k_work i2c_work;
+    struct k_work read_i2c_work;
+    struct k_work tare_i2c_work;
     struct gpio_callback drdy_cb;
     int32_t load;
 } ll_load_cell_data_t;
 
-/* ISR called on DRDY rising-edge interrupt to submit I2C work item to the system workqueue */
-static void ll_load_cell_drdy_isr(const struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins) {
-    ll_load_cell_data_t *data = CONTAINER_OF(cb, ll_load_cell_data_t, drdy_cb);
-
-    /* Mapping of k_work_submit errors to string  */
-    static const char *k_work_submit_error_to_str[] = {
-        [EBUSY] = "work item is cancelling; or queue is draining; or queue is plugged",
-        [EINVAL] = "queue is null and the work item has never been run",
-        [ENODEV] = "queue has not been started",
-    };
-
-    /* Submit I2C work item to the system workqueue */
-    int ret = k_work_submit(&data->i2c_work);
-    switch (ret) {
+static inline int k_work_error_handler(int error) {
+    switch (error) {
         case 0: /* fall-through */
             /* work was already submitted to a queue */
         case 1: /* fall-through */
@@ -48,25 +37,62 @@ static void ll_load_cell_drdy_isr(const struct device *port, struct gpio_callbac
         case 2:
             /* work was running and has been queued to the queue that was running it */
             break;
-        case -EBUSY:  /* fall-through */
-        case -EINVAL: /* fall-through */
+        case -EBUSY:
+            LOG_ERR(
+                "Failed to submit read_i2c_work to the system workqueue: work item is cancelling; or queue is "
+                "draining; or queue is plugged");
+            break;
+        case -EINVAL:
+            LOG_ERR(
+                "Failed to submit read_i2c_work to the system workqueue: queue is null and the work item has never "
+                "been run");
+            break;
         case -ENODEV:
-            LOG_ERR("Failed to submit i2c_work to the system workqueue: %s", k_work_submit_error_to_str[-ret]);
+            LOG_ERR("Failed to submit read_i2c_work to the system workqueue: queue has not been started");
             break;
         default:
-            LOG_ERR("Failed to submit i2c_work to the system workqueue: Unknown error - %d", ret);
+            LOG_ERR("Failed to submit read_i2c_work to the system workqueue: Unknown error - %d", error);
             break;
     }
+
+    return error;
+}
+
+/* ISR called on DRDY rising-edge interrupt to submit I2C work item to the system workqueue */
+static void ll_load_cell_drdy_isr(const struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins) {
+    ll_load_cell_data_t *data = CONTAINER_OF(cb, ll_load_cell_data_t, drdy_cb);
+
+    /* Submit I2C work item to the system workqueue */
+    int ret = k_work_submit(&data->read_i2c_work);
+    k_work_error_handler(ret);
 }
 
 /* I2C work item handler function for performing conversion result read transaction */
-static void ll_load_cell_i2c_work_handler(struct k_work *work) {
-    ll_load_cell_data_t *data = CONTAINER_OF(work, ll_load_cell_data_t, i2c_work);
+static void ll_load_cell_read_i2c_work_handler(struct k_work *work) {
+    ll_load_cell_data_t *data = CONTAINER_OF(work, ll_load_cell_data_t, read_i2c_work);
 
     /* On DRDY, perform read */
     int ret = nau7802_read_conversion_result(&data->i2c, &data->load);
     if (ret != 0) {
         LOG_ERR("Error reading conversion result: %d", ret);
+        return;
+    }
+}
+
+static void ll_load_cell_tare_i2c_work_handler(struct k_work *work) {
+    ll_load_cell_data_t *data = CONTAINER_OF(work, ll_load_cell_data_t, tare_i2c_work);
+
+    /* Set calibration mode to system */
+    int ret = nau7802_set_calibration_mode(&data->i2c, OFFSET_CALIBRATION_SYSTEM);
+    if (ret != 0) {
+        LOG_ERR("Failed to initialize NUA7802: Error Setting NUA7802 calibration mode to system - %d", ret);
+        return;
+    }
+
+    /* Perform calibration */
+    ret = nau7802_calibrate(&data->i2c);
+    if (ret != 0) {
+        LOG_ERR("Failed to initialize NUA7802: Error performing NUA7802 system calibration - %d", ret);
         return;
     }
 }
@@ -85,6 +111,15 @@ float ll_load_cell_get_load_mv_float(const struct device *dev) {
     ll_load_cell_data_t *data = dev->data;
 
     return NAU7802_COUNTS_TO_MV(data->load, cfg->ldo_voltage, cfg->gain);
+}
+
+/* Tares the load cell */
+int ll_load_cell_tare(const struct device *dev) {
+    ll_load_cell_data_t *data = dev->data;
+
+    /* Submit I2C work item to the system workqueue */
+    int ret = k_work_submit(&data->tare_i2c_work);
+    return k_work_error_handler(ret);
 }
 
 /* Initialize NAU7802 24-bit ADC */
@@ -177,22 +212,6 @@ static int ll_load_cell_nau7802_init(const struct device *dev) {
         return ret;
     }
 
-    /* System Calibration */
-
-    /* Set calibration mode to system */
-    ret = nau7802_set_calibration_mode(i2c, OFFSET_CALIBRATION_SYSTEM);
-    if (ret != 0) {
-        LOG_ERR("Failed to initialize NUA7802: Error Setting NUA7802 calibration mode to system - %d", ret);
-        return ret;
-    }
-
-    /* Perform calibration */
-    ret = nau7802_calibrate(i2c);
-    if (ret != 0) {
-        LOG_ERR("Failed to initialize NUA7802: Error performing NUA7802 system calibration - %d", ret);
-        return ret;
-    }
-
     /* Start NUA7802 ADC Conversion */
     ret = nau7802_start_adc(i2c);
     if (ret != 0) {
@@ -238,7 +257,8 @@ static int ll_load_cell_init(const struct device *dev) {
         return ret;
     }
 
-    k_work_init(&data->i2c_work, ll_load_cell_i2c_work_handler);
+    k_work_init(&data->read_i2c_work, ll_load_cell_read_i2c_work_handler);
+    k_work_init(&data->tare_i2c_work, ll_load_cell_tare_i2c_work_handler);
 
     /* Initialize NAU7802 */
     ret = ll_load_cell_nau7802_init(dev);

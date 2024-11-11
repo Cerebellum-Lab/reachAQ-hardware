@@ -31,6 +31,8 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def("GPIOWrite", &JerryCAN::GPIOWrite, py::arg("dst_id"), py::arg("instance"), py::arg("gpio_idx"), py::arg("state"))
         .def("ToneWrite", &JerryCAN::ToneWrite, py::arg("dst_id"), py::arg("instance"), py::arg("frequency"), py::arg("duration"))
         .def("AnalogOutWrite", &JerryCAN::AnalogOutWrite, py::arg("dst_id"), py::arg("instance"), py::arg("value_mv"))
+        .def("LoadCellTare", &JerryCAN::LoadCellTare, py::arg("dst_id"), py::arg("instance"))
+        .def("PressureSensorTare", &JerryCAN::PressureSensorTare, py::arg("dst_id"), py::arg("instance"))
     ;
 
     py::class_<jerrycan_msg_t>(m, "JerryCANMsg")
@@ -55,6 +57,8 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("tone", &jerrycan_msg_t::tone)
         .def_readwrite("analog_out", &jerrycan_msg_t::analog_out)
         .def_readwrite("load_cell_read", &jerrycan_msg_t::load_cell_read)
+        .def_readwrite("load_cell_tare", &jerrycan_msg_t::load_cell_tare)
+        .def_readwrite("pressure_sensor_tare", &jerrycan_msg_t::pressure_sensor_tare)
     ;
 
     py::class_<jerrycan_cmd_status_t>(m, "Status")
@@ -223,6 +227,16 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("position", &jerrycan_cmd_servo_status_t::position)
     ;
 
+    py::class_<jerrycan_cmd_load_cell_tare_t>(m, "LoadCellTare")
+        .def(py::init<>())
+        .def_readwrite("instance", &jerrycan_cmd_load_cell_tare_t::instance)
+    ;
+
+    py::class_<jerrycan_cmd_pressure_sensor_tare_t>(m, "PressureSensorTare")
+        .def(py::init<>())
+        .def_readwrite("instance", &jerrycan_cmd_pressure_sensor_tare_t::instance)
+    ;
+
     py::enum_<abs_or_rel_t>(m, "AbsOrRel")
         .value("ABSOLUTE", JERRYCAN_MOVE_ABSOLUTE)
         .value("RELATIVE", JERRYCAN_MOVE_RELATIVE)
@@ -248,6 +262,8 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .value("TONE", JERRYCAN_CMD_TONE)
         .value("ANALOG_OUT", JERRYCAN_CMD_ANALOG_OUT)
         .value("LOAD_CELL_READ", JERRYCAN_CMD_LOAD_CELL_READ)
+        .value("LOAD_CELL_TARE", JERRYCAN_CMD_LOAD_CELL_TARE)
+        .value("PRESSURE_SENSOR_TARE", JERRYCAN_CMD_PRESSURE_SENSOR_TARE)
         .export_values()
     ;
 }
