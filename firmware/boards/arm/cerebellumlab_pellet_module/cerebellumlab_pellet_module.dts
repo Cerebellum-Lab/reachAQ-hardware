@@ -436,12 +436,11 @@
 	parity = "none";
 	stop-bits = "1";
 	data-bits = <8>;
-	pinctrl-0 = <&usart2_tx_pa2>;
+	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
 	pinctrl-names = "default";
 	#size-cells = <0>;
 	#address-cells = <1>;
 	status = "okay";
-	single-wire;
 	fifo-enable;
 
 	stepper_driver0: stepper_driver0@0 {

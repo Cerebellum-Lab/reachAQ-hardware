@@ -312,8 +312,7 @@ static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address,
                 reply_datagram.raw[3], reply_datagram.raw[4], reply_datagram.raw[5], reply_datagram.raw[6],
                 reply_datagram.raw[7]);
         return ret;
-    } else
-        LOG_ERR("%d", config->address);  // This makes the read successful
+    }
 
     if (!check_crc(reply_datagram.raw, sizeof(reply_datagram.raw))) {
         LOG_ERR("CRC check failed on reply datagram");
