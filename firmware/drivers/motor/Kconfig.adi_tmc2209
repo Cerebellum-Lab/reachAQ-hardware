@@ -14,3 +14,7 @@ menuconfig ADI_TMC2209_SHELL
         depends on SHELL
         help
             Enable shell support for the Analog Devices TMC2209 Stepper Motor Driver
+
+config ADI_TMC2209_DEBUG_LEVEL
+        int "Log Level [0,4]"
+        default 1

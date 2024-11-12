@@ -9,7 +9,7 @@
 
 #define DT_DRV_COMPAT adi_tmc2209
 
-LOG_MODULE_REGISTER(adi_tmc2209, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(adi_tmc2209, CONFIG_ADI_TMC2209_DEBUG_LEVEL);
 
 typedef struct adi_tmc2209_config {
     const struct device *uart_dev;
@@ -19,9 +19,14 @@ typedef struct adi_tmc2209_config {
 typedef struct adi_tmc2209_data {
 } adi_tmc2209_data_t;
 
-#define SYNC_NIBBLE 0x5U
-#define UART_READ_TRIES 1000000U
+#define SYNC_NIBBLE 0x05U
+#define UART_READ_TRIES 10000U
+#define SEND_DELAY 2  // ((N div 2) * 2 + 1) * 8 clock cycles
 #define HOST_ADDR 0xFFU
+#define DATA_LENGTH 4       // Number of bytes in the data portion of a packet
+#define WR_PACKET_LENGTH 8  // packet length when writing to the IC
+#define RD_PACKET_LENGTH 4  // packet length when requesting a read from the IC
+#define RP_PACKET_LENGTH 8  // packet length when receiving a reply from the IC
 
 typedef enum rw_bit {
     READ = 0,
@@ -37,18 +42,18 @@ struct __attribute__((packed)) write_datagram_fields {
     uint8_t reg_address : 7;
     rw_bit_t rw : 1;  // 1 for write
 
-    uint8_t data[4];  // Data to write
+    uint8_t data[DATA_LENGTH];  // Data to write
 
     uint8_t crc;
 };
 
 typedef union write_datagram {
     struct write_datagram_fields fields;
-    uint8_t raw[8];
+    uint8_t raw[WR_PACKET_LENGTH];
 } write_datagram_t;
 
 BUILD_ASSERT(sizeof(struct write_datagram_fields) == sizeof(write_datagram_t));
-BUILD_ASSERT(sizeof(write_datagram_t) == 8U);
+BUILD_ASSERT(sizeof(write_datagram_t) == WR_PACKET_LENGTH);
 
 struct __attribute__((packed)) read_datagram_fields {
     uint8_t sync : 4;      // invariably 0x5
@@ -64,13 +69,13 @@ struct __attribute__((packed)) read_datagram_fields {
 
 typedef union read_datagram {
     struct read_datagram_fields fields;
-    uint8_t raw[4];
+    uint8_t raw[DATA_LENGTH];
 } read_datagram_t;
 
 BUILD_ASSERT(sizeof(struct read_datagram_fields) == sizeof(read_datagram_t));
-BUILD_ASSERT(sizeof(read_datagram_t) == 4U);
+BUILD_ASSERT(sizeof(read_datagram_t) == RD_PACKET_LENGTH);
 
-struct __attribute__((packed)) read_reply_datagram_fields {
+struct __attribute__((packed)) reply_datagram_fields {
     uint8_t sync : 4;      // invariably 0b0101
     uint8_t reserved : 4;  // Doesn't matter but contributes to CRC
 
@@ -79,18 +84,18 @@ struct __attribute__((packed)) read_reply_datagram_fields {
     uint8_t reg_address : 7;
     rw_bit_t rw : 1;  // 0 for read
 
-    uint8_t data[4];  // Data read
+    uint8_t data[DATA_LENGTH];  // Data read
 
     uint8_t crc;
 };
 
-typedef union read_reply_datagram {
-    struct read_reply_datagram_fields fields;
-    uint8_t raw[8];
+typedef union reply_datagram {
+    struct reply_datagram_fields fields;
+    uint8_t raw[RP_PACKET_LENGTH];
 } read_reply_datagram_t;
 
-BUILD_ASSERT(sizeof(struct read_reply_datagram_fields) == sizeof(read_reply_datagram_t));
-BUILD_ASSERT(sizeof(read_reply_datagram_t) == 8U);
+BUILD_ASSERT(sizeof(struct reply_datagram_fields) == sizeof(read_reply_datagram_t));
+BUILD_ASSERT(sizeof(read_reply_datagram_t) == RP_PACKET_LENGTH);
 
 /* Register addresses and contents tables */
 /* Bytes are sent MSB first (so the bytes look backwards from the datasheet, but the bits are in the right order) */
@@ -114,6 +119,8 @@ struct __attribute__((packed)) GCONF_data_fields {
     uint8_t mstep_reg_select : 1;
 };
 
+BUILD_ASSERT(sizeof(struct GCONF_data_fields) == DATA_LENGTH);
+
 #define REG_IHOLD_IRUN 0x10U
 struct __attribute__((packed)) IHOLD_IRUN_data_fields {
     uint8_t : 8;
@@ -125,7 +132,18 @@ struct __attribute__((packed)) IHOLD_IRUN_data_fields {
     uint8_t : 3;
 };
 
-BUILD_ASSERT(sizeof(struct IHOLD_IRUN_data_fields) == 4U);
+BUILD_ASSERT(sizeof(struct IHOLD_IRUN_data_fields) == DATA_LENGTH);
+
+#define REG_NODECONF 0x03U
+struct __attribute__((packed)) NODECONF_data_fields {
+    uint8_t : 8;
+    uint8_t : 8;
+    uint8_t send_delay : 4;  // delay before reply is sent
+    uint8_t : 4;
+    uint8_t : 8;
+};
+
+BUILD_ASSERT(sizeof(struct NODECONF_data_fields) == DATA_LENGTH);
 
 /**
  * @returns crc of `data[0 : size]` (Polynomial is x^8 + x^2 + x + 1.)
@@ -217,9 +235,9 @@ static int write_single_line_uart_and_flush_read(const struct device *dev, const
      * the case where it omits the second byte or the case where we read the full datagram.
      */
     const adi_tmc2209_config_t *config = dev->config;
-    uint8_t rx_buf[8];
+    uint8_t rx_buf[WR_PACKET_LENGTH];
     if (size > sizeof(rx_buf)) {
-        LOG_ERR("Datagram too large for rx buffer.");
+        LOG_ERR("Datagram too large (%d) for rx buffer (%d).", size, sizeof(rx_buf));
         return -EINVAL;
     }
 
@@ -227,32 +245,7 @@ static int write_single_line_uart_and_flush_read(const struct device *dev, const
         uart_poll_out(config->uart_dev, buf[i]);
     }
 
-    // Wait for the datagram we just sent to be "received" by the driver.
-    size_t bytes_read = 0;
-    while (bytes_read < size) {
-        const int ret = read_single_line_uart(dev, &rx_buf[bytes_read], 1);
-        if (ret == -ETIMEDOUT) {
-            // Write was in all likelihood successful and no more bytes are waiting.
-            LOG_DBG("Timed out while trying to re-read written data.");
-            return 0;
-        }
-        if (rx_buf[bytes_read] != buf[bytes_read]) {
-            // Assume we missed the previous byte.
-            rx_buf[bytes_read + 1] = rx_buf[bytes_read];
-            rx_buf[bytes_read] = buf[bytes_read];
-            if (bytes_read == 1 || (bytes_read == 2 && buf[1] == buf[2])) {
-                // This is the "normal" case of missing the byte 1. Note the second conditional which is necessary
-                // if buf[1] == buf[2]. Do ~nothing.
-                LOG_DBG("Missed byte 1 over single line uart (somewhat frequent/expected).");
-            } else {
-                LOG_ERR("Missed byte %d over single line uart.", bytes_read);
-            }
-            bytes_read++;
-        }
-        bytes_read++;
-    }
-
-    return 0;
+    return read_single_line_uart(dev, rx_buf, size);
 }
 
 /**
@@ -276,7 +269,7 @@ static int adi_tmc2209_write(const struct device *dev, const uint8_t reg_address
 
     store_crc(datagram.raw, sizeof(datagram.raw));
 
-    LOG_INF("data: %02X %02X %02X %02X", data[0], data[1], data[2], data[3]);
+    LOG_DBG("data: %02X %02X %02X %02X", data[0], data[1], data[2], data[3]);
 
     write_single_line_uart_and_flush_read(dev, datagram.raw, sizeof(datagram.raw));
 
@@ -286,6 +279,8 @@ static int adi_tmc2209_write(const struct device *dev, const uint8_t reg_address
 /**
  * Read `data` from `reg_address` on `device`.
  *
+ * @param dev Device handle; must not be NULL
+ * @param reg_address
  * @param data must be at least 4 bytes long.
  *
  * @retval 0 on success
@@ -312,11 +307,13 @@ static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address,
     const int ret = read_single_line_uart(dev, reply_datagram.raw, sizeof(reply_datagram.raw));
 
     if (ret != 0) {
-        LOG_ERR("Failed to read reply datagram: %d. Bytes: %02X %02X %02X %02X %02X %02X %02X %02X", ret,
-                reply_datagram.raw[0], reply_datagram.raw[1], reply_datagram.raw[2], reply_datagram.raw[3],
-                reply_datagram.raw[4], reply_datagram.raw[5], reply_datagram.raw[6], reply_datagram.raw[7]);
+        LOG_ERR("Failed (%d) to read reply datagram for %d. Bytes: %02X %02X %02X %02X %02X %02X %02X %02X", ret,
+                config->address, reply_datagram.raw[0], reply_datagram.raw[1], reply_datagram.raw[2],
+                reply_datagram.raw[3], reply_datagram.raw[4], reply_datagram.raw[5], reply_datagram.raw[6],
+                reply_datagram.raw[7]);
         return ret;
-    }
+    } else
+        LOG_ERR("%d", config->address);  // This makes the read successful
 
     if (!check_crc(reply_datagram.raw, sizeof(reply_datagram.raw))) {
         LOG_ERR("CRC check failed on reply datagram");
@@ -357,6 +354,12 @@ static int adi_tmc2209_init(const struct device *dev) {
     const int default_hold_current = 4;
     const int default_run_current = 6;
     const int default_hold_delay = 0;  // Set the delay to the minimum to save power.
+
+    struct NODECONF_data_fields node_cfg = {
+        .send_delay = SEND_DELAY,
+    };
+
+    adi_tmc2209_write(dev, REG_NODECONF, (unsigned char *)&node_cfg);
 
     struct GCONF_data_fields gconf_data = {0};
     int ret = adi_tmc2209_read(dev, REG_GCONF, (unsigned char *)&gconf_data);

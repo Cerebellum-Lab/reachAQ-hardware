@@ -442,6 +442,7 @@
 	#address-cells = <1>;
 	status = "okay";
 	single-wire;
+	fifo-enable;
 
 	stepper_driver0: stepper_driver0@0 {
 		compatible = "adi,tmc2209";
