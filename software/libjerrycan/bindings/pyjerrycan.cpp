@@ -151,12 +151,8 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_property("instance",
             [](const jerrycan_cmd_temp_hum_read_t &a) { return a.instance; },
             [](jerrycan_cmd_temp_hum_read_t &a, uint8_t v) { a.instance = v; })
-        .def_property("temperature",
-            [](const jerrycan_cmd_temp_hum_read_t &a) { return a.temperature; },
-            [](jerrycan_cmd_temp_hum_read_t &a, uint8_t v) { a.temperature = v; })
-        .def_property("humidity",
-            [](const jerrycan_cmd_temp_hum_read_t &a) { return a.humidity; },
-            [](jerrycan_cmd_temp_hum_read_t &a, uint8_t v) { a.humidity = v; })
+        .def_readwrite("temperature", &jerrycan_cmd_temp_hum_read_t::temperature)
+        .def_readwrite("humidity", &jerrycan_cmd_temp_hum_read_t::humidity)
     ;
 
     py::class_<jerrycan_cmd_gpio_read_t>(m, "GPIORead")
