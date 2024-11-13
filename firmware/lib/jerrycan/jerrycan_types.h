@@ -216,10 +216,10 @@ BUILD_ASSERT(sizeof(jerrycan_cmd_analog_out_t) == 3, "jerrycan_cmd_analog_out_t 
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
-    int16_t load_mv;
+    float load_mv;
 } jerrycan_cmd_load_cell_read_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_load_cell_read_t) == 3, "jerrycan_cmd_load_cell_read_t should be 3 bytes");
+BUILD_ASSERT(sizeof(jerrycan_cmd_load_cell_read_t) == 5, "jerrycan_cmd_load_cell_read_t should be 5 bytes");
 
 #define DOOR_SENSOR_COUNT 3
 
