@@ -11,7 +11,9 @@
  * - Sets the periodic rate for transmitting tone generator status messages.
  *
  * Key Functions:
- * - `jerrycan_tone_generator_tx()`: Iterates through each tone generator instance,
+ * - `jerrycan_tone_generator_tx()`: Constructs and transmits a CAN message for the
+ *    given tone generator instance.
+ * - `jerrycan_tone_generator_bulk_tx()`: Iterates through each tone generator instance,
  *    retrieves its frequency and remaining duration, and sends the information as a CAN message.
  * - `jerrycan_tone_generator_write_handler()`: Processes incoming CAN messages to
  *    play a tone with specified frequency and duration for a specific tone generator.
@@ -59,21 +61,27 @@ typedef struct {
 /* Array of tone generator contexts for all enabled tone generator devices */
 static const jerrycan_tone_context_t contexts[TONE_GENERATOR_COUNT] = {DT_INST_FOREACH_STATUS_OKAY(TONE_CONTEXT_COMMA)};
 
-static void jerrycan_tone_generator_tx() {
+static void jerrycan_tone_generator_tx(const jerrycan_tone_context_t *context) {
+    const struct device *tone_generator = context->tone_generator;
+    uint16_t instance_number = context->instance_number;
+
+    jerrycan_msg_t msg = {.type = JERRYCAN_CMD_TONE,
+                          .tone = {
+                              .instance = instance_number,
+                              .frequency_hz = (uint16_t)ll_tone_generator_get_frequency(tone_generator),
+                              .duration_ms = ll_tone_generator_get_time_remaining(tone_generator),
+                          }};
+
+    int ret = jerrycan_tx(&msg, K_NO_WAIT);
+    if (ret < 0) {
+        LOG_WRN("Failed to transmit CAN message for tone_generator%d", instance_number);
+    }
+}
+
+static void jerrycan_tone_generator_bulk_tx() {
     /* For each tone generator, construct and send a tone message */
     for (int i = 0; i < TONE_GENERATOR_COUNT; i++) {
-        const jerrycan_tone_context_t *context = &contexts[i];
-        const struct device *tone_generator = context->tone_generator;
-        uint16_t instance_number = context->instance_number;
-
-        jerrycan_msg_t msg = {.type = JERRYCAN_CMD_TONE,
-                              .tone = {
-                                  .instance = instance_number,
-                                  .frequency_hz = (uint16_t)ll_tone_generator_get_frequency(tone_generator),
-                                  .duration_ms = ll_tone_generator_get_time_remaining(tone_generator),
-                              }};
-
-        jerrycan_tx(&msg, K_NO_WAIT);
+        jerrycan_tone_generator_tx(&contexts[i]);
     }
 }
 
@@ -104,6 +112,9 @@ static void jerrycan_tone_generator_write_handler(jerrycan_msg_t *msg) {
     if (ret != 0) {
         LOG_ERR("Failed to write tone over CAN: Error playing tone - %d", ret);
     }
+
+    /* Transmit state immediately after starting tone */
+    jerrycan_tone_generator_tx(&contexts[idx]);
 }
 
 static jerrycan_rx_callback_t tone_callback = {
@@ -111,7 +122,7 @@ static jerrycan_rx_callback_t tone_callback = {
     .func = jerrycan_tone_generator_write_handler,
 };
 
-K_TIMER_DEFINE(jerrycan_tone_generator_timer, jerrycan_tone_generator_tx, NULL);
+K_TIMER_DEFINE(jerrycan_tone_generator_timer, jerrycan_tone_generator_bulk_tx, NULL);
 
 static int jerrycan_tone_init() {
     int ret;
