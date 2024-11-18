@@ -350,8 +350,7 @@ int adi_tmc2209_set_ihold_irun(const struct device *dev, const uint8_t hold_curr
 }
 
 static int adi_tmc2209_init(const struct device *dev) {
-    const int default_hold_current = 0;  // Let them freewheel by default
-    const int default_run_current = 6;
+    const int default_hold_current = 1;  // Let them freewheel by default
     const int default_hold_delay = 0;  // Set the delay to the minimum to save power.
 
     struct NODECONF_data_fields node_cfg = {
