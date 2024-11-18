@@ -6,8 +6,8 @@
 	(paper "A4")
 	(title_block
 		(title "Autotrainer Pellet Module - Stepper")
-		(date "2024-10-02")
-		(rev "v1.1")
+		(date "2024-11-18")
+		(rev "v1.2")
 		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
 	)
