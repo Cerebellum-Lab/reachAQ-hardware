@@ -21,8 +21,10 @@ if (CONFIG_LIB_MOTOR_MOTION)
 	    )
 endif ()
 
-# If this board has a temperature sensor...
-zephyr_library_sources_ifdef(CONFIG_DT_HAS_SENSIRION_SHT3XD_ENABLED
+# If this board has a temperature sensor, include the temperature file
+# I'm not sure there is a generic temperature CONFIG_ that is defined for this
+# so we'll just be specific to the sensor in use right now
+zephyr_library_sources_ifdef(CONFIG_DT_HAS_SILABS_SI7006_ENABLED
 	       modules/temperature.c
 )
 

@@ -44,8 +44,10 @@
 
 LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
+#define DT_DRV_COMPAT silabs_si7006
+
 /* Number of enabled temperature sensors found in the device tree */
-#define TEMPERATURE_SENSOR_COUNT DT_NUM_INST_STATUS_OKAY(sensirion_sht3xd)
+#define TEMPERATURE_SENSOR_COUNT DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT)
 
 /* JerryCAN temperature sensor tx context structure */
 typedef struct {
