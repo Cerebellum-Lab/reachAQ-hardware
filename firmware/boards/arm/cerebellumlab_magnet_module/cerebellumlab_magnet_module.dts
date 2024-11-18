@@ -177,9 +177,9 @@
 	pinctrl-names = "default";
 	status = "okay";
 
-	temp_sensor@40 {
-		compatible = "silabs,si7006";
-		reg = <0x40>;
+	temp_sensor@44 {
+		compatible = "sensirion,sht3xd";
+		reg = <0x44>;
 		status = "okay";
 	};
 };
