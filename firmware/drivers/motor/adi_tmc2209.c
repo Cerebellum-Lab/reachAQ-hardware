@@ -364,8 +364,8 @@ int adi_tmc2209_set_ihold_irun(const struct device *dev, const uint8_t hold_curr
 
 static int adi_tmc2209_init(const struct device *dev) {
     const int default_hold_current = 1;  // Let them freewheel by default
-    const int default_run_current = 16;  // 50% of the maximum current
-    const int default_hold_delay = 0;  // Set the delay to the minimum to save power.
+    const int default_run_current = 32;  // maximum current
+    const int default_hold_delay = 15;   // Set the delay to the minimum to save power.
 
     // Check GSTAT & clear reset
     struct GSTAT_data_fields gstat_data = {0};
@@ -407,7 +407,7 @@ static int adi_tmc2209_init(const struct device *dev) {
     gconf_data.shaft = 0;            // Do not invert the direction of the motor.
     // Don't set or unset index_otpw or index_step. The INDEX register is not read in this driver.
     gconf_data.pdn_disable = 1;       // Using UART so set this per datasheet.
-    gconf_data.mstep_reg_select = 1;  // MS1 and MS2 are not connected so use UART registers.
+    gconf_data.mstep_reg_select = 0;  // MS1 and MS2 are not connected so use UART registers.
     gconf_data.multistep_filt = 1;    // Enable the filter for the multistep pulse. (Done by default.)
 
     k_sleep(K_MSEC(10));  // I don't know why this works. Are we writing too soon after reading? but it is necessary.

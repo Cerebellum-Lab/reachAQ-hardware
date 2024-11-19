@@ -260,7 +260,6 @@ void stepper_set_position_to_zero(const struct device *dev) {
     }
 
     motor_motion_stepper_set_current_position(&context->context, 0.0f);
-    atomic_flag_clear(&context->dma_in_use);
     context->motion_calculation_done = true;
 }
 
@@ -272,7 +271,6 @@ void servo_set_position_to_zero(const struct device *dev) {
     }
 
     motor_motion_servo_set_current_position(&context->context, 0.0f);
-    atomic_flag_clear(&context->dma_in_use);
     context->motion_calculation_done = true;
 }
 
@@ -537,10 +535,12 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
         return -ENODEV;
     }
 
-    if (context->motion_calculation_done == false) {
+    if (atomic_flag_test_and_set(&context->dma_in_use) || !context->motion_calculation_done) {
         LOG_ERR("Attempted to move motor while already in motion.");
         return -EBUSY;
     }
+
+    atomic_flag_clear(&context->dma_in_use);
 
     if (fabsf(target_position - context->context.last_position_generated) < context->context.min_step) {
         LOG_WRN("Target position is the same as current position.");
@@ -564,6 +564,8 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
     }
 
     context->motion_calculation_done = false;
+
+    ll_stepper_enable(dev);
 
     k_work_submit_to_queue(&motor_workq, &context->calculation_work);
 

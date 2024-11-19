@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <zephyr/device.h>
 #include <zephyr/kernel.h>
 
@@ -18,6 +19,8 @@ typedef enum {
 int ll_queue_stepper_positions(const struct device *dev, uint32_t *positions, size_t len, k_timeout_t timeout);
 int ll_stepper_register_callback(const struct device *dev, ll_stepper_cb_t *cb);
 int ll_stepper_set_direction(const struct device *dev, ll_stepper_dir_t dir);
+int ll_stepper_enable(const struct device *dev);
 int ll_stepper_disable(const struct device *dev);
+bool ll_stepper_is_enabled(const struct device *dev);
 int ll_stepper_dma_stop(const struct device *dev);
 int ll_stepper_get_limit_switch_state(const struct device *dev);

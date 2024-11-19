@@ -83,15 +83,26 @@ static int ll_stepper_init(const struct device *dev) {
     return 0;
 }
 
-/*
- * The correspondent `enable` function is not necessary because it is done in the function
- * which sends the DMA.
- */
 int ll_stepper_disable(const struct device *dev) {
     const ll_motor_cfg_t *cfg = dev->config;
     LL_TIM_CC_DisableChannel(cfg->timer, cfg->channel);
 
     return 0;
+}
+
+int ll_stepper_enable(const struct device *dev) {
+    const ll_motor_cfg_t *cfg = dev->config;
+    LL_TIM_CC_EnableChannel(cfg->timer, cfg->channel);
+
+    return 0;
+}
+
+bool ll_stepper_is_enabled(const struct device *dev) {
+    const ll_motor_cfg_t *cfg = dev->config;
+
+    uint32_t ret = LL_TIM_CC_IsEnabledChannel(cfg->timer, cfg->channel);
+
+    return ret == 1;
 }
 
 int ll_stepper_dma_stop(const struct device *dev) {
