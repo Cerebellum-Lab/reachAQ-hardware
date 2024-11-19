@@ -47,6 +47,8 @@ class JerryCAN {
 
     int PressureSensorTare(uint8_t dst_id, uint8_t instance);
 
+    int RGBLEDWrite(uint8_t dst_id, uint8_t red, uint8_t green, uint8_t blue);
+
    private:
     int _can_socket_handle;
 };

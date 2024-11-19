@@ -35,6 +35,11 @@ static const char* gLabels[] = {DT_FOREACH_CHILD_SEP_VARGS(RGB_LED_NODE_ID, DT_P
 
 static const int LED_COUNT = ARRAY_SIZE(gLabels);
 
+/* Used to store last values written to RGB LED */
+static uint8_t red, green, blue = 0;
+
+static void jerrycan_rgb_led_tx();
+
 /**
  * Handle incoming JERRYCAN_CMD_RGB_LED messages. Update the RBG levels of
  * of led triplet.
@@ -44,11 +49,19 @@ static const int LED_COUNT = ARRAY_SIZE(gLabels);
 static void jerrycan_rgb_led_msg_handler(jerrycan_msg_t* msg) {
     const struct device* device = RGB_LED;
 
-    led_set_brightness(device, 0, MIN(msg->rgb_led.red, 100));
-    led_set_brightness(device, 1, MIN(msg->rgb_led.green, 100));
-    led_set_brightness(device, 2, MIN(msg->rgb_led.blue, 100));
+    /* Update state for use by status message */
+    red = MIN(msg->rgb_led.red, 100);
+    green = MIN(msg->rgb_led.green, 100);
+    blue = MIN(msg->rgb_led.blue, 100);
 
-    LOG_INF("Updated RGB LED to (%d, %d, %d)", msg->rgb_led.red, msg->rgb_led.green, msg->rgb_led.blue);
+    led_set_brightness(device, 0, red);
+    led_set_brightness(device, 1, green);
+    led_set_brightness(device, 2, blue);
+
+    /* Send message on update */
+    jerrycan_rgb_led_tx();
+
+    LOG_INF("Updated RGB LED to (%d, %d, %d)", red, green, blue);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -59,6 +72,22 @@ static jerrycan_rx_callback_t led_callback = {
     .func = jerrycan_rgb_led_msg_handler,
     .node = {.next = NULL},
 };
+
+static void jerrycan_rgb_led_tx() {
+    jerrycan_msg_t msg = {
+        .type = JERRYCAN_CMD_RGB_LED,
+        .rgb_led =
+            {
+                .red = red,
+                .green = green,
+                .blue = blue,
+            },
+    };
+
+    jerrycan_tx(&msg, K_NO_WAIT);
+}
+
+K_TIMER_DEFINE(jerrycan_rgb_led_timer, jerrycan_rgb_led_tx, NULL);
 
 /**
  * Initialize the support for commanding the RGB LED.
@@ -85,6 +114,8 @@ static int jerrycan_rgb_led_init() {
     if (ret == 0) {
         jerrycan_register_rx_callback(&led_callback);
     }
+
+    k_timer_start(&jerrycan_rgb_led_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_RGB_LED_STATUS_PERIOD_MS));
 
     LOG_INF("RGB LED initialized.");
 

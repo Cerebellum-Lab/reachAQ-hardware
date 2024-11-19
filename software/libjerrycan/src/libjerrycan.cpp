@@ -110,6 +110,8 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
             return sizeof(jerrycan_cmd_load_cell_tare_t);
         case JERRYCAN_CMD_PRESSURE_SENSOR_TARE:
             return sizeof(jerrycan_cmd_pressure_sensor_tare_t);
+        case JERRYCAN_CMD_RGB_LED:
+            return sizeof(jerrycan_cmd_rgb_led_t);
         default:
             return 0;
     }
@@ -389,6 +391,20 @@ int JerryCAN::PressureSensorTare(uint8_t dst_id, uint8_t instance) {
         .pressure_sensor_tare =
             {
                 .instance = instance,
+            },
+    };
+
+    return SendMessage(msg, dst_id);
+}
+
+int JerryCAN::RGBLEDWrite(uint8_t dst_id, uint8_t red, uint8_t green, uint8_t blue) {
+    jerrycan_msg_t msg = {
+        .type = JERRYCAN_CMD_RGB_LED,
+        .rgb_led =
+            {
+                .red = red,
+                .green = green,
+                .blue = blue,
             },
     };
 

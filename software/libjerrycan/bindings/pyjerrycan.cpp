@@ -33,6 +33,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def("AnalogOutWrite", &JerryCAN::AnalogOutWrite, py::arg("dst_id"), py::arg("instance"), py::arg("value_mv"))
         .def("LoadCellTare", &JerryCAN::LoadCellTare, py::arg("dst_id"), py::arg("instance"))
         .def("PressureSensorTare", &JerryCAN::PressureSensorTare, py::arg("dst_id"), py::arg("instance"))
+        .def("RGBLEDWrite", &JerryCAN::RGBLEDWrite, py::arg("dst_id"), py::arg("red"), py::arg("green"), py::arg("blue"))
     ;
 
     py::class_<jerrycan_msg_t>(m, "JerryCANMsg")
@@ -59,6 +60,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("load_cell_read", &jerrycan_msg_t::load_cell_read)
         .def_readwrite("load_cell_tare", &jerrycan_msg_t::load_cell_tare)
         .def_readwrite("pressure_sensor_tare", &jerrycan_msg_t::pressure_sensor_tare)
+        .def_readwrite("rgb_led", &jerrycan_msg_t::rgb_led)
     ;
 
     py::class_<jerrycan_cmd_status_t>(m, "Status")
@@ -239,6 +241,13 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .export_values()
     ;
 
+    py::class_<jerrycan_cmd_rgb_led_t>(m, "RGBLED")
+        .def(py::init<>())
+        .def_readwrite("red", &jerrycan_cmd_rgb_led_t::red)
+        .def_readwrite("green", &jerrycan_cmd_rgb_led_t::green)
+        .def_readwrite("blue", &jerrycan_cmd_rgb_led_t::blue)
+    ;
+
     py::enum_<jerrycan_cmd_type_t>(m, "JerryCANCmdType")
         .value("ESTOP", JERRYCAN_CMD_ESTOP)
         .value("HEARTBEAT", JERRYCAN_CMD_HEARTBEAT)
@@ -260,6 +269,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .value("LOAD_CELL_READ", JERRYCAN_CMD_LOAD_CELL_READ)
         .value("LOAD_CELL_TARE", JERRYCAN_CMD_LOAD_CELL_TARE)
         .value("PRESSURE_SENSOR_TARE", JERRYCAN_CMD_PRESSURE_SENSOR_TARE)
+        .value("RGB_LED", JERRYCAN_CMD_RGB_LED)
         .export_values()
     ;
 }
