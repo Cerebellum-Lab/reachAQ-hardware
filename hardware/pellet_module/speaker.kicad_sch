@@ -1365,7 +1365,7 @@
 		)
 		(uuid "b734f815-e646-4bb7-8428-e3c6295a8d1a")
 	)
-	(text "Mouse audible range is 1k-91kHz\nHuman audible range is 20Hz-20kHz\n\nDesign for audio between 1k-20kHz"
+	(text "Mouse audible range is 1k-91kHz\nHuman audible range is 20Hz-20kHz\n\nDesign for audio between 1.7k-20kHz (speaker limitations)"
 		(exclude_from_sim no)
 		(at 150.622 133.604 0)
 		(effects

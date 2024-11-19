@@ -2445,7 +2445,7 @@
 		)
 		(uuid "41d9b80b-99df-48ea-9576-bcf1cbac0486")
 	)
-	(text "Expected current consumption: 126mA\nSupports max 500mA"
+	(text "Expected current consumption: 126mA"
 		(exclude_from_sim no)
 		(at 139.954 138.684 0)
 		(effects
