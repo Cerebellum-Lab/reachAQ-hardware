@@ -30,8 +30,8 @@ menuconfig LIB_JERRYCAN_STATUS_TX_PERIOD_MS
 
 menuconfig LIB_JERRYCAN_TEMPERATURE_TX_PERIOD_MS
     int "Temperature TX Period"
-    default 100
-    depends on LIB_JERRYCAN
+    default 1000
+    depends on LIB_JERRYCAN_TEMPERATURE_SENSOR
     help
       The period at which the temperature message is transmitted in milliseconds.
 
@@ -83,6 +83,15 @@ menuconfig LIB_JERRYCAN_RGB_LED_STATUS_PERIOD_MS
     depends on LIB_JERRYCAN
     help
       The period at which the RGB LED message is transmitted in milliseconds.
+
+menuconfig LIB_JERRYCAN_TEMPERATURE_SENSOR
+  bool "Enable Temperature Sensor"
+  default y
+  depends on LIB_JERRYCAN
+  depends on DT_HAS_SENSIRION_SHT3XD_ENABLED
+  select SHT3XD
+  help
+    Enable the JerryCAN Temperature Sensor moduule
 
 menuconfig LIB_JERRYCAN_DOOR_SENSOR
     bool "Enable Door Sensors"

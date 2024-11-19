@@ -37,6 +37,7 @@
  * of the maximum value of the data type used to transmit them.
  */
 
+#include <zephyr/device.h>
 #include <zephyr/drivers/sensor.h>
 #include <zephyr/logging/log.h>
 
@@ -44,21 +45,23 @@
 
 LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
-#define DT_DRV_COMPAT silabs_si7006
+#define TEMPERATURE_SENSOR_COUNT DT_NUM_INST_STATUS_OKAY(sensirion_sht3xd)
 
-/* Number of enabled temperature sensors found in the device tree */
-#define TEMPERATURE_SENSOR_COUNT DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT)
+#define TEMP_SENSOR_NODE_ID DT_NODELABEL(temp_sensor)
+#define TEMP_SENSOR DEVICE_DT_GET(TEMP_SENSOR_NODE_ID)
 
 /* JerryCAN temperature sensor tx context structure */
 typedef struct {
     uint16_t instance_number;
     const struct device *temperature_sensor;
+    bool ready;
 } jerrycan_temperature_sensor_tx_context_t;
 
-#define TEMPERATURE_SENSOR_TX_CONTEXT(id) \
-    (jerrycan_temperature_sensor_tx_context_t) { .instance_number = id, .temperature_sensor = DEVICE_DT_INST_GET(id), }
-
-#define TEMPERATURE_SENSOR_TX_CONTEXT_COMMA(id) TEMPERATURE_SENSOR_TX_CONTEXT(id),
+static jerrycan_temperature_sensor_tx_context_t tx_contexts[TEMPERATURE_SENSOR_COUNT] = {{
+    .instance_number = 0,
+    .temperature_sensor = TEMP_SENSOR,
+    .ready = false,
+}};
 
 /* Maps k_work_submit errors to strings */
 static inline const char *k_work_submit_error_to_str(int errno) {
@@ -73,10 +76,6 @@ static inline const char *k_work_submit_error_to_str(int errno) {
             return "unknown error";
     }
 }
-
-/* Array of temperature sensor tx contexts for all enabled temperature sensor devices */
-static const jerrycan_temperature_sensor_tx_context_t tx_contexts[TEMPERATURE_SENSOR_COUNT] = {
-    DT_INST_FOREACH_STATUS_OKAY(TEMPERATURE_SENSOR_TX_CONTEXT_COMMA)};
 
 static void jerrycan_temperature_sensor_tx_handler(struct k_work *work);
 static K_WORK_DEFINE(jerrycan_temperature_sensor_tx_work, jerrycan_temperature_sensor_tx_handler);
@@ -93,6 +92,10 @@ static void jerrycan_temperature_sensor_tx_handler(struct k_work *) {
     /* For each temperature sensor, construct and send a temperature message*/
     for (int i = 0; i < TEMPERATURE_SENSOR_COUNT; i++) {
         const jerrycan_temperature_sensor_tx_context_t *tx_context = &tx_contexts[i];
+        if (!tx_context->ready) {
+            continue;
+        }
+
         const struct device *temperature_sensor = tx_context->temperature_sensor;
         struct sensor_value temperature, humidity;
 
@@ -181,6 +184,14 @@ static void jerrycan_temperature_sensor_tx(struct k_timer *timer) {
 }
 
 static int jerrycan_temperature_sensor_init() {
+    for (int i = 0; i < TEMPERATURE_SENSOR_COUNT; i++) {
+        if (device_is_ready(tx_contexts[i].temperature_sensor)) {
+            tx_contexts[i].ready = true;
+        } else {
+            LOG_ERR("Temperature Sensor %d is not ready and will not be used", i);
+        }
+    }
+
     // Start the timer that will send the status message periodically
     k_timer_start(&jerrycan_temperature_sensor_timer, K_MSEC(100),
                   K_MSEC(CONFIG_LIB_JERRYCAN_TEMPERATURE_TX_PERIOD_MS));
