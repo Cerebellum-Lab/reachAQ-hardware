@@ -45,6 +45,7 @@ static int cmd_read_register(const struct shell *shell, const int argc, const ch
 
     shell_print(shell, "Data at 0x%02X: 0x%02X 0x%02X 0x%02X 0x%02X, returned %d", reg, data[0], data[1], data[2],
                 data[3], ret);
+    return ret < 0 ? ret : 0;
 }
 
 static int cmd_write_register(const struct shell *shell, const int argc, const char *argv[]) {
@@ -93,6 +94,7 @@ static int cmd_write_register(const struct shell *shell, const int argc, const c
     const int ret = api->write(dev, reg, data.as_bytes);
 
     shell_print(shell, "Wrote 0x%08X to 0x%02X, returned %d", data.as_word, reg, ret);
+    return ret < 0 ? ret : 0;
 }
 
 SHELL_STATIC_SUBCMD_SET_CREATE(subcmds, SHELL_CMD_ARG(read, NULL, "Read a register", cmd_read_register, 3, 0),
