@@ -121,6 +121,19 @@ struct __attribute__((packed)) GCONF_data_fields {
 
 BUILD_ASSERT(sizeof(struct GCONF_data_fields) == DATA_LENGTH);
 
+#define REG_GSTAT 0x01
+struct __attribute__((packed)) GSTAT_data_fields {
+    uint8_t : 8;
+    uint8_t : 8;
+    uint8_t : 8;
+
+    uint8_t reset : 1;
+    uint8_t drv_err : 1;
+    uint8_t uv_cp : 1;
+};
+
+BUILD_ASSERT(sizeof(struct GSTAT_data_fields) == DATA_LENGTH);
+
 #define REG_IHOLD_IRUN 0x10U
 struct __attribute__((packed)) IHOLD_IRUN_data_fields {
     uint8_t : 8;
@@ -354,6 +367,20 @@ static int adi_tmc2209_init(const struct device *dev) {
     const int default_run_current = 16;  // 50% of the maximum current
     const int default_hold_delay = 0;  // Set the delay to the minimum to save power.
 
+    // Check GSTAT & clear reset
+    struct GSTAT_data_fields gstat_data = { 0 };
+    int ret = adi_tmc2209_read(dev, REG_GSTAT, (unsigned char *)&gstat_data);
+    if (ret < 0) {
+        LOG_ERR("Failed (%d) to read gstat data", ret);
+    } else {
+        LOG_DBG("GSTAT flags reset [%d] drv_err [%d] uv_cp [%d]", gstat_data.reset, gstat_data.drv_err, gstat_data.uv_cp);
+        gstat_data.reset = 1;
+        ret = adi_tmc2209_write(dev, REG_GSTAT, (unsigned char *)&gstat_data);
+        if (ret < 0) {
+            LOG_ERR("Failed (%d) to write gstat data to reset", ret);
+        }
+    }
+
     struct NODECONF_data_fields node_cfg = {
         .send_delay = SEND_DELAY,
     };
@@ -361,7 +388,7 @@ static int adi_tmc2209_init(const struct device *dev) {
     adi_tmc2209_write(dev, REG_NODECONF, (unsigned char *)&node_cfg);
 
     struct GCONF_data_fields gconf_data = {0};
-    int ret = adi_tmc2209_read(dev, REG_GCONF, (unsigned char *)&gconf_data);
+    ret = adi_tmc2209_read(dev, REG_GCONF, (unsigned char *)&gconf_data);
 
     if (ret < 0) {
         LOG_WRN("Couldn't read GCONF. Setting defaults.");
@@ -381,13 +408,25 @@ static int adi_tmc2209_init(const struct device *dev) {
     gconf_data.pdn_disable = 1;       // Using UART so set this per datasheet.
     gconf_data.mstep_reg_select = 1;  // MS1 and MS2 are not connected so use UART registers.
     gconf_data.multistep_filt = 1;    // Enable the filter for the multistep pulse. (Done by default.)
+
+    k_sleep(K_MSEC(10)); // I don't know why this works. Are we writing too soon after reading? but it is necessary.
     ret = adi_tmc2209_write(dev, REG_GCONF, (unsigned char *)&gconf_data);
 
     if (ret < 0) {
         LOG_ERR("Couldn't write GCONF. Defaults may be wrong!");
     }
 
+    ret = adi_tmc2209_read(dev, REG_GCONF, (unsigned char *)&gconf_data);
+    if (ret < 0) {
+        LOG_ERR("Couldn't read GCONF. Defaults may be wrong!");
+    } else {
+        LOG_DBG("GCONF data: pdn_disable = %d, internal_Rsense = %d, en_spreadcycle = %d, shaft = %d, i_scale_analog = %d",
+            gconf_data.pdn_disable, gconf_data.internal_Rsense, gconf_data.en_spreadcycle, gconf_data.shaft, gconf_data.i_scale_analog);
+    }
+
+    k_sleep(K_MSEC(10)); // added here out of an abundance of caution, see comment above.
     ret = adi_tmc2209_set_ihold_irun(dev, default_hold_current, default_run_current, default_hold_delay);
+
     return ret;
 }
 
