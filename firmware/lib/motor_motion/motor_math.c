@@ -272,8 +272,9 @@ static float time_at_position(const float position, const float min_step, const 
 
 static uint32_t degrees_to_pwm_count(const servo_motor_context_t *context, const float degree) {
     return (uint32_t)roundf(
-        (((degree - context->min_angle) * (context->max_angle_pwm - context->min_angle_pwm)) + context->min_angle_pwm) /
-        context->pwm_timer_increment);
+        (((degree - context->min_angle) * (context->max_angle_pwm - context->min_angle_pwm)) / (
+             context->max_angle - context->min_angle) + context->min_angle_pwm) /
+             context->pwm_timer_increment);
 }
 
 static float length_to_degrees(const motor_motion_profile_t *context, const float length) {
