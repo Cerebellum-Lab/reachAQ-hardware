@@ -377,7 +377,7 @@ static int cmd_stepper_set_radius(const struct shell *shell, size_t argc, char *
 }
 
 static int cmd_stepper_home(const struct shell *shell, size_t argc, char **argv) {
-    if (argc != 2) {
+    if (argc != 3) {
         shell_print(shell, "Invalid number of arguments");
         return -EINVAL;
     }
@@ -408,8 +408,10 @@ static int cmd_stepper_home(const struct shell *shell, size_t argc, char **argv)
     const int ret = stepper_go_home_slowly(dev, forward);
     if (ret != 0) {
         shell_print(shell, "Failed to home slowly");
-        return -EINVAL;
+        return -EIO;
     }
+
+    return 0;
 }
 
 SHELL_STATIC_SUBCMD_SET_CREATE(
@@ -450,6 +452,6 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_CMD_ARG(stepper_stop, NULL, "Stop a stepper motor\nUsage: stepper_stop <stepper>", cmd_stepper_stop, 2, 0),
     SHELL_CMD_ARG(stepper_home, NULL,
                   "Home a stepper\nUsage: stepper_home <stepper> <forward>\nwhere <forward> is either 0 or 1",
-                  cmd_stepper_home, 2, 0),
+                  cmd_stepper_home, 3, 0),
     SHELL_SUBCMD_SET_END);
 SHELL_CMD_REGISTER(motor_math, &sub_motor_math, "Motor math motion commands", NULL);

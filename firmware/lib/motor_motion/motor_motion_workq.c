@@ -126,6 +126,7 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
      .current_buffer = 0,                                                                    \
      .last_calculation_ret = 0,                                                              \
      .dma_in_use = {.__val = 0},                                                             \
+     .e_stop_triggered = {.__val = 0},                                                       \
      .motion_calculation_done = true,                                                        \
      .calculation_work =                                                                     \
          {                                                                                   \
@@ -187,6 +188,7 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
         .current_buffer = 0,                                                                    \
         .last_calculation_ret = 0,                                                              \
         .dma_in_use = {.__val = 0},                                                             \
+        .e_stop_triggered = {.__val = 0},                                                       \
         .motion_calculation_done = true,                                                        \
         .calculation_work =                                                                     \
             {                                                                                   \
@@ -544,17 +546,17 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
         return -ENODEV;
     }
 
-    if (atomic_flag_test_and_set(&context->motion_calculation_done)) {
-        LOG_ERR("Attempted to move motor after e-stop without homing!");
-        return -EBUSY;
-    }
-
     if (atomic_flag_test_and_set(&context->dma_in_use) || !context->motion_calculation_done) {
         LOG_ERR("Attempted to move motor while already in motion.");
         return -EBUSY;
     }
-
     atomic_flag_clear(&context->dma_in_use);
+
+    if (atomic_flag_test_and_set(&context->e_stop_triggered)) {
+        LOG_ERR("Attempted to move motor after e-stop without homing!");
+        return -EBUSY;
+    }
+    atomic_flag_clear(&context->e_stop_triggered);
 
     if (fabsf(target_position - context->context.last_position_generated) < context->context.min_step) {
         LOG_WRN("Target position is the same as current position.");
@@ -615,13 +617,13 @@ int stepper_go_home_slowly(const struct device *dev, bool forward) {
      * Choose an "impossible position" that is far enough away from the current position that the motor will never
      * reach it (or, indeed, leave the constant velocity section of the motor motion profile). This is based on the
      * 500 revolutions around the radius of the motor, or 1e6 steps. Approach this via a slow velocity and acceleration,
-     * each 1/10th of the max. We then rely on the limit switch/callback behavior to stop the motor and set the
-     * position.
+     * each 1/4th of the max. We then rely on the limit switch/callback behavior to stop the motor and set the
+     * position (and restore the old maxes).
      */
     const float IMPOSSIBLE_POSITION =
         context->motion_profile.radius > 0.0f ? context->motion_profile.radius * 1e3f : 1e6f;
-    const float SLOW_VELOCITY = context->motion_profile.v_max * 0.1f;
-    const float SLOW_ACCELERATION = context->motion_profile.a_max * 0.1f;
+    const float SLOW_VELOCITY = context->motion_profile.v_max * 0.25f;
+    const float SLOW_ACCELERATION = context->motion_profile.a_max * 0.25f;
 
     const int ret = stepper_set_parameters(dev, SLOW_VELOCITY, SLOW_ACCELERATION, -1.0f, -1.0f);
     if (ret != 0) {
@@ -742,10 +744,10 @@ int motor_motion_servo_get_max_angle(const struct device *dev, float *max_angle)
 
 void set_all_e_stop_flags(void) {
     for (size_t i = 0; i < ARRAY_SIZE(stepper_contexts); i++) {
-        atomic_flag_test_and_set(stepper_contexts[i].e_stop_triggered);
+        atomic_flag_test_and_set(&stepper_contexts[i].e_stop_triggered);
     }
 
     for (size_t i = 0; i < ARRAY_SIZE(servo_contexts); i++) {
-        atomic_flag_test_and_set(stepper_contexts[i].e_stop_triggered);
+        atomic_flag_test_and_set(&stepper_contexts[i].e_stop_triggered);
     }
 }
