@@ -24,6 +24,7 @@ struct servo_work_context {
     size_t current_buffer;
     ssize_t last_calculation_ret;
     atomic_flag dma_in_use;
+    atomic_flag e_stop_triggered;
     bool motion_calculation_done;
     struct k_work calculation_work;
     struct k_work_delayable submission_work;
@@ -37,6 +38,7 @@ struct stepper_work_context {
     size_t current_buffer;
     ssize_t last_calculation_ret;
     atomic_flag dma_in_use;
+    atomic_flag e_stop_triggered;
     bool motion_calculation_done;
     struct k_work calculation_work;
     struct k_work_delayable submission_work;
@@ -177,3 +179,9 @@ int motor_motion_servo_get_min_angle(const struct device *dev, float *min_angle)
  * @returns 0 on success, -ENODEV if the device is not found.
  */
 int motor_motion_servo_get_max_angle(const struct device *dev, float *max_angle);
+
+/**
+ * Internally invoked by the library during an e-stop so that no motion happens
+ * unless the homing procedure is followed.
+ */
+void set_all_e_stop_flags(void);

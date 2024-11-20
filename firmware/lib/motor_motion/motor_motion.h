@@ -28,6 +28,12 @@ void servo_motor_stop(const struct device *dev);
 void motors_all_stop(void);
 
 /*
+ * Trigger the emergency stop (e-stop) functionality. Calls `motors_all_stop` and
+ * sets the flags in the relevant context structs.
+ */
+void trigger_e_stop(void);
+
+/*
  * Get the stepper motor device by its ID. This is useful for the shell commands and CAN commands.
  */
 const struct device *stepper_motor_by_id(size_t id);

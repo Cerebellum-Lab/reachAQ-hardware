@@ -42,6 +42,12 @@ void motors_all_stop(void) {
     }
 }
 
+void trigger_e_stop(void) {
+    motors_all_stop();
+
+    set_all_e_stop_flags();
+}
+
 const struct device *stepper_motor_by_id(const size_t id) {
     if (id >= ARRAY_SIZE(stepper_motors)) {
         LOG_ERR("Invalid stepper motor id: %d", id);

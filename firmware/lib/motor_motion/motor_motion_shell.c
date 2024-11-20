@@ -376,6 +376,42 @@ static int cmd_stepper_set_radius(const struct shell *shell, size_t argc, char *
     return 0;
 }
 
+static int cmd_stepper_home(const struct shell *shell, size_t argc, char **argv) {
+    if (argc != 2) {
+        shell_print(shell, "Invalid number of arguments");
+        return -EINVAL;
+    }
+
+    char *endptr;
+    const int stepper = strtol(argv[1], &endptr, 10);
+    if (*endptr != '\0') {
+        shell_print(shell, "Couldn't parse stepper number");
+        return -EINVAL;
+    }
+
+    const struct device *dev = stepper_motor_by_id(stepper);
+    if (dev == NULL) {
+        shell_print(shell, "Invalid stepper number");
+        return -EINVAL;
+    }
+
+    const int forward = strtol(argv[2], &endptr, 10);
+    if (*endptr != '\0') {
+        shell_print(shell, "Couldn't parse forward");
+        return -EINVAL;
+    }
+
+    if (forward != 0 && forward != 1) {
+        shell_print(shell, "Invalid forward (must be 0 or 1)");
+    }
+
+    const int ret = stepper_go_home_slowly(dev, forward);
+    if (ret != 0) {
+        shell_print(shell, "Failed to home slowly");
+        return -EINVAL;
+    }
+}
+
 SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_motor_math,
     SHELL_CMD_ARG(servo_set_pwm, NULL,
@@ -412,5 +448,8 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
         "Move a stepper motor to the specified position sinusoidally.\nUsage: stepper_move <stepper> <position",
         cmd_stepper_move, 3, 0),
     SHELL_CMD_ARG(stepper_stop, NULL, "Stop a stepper motor\nUsage: stepper_stop <stepper>", cmd_stepper_stop, 2, 0),
+    SHELL_CMD_ARG(stepper_home, NULL,
+                  "Home a stepper\nUsage: stepper_home <stepper> <forward>\nwhere <forward> is either 0 or 1",
+                  cmd_stepper_home, 2, 0),
     SHELL_SUBCMD_SET_END);
 SHELL_CMD_REGISTER(motor_math, &sub_motor_math, "Motor math motion commands", NULL);

@@ -34,6 +34,9 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
             stepper_motor_stop(dev);
             stepper_cancel_all_work(dev);
             stepper_set_position_to_zero(dev);
+
+            // Now, load the settings because a_max and v_max were changed for homing.
+            settings_load();
             break;
         default:
             LOG_WRN("Unknown stepper motor event: %d", event);
@@ -468,6 +471,12 @@ int servo_set_angle_parameters(const struct device *dev, const float min_angle, 
 
 int servo_move_to_position(const struct device *dev, const float target_position) {
     struct servo_work_context *context = find_servo_context_from_device(dev);
+    /*
+     * The library is currently not set up to allow servos to have limit switches
+     * and homing. Thus, we do not check if the e-stop flag is set, because there
+     * is no way to unset it.
+     */
+
     if (context == NULL) {
         LOG_ERR("Stepper context not found for device");
         return -ENODEV;
@@ -535,6 +544,11 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
         return -ENODEV;
     }
 
+    if (atomic_flag_test_and_set(&context->motion_calculation_done)) {
+        LOG_ERR("Attempted to move motor after e-stop without homing!");
+        return -EBUSY;
+    }
+
     if (atomic_flag_test_and_set(&context->dma_in_use) || !context->motion_calculation_done) {
         LOG_ERR("Attempted to move motor while already in motion.");
         return -EBUSY;
@@ -596,6 +610,7 @@ int stepper_go_home_slowly(const struct device *dev, bool forward) {
         LOG_ERR("Attempted to move motor while already in motion.");
         return -EBUSY;
     }
+
     /*
      * Choose an "impossible position" that is far enough away from the current position that the motor will never
      * reach it (or, indeed, leave the constant velocity section of the motor motion profile). This is based on the
@@ -608,27 +623,15 @@ int stepper_go_home_slowly(const struct device *dev, bool forward) {
     const float SLOW_VELOCITY = context->motion_profile.v_max * 0.1f;
     const float SLOW_ACCELERATION = context->motion_profile.a_max * 0.1f;
 
-    const float last_position = context->last_position_generated;
-
-    int ret = motor_motion_stepper_init_context_struct(
-        last_position, forward ? IMPOSSIBLE_POSITION : -IMPOSSIBLE_POSITION, SLOW_VELOCITY, SLOW_ACCELERATION,
-        context->min_step, context->timer_increment, context);
-
+    const int ret = stepper_set_parameters(dev, SLOW_VELOCITY, SLOW_ACCELERATION, -1.0f, -1.0f);
     if (ret != 0) {
-        LOG_ERR("Failed to initialize context struct: %d", ret);
+        LOG_ERR("Failed to set SLOW VELOCITY or acceleration parameters.");
         return -EDOM;
     }
 
-    work_context->motion_calculation_done = false;
+    atomic_flag_clear(&work_context->e_stop_triggered);
 
-    ret = settings_load();
-    if (ret != 0) {
-        LOG_ERR("Failed to load settings: %d", ret);
-    }
-
-    k_work_submit_to_queue(&motor_workq, &work_context->calculation_work);
-
-    return 0;
+    return stepper_move_to_position(dev, forward ? IMPOSSIBLE_POSITION : -IMPOSSIBLE_POSITION);
 }
 
 static void motor_motion_set_radius(motor_motion_profile_t *motion_profile, const float radius) {
@@ -735,4 +738,14 @@ int motor_motion_servo_get_max_angle(const struct device *dev, float *max_angle)
 
     *max_angle = context->context.max_angle;
     return 0;
+}
+
+void set_all_e_stop_flags(void) {
+    for (size_t i = 0; i < ARRAY_SIZE(stepper_contexts); i++) {
+        atomic_flag_test_and_set(stepper_contexts[i].e_stop_triggered);
+    }
+
+    for (size_t i = 0; i < ARRAY_SIZE(servo_contexts); i++) {
+        atomic_flag_test_and_set(stepper_contexts[i].e_stop_triggered);
+    }
 }
