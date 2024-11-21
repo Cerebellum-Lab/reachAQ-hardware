@@ -184,35 +184,6 @@ static int cmd_servo_stop(const struct shell *shell, size_t argc, char **argv) {
     return 0;
 }
 
-static int cmd_servo_set_radius(const struct shell *shell, size_t argc, char **argv) {
-    if (argc != 3) {
-        shell_print(shell, "Invalid number of arguments");
-        return -EINVAL;
-    }
-
-    char *endptr;
-    const int servo = strtol(argv[1], &endptr, 10);
-    if (*endptr != '\0') {
-        shell_print(shell, "Couldn't parse servo number");
-        return -EINVAL;
-    }
-
-    const float new_radius = strtof(argv[2], &endptr);
-    if (*endptr != '\0') {
-        shell_print(shell, "Couldn't parse radius");
-        return -EINVAL;
-    }
-
-    const struct device *servo_dev = servo_motor_by_id(servo);
-    if (servo_dev == NULL) {
-        shell_print(shell, "Invalid servo number");
-        return -EINVAL;
-    }
-
-    motor_motion_servo_set_radius(servo_dev, new_radius);
-    return 0;
-}
-
 static int cmd_stepper_set_steps(const struct shell *shell, size_t argc, char **argv) {
     if (argc != 4) {
         shell_print(shell, "Invalid number of arguments");
@@ -347,35 +318,6 @@ static int cmd_stepper_stop(const struct shell *shell, size_t argc, char **argv)
     return 0;
 }
 
-static int cmd_stepper_set_radius(const struct shell *shell, size_t argc, char **argv) {
-    if (argc != 3) {
-        shell_print(shell, "Invalid number of arguments");
-        return -EINVAL;
-    }
-
-    char *endptr;
-    const int stepper = strtol(argv[1], &endptr, 10);
-    if (*endptr != '\0') {
-        shell_print(shell, "Couldn't parse stepper number");
-        return -EINVAL;
-    }
-
-    const float new_radius = strtof(argv[2], &endptr);
-    if (*endptr != '\0') {
-        shell_print(shell, "Couldn't parse radius");
-        return -EINVAL;
-    }
-
-    const struct device *const stepper_dev = stepper_motor_by_id(stepper);
-    if (stepper_dev == NULL) {
-        shell_print(shell, "Invalid stepper number");
-        return -EINVAL;
-    }
-
-    motor_motion_stepper_set_radius(stepper_dev, new_radius);
-    return 0;
-}
-
 static int cmd_stepper_home(const struct shell *shell, size_t argc, char **argv) {
     if (argc != 3) {
         shell_print(shell, "Invalid number of arguments");
@@ -429,8 +371,6 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
                   "Set the Physical parameters (max velocity and acceleration) for a servo.\nUsage: servo_set_physical "
                   "<servo> <max_velocity> <max_acceleration>",
                   cmd_servo_set_physical_parameters, 4, 0),
-    SHELL_CMD_ARG(servo_set_radius, NULL, "Set the radius of a servo\nUsage: servo_set_radius <servo> <radius>",
-                  cmd_servo_set_radius, 3, 0),
     SHELL_CMD_ARG(servo_move, NULL, "Set a servo position sinusoidally\nUsage: servo_move <servo> <position>",
                   cmd_servo_move, 3, 0),
     SHELL_CMD_ARG(servo_stop, NULL, "Stop a servo\nUsage: servo_stop <servo>", cmd_servo_stop, 2, 0),
@@ -443,8 +383,6 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
                   "Set the Physical parameters (max velocity and acceleration) for a stepper motor.\nUsage: "
                   "stepper_set_physical <stepper> <max_velocity> <max_acceleration>",
                   cmd_stepper_set_physical_parameters, 4, 0),
-    SHELL_CMD_ARG(stepper_set_radius, NULL, "Set the radius of a stepper\nUsage: stepper_set_radius <stepper> <radius>",
-                  cmd_stepper_set_radius, 3, 0),
     SHELL_CMD_ARG(
         stepper_move, NULL,
         "Move a stepper motor to the specified position sinusoidally.\nUsage: stepper_move <stepper> <position",
