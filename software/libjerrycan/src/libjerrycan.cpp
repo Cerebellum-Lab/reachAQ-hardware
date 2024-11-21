@@ -112,6 +112,8 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
             return sizeof(jerrycan_cmd_pressure_sensor_tare_t);
         case JERRYCAN_CMD_RGB_LED:
             return sizeof(jerrycan_cmd_rgb_led_t);
+        case JERRYCAN_CMD_DOOR_SENSOR:
+            return sizeof(jerrycan_cmd_door_closed_t);
         default:
             return 0;
     }

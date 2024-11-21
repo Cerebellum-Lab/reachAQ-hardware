@@ -72,7 +72,7 @@ menuconfig LIB_JERRYCAN_LOAD_CELL_TX_PERIOD_MS
 
 menuconfig LIB_JERRYCAN_DOOR_SENSOR_TX_PERIOD_MS
     int "Door Sensor TX Period"
-    default 10
+    default 1000
     depends on LIB_JERRYCAN
     help
       The period at which the door sensor message is transmitted in milliseconds.

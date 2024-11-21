@@ -61,6 +61,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("load_cell_tare", &jerrycan_msg_t::load_cell_tare)
         .def_readwrite("pressure_sensor_tare", &jerrycan_msg_t::pressure_sensor_tare)
         .def_readwrite("rgb_led", &jerrycan_msg_t::rgb_led)
+        .def_readwrite("doors", &jerrycan_msg_t::doors)
     ;
 
     py::class_<jerrycan_cmd_status_t>(m, "Status")
@@ -247,6 +248,13 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("green", &jerrycan_cmd_rgb_led_t::green)
         .def_readwrite("blue", &jerrycan_cmd_rgb_led_t::blue)
     ;
+    
+    py::class_<jerrycan_cmd_door_closed_t>(m, "Doors")
+        .def(py::init<>())
+        .def_property("opened",
+            [](const jerrycan_cmd_door_closed_t &a) { return a.opened; },
+            [](jerrycan_cmd_door_closed_t &a, uint8_t v) { a.opened = v; })
+    ;
 
     py::enum_<jerrycan_cmd_type_t>(m, "JerryCANCmdType")
         .value("ESTOP", JERRYCAN_CMD_ESTOP)
@@ -270,6 +278,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .value("LOAD_CELL_TARE", JERRYCAN_CMD_LOAD_CELL_TARE)
         .value("PRESSURE_SENSOR_TARE", JERRYCAN_CMD_PRESSURE_SENSOR_TARE)
         .value("RGB_LED", JERRYCAN_CMD_RGB_LED)
+        .value("DOOR_SENSOR", JERRYCAN_CMD_DOOR_SENSOR)
         .export_values()
     ;
 }
