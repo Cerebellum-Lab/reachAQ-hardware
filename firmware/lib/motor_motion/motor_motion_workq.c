@@ -152,80 +152,77 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
          .node = {.next = NULL},                                                             \
      }},
 
-#define DEV_DEFINE_STEPPER_CONTEXT(id)                                                          \
-    {                                                                                           \
-        .dev = DEVICE_DT_GET(id),                                                               \
-        .context =                                                                              \
-            {                                                                                   \
-                .motion_profile =                                                               \
-                    {                                                                           \
-                        .start_pos = 0,                                                         \
-                        .end_pos = 0,                                                           \
-                        .a_max = 0,                                                             \
-                        .v_max = 0,                                                             \
-                        .sgn = 0,                                                               \
-                        .y_f = 0,                                                               \
-                        .y_s = 0,                                                               \
-                        .y_a = 0,                                                               \
-                        .v_w = 0,                                                               \
-                        .t_o = 0,                                                               \
-                        .t_a = 0,                                                               \
-                        .omega = 0,                                                             \
-                        .k_s = 0,                                                               \
-                        .t_k = 0,                                                               \
-                        .t_s = 0,                                                               \
-                        .t_t = 0,                                                               \
-                    },                                                                          \
-                .min_step = STEPPER_DEFAULT_MIN_STEP,                                           \
-                .timer_increment = (DT_PROP(DT_PARENT(id), st_prescaler) + 1.0f) / 170e6f,      \
-                .steps_per_revolution = STEPPER_DEFAULT_STEPS_PER_REVOLUTION,                   \
-                .last_time_generated = 0.0f,                                                    \
-                .last_position_generated = 0.0f,                                                \
-            },                                                                                  \
-        .buffers = {{0}},                                                                       \
-        .current_buffer = 0,                                                                    \
-        .last_calculation_ret = 0,                                                              \
-        .dma_in_use = {.__val = 0},                                                             \
-        .e_stop_triggered = {.__val = 0},                                                       \
-        .motion_calculation_done = true,                                                        \
-        .calculation_work =                                                                     \
-            {                                                                                   \
-                .node = {.next = NULL},                                                         \
-                .handler = NULL,                                                                \
-                .queue = NULL,                                                                  \
-                .flags = 0,                                                                     \
-            },                                                                                  \
-        .submission_work =                                                                      \
-            {                                                                                   \
-                .work =                                                                         \
-                    {                                                                           \
-                        .node = {.next = NULL},                                                 \
-                        .handler = NULL,                                                        \
-                        .queue = NULL,                                                          \
-                        .flags = 0,                                                             \
-                    },                                                                          \
-                .timeout = {.node = {{.head = NULL}, {.tail = NULL}}, .fn = NULL, .dticks = 0}, \
-                .queue = NULL,                                                                  \
-            },                                                                                  \
-        .check_driver_work =                                                                    \
-            {                                                                                   \
-                .work =                                                                         \
-                    {                                                                           \
-                        .node = {.next = NULL},                                                 \
-                        .handler = NULL,                                                        \
-                        .queue = NULL,                                                          \
-                        .flags = 0,                                                             \
-                    },                                                                          \
-                .timeout = {.node = {{.head = NULL}, {.tail = NULL}}, .fn = NULL, .dticks = 0}, \
-                .queue = NULL,                                                                  \
-            },                                                                                  \
-        .stepper_cb =                                                                           \
-            {                                                                                   \
-                .func = stepper_motor_event_callback,                                           \
-                .user_data = NULL,                                                              \
-                .node = {.next = NULL},                                                         \
-            },                                                                                  \
-    },
+#define DEV_DEFINE_STEPPER_CONTEXT(id)                                                       \
+    {.dev = DEVICE_DT_GET(id),                                                               \
+     .context =                                                                              \
+         {                                                                                   \
+             .motion_profile =                                                               \
+                 {                                                                           \
+                     .start_pos = 0,                                                         \
+                     .end_pos = 0,                                                           \
+                     .a_max = 0,                                                             \
+                     .v_max = 0,                                                             \
+                     .sgn = 0,                                                               \
+                     .y_f = 0,                                                               \
+                     .y_s = 0,                                                               \
+                     .y_a = 0,                                                               \
+                     .v_w = 0,                                                               \
+                     .t_o = 0,                                                               \
+                     .t_a = 0,                                                               \
+                     .omega = 0,                                                             \
+                     .k_s = 0,                                                               \
+                     .t_k = 0,                                                               \
+                     .t_s = 0,                                                               \
+                     .t_t = 0,                                                               \
+                 },                                                                          \
+             .min_step = STEPPER_DEFAULT_MIN_STEP,                                           \
+             .timer_increment = (DT_PROP(DT_PARENT(id), st_prescaler) + 1.0f) / 170e6f,      \
+             .steps_per_revolution = STEPPER_DEFAULT_STEPS_PER_REVOLUTION,                   \
+             .last_time_generated = 0.0f,                                                    \
+             .last_position_generated = 0.0f,                                                \
+         },                                                                                  \
+     .buffers = {{0}},                                                                       \
+     .current_buffer = 0,                                                                    \
+     .last_calculation_ret = 0,                                                              \
+     .dma_in_use = {.__val = 0},                                                             \
+     .e_stop_triggered = {.__val = 0},                                                       \
+     .motion_calculation_done = true,                                                        \
+     .calculation_work =                                                                     \
+         {                                                                                   \
+             .node = {.next = NULL},                                                         \
+             .handler = NULL,                                                                \
+             .queue = NULL,                                                                  \
+             .flags = 0,                                                                     \
+         },                                                                                  \
+     .submission_work =                                                                      \
+         {                                                                                   \
+             .work =                                                                         \
+                 {                                                                           \
+                     .node = {.next = NULL},                                                 \
+                     .handler = NULL,                                                        \
+                     .queue = NULL,                                                          \
+                     .flags = 0,                                                             \
+                 },                                                                          \
+             .timeout = {.node = {{.head = NULL}, {.tail = NULL}}, .fn = NULL, .dticks = 0}, \
+             .queue = NULL,                                                                  \
+         },                                                                                  \
+     .check_driver_work =                                                                    \
+         {                                                                                   \
+             .work =                                                                         \
+                 {                                                                           \
+                     .node = {.next = NULL},                                                 \
+                     .handler = NULL,                                                        \
+                     .queue = NULL,                                                          \
+                     .flags = 0,                                                             \
+                 },                                                                          \
+             .timeout = {.node = {{.head = NULL}, {.tail = NULL}}, .fn = NULL, .dticks = 0}, \
+             .queue = NULL,                                                                  \
+         },                                                                                  \
+     .stepper_cb = {                                                                         \
+         .func = stepper_motor_event_callback,                                               \
+         .user_data = NULL,                                                                  \
+         .node = {.next = NULL},                                                             \
+     }},
 
 struct stepper_work_context stepper_contexts[] = {DT_FOREACH_STATUS_OKAY(ll_stepper, DEV_DEFINE_STEPPER_CONTEXT)};
 struct servo_work_context servo_contexts[] = {DT_FOREACH_STATUS_OKAY(ll_servo, DEV_DEFINE_SERVO_CONTEXT)};
