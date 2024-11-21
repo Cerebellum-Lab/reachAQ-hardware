@@ -39,6 +39,8 @@ struct stepper_work_context {
     ssize_t last_calculation_ret;
     atomic_flag dma_in_use;
     atomic_flag e_stop_triggered;
+    atomic_flag homing_in_progress;
+    _Atomic ll_stepper_dir_t homing_direction;
     bool motion_calculation_done;
     struct k_work calculation_work;
     struct k_work_delayable submission_work;

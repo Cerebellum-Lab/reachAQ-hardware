@@ -13,62 +13,11 @@
 
 LOG_MODULE_DECLARE(motor_motion, CONFIG_LIB_MOTOR_MOTION_LOG_LEVEL);
 
-/* ***** Callbacks ***** */
-#ifdef CONFIG_DT_HAS_LL_STEPPER_ENABLED
-static void stepper_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
-                                         void *user_data) {
-    switch (event) {
-        case LL_MOTOR_EVENT_DMA_BLOCK_COMPLETE:
-            break;
-        case LL_MOTOR_EVENT_DMA_QUEUE_EMPTY: {
-            // Due to the limitations of the GPIO callback mechanism, this data is only available
-            // in DMA queue events, not the limit switch event.
-            struct stepper_work_context *context = user_data;
-            if (context != NULL) {
-                atomic_flag_clear(&context->dma_in_use);
-            }
-            break;
-        }
-        case LL_MOTOR_EVENT_LIMIT_SWITCH:
-            LOG_DBG("Limit switch event");
-            stepper_motor_stop(dev);
-            stepper_cancel_all_work(dev);
-            stepper_set_position_to_zero(dev);
-
-            // Now, load the settings because a_max and v_max were changed for homing.
-            settings_load();
-            break;
-        default:
-            LOG_WRN("Unknown stepper motor event: %d", event);
-            break;
-    }
-}
-#endif
-
-#ifdef CONFIG_DT_HAS_LL_SERVO_ENABLED
+/* ***** Forward Declaration of Callbacks ***** */
 static void servo_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
-                                       void *user_data) {
-    switch (event) {
-        case LL_MOTOR_EVENT_DMA_BLOCK_COMPLETE:
-            break;
-        case LL_MOTOR_EVENT_DMA_QUEUE_EMPTY: {
-            struct servo_work_context *context = user_data;
-            if (context != NULL) {
-                atomic_flag_clear(&context->dma_in_use);
-            }
-            break;
-        }
-        case LL_MOTOR_EVENT_LIMIT_SWITCH:
-            servo_motor_stop(dev);
-            servo_cancel_all_work(dev);
-            servo_set_position_to_zero(dev);
-            break;
-        default:
-            LOG_WRN("Unknown servo motor event: %d", event);
-            break;
-    }
-}
-#endif
+                                       void *user_data);
+static void stepper_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
+                                         void *user_data);
 
 /* ***** Static Context Structs Used Throughout ***** */
 
@@ -274,6 +223,69 @@ void servo_set_position_to_zero(const struct device *dev) {
     context->motion_calculation_done = true;
 }
 
+/* ***** Callbacks ***** */
+#ifdef CONFIG_DT_HAS_LL_STEPPER_ENABLED
+
+#define REVOLUTIONS_BACKWARDS_AFTER_HOMING 2
+static void stepper_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
+                                         void *user_data) {
+    switch (event) {
+        case LL_MOTOR_EVENT_DMA_BLOCK_COMPLETE:
+            break;
+        case LL_MOTOR_EVENT_DMA_QUEUE_EMPTY: {
+            // Due to the limitations of the GPIO callback mechanism, this data is only available
+            // in DMA queue events, not the limit switch event.
+            struct stepper_work_context *context = user_data;
+            if (context != NULL) {
+                atomic_flag_clear(&context->dma_in_use);
+            }
+            break;
+        }
+        case LL_MOTOR_EVENT_LIMIT_SWITCH:
+            LOG_DBG("Limit switch event");
+            stepper_motor_stop(dev);
+            stepper_cancel_all_work(dev);
+            struct stepper_work_context *context = find_stepper_context_from_device(dev);
+            if (atomic_flag_test_and_set(&context->homing_in_progress)) {
+                stepper_move_relative(dev, context->homing_direction == LL_STEPPER_DIR_FORWARD
+                                               ? -REVOLUTIONS_BACKWARDS_AFTER_HOMING
+                                               : REVOLUTIONS_BACKWARDS_AFTER_HOMING);
+            } else {
+                atomic_flag_clear(&context->homing_in_progress);
+            }
+            break;
+        default:
+            LOG_WRN("Unknown stepper motor event: %d", event);
+            break;
+    }
+}
+#endif
+
+#ifdef CONFIG_DT_HAS_LL_SERVO_ENABLED
+static void servo_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
+                                       void *user_data) {
+    switch (event) {
+        case LL_MOTOR_EVENT_DMA_BLOCK_COMPLETE:
+            break;
+        case LL_MOTOR_EVENT_DMA_QUEUE_EMPTY: {
+            struct servo_work_context *context = user_data;
+            if (context != NULL) {
+                atomic_flag_clear(&context->dma_in_use);
+            }
+            break;
+        }
+        case LL_MOTOR_EVENT_LIMIT_SWITCH:
+            servo_motor_stop(dev);
+            servo_cancel_all_work(dev);
+            servo_set_position_to_zero(dev);
+            break;
+        default:
+            LOG_WRN("Unknown servo motor event: %d", event);
+            break;
+    }
+}
+#endif
+
 /* ***** Work Handlers ***** */
 
 void stepper_cancel_all_work(const struct device *dev) {
@@ -363,6 +375,12 @@ static void stepper_work_submission_handler(struct k_work *work) {
     context->current_buffer = 1 - context->current_buffer;  // Alternate buffers
     if (!context->motion_calculation_done) {
         k_work_submit_to_queue(&motor_workq, &context->calculation_work);
+    } else {
+        if (atomic_flag_test_and_set(&context->homing_in_progress)) {
+            stepper_set_position_to_zero(context->dev);
+            stepper_set_parameters(context->dev, context->context.motion_profile.v_max * 4.0f, -1.0f, -1.0f, -1.0f);
+        }
+        atomic_flag_clear(&context->homing_in_progress);
     }
 }
 
@@ -626,6 +644,8 @@ int stepper_go_home_slowly(const struct device *dev, bool forward) {
     }
 
     atomic_flag_clear(&work_context->e_stop_triggered);
+    atomic_flag_test_and_set(&work_context->homing_in_progress);
+    work_context->homing_direction = forward ? LL_STEPPER_DIR_FORWARD : LL_STEPPER_DIR_BACKWARD;
 
     return stepper_move_to_position(dev, forward ? IMPOSSIBLE_POSITION : -IMPOSSIBLE_POSITION);
 }
