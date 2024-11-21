@@ -19,9 +19,9 @@ LOG_MODULE_REGISTER(motor_settings);
 #define LAST_POSITION_KEY "p_last"
 
 // Servo keys
-#define MIN_ANGLE_KEY "a_min"
-#define MAX_ANGLE_KEY "a_max"
-#define ANGLE_ADJUSTMENT_KEY "a_adj"
+#define MIN_ANGLE_KEY "o_min"
+#define MAX_ANGLE_KEY "o_max"
+#define ANGLE_ADJUSTMENT_KEY "o_adj"
 #define SERVO_MIN_ANGLE_PWM_KEY "pwm_min"
 #define SERVO_MAX_ANGLE_PWM_KEY "pwm_max"
 

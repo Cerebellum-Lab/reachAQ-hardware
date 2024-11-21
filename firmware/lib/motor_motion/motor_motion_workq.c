@@ -81,14 +81,14 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
 // Default maximum angle of servo
 #define SERVO_DEFAULT_MAX_ANGLE 180.0f
 // Default angular adjustment of servo
-#define SERVO_DEFAULT_ANGLE_ADJUSTMENT 0.0f
+#define SERVO_DEFAULT_ANGLE_ADJUSTMENT SERVO_DEFAULT_MIN_ANGLE
 
 // Period between successive status checks of the stepper drivers
 #define STEPPER_DRIVER_CHECK_PERIOD 100U
 // Default 'min_step' of stepper (number of steps, incl. microstepping, done per pulse)
 #define STEPPER_DEFAULT_MIN_STEP 0.25f
 // Default 'steps_per_revolution' of stepper
-#define STEPPER_DEFAULT_STEPS_PER_REVOLUTION 400
+#define STEPPER_DEFAULT_STEPS_PER_REVOLUTION 48
 
 #define DEV_DEFINE_SERVO_CONTEXT(id)                                                         \
     {.dev = DEVICE_DT_GET(id),                                                               \
@@ -112,7 +112,6 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
                      .t_k = 0,                                                               \
                      .t_s = 0,                                                               \
                      .t_t = 0,                                                               \
-                     .radius = 0,                                                            \
                  },                                                                          \
              .min_angle = SERVO_DEFAULT_MIN_ANGLE,                                           \
              .max_angle = SERVO_DEFAULT_MAX_ANGLE,                                           \
@@ -176,7 +175,6 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
                         .t_k = 0,                                                               \
                         .t_s = 0,                                                               \
                         .t_t = 0,                                                               \
-                        .radius = 0,                                                            \
                     },                                                                          \
                 .min_step = STEPPER_DEFAULT_MIN_STEP,                                           \
                 .timer_increment = (DT_PROP(DT_PARENT(id), st_prescaler) + 1.0f) / 170e6f,      \
@@ -616,69 +614,23 @@ int stepper_go_home_slowly(const struct device *dev, bool forward) {
     /*
      * Choose an "impossible position" that is far enough away from the current position that the motor will never
      * reach it (or, indeed, leave the constant velocity section of the motor motion profile). This is based on the
-     * 500 revolutions around the radius of the motor, or 1e6 steps. Approach this via a slow velocity and acceleration,
-     * each 1/4th of the max. We then rely on the limit switch/callback behavior to stop the motor and set the
-     * position (and restore the old maxes).
+     * 500 revolutions of the motor. Approach this via a slow velocity (1/4 of the max).
+     *
+     * Then, rely on the limit switch/callback behavior to stop the motor and set the position (and restore the old
+     * maxes).
      */
-    const float IMPOSSIBLE_POSITION =
-        context->motion_profile.radius > 0.0f ? context->motion_profile.radius * 1e3f : 1e6f;
+    const float IMPOSSIBLE_POSITION = 500;
     const float SLOW_VELOCITY = context->motion_profile.v_max * 0.25f;
-    const float SLOW_ACCELERATION = context->motion_profile.a_max * 0.25f;
 
-    const int ret = stepper_set_parameters(dev, SLOW_VELOCITY, SLOW_ACCELERATION, -1.0f, -1.0f);
+    const int ret = stepper_set_parameters(dev, SLOW_VELOCITY, -1.0f, -1.0f, -1.0f);
     if (ret != 0) {
-        LOG_ERR("Failed to set SLOW VELOCITY or acceleration parameters.");
+        LOG_ERR("Failed to set SLOW VELOCITY parameter for homing.");
         return -EDOM;
     }
 
     atomic_flag_clear(&work_context->e_stop_triggered);
 
     return stepper_move_to_position(dev, forward ? IMPOSSIBLE_POSITION : -IMPOSSIBLE_POSITION);
-}
-
-static void motor_motion_set_radius(motor_motion_profile_t *motion_profile, const float radius) {
-    motion_profile->radius = radius;
-}
-
-void motor_motion_stepper_set_radius(const struct device *dev, const float new_radius) {
-    stepper_motor_context_t *context = &find_stepper_context_from_device(dev)->context;
-    const float old_radius = context->motion_profile.radius;
-
-    if (old_radius == new_radius) {
-        return;
-    }
-
-    const float old_last_position = context->last_position_generated;
-    if (old_radius == 0.0f) {
-        context->last_position_generated = old_last_position / context->steps_per_revolution * 2 * M_PI * new_radius;
-    } else {
-        context->last_position_generated = old_last_position / old_radius * new_radius;
-    }
-    LOG_DBG("Converted last position from %f to %f", (double)old_last_position,
-            (double)context->last_position_generated);
-
-    motor_motion_set_radius(&context->motion_profile, new_radius);
-}
-
-void motor_motion_servo_set_radius(const struct device *dev, const float new_radius) {
-    servo_motor_context_t *context = &find_servo_context_from_device(dev)->context;
-    const float old_radius = context->motion_profile.radius;
-
-    if (old_radius == new_radius) {
-        return;
-    }
-
-    const float old_last_position = context->last_position_generated;
-
-    if (old_radius == 0.0f) {
-        context->last_position_generated = old_last_position / 180.0f * M_PI * new_radius;
-    } else {
-        context->last_position_generated = old_last_position / old_radius * new_radius;
-    }
-    LOG_DBG("Converted last position from %f to %f", (double)old_last_position,
-            (double)context->last_position_generated);
-
-    motor_motion_set_radius(&context->motion_profile, new_radius);
 }
 
 /* ***** Getters ***** */

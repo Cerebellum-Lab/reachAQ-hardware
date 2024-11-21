@@ -12,10 +12,12 @@ typedef struct motor_motion_profile {
     /* Parameters from the paper:
      * https://studylib.net/doc/8267759/sinusoidal-velocity-profiles-for-motion-control
      *
-     * If `radius` is nonzero, then the units of the start, end, max_velocity, and max_acceleration are assumed
-     * to be meters (and meters per second and meters per second squared). Otherwise, they are assumed to be
-     * degrees (and degrees per second and degrees per second squared) in the case of the servo motor and
-     * steps (and steps per second and steps per second squared) in the case of the stepper motor.
+     * The units of `start` and `end` for a stepper are in signed revolutions from the 0 point.
+     * The units of `start` and `end` for a servo are in degrees.
+     *
+     * `max_velocity` and `max_acceleration` for a stepper are revolutions per second and revolutions per second
+     * squared. `max_velocity` and `max_acceleration` for a servo are in degrees per second and degrees per second
+     * squared respectively.
      */
 
     float start_pos;
@@ -34,27 +36,31 @@ typedef struct motor_motion_profile {
     float t_k;    // duration of the velocity region
     float t_s;    // half-way time of the velocity region (and the total motion profile)
     float t_t;    // total time of the motion profile
-
-    float radius;  // Radius of whatever the rotor is attached to. This is not used by the motion profile,
-                   // but is used for certain helper functions throughout the library.
 } motor_motion_profile_t;
 
 typedef struct servo_motor_context {
     motor_motion_profile_t motion_profile;
     // Servo-specific parameters
-    float min_angle;         // Nominal minimum angle
-    float max_angle;         // Nominal maximum angle
-    float angle_adjustment;  // Nominal angle for "home". Sometimes they are a few degrees off of 0.0.
+    float min_angle;         // Nominal minimum angle (degrees)
+    float max_angle;         // Nominal maximum angle (degrees)
+    float angle_adjustment;  // Actual angle at `min_angle_pwm`. Due to inter-servo
+                             // variations, the time for the "minumum angle" is sometimes different
+                             // from the actual nominal angle given above. For example, if the datasheet
+                             // for a servo says that 1000us is the minimum signal correspond
+                             // to an angle of -90.0 degrees, but testing shows that at 1000us, the servo is
+                             // actually at -80.0 degrees, then set this to -80.0. The library will then
+                             // attempt to interpolate down to -90.0 degrees by adjusting the actual
+                             // PWM.
 
     // PWM Parameters
     float min_angle_pwm;        // PWM pulse duration (in us) for the minimum angle
     float max_angle_pwm;        // PWM pulse duration (in us) for the maximum angle
     float pwm_timer_increment;  // PWM pulse duration increment (in us) for each additional timer step
-                                // (1 / freq of timer peripheral)
+                                // (1 / freq of timer peripheral). (Usually set by the devicetree.)
 
     // Servo-specific internal state
     float last_time_generated;      // In seconds
-    float last_position_generated;  // In degrees or meters, depending on the motion_profile.radius
+    float last_position_generated;  // In degrees
 } servo_motor_context_t;
 
 typedef struct stepper_motor_context {
@@ -67,7 +73,7 @@ typedef struct stepper_motor_context {
 
     // Stepper-specific internal state
     float last_time_generated;      // In seconds
-    float last_position_generated;  // In either steps or meters, depending on the motion_profile.radius
+    float last_position_generated;  // In revolutions
 } stepper_motor_context_t;
 
 /**
@@ -123,19 +129,3 @@ ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, size_t t
  */
 ssize_t motor_motion_stepper_generate_timing_table(uint32_t *table, size_t table_size,
                                                    stepper_motor_context_t *context);
-
-/*
- * Simple helper function to convert meters to degrees (for servos).
- */
-float motor_motion_servo_length_to_degrees(const servo_motor_context_t *context, float length);
-
-/*
- * Simple helper function to convert meters to steps.
- */
-float motor_motion_stepper_length_to_steps(const stepper_motor_context_t *context, float length);
-
-/*
- * Opposite conversions.
- */
-float motor_motion_steps_to_stepper_length(const stepper_motor_context_t *context, float steps);
-float motor_motion_degrees_to_servo_length(const servo_motor_context_t *context, float degrees);

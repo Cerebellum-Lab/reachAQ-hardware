@@ -108,6 +108,10 @@ int stepper_go_home_slowly(const struct device *dev, bool forward);
  * Cancel all work on the motor.
  */
 void stepper_cancel_all_work(const struct device *dev);
+
+/*
+ * Cancel all work on the motor.
+ */
 void servo_cancel_all_work(const struct device *dev);
 
 /*

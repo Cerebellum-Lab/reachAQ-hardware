@@ -270,15 +270,17 @@ static float time_at_position(const float position, const float min_step, const 
     return time;
 }
 
+/**
+ *
+ * Convert (actual) degrees to the PWM count.
+ */
 static uint32_t degrees_to_pwm_count(const servo_motor_context_t *context, const float degree) {
-    return (uint32_t)roundf((((degree - context->min_angle) * (context->max_angle_pwm - context->min_angle_pwm)) /
-                                 (context->max_angle - context->min_angle) +
-                             context->min_angle_pwm) /
-                            context->pwm_timer_increment);
-}
-
-static float length_to_degrees(const motor_motion_profile_t *context, const float length) {
-    return context->radius > 0.0f ? length * 180.0f / (M_PI * context->radius) : length;
+    const float nominal_degrees = degree + context->min_angle - context->angle_adjustment;
+    return (uint32_t)roundf(
+        (((nominal_degrees - context->min_angle) * (context->max_angle_pwm - context->min_angle_pwm)) /
+             (context->max_angle - context->min_angle) +
+         context->min_angle_pwm) /
+        context->pwm_timer_increment);
 }
 
 ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, const size_t table_size,
@@ -299,8 +301,7 @@ ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, const si
     for (size_t i = 0; i < n_entries; i++) {
         time = servo_time_step * (float)(i + 1) + context->last_time_generated;
         displacement_now = displacement(time, &context->motion_profile) + context->motion_profile.start_pos;
-        const float degrees = length_to_degrees(&context->motion_profile, displacement_now);
-        table[i] = degrees_to_pwm_count(context, degrees);
+        table[i] = degrees_to_pwm_count(context, displacement_now);
     }
 
     context->last_time_generated = time;
@@ -309,17 +310,15 @@ ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, const si
     return (ssize_t)n_entries;
 }
 
-static float length_to_steps(const stepper_motor_context_t *context, const float length) {
-    return context->motion_profile.radius > 0.0f
-               ? length * context->steps_per_revolution / (2.0f * M_PI * context->motion_profile.radius)
-               : length;
+static float revolutions_to_steps(const stepper_motor_context_t *context, const float revolutions) {
+    return revolutions * context->steps_per_revolution;
 }
 
 ssize_t motor_motion_stepper_generate_timing_table(uint32_t *table, const size_t table_size,
                                                    stepper_motor_context_t *context) {
     const float time_step = context->timer_increment;
     const float n_steps_to_finish =
-        length_to_steps(context, context->motion_profile.end_pos - context->last_position_generated);
+        revolutions_to_steps(context, context->motion_profile.end_pos - context->last_position_generated);
     ssize_t n_entries = (ssize_t)fabsf(n_steps_to_finish / context->min_step);
 
     if (n_entries > table_size) {
@@ -357,40 +356,4 @@ ssize_t motor_motion_stepper_generate_timing_table(uint32_t *table, const size_t
     context->last_time_generated = this_time;
 
     return n_entries;
-}
-
-float motor_motion_stepper_length_to_steps(const stepper_motor_context_t *context, const float length) {
-    const float radius = context->motion_profile.radius;
-    if (radius == 0.0f) {
-        LOG_ERR("Radius not set for motor context.");
-        return NAN;
-    }
-    return length * context->steps_per_revolution / (2.0f * M_PI * radius);
-}
-
-float motor_motion_servo_length_to_degrees(const servo_motor_context_t *context, const float length) {
-    const float radius = context->motion_profile.radius;
-    if (radius == 0.0f) {
-        LOG_ERR("Radius not set for motor context.");
-        return NAN;
-    }
-    return length * 180.0f / (M_PI * radius);
-}
-
-float motor_motion_steps_to_stepper_length(const stepper_motor_context_t *context, const float steps) {
-    const float radius = context->motion_profile.radius;
-    if (radius == 0.0f) {
-        LOG_ERR("Radius not set for motor context.");
-        return NAN;
-    }
-    return steps * 2.0f * M_PI * radius / context->steps_per_revolution;
-}
-
-float motor_motion_degrees_to_servo_length(const servo_motor_context_t *context, const float degrees) {
-    const float radius = context->motion_profile.radius;
-    if (radius == 0.0f) {
-        LOG_ERR("Radius not set for motor context.");
-        return NAN;
-    }
-    return degrees * M_PI * radius / 180.0f;
 }
