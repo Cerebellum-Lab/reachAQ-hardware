@@ -36,16 +36,19 @@
 		input-gpios = <&gpioc 2 GPIO_ACTIVE_LOW>,  // CAN_ID[0] / NodeNumber[0]
 					  <&gpioc 3 GPIO_ACTIVE_LOW>,  // CAN_ID[1] / NodeNumber[1]
 					  <&gpioa 0 GPIO_ACTIVE_HIGH>, // CAN_ID[2] / DeviceType[0]
-					  <&gpioa 1 GPIO_ACTIVE_HIGH>; // CAN_ID[3] / DeviceType[1]
+					  <&gpioa 1 GPIO_ACTIVE_HIGH>, // CAN_ID[3] / DeviceType[1]
+					  <&gpioc 14 GPIO_ACTIVE_HIGH>, // CONT0
+					  <&gpioc 15 GPIO_ACTIVE_HIGH>; // CONT1
 		input-gpio-names = "CAN_ID[0]",
 						   "CAN_ID[1]",
 						   "CAN_ID[2]",
-						   "CAN_ID[3]";
-		input-gpio-interrupt-enable = "DISABLE", "DISABLE", "DISABLE", "DISABLE";
-		output-gpios = <&gpioc 14 GPIO_ACTIVE_HIGH>, // CONT0
-					   <&gpioc 15 GPIO_ACTIVE_HIGH>; // CONT1
-		output-gpio-names = "CONT0",
-							"CONT1";
+						   "CAN_ID[3]",
+						   "CONT0",
+						   "CONT1";
+		input-gpio-interrupt-enable = "DISABLE", "DISABLE", "DISABLE", "DISABLE", "BOTH", "BOTH";
+		output-gpios = <&gpioa 6 GPIO_ACTIVE_HIGH>;
+		output-gpio-names = "HEARTBEAT";
+		output-gpio-interrupt-enable = "DISABLE";
 	};
 
 	pressure_sensor: pressure_sensor {

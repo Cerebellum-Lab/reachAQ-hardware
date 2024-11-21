@@ -38,6 +38,13 @@ Purpose:
 typedef char (*pin_names_t)[MAX_NAME_LENGTH];
 
 typedef struct {
+    const struct gpio_dt_spec *inputs;
+    const struct gpio_dt_spec *outputs;
+} ll_generic_gpio_init_struct_t;
+
+typedef struct {
+    const struct gpio_dt_spec *inputs;
+    const struct gpio_dt_spec *outputs;
     pin_names_t valid_input_names;
     pin_names_t valid_output_names;
     uint8_t num_valid_input_names;
@@ -47,15 +54,15 @@ typedef struct {
 } ll_generic_gpio_data_t;
 
 typedef struct {
-    const struct gpio_dt_spec *inputs;
     const char **input_names;
     const uint8_t num_inputs;
     const uint8_t num_input_names;
-    const char **enable_input_interrupts;
-    const struct gpio_dt_spec *outputs;
     const char **output_names;
     const uint8_t num_outputs;
     const uint8_t num_output_names;
+    const char **enable_input_interrupts;
+    const char **enable_output_interrupts;
+    const ll_generic_gpio_init_struct_t *init_struct;
 } ll_generic_gpio_cfg_t;
 
 /* Returns the number of readable pins (inputs and outputs) */
@@ -74,10 +81,10 @@ static const int ll_generic_gpio_get_num_writable_pins(const struct device *dev)
 
 /* Returns array of readable pins (inputs and outputs) */
 static const struct gpio_dt_spec *ll_generic_gpio_get_readable_pins(const struct device *dev) {
-    const ll_generic_gpio_cfg_t *cfg = dev->config;
+    ll_generic_gpio_data_t *data = dev->data;
 
     /* inputs and outputs are contiguous arrays, so this is valid */
-    return cfg->inputs;
+    return data->inputs;
 }
 
 /*
@@ -85,9 +92,9 @@ static const struct gpio_dt_spec *ll_generic_gpio_get_readable_pins(const struct
 */
 /* Returns array of writable pins (outputs) */
 __attribute__((unused)) static const struct gpio_dt_spec *ll_generic_gpio_get_writable_pins(const struct device *dev) {
-    const ll_generic_gpio_cfg_t *cfg = dev->config;
+    ll_generic_gpio_data_t *data = dev->data;
 
-    return cfg->outputs;
+    return data->outputs;
 }
 
 /* Returns array of readable pin names (inputs and outputs) */
@@ -169,6 +176,7 @@ int ll_generic_gpio_read_pin_by_name(const struct device *dev, const char *pin_n
 
 int ll_generic_gpio_read_pin(const struct device *dev, uint8_t pin) {
     const ll_generic_gpio_cfg_t *cfg = dev->config;
+    ll_generic_gpio_data_t *data = dev->data;
 
     // Bounds check that it's a valid pin
     if (pin >= cfg->num_inputs) {
@@ -177,17 +185,18 @@ int ll_generic_gpio_read_pin(const struct device *dev, uint8_t pin) {
     }
 
     // Read the specified pin
-    const struct gpio_dt_spec *input = &cfg->inputs[pin];
+    const struct gpio_dt_spec *input = &data->inputs[pin];
     return gpio_pin_get_dt(input);
 }
 
 int ll_generic_gpio_read(const struct device *dev, uint32_t mask, uint32_t *value) {
     const ll_generic_gpio_cfg_t *cfg = dev->config;
+    ll_generic_gpio_data_t *data = dev->data;
 
     int new_value = 0;
     for (int i = 0; i < cfg->num_inputs; i++) {
         if ((1 << i) & mask) {
-            const struct gpio_dt_spec *input = &cfg->inputs[i];
+            const struct gpio_dt_spec *input = &data->inputs[i];
             int ret = gpio_pin_get_dt(input);
             if (ret < 0) {
                 LOG_ERR("Failed to read input %d", i);
@@ -240,6 +249,7 @@ int ll_generic_gpio_write_pin_by_name(const struct device *dev, const char *pin_
 
 int ll_generic_gpio_write_pin(const struct device *dev, uint8_t pin, uint8_t value) {
     const ll_generic_gpio_cfg_t *cfg = dev->config;
+    ll_generic_gpio_data_t *data = dev->data;
 
     // Bounds check that it's a valid pin
     if (pin >= cfg->num_outputs) {
@@ -248,16 +258,17 @@ int ll_generic_gpio_write_pin(const struct device *dev, uint8_t pin, uint8_t val
     }
 
     // Write the specified pin
-    const struct gpio_dt_spec *output = &cfg->outputs[pin];
+    const struct gpio_dt_spec *output = &data->outputs[pin];
     return gpio_pin_set_dt(output, value);
 }
 
 int ll_generic_gpio_write(const struct device *dev, uint32_t mask, uint32_t value) {
     const ll_generic_gpio_cfg_t *cfg = dev->config;
+    ll_generic_gpio_data_t *data = dev->data;
 
     for (int i = 0; i < cfg->num_outputs; i++) {
         if ((1 << i) & mask) {
-            const struct gpio_dt_spec *output = &cfg->outputs[i];
+            const struct gpio_dt_spec *output = &data->outputs[i];
             int ret = gpio_pin_set_dt(output, (value >> i) & 0x1);
             if (ret) {
                 LOG_ERR("Failed to write output %d", i);
@@ -275,6 +286,7 @@ int ll_generic_gpio_write_all(const struct device *dev, uint32_t value) {
 
 int ll_generic_gpio_toggle_pin(const struct device *dev, uint8_t pin) {
     const ll_generic_gpio_cfg_t *cfg = dev->config;
+    ll_generic_gpio_data_t *data = dev->data;
 
     // Bounds check that it's a valid pin
     if (pin >= cfg->num_outputs) {
@@ -283,16 +295,17 @@ int ll_generic_gpio_toggle_pin(const struct device *dev, uint8_t pin) {
     }
 
     // Toggle the specified pin
-    const struct gpio_dt_spec *output = &cfg->outputs[pin];
+    const struct gpio_dt_spec *output = &data->outputs[pin];
     return gpio_pin_toggle_dt(output);
 }
 
 int ll_generic_gpio_toggle(const struct device *dev, uint32_t mask) {
     const ll_generic_gpio_cfg_t *cfg = dev->config;
+    ll_generic_gpio_data_t *data = dev->data;
 
     for (int i = 0; i < cfg->num_outputs; i++) {
         if ((1 << i) & mask) {
-            const struct gpio_dt_spec *output = &cfg->outputs[i];
+            const struct gpio_dt_spec *output = &data->outputs[i];
             int ret = gpio_pin_toggle_dt(output);
             if (ret) {
                 LOG_ERR("Failed to toggle output %d", i);
@@ -447,9 +460,9 @@ int ll_generic_gpio_register_state_change_handler(const struct device *dev, void
 
     /* Associate state change interrupts with input channels */
     uint8_t pin_count = cfg->num_inputs;
-    const struct gpio_dt_spec *pins = cfg->inputs;
+    const struct gpio_dt_spec *pins = data->inputs;
 
-    /* Enable the interrupt on each pin */
+    /* Enable the interrupt on each input pin */
     for (int i = 0; i < pin_count; i++) {
         uint32_t interrupt_type = GPIO_INT_DISABLE;
         if (!strcmp(cfg->enable_input_interrupts[i], "RISING")) {
@@ -457,6 +470,28 @@ int ll_generic_gpio_register_state_change_handler(const struct device *dev, void
         } else if (!strcmp(cfg->enable_input_interrupts[i], "FALLING")) {
             interrupt_type = GPIO_INT_EDGE_FALLING;
         } else if (!strcmp(cfg->enable_input_interrupts[i], "BOTH")) {
+            interrupt_type = GPIO_INT_EDGE_BOTH;
+        }
+
+        const int ret = gpio_pin_interrupt_configure_dt(&pins[i], interrupt_type);
+        if (ret != 0) {
+            LOG_ERR("Failed to register state change handler: Error configuring interrupt for pin <%s> - %d",
+                    ll_generic_gpio_lookup_readable_pin_name(dev, i), ret);
+            return ret;
+        }
+    }
+
+    pin_count = cfg->num_outputs;
+    pins = data->outputs;
+
+    /* Enable the interrupt on each output pin */
+    for (int i = 0; i < pin_count; i++) {
+        uint32_t interrupt_type = GPIO_INT_DISABLE;
+        if (!strcmp(cfg->enable_output_interrupts[i], "RISING")) {
+            interrupt_type = GPIO_INT_EDGE_RISING;
+        } else if (!strcmp(cfg->enable_output_interrupts[i], "FALLING")) {
+            interrupt_type = GPIO_INT_EDGE_FALLING;
+        } else if (!strcmp(cfg->enable_output_interrupts[i], "BOTH")) {
             interrupt_type = GPIO_INT_EDGE_BOTH;
         }
 
@@ -476,15 +511,20 @@ static int ll_generic_gpio_init(const struct device *dev) {
     ll_generic_gpio_data_t *data = dev->data;
     int ret;
 
+    /* Copy from IO from init struct into contiguous array to avoid breaking implementation */
+    const ll_generic_gpio_init_struct_t *init_struct = cfg->init_struct;
+    memcpy((void *)data->inputs, (void *)init_struct->inputs, sizeof(struct gpio_dt_spec) * cfg->num_inputs);
+    memcpy((void *)data->outputs, (void *)init_struct->outputs, sizeof(struct gpio_dt_spec) * cfg->num_outputs);
+
     /* Initialize the outputs as outputs */
-    ret = ll_generic_gpio_configure_pins(cfg->outputs, cfg->num_outputs, GPIO_OUTPUT);
+    ret = ll_generic_gpio_configure_pins(data->outputs, cfg->num_outputs, GPIO_OUTPUT);
     if (ret != 0) {
         LOG_ERR("Failed to initialize generic GPIO: Error configuring output pins - %d", ret);
         return ret;
     }
 
     /* Initialize the inputs as inputs */
-    ret = ll_generic_gpio_configure_pins(cfg->inputs, cfg->num_inputs, GPIO_INPUT);
+    ret = ll_generic_gpio_configure_pins(data->inputs, cfg->num_inputs, GPIO_INPUT);
     if (ret != 0) {
         LOG_ERR("Failed to initialize generic GPIO: Error configuring input pins - %d", ret);
         return ret;
@@ -518,44 +558,80 @@ static int ll_generic_gpio_init(const struct device *dev) {
     return 0;
 }
 
-#define GENERIC_GPIO_INST(idx)                                                                                    \
-    static const struct gpio_dt_spec pin_dt_specs##idx[] = {                                                      \
-        DT_INST_FOREACH_PROP_ELEM_SEP(idx, input_gpios, GPIO_DT_SPEC_GET_BY_IDX, (, )),                           \
-        DT_INST_FOREACH_PROP_ELEM_SEP(idx, output_gpios, GPIO_DT_SPEC_GET_BY_IDX, (, )),                          \
-    };                                                                                                            \
-                                                                                                                  \
-    static const char *pin_names##idx[] = {                                                                       \
-        DT_INST_FOREACH_PROP_ELEM_SEP(idx, input_gpio_names, DT_PROP_BY_IDX, (, )),                               \
-        DT_INST_FOREACH_PROP_ELEM_SEP(idx, output_gpio_names, DT_PROP_BY_IDX, (, )),                              \
-    };                                                                                                            \
-                                                                                                                  \
-    static const char *interrupt_enables##idx[] = {                                                               \
-        DT_INST_FOREACH_PROP_ELEM_SEP(idx, input_gpio_interrupt_enable, DT_PROP_BY_IDX, (, )),                    \
-    };                                                                                                            \
-                                                                                                                  \
-    char valid_pin_names##idx[DT_INST_PROP_LEN(idx, input_gpios) + DT_INST_PROP_LEN(idx, output_gpios)]           \
-                             [MAX_NAME_LENGTH];                                                                   \
-                                                                                                                  \
-    static ll_generic_gpio_data_t ll_generic_gpio_data##idx = {                                                   \
-        .valid_input_names = valid_pin_names##idx,                                                                \
-        .valid_output_names = &valid_pin_names##idx[DT_INST_PROP_LEN(idx, input_gpios)],                          \
-        .num_valid_input_names = 0,                                                                               \
-        .num_valid_output_names = 0,                                                                              \
-        .state_change_handler = NULL,                                                                             \
-    };                                                                                                            \
-    static const ll_generic_gpio_cfg_t ll_generic_gpio_cfg##idx = {                                               \
-        .inputs = pin_dt_specs##idx,                                                                              \
-        .input_names = pin_names##idx,                                                                            \
-        .num_inputs = DT_INST_PROP_LEN(idx, input_gpios),                                                         \
-        .num_input_names = DT_INST_PROP_LEN(idx, input_gpio_names),                                               \
-        .enable_input_interrupts = interrupt_enables##idx,                                                        \
-        .outputs = &(pin_dt_specs##idx[DT_INST_PROP_LEN(idx, input_gpios)]),                                      \
-        .output_names = &(pin_names##idx[DT_INST_PROP_LEN(idx, input_gpio_names)]),                               \
-        .num_outputs = DT_INST_PROP_LEN(idx, output_gpios),                                                       \
-        .num_output_names = DT_INST_PROP_LEN(idx, output_gpio_names),                                             \
-    };                                                                                                            \
-                                                                                                                  \
-    DEVICE_DT_INST_DEFINE(idx, ll_generic_gpio_init, NULL, &ll_generic_gpio_data##idx, &ll_generic_gpio_cfg##idx, \
+#define GENERIC_GPIO_INST(idx)                                                                                        \
+    static const struct gpio_dt_spec input_pin_dt_specs##idx[];                                                       \
+    static const struct gpio_dt_spec output_pin_dt_specs##idx[];                                                      \
+    static const char *input_pin_names##idx[];                                                                        \
+    static const char *output_pin_names##idx[];                                                                       \
+    static const char *input_interrupt_enables##idx[];                                                                \
+    static const char *output_interrupt_enables##idx[];                                                               \
+                                                                                                                      \
+    COND_CODE_0(DT_INST_NODE_HAS_PROP(idx, input_gpios),                                                              \
+                (static const struct gpio_dt_spec input_pin_dt_specs##idx[] = {};),                                   \
+                (static const struct gpio_dt_spec input_pin_dt_specs##idx[] = {                                       \
+                     DT_INST_FOREACH_PROP_ELEM_SEP(idx, input_gpios, GPIO_DT_SPEC_GET_BY_IDX, (, )),                  \
+                 };))                                                                                                 \
+                                                                                                                      \
+    COND_CODE_0(DT_INST_NODE_HAS_PROP(idx, output_gpios),                                                             \
+                (static const struct gpio_dt_spec output_pin_dt_specs##idx[] = {};),                                  \
+                (static const struct gpio_dt_spec output_pin_dt_specs##idx[] = {                                      \
+                     DT_INST_FOREACH_PROP_ELEM_SEP(idx, output_gpios, GPIO_DT_SPEC_GET_BY_IDX, (, )),                 \
+                 };))                                                                                                 \
+                                                                                                                      \
+    static struct gpio_dt_spec                                                                                        \
+        pin_dt_specs##idx[DT_INST_PROP_LEN_OR(idx, input_gpios, 0) + DT_INST_PROP_LEN_OR(idx, output_gpios, 0)];      \
+                                                                                                                      \
+    COND_CODE_0(DT_INST_NODE_HAS_PROP(idx, input_gpios), (static const char *input_pin_names##idx[] = {};),           \
+                (static const char *input_pin_names##idx[] = {                                                        \
+                     DT_INST_FOREACH_PROP_ELEM_SEP(idx, input_gpio_names, DT_PROP_BY_IDX, (, )),                      \
+                 };))                                                                                                 \
+                                                                                                                      \
+    COND_CODE_0(DT_INST_NODE_HAS_PROP(idx, output_gpios), (static const char *output_pin_names##idx[] = {};),         \
+                (static const char *output_pin_names##idx[] = {                                                       \
+                     DT_INST_FOREACH_PROP_ELEM_SEP(idx, output_gpio_names, DT_PROP_BY_IDX, (, )),                     \
+                 };))                                                                                                 \
+                                                                                                                      \
+    COND_CODE_0(DT_INST_NODE_HAS_PROP(idx, input_gpios), (static const char *input_interrupt_enables##idx[] = {};),   \
+                (static const char *input_interrupt_enables##idx[] = {                                                \
+                     DT_INST_FOREACH_PROP_ELEM_SEP(idx, input_gpio_interrupt_enable, DT_PROP_BY_IDX, (, )),           \
+                 };))                                                                                                 \
+                                                                                                                      \
+    COND_CODE_0(DT_INST_NODE_HAS_PROP(idx, output_gpios), (static const char *output_interrupt_enables##idx[] = {};), \
+                (static const char *output_interrupt_enables##idx[] = {                                               \
+                     DT_INST_FOREACH_PROP_ELEM_SEP(idx, output_gpio_interrupt_enable, DT_PROP_BY_IDX, (, )),          \
+                 };))                                                                                                 \
+                                                                                                                      \
+    char valid_pin_names##idx[DT_INST_PROP_LEN_OR(idx, input_gpios, 0) + DT_INST_PROP_LEN_OR(idx, output_gpios, 0)]   \
+                             [MAX_NAME_LENGTH];                                                                       \
+                                                                                                                      \
+    static ll_generic_gpio_data_t ll_generic_gpio_data##idx = {                                                       \
+        .inputs = pin_dt_specs##idx,                                                                                  \
+        .outputs = &(pin_dt_specs##idx[DT_INST_PROP_LEN_OR(idx, input_gpios, 0)]),                                    \
+        .valid_input_names = valid_pin_names##idx,                                                                    \
+        .valid_output_names = &valid_pin_names##idx[DT_INST_PROP_LEN(idx, input_gpios)],                              \
+        .num_valid_input_names = 0,                                                                                   \
+        .num_valid_output_names = 0,                                                                                  \
+        .state_change_handler = NULL,                                                                                 \
+    };                                                                                                                \
+                                                                                                                      \
+    static const ll_generic_gpio_init_struct_t ll_generic_gpio_init##idx = {                                          \
+        .inputs = input_pin_dt_specs##idx,                                                                            \
+        .outputs = output_pin_dt_specs##idx,                                                                          \
+    };                                                                                                                \
+                                                                                                                      \
+    static const ll_generic_gpio_cfg_t ll_generic_gpio_cfg##idx = {                                                   \
+        .input_names = input_pin_names##idx,                                                                          \
+        .num_inputs = DT_INST_PROP_LEN_OR(idx, input_gpios, 0),                                                       \
+        .num_input_names = DT_INST_PROP_LEN_OR(idx, input_gpio_names, 0),                                             \
+        .enable_input_interrupts = input_interrupt_enables##idx,                                                      \
+        .output_names = output_pin_names##idx,                                                                        \
+        .num_outputs = DT_INST_PROP_LEN_OR(idx, output_gpios, 0),                                                     \
+        .num_output_names = DT_INST_PROP_LEN_OR(idx, output_gpio_names, 0),                                           \
+        .enable_output_interrupts = output_interrupt_enables##idx,                                                    \
+        .init_struct = &ll_generic_gpio_init##idx,                                                                    \
+    };                                                                                                                \
+                                                                                                                      \
+    DEVICE_DT_INST_DEFINE(idx, ll_generic_gpio_init, NULL, &ll_generic_gpio_data##idx, &ll_generic_gpio_cfg##idx,     \
                           POST_KERNEL, CONFIG_GPIO_INIT_PRIORITY, NULL);
 
 DT_INST_FOREACH_STATUS_OKAY(GENERIC_GPIO_INST)

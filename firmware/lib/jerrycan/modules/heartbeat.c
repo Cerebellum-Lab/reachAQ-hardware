@@ -25,27 +25,24 @@
  * turn off after CONFIG_LIB_JERRYCAN_HEARTBEAT_LED_DURATION_MS ms, using a timer to control the blink duration.
  */
 
-#include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
 
+#include "generic_gpios.h"
 #include "jerrycan.h"
 
 LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
-/*
- * Heartbeat LED
- */
-static const struct gpio_dt_spec heartbeat_led_dev = GPIO_DT_SPEC_GET(DT_NODELABEL(status_led), gpios);
+static const struct device *generic_gpios = DEVICE_DT_GET_ANY(ll_generic_gpios);
+static int heartbeat_led_idx = 0;
 
-static void heartbeat_led_off(struct k_timer *timer) { gpio_pin_set_dt(&heartbeat_led_dev, 0); }
+static void heartbeat_led_off(struct k_timer *timer) { ll_generic_gpio_write_pin(generic_gpios, heartbeat_led_idx, 0); }
 
 K_TIMER_DEFINE(heartbeat_led_timer, heartbeat_led_off, NULL);
 
 static void heartbeat_led_start() {
     // Turn on the LED and then start a timer that will turn
     // it off in CONFIG_LIB_JERRYCAN_HEARTBEAT_LED_DURATION_MS ms
-    gpio_pin_configure_dt(&heartbeat_led_dev, GPIO_OUTPUT);
-    gpio_pin_set_dt(&heartbeat_led_dev, 1);
+    ll_generic_gpio_write_pin(generic_gpios, heartbeat_led_idx, 1);
     k_timer_start(&heartbeat_led_timer, K_MSEC(CONFIG_LIB_JERRYCAN_HEARTBEAT_LED_DURATION_MS), K_NO_WAIT);
 }
 
@@ -60,6 +57,20 @@ static jerrycan_rx_callback_t heartbeat_callback = {
 };
 
 static int jerrycan_heartbeat_init() {
+    // Use pin index instead of pin name so we don't
+    // iterate through all pins everytime we write
+    // to the heartbeat LED
+    const char *pin_name = ll_generic_gpio_lookup_writable_pin_name(generic_gpios, heartbeat_led_idx);
+    while (pin_name != NULL && strcmp(pin_name, "HEARTBEAT") != 0) {
+        heartbeat_led_idx++;
+        pin_name = ll_generic_gpio_lookup_writable_pin_name(generic_gpios, heartbeat_led_idx);
+    }
+
+    if (pin_name == NULL) {
+        LOG_ERR("Error initializing JerryCAN Heartbeat module: Failed to determine index of heartbeat LED");
+        return -1;
+    }
+
     // Register an handler for HEARTBEAT messages
     return jerrycan_register_rx_callback(&heartbeat_callback);
 }

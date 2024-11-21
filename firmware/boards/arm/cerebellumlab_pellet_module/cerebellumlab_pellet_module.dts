@@ -72,11 +72,14 @@
 		output-gpios = <&gpiob 11 GPIO_ACTIVE_HIGH>, // STIM0
 					   <&gpiob 12 GPIO_ACTIVE_HIGH>, // STIM1
 					   <&gpiob 13 GPIO_ACTIVE_HIGH>, // STIM2
-					   <&gpiob 14 GPIO_ACTIVE_HIGH>; // STIM3
+					   <&gpiob 14 GPIO_ACTIVE_HIGH>, // STIM3
+					   <&gpioa 5 GPIO_ACTIVE_HIGH>;  // HEARTBEAT
 		output-gpio-names = "STIM0",
 						    "STIM1",
 						    "STIM2",
-						    "STIM3";
+						    "STIM3",
+							"HEARTBEAT";
+		output-gpio-interrupt-enable = "BOTH", "BOTH", "BOTH", "BOTH", "DISABLE";
 	};
 
 	tone_generator {
