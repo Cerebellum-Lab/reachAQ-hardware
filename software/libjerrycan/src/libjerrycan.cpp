@@ -217,8 +217,8 @@ int JerryCAN::EStop(bool enable) {
     return SendMessage(msg, 0x1F);
 }
 
-int JerryCAN::StepperMove(uint8_t dst_id, uint8_t motor_id, int16_t position, uint16_t max_velocity,
-                          uint16_t max_acceleration, abs_or_rel_t abs_or_rel) {
+int JerryCAN::StepperMove(uint8_t dst_id, uint8_t motor_id, float position, float max_velocity, float max_acceleration,
+                          abs_or_rel_t abs_or_rel) {
     // Send a stepper move message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_STEPPER_MOVE,
@@ -235,8 +235,8 @@ int JerryCAN::StepperMove(uint8_t dst_id, uint8_t motor_id, int16_t position, ui
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::ServoMove(uint8_t dst_id, uint8_t motor_id, int16_t position, uint16_t max_velocity,
-                        uint16_t max_acceleration, abs_or_rel_t abs_or_rel) {
+int JerryCAN::ServoMove(uint8_t dst_id, uint8_t motor_id, float position, float max_velocity, float max_acceleration,
+                        abs_or_rel_t abs_or_rel) {
     // Send a servo move message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_SERVO_MOVE,
@@ -287,8 +287,7 @@ int JerryCAN::CfgRead(uint8_t dst_id, jerrycan_cmd_cfg_t &cfg) {
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t min_step_inverse,
-                              uint16_t steps_per_revolution) {
+int JerryCAN::StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t min_step_inverse, float steps_per_revolution) {
     jerrycan_cmd_cfg_t cfg_write = {.type = JERRYCAN_CFG_STEPPER,
                                     .stepper = {
                                         .motor_id = motor_id,
@@ -299,8 +298,8 @@ int JerryCAN::StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t min_ste
     return CfgWrite(dst_id, cfg_write);
 }
 
-int JerryCAN::ServoCfgWrite(uint8_t dst_id, uint8_t motor_id, int16_t min_position, int16_t max_position,
-                            uint16_t min_pwm_duration_us, uint16_t max_pwm_duration_us) {
+int JerryCAN::ServoCfgWrite(uint8_t dst_id, uint8_t motor_id, float min_position, float max_position,
+                            float min_pwm_duration_us, float max_pwm_duration_us) {
     jerrycan_cmd_cfg_t cfg_write = {.type = JERRYCAN_CFG_SERVO,
                                     .servo = {
                                         .motor_id = motor_id,

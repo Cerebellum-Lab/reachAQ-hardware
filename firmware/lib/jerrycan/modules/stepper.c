@@ -49,8 +49,8 @@ LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 static void stepper_handler(jerrycan_msg_t *msg) {
     // If we receive a stepper message, we should move the stepper
     LOG_INF(
-        "Received stepper move message: motor_id=%d, abs_or_rel=%d, position=%d, max_velocity=%d, "
-        "max_acceleration=%d",
+        "Received stepper move message: motor_id=%d, abs_or_rel=%d, position=%f, max_velocity=%f, "
+        "max_acceleration=%f",
         msg->stepper_move.motor_id, msg->stepper_move.abs_or_rel, msg->stepper_move.position,
         msg->stepper_move.max_velocity, msg->stepper_move.max_acceleration);
 
@@ -89,7 +89,7 @@ static void stepper_cfg_write_handler(jerrycan_msg_t *msg) {
         return;
     }
 
-    LOG_INF("Received stepper config write message: motor_id=%d, min_step_inverse=%d, steps_per_revolution=%d",
+    LOG_INF("Received stepper config write message: motor_id=%d, min_step_inverse=%f, steps_per_revolution=%f",
             msg->cfg_write.stepper.motor_id, msg->cfg_write.stepper.min_step_inverse,
             msg->cfg_write.stepper.steps_per_revolution);
 
@@ -99,8 +99,8 @@ static void stepper_cfg_write_handler(jerrycan_msg_t *msg) {
         return;
     }
 
-    stepper_set_parameters(dev, 0.0f, 0.0f, 1.0f / (float)msg->cfg_write.stepper.min_step_inverse,
-                           (float)msg->cfg_write.stepper.steps_per_revolution);
+    stepper_set_parameters(dev, 0.0f, 0.0f, 1.0f / msg->cfg_write.stepper.min_step_inverse,
+                           msg->cfg_write.stepper.steps_per_revolution);
 }
 
 static jerrycan_rx_callback_t stepper_cfg_write_callback = {
@@ -135,14 +135,14 @@ static void stepper_cfg_read_handler(jerrycan_msg_t *msg) {
         LOG_ERR("Failed to get min step: %d", ret);
         rsp.cfg_response.stepper.error = true;
     }
-    rsp.cfg_response.stepper.min_step_inverse = (uint16_t)(1.0f / min_step);
+    rsp.cfg_response.stepper.min_step_inverse = (1.0f / min_step);
 
     ret = motor_motion_stepper_get_steps_per_revolution(dev, &steps_per_revolution);
     if (ret < 0) {
         LOG_ERR("Failed to get steps per revolution: %d", ret);
         rsp.cfg_response.stepper.error = true;
     }
-    rsp.cfg_response.stepper.steps_per_revolution = (uint16_t)steps_per_revolution;
+    rsp.cfg_response.stepper.steps_per_revolution = steps_per_revolution;
 
 send_response:
     jerrycan_tx(&rsp, K_NO_WAIT);

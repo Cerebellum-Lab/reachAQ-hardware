@@ -87,13 +87,12 @@ typedef struct __attribute__((packed)) {
         uint8_t rsvd0 : 5;
         abs_or_rel_t abs_or_rel : 1;
     };
-    uint8_t rsvd1;
-    int16_t position;
-    uint16_t max_velocity;
-    uint16_t max_acceleration;
+    float position;
+    float max_velocity;
+    float max_acceleration;
 } jerrycan_cmd_stepper_move_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_stepper_move_t) == 8, "jerrycan_cmd_stepper_move_t should be 8 bytes");
+BUILD_ASSERT(sizeof(jerrycan_cmd_stepper_move_t) == 13, "jerrycan_cmd_stepper_move_t should be 13 bytes");
 
 typedef struct __attribute__((packed)) {
     uint8_t motor_id : 7;
@@ -116,10 +115,10 @@ typedef struct __attribute__((packed)) {
         uint8_t error : 1;
         uint8_t rsvd0 : 5;
     };
-    int16_t min_position;
-    int16_t max_position;
-    uint16_t min_pwm_duration_us;
-    uint16_t max_pwm_duration_us;
+    float min_position;
+    float max_position;
+    float min_pwm_duration_us;
+    float max_pwm_duration_us;
 } jerrycan_servo_cfg_t;
 
 typedef struct __attribute__((packed)) {
@@ -130,7 +129,7 @@ typedef struct __attribute__((packed)) {
     };
     uint16_t min_step_inverse;  // Power of 2 representing microstepping. Thus 2 represents 1/2 steps, 4 represents 1/4
                                 // steps, etc.
-    uint16_t steps_per_revolution;
+    float steps_per_revolution;
 } jerrycan_stepper_cfg_t;
 
 typedef struct __attribute__((packed)) {
@@ -141,7 +140,7 @@ typedef struct __attribute__((packed)) {
     };
 } jerrycan_cmd_cfg_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_cfg_t) == 10, "jerrycan_cmd_cfg_t should be 10 bytes");
+BUILD_ASSERT(sizeof(jerrycan_cmd_cfg_t) == 18, "jerrycan_cmd_cfg_t should be 18 bytes");
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
@@ -261,7 +260,7 @@ typedef struct __attribute__((packed)) {
     uint8_t status;
     uint8_t homing_status;
     uint8_t limit_switch;
-    int32_t position;
+    float position;
 } jerrycan_cmd_stepper_status_t;
 
 BUILD_ASSERT(sizeof(jerrycan_cmd_stepper_status_t) == 8, "jerrycan_cmd_stepper_status_t should be 8 bytes");
@@ -269,7 +268,7 @@ BUILD_ASSERT(sizeof(jerrycan_cmd_stepper_status_t) == 8, "jerrycan_cmd_stepper_s
 typedef struct __attribute__((packed)) {
     uint8_t motor_id;
     uint8_t status;
-    int32_t position;
+    float position;
 } jerrycan_cmd_servo_status_t;
 
 BUILD_ASSERT(sizeof(jerrycan_cmd_servo_status_t) == 6, "jerrycan_cmd_servo_status_t should be 6 bytes");

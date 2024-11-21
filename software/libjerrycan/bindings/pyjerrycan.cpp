@@ -209,7 +209,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
             [](jerrycan_cmd_stepper_home_t &a, uint8_t v) { a.motor_id = v; })
         .def_property("forward",
             [](const jerrycan_cmd_stepper_home_t &a) { return a.forward; },
-            [](jerrycan_cmd_stepper_home_t &a, uint8_t v) { a.forward = v; })
+            [](jerrycan_cmd_stepper_home_t &a, bool v) { a.forward = v; })
     ;
 
     py::class_<jerrycan_cmd_stepper_status_t>(m, "StepperStatus")
