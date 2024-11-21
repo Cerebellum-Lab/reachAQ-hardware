@@ -62,6 +62,8 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("pressure_sensor_tare", &jerrycan_msg_t::pressure_sensor_tare)
         .def_readwrite("rgb_led", &jerrycan_msg_t::rgb_led)
         .def_readwrite("doors", &jerrycan_msg_t::doors)
+        .def_readwrite("audio_data_cmd", &jerrycan_msg_t::audio_data_cmd)
+        .def_readwrite("audio_data", &jerrycan_msg_t::audio_data)
     ;
 
     py::class_<jerrycan_cmd_status_t>(m, "Status")
@@ -256,6 +258,19 @@ PYBIND11_MODULE(pyjerrycan, m) {
             [](jerrycan_cmd_door_closed_t &a, uint8_t v) { a.opened = v; })
     ;
 
+    py::class_<jerrycan_cmd_audio_data_cmd_t>(m, "AudioDataCmd")
+        .def(py::init<>())
+        .def_readwrite("stream_id", &jerrycan_cmd_audio_data_cmd_t::stream_id)
+    ;
+
+    py::class_<jerrycan_cmd_audio_data_t>(m, "AudioData")
+        .def(py::init<>())
+        .def_property("payload",
+            [](const jerrycan_cmd_audio_data_t &a) { return a.payload; },
+            [](jerrycan_cmd_audio_data_t &a, uint8_t v[JERRYCAN_MAX_PAYLOAD_SIZE]) { std::memcpy(a.payload, v, JERRYCAN_MAX_PAYLOAD_SIZE); })
+    ;
+
+
     py::enum_<jerrycan_cmd_type_t>(m, "JerryCANCmdType")
         .value("ESTOP", JERRYCAN_CMD_ESTOP)
         .value("HEARTBEAT", JERRYCAN_CMD_HEARTBEAT)
@@ -279,6 +294,9 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .value("PRESSURE_SENSOR_TARE", JERRYCAN_CMD_PRESSURE_SENSOR_TARE)
         .value("RGB_LED", JERRYCAN_CMD_RGB_LED)
         .value("DOOR_SENSOR", JERRYCAN_CMD_DOOR_SENSOR)
+        .value("AUDIO_MAGNITUDE_DATA_BEGIN", JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_BEGIN)
+        .value("AUDIO_MAGNITUDE_DATA_CONT", JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_CONT)
+        .value("AUDIO_MAGNITUDE_DATA_END", JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_END)
         .export_values()
     ;
 }
