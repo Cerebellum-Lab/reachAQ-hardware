@@ -330,8 +330,8 @@ ssize_t motor_motion_stepper_generate_timing_table(uint32_t *table, const size_t
     float this_time = context->last_time_generated;
     float this_position = context->last_position_generated;
     for (size_t i = 0; i < n_entries; i++) {
-        this_position =
-            context->last_position_generated + context->motion_profile.sgn * (float)(i + 1) * context->min_step;
+        this_position = context->last_position_generated + context->motion_profile.sgn * (float)(i + 1) *
+                                                               context->min_step / context->steps_per_revolution;
         this_time =
             time_at_position(this_position, context->min_step, context->timer_increment, &context->motion_profile);
 
