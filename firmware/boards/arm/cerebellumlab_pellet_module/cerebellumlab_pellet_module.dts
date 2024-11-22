@@ -269,6 +269,7 @@
 		dma-names = "tx";
 
 		limit-switch-gpios = <&gpioa 8 GPIO_ACTIVE_LOW>;
+		driver-dev = <&stepper_driver0>;
 	};
 };
 
@@ -293,6 +294,7 @@
 		dma-names = "tx";
 
 		limit-switch-gpios = <&gpioa 9 GPIO_ACTIVE_LOW>;
+		driver-dev = <&stepper_driver1>;
 	};
 };
 
@@ -317,6 +319,7 @@
 		dma-names = "tx";
 
 		limit-switch-gpios = <&gpioa 10 GPIO_ACTIVE_LOW>;
+		driver-dev = <&stepper_driver2>;
 	};
 };
 

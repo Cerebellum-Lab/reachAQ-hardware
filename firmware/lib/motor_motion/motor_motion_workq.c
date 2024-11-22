@@ -6,6 +6,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/settings/settings.h>
 
+#include "adi_tmc2209.h"
 #include "motor_common.h"
 #include "motor_motion.h"
 #include "servo.h"
@@ -35,7 +36,7 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
 // Period between successive status checks of the stepper drivers
 #define STEPPER_DRIVER_CHECK_PERIOD 100U
 // Default 'min_step' of stepper (number of steps, incl. microstepping, done per pulse)
-#define STEPPER_DEFAULT_MIN_STEP 0.25f
+#define STEPPER_DEFAULT_MIN_STEP 1.0f
 // Default 'steps_per_revolution' of stepper
 #define STEPPER_DEFAULT_STEPS_PER_REVOLUTION 48
 
@@ -433,6 +434,16 @@ static int motor_workq_init_and_start(void) {
         ret = settings_load();
         if (ret < 0) {
             LOG_ERR("error: settings_load: %d", ret);
+        }
+    }
+
+    for (size_t i = 0; i < ARRAY_SIZE(stepper_contexts); i++) {
+        struct stepper_work_context *context = &stepper_contexts[i];
+        const struct device *motor_dev = context->dev;
+        const ll_motor_cfg_t *motor_data = motor_dev->config;
+        const struct device *stepper_driver_dev = motor_data->stepper_driver_device;
+        if (stepper_driver_dev != NULL) {
+            adi_tmc2209_set_microstep(stepper_driver_dev, (uint32_t)(1.0f / context->context.min_step));
         }
     }
 

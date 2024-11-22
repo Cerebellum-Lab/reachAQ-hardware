@@ -20,3 +20,16 @@ struct adi_tmc2209_driver_api {
  * @return 0 on success, -EINVAL if the current values are out of range, -errno on IO error.
  */
 int adi_tmc2209_set_ihold_irun(const struct device *dev, uint8_t hold_current, uint8_t run_current, uint8_t hold_delay);
+
+/**
+ *
+ * Set the microstep resolution for `dev`.
+ *
+ * @param dev Device to set microstep.
+ * @param steps_per_fullstep The desired number of STEP pin pulses to effect one full step. One of 1, 2, 4, 8, 16, 32,
+ * 64, 128, 256.
+ * change the
+ * @return 0 on success
+ * @return -errno on failure
+ */
+int adi_tmc2209_set_microstep(const struct device *dev, uint32_t steps_per_fullstep);

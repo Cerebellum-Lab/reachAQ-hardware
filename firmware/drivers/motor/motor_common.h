@@ -56,6 +56,7 @@ typedef struct {
     bool stop_on_dma_complete;
     struct gpio_dt_spec limit_switch_pin;
     struct gpio_dt_spec dir_pin;  // Used for the stepper driver
+    const struct device *stepper_driver_device;
     uint8_t motor_id;
 } ll_motor_cfg_t;
 

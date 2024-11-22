@@ -2,6 +2,7 @@ menuconfig LL_STEPPER
         bool "Support LeafLabs stepper driver"
         default y
         depends on DT_HAS_LL_STEPPER_ENABLED
+        depends on ADI_TMC2209
         select USE_STM32_LL_TIM
         select DMA
         help

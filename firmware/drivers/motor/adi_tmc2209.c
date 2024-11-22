@@ -158,6 +158,31 @@ struct __attribute__((packed)) NODECONF_data_fields {
 
 BUILD_ASSERT(sizeof(struct NODECONF_data_fields) == DATA_LENGTH);
 
+#define REG_CHOPCONF 0x6CU
+struct __attribute__((packed)) CHOPCONF_data_fields {
+    uint8_t mres: 4;
+    uint8_t intpol : 1;
+    uint8_t dedge : 1;
+    uint8_t diss2g : 1;
+    uint8_t dss2vs : 1;
+
+    uint8_t tbl1 : 1;
+    uint8_t vsense : 1;
+    uint8_t : 6;
+
+    uint8_t hend1 : 1;
+    uint8_t hend2 : 1;
+    uint8_t hend3 : 1;
+    uint8_t : 4;
+    uint8_t tbl0 : 1;
+
+    uint8_t toff : 4;
+    uint8_t hstrt : 3;
+    uint8_t hend0 : 1;
+};
+
+BUILD_ASSERT(sizeof(struct CHOPCONF_data_fields) == DATA_LENGTH);
+
 /**
  * @returns crc of `data[0 : size]` (Polynomial is x^8 + x^2 + x + 1.)
  */
@@ -362,6 +387,57 @@ int adi_tmc2209_set_ihold_irun(const struct device *dev, const uint8_t hold_curr
     return adi_tmc2209_write(dev, REG_IHOLD_IRUN, (unsigned char *)&data);
 }
 
+int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per_fullstep) {
+    struct CHOPCONF_data_fields chopconf_data = { 0 };
+
+    int ret = adi_tmc2209_read(dev, REG_CHOPCONF, (unsigned char *)&chopconf_data);
+
+    if (ret < 0) {
+        LOG_ERR("Failed (%d) to read chopconf data", ret);
+        return -EIO;
+    }
+
+    uint8_t mres = 0;
+
+    switch (steps_per_fullstep) {
+        case 1:
+            mres = 8;
+            break;
+        case 2:
+            mres = 7;
+            break;
+        case 4:
+            mres = 6;
+            break;
+        case 8:
+            mres = 5;
+            break;
+        case 16:
+            mres = 4;
+            break;
+        case 32:
+            mres = 3;
+            break;
+        case 64:
+            mres = 2;
+            break;
+        case 128:
+            mres = 1;
+            break;
+        case 256:
+            mres = 0;
+            break;
+        default:
+            LOG_ERR("Invalid microstep: %u", steps_per_fullstep);
+            return -EINVAL;
+    }
+
+    chopconf_data.mres = mres;
+    k_sleep(K_MSEC(10));
+    ret = adi_tmc2209_write(dev, REG_CHOPCONF, (unsigned char *)&chopconf_data);
+    return ret;
+}
+
 static int adi_tmc2209_init(const struct device *dev) {
     const int default_hold_current = 1;  // Let them freewheel by default
     const int default_run_current = 32;  // maximum current
@@ -385,7 +461,7 @@ static int adi_tmc2209_init(const struct device *dev) {
     struct NODECONF_data_fields node_cfg = {
         .send_delay = SEND_DELAY,
     };
-
+    k_sleep(K_MSEC(10));
     adi_tmc2209_write(dev, REG_NODECONF, (unsigned char *)&node_cfg);
 
     struct GCONF_data_fields gconf_data = {0};
@@ -403,12 +479,12 @@ static int adi_tmc2209_init(const struct device *dev) {
 
     gconf_data.i_scale_analog = 0;   // Use internal voltage reference. VREF is disconnected on the board.
     gconf_data.internal_Rsense = 0;  // External sense resistors are connected.
-    gconf_data.en_spreadcycle = 0;   // We are using StealthChop
+    gconf_data.en_spreadcycle = 0;   // Use StealthChop
     gconf_data.shaft = 0;            // Do not invert the direction of the motor.
     // Don't set or unset index_otpw or index_step. The INDEX register is not read in this driver.
     gconf_data.pdn_disable = 1;       // Using UART so set this per datasheet.
-    gconf_data.mstep_reg_select = 0;  // MS1 and MS2 are not connected so use UART registers.
-    gconf_data.multistep_filt = 1;    // Enable the filter for the multistep pulse. (Done by default.)
+    gconf_data.mstep_reg_select = 1;  // MS1 and MS2 are not connected so use UART registers.
+    gconf_data.multistep_filt = 0;    // Disable the filter for the multistep pulse. This electrical set-up doesn't need it.
 
     k_sleep(K_MSEC(10));  // I don't know why this works. Are we writing too soon after reading? but it is necessary.
     ret = adi_tmc2209_write(dev, REG_GCONF, (unsigned char *)&gconf_data);
@@ -429,6 +505,15 @@ static int adi_tmc2209_init(const struct device *dev) {
 
     k_sleep(K_MSEC(10));  // added here out of an abundance of caution, see comment above.
     ret = adi_tmc2209_set_ihold_irun(dev, default_hold_current, default_run_current, default_hold_delay);
+    if (ret < 0) {
+        LOG_ERR("Failed (%d) to set IHOLD_IRUN register", ret);
+    }
+
+    // FULLSTEP by default.
+    ret = adi_tmc2209_set_microstep(dev, 1);
+    if (ret < 0) {
+        LOG_ERR("Failed (%d) to set microstep", ret);
+    }
 
     return ret;
 }
