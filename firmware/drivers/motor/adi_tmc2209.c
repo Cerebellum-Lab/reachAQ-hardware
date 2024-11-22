@@ -160,7 +160,7 @@ BUILD_ASSERT(sizeof(struct NODECONF_data_fields) == DATA_LENGTH);
 
 #define REG_CHOPCONF 0x6CU
 struct __attribute__((packed)) CHOPCONF_data_fields {
-    uint8_t mres: 4;
+    uint8_t mres : 4;
     uint8_t intpol : 1;
     uint8_t dedge : 1;
     uint8_t diss2g : 1;
@@ -388,7 +388,7 @@ int adi_tmc2209_set_ihold_irun(const struct device *dev, const uint8_t hold_curr
 }
 
 int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per_fullstep) {
-    struct CHOPCONF_data_fields chopconf_data = { 0 };
+    struct CHOPCONF_data_fields chopconf_data = {0};
 
     int ret = adi_tmc2209_read(dev, REG_CHOPCONF, (unsigned char *)&chopconf_data);
 
@@ -484,7 +484,8 @@ static int adi_tmc2209_init(const struct device *dev) {
     // Don't set or unset index_otpw or index_step. The INDEX register is not read in this driver.
     gconf_data.pdn_disable = 1;       // Using UART so set this per datasheet.
     gconf_data.mstep_reg_select = 1;  // MS1 and MS2 are not connected so use UART registers.
-    gconf_data.multistep_filt = 0;    // Disable the filter for the multistep pulse. This electrical set-up doesn't need it.
+    gconf_data.multistep_filt =
+        0;  // Disable the filter for the multistep pulse. This electrical set-up doesn't need it.
 
     k_sleep(K_MSEC(10));  // I don't know why this works. Are we writing too soon after reading? but it is necessary.
     ret = adi_tmc2209_write(dev, REG_GCONF, (unsigned char *)&gconf_data);
