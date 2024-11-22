@@ -18,3 +18,11 @@ add_custom_command(TARGET pyjerrycan POST_BUILD
         ARGS -m pyjerrycan -o .
         BYPRODUCTS pyjerrycan.pyi
 )
+
+include(GNUInstallDirs)
+install(TARGETS pyjerrycan
+        COMPONENT python
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
