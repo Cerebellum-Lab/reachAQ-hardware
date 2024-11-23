@@ -1,0 +1,768 @@
+Screen {
+    align: center middle;
+    overflow: hidden hidden;
+}
+
+$border_color: #4b4b6f;
+
+/*****************/
+/* Whisker Whire */
+/*****************/
+
+WhiskerWire {
+    background: $panel;
+    align: center middle;
+
+    Header {
+        color: white;
+        margin-bottom: 0;
+        text-style: bold;
+    }
+
+    TabbedContent {
+        text-align: center;
+        margin-bottom: -3;
+        align: center middle;
+        #listening-message {
+            text-align: center;
+            text-style: bold;
+        }
+
+        TabPane {
+            margin-top: -1;
+        }
+    }
+
+    #e-stop-button {
+        background: red;
+        color: white;
+        align: center top;
+        text-style: bold;
+        height: 6.7vh;
+        width: 100vw;
+        padding: 0;
+        margin-top: -3;
+    }
+}
+
+
+/********************/
+/* Module Dashboard */
+/********************/
+
+ModuleDashboard {
+    background: $panel;
+    align: center middle;
+    border: none $border_color;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+    width: 1fr;
+    height: 92.5vh;
+    grid-size: 2;
+    grid-rows: auto;
+    grid-columns: auto;
+
+    .module-dashboard-title {
+        text-align: center;
+        color: #1de24e;
+    }
+
+    .module-dashboard-container {
+        overflow: auto auto;
+        align: left top;
+        height: auto;
+        width: auto;
+    }
+}
+
+/***************************/
+/* Magnet Module Dashboard */
+/***************************/
+
+MagnetModuleDashboard {
+    grid-size: 2;
+}
+
+#magnet-module-dashboard-container {
+    align: left top;
+    grid-size: 2;
+    grid-columns: auto;
+    grid-rows: auto;
+    grid-gutter: 0 1;
+    width: 1fr;
+
+    ServoDashboard {
+        column-span: 1;
+        row-span: 1;
+        width: auto;
+    }
+
+    GPIODashboard {
+        column-span: 1;
+
+    }
+
+    SensorDashboard {
+        dock: right;
+        column-span: 1;
+        row-span: 1;
+        height: auto;
+        max-height: 79vh;
+        align: left top;
+        max-width: 46vw;
+
+        #sensor-container {
+            height: auto;
+            min-width: 24vw;
+
+        
+            .sensor-grid {
+                grid-size: 2;
+                grid-columns: auto;
+                grid-rows: auto;
+                grid-gutter: 0 0;
+            }
+        }
+    }
+
+}
+
+.sensor-widget-container {
+    
+}
+
+
+/***************************/
+/* Pellet Module Dashboard */
+/***************************/
+
+PelletModuleDashboard {
+    
+}
+
+#pellet-module-dashboard-container {
+    align: left top;
+    grid-size: 7;
+    grid-columns: auto;
+    grid-rows: auto;
+    grid-gutter: 0 1;
+
+    StepperDashboard {
+        width: auto;
+        height: auto;
+        column-span: 1;
+        row-span: 1;
+    }
+
+    ServoDashboard {
+        column-span: 1;
+        row-span: 1;
+        width: auto;
+        max-width: 44.5vw;
+    }
+
+    GPIODashboard {
+        column-span: 1;
+    }
+
+    AnalogOutDashboard {
+        column-span: 1;
+    }
+
+    ToneGeneratorDashboard {
+        column-span: 1;
+    }
+}
+
+/*****************/
+/* Status Widget */
+/*****************/
+
+.status-widget {
+    border: round $border_color;
+    padding-right: 0;
+    width: auto;
+    height: auto;
+    color: #cfd4d1;
+}
+
+.status-widget-title {
+    text-style: bold;
+    width: auto;
+    height: auto;
+}
+
+.status-display {
+    width: auto;
+    height: auto;
+}
+
+/****************/
+/* Graph Widget */
+/****************/
+
+.graph-widget {
+    width: 21vw;
+    height: 28vh;
+}
+
+/************************/
+/* Command Value Widget */
+/************************/
+
+CommandValueWidget {
+    content-align: center middle;
+    border: round $border_color;
+    padding-right: 0;
+    width: auto;
+    height: auto;
+    border-title-color: white;
+    border-title-align: center;
+
+
+    .command-value-container {
+        width: auto;
+        height: auto;
+    }
+
+    .command-value-button {
+        background: $panel;
+        border: round green;
+        text-style: bold;
+        min-width: 5vw;
+        width: 5vw;
+        height: 8vh;
+        margin-top: 0;
+    }
+
+    .command-value-button:hover {
+        background: #21212a;
+    }
+
+    .command-value-input {
+        width: 8vw;
+        height: 6.75vh;
+        color: white;
+    }
+}
+
+/************************/
+/* Labeled Input Widget */
+/************************/
+LabeledInput {
+    align: center top;
+    border: none;
+    min-width: 15.5vw;
+    width: auto;
+    height: auto;
+    min-height: 11vh;
+    margin-top: 0;
+    margin-left: 1;
+    color: white;
+
+    Label {
+        margin-top: 0;
+        width: auto;
+        text-align: center;
+    }
+
+    Input {
+        width: auto;
+    }
+}
+
+/************************/
+/* Labeled Select Widget */
+/************************/
+LabeledSelect {
+    align: center top;
+    border: blank;
+    min-width: 15.5vw;
+    width: auto;
+    height: auto;
+    min-height: 12vh;
+    max-height: 16vh;
+    
+    color: white;
+
+    Label {
+        width: auto;
+        text-align: center;
+        margin-top: 0;
+    }
+
+    Select {
+        width: 1fr;
+    }
+}
+
+/*************************/
+/* Stepper Config Widget */
+/*************************/
+StepperConfigWidget {
+    align: center top;
+    content-align: center top;
+    border: round $border_color;
+    width: auto;
+    height: auto;
+    border-title-color: white;
+    border-title-align: center;
+    /*border-title-style: bold;*/
+
+
+    .command-value-container {
+        width: auto;
+        height: auto;
+    }
+
+
+    #stepper-config-button-container {
+        width: 15.5vw;
+        height: auto;
+        align: center top;
+
+        Button {
+            margin-top: 0;
+            width: 1fr;
+            max-width: 6.75vw;
+        }
+    }
+
+    LabeledSelect {
+        margin-top: -1;
+        Label {
+            border: none;
+            max-height: 3vh;
+        }
+
+        Select {
+            border: none;
+        }
+    }
+
+    LabeledInput {
+        Label {
+            border: none;
+            max-height: 2.5vh;
+        }
+        Input {
+            align: center top;
+            min-width: 14.5vw;
+            /*margin-bottom: 1;*/
+        }
+    }
+
+    .command-value-button {
+        background: $panel;
+        border: round green;
+        text-style: bold;
+        /*min-width: 5vw;
+        width: 5vw;*/
+        max-width: 5vw;
+        height: 8vh;
+        margin-top: 0;
+    }
+
+    .command-value-button:hover {
+        background: #21212a;
+    }
+
+    .command-value-input {
+        width: 8vw;
+        height: 6.75vh;
+    }
+    
+    .command-value-select {
+        width: 15.5vw;
+    }
+}
+
+/***********************/
+/* Servo Config Widget */
+/***********************/
+ServoConfigWidget {
+    align: center top;
+    content-align: center top;
+    border: round $border_color;
+    width: auto;
+    height: auto;
+    border-title-color: white;
+    border-title-align: center;
+    /*border-title-style: bold;*/
+    padding-left: 0;
+    padding-right: 0;
+
+
+    .command-value-container {
+        width: auto;
+        height: auto;
+    }
+
+
+    #servo-config-button-container {
+        width: auto;
+        height: auto;
+        margin-left: 1;
+        Button {
+            width: 11.5vw;
+            max-width: 11.5vw;
+            min-width: 11.5vw;
+            height: auto;
+            margin-top: 1;
+        }
+    }
+
+    LabeledInput {
+        padding-left: 0;
+        padding-right: 0;
+        padding-top: 0;
+        margin-left: 0;
+        margin-right: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+        min-width: 12vw;
+        max-width: 12vw;
+        Label {
+            border: none;
+            max-height: 2.5vh;
+        }
+        Input {
+            width: 12vw;
+            max-width: 12vw;
+            min-width: 12vw;
+        }
+    }
+
+    .command-value-button {
+        background: $panel;
+        border: round green;
+        text-style: bold;
+        /*min-width: 5vw;
+        width: 5vw;*/
+        max-width: 5vw;
+        height: 8vh;
+        margin-top: 0;
+    }
+
+    .command-value-button:hover {
+        background: #21212a;
+    }
+}
+
+/***************/
+/* Jog Buttons */
+/***************/
+
+.jog-button-container {
+    align: center middle;
+    width: 1fr;
+    height: auto;
+    margin-left: 0;
+    border: round $border_color;
+    border-title-color: white;
+    border-title-align: center;
+}
+
+.jog-button {
+    max-width: 3vw;
+    height: 6.75vh;
+    padding: 0;
+}
+
+.jog-button:hover {
+}
+
+/****************/
+/* GPIO Buttons */
+/****************/
+
+.gpio-button-container {
+    align: center middle;
+    width: 8.5vw;
+    height: auto;
+    border: round $border_color;
+    border-title-color: white;
+    border-title-align: center;
+}
+
+.gpio-button {
+    width: auto;
+
+    max-width: 3.5vw;
+    height: 6.75vh;
+}
+
+/************************/
+/* Sensor Status Widget */
+/************************/
+
+SensorStatusWidget {
+    * {
+        min-width: 10vw;
+    }
+    height: auto;
+    min-height: 37vh;
+    max-height: 38vh;
+
+    .tare-stack {
+        height: auto;
+        max-height: 5vh;
+        .tare-button {
+            max-width: 3.5vw;
+            min-width: 3.5vw;
+            max-height: 4vh;
+            min-height: 4vh;
+            border: none;
+        }
+    }
+}
+
+/***********************/
+/* Motor Status Widget */
+/***********************/
+
+MotorStatusWidget {
+    min-width: 10vw;
+    height: auto;
+    max-height: 1fr;
+}
+
+
+/*************************/
+/* Stepper Status Widget */
+/*************************/
+
+StepperStatusWidget {
+    .home-button {
+        width: auto;
+        max-width: 5.8vw;
+        height: auto;
+        margin-left: 0;
+    }
+
+    .home-buttons-container {
+        margin-top: 1;
+        margin-left: 1;
+        width: 12vw;
+        height: auto;
+
+        #negative-home-button {
+            margin-right: 1;
+        }
+    }
+
+    .stepper-status-widget-container {
+        border: none;
+        width: auto;
+        height: auto;
+
+        .jog-button-container {
+            margin-top: 0;
+            width: 13.5vw;
+        }
+    }
+    
+    #command-position {
+        margin-top: 0;
+        padding-right: 0;
+        width: 1fr;
+
+        #position-input {
+            width: 8vw;
+        }
+
+        #velocity-input {
+            width: 7.5vw;
+        }
+
+        #acceleration-input {
+            width: 8.5vw;
+            padding-left: 1;
+            padding-right: 1;
+        }
+    }
+}
+
+/*********************/
+/* Analog Out Widget */
+/*********************/
+
+AnalogOutWidget {
+    
+}
+
+/***************************/
+/* Status Widget Dashboard */
+/***************************/
+
+StatusWidgetDashboard {
+    align: left middle;
+    border: round $border_color;
+    height: auto;
+    width: auto;
+
+    .dashboard-container {
+        grid-size: 1;
+        grid-columns: auto;
+        grid-rows: auto;
+        height: auto;
+        width: auto;
+    }
+}
+
+/********************/
+/* Stepper Dashboard */
+/********************/
+
+StepperDashboard {
+    width: auto;
+    height: auto;
+}
+
+ServoStatusWidget {
+    .servo-status-widget-display-container {
+        width: auto;
+        height: auto;
+    }
+    .servo-status-widget-container {
+        align: left top;
+        border: none;
+        width: 1fr;
+        height: auto;
+        
+        .jog-button-container {
+            .jog-button {
+                min-width: 4vw;
+                max-width: 15vw;
+                width: 1fr;
+            }
+            
+            margin-right: 0;
+            margin-left: 6;
+            width: 1fr; /*13.5vw;*/
+            
+            /*margin-top: 5;*/
+            /*height: 23vh;*/
+        }
+    }
+            
+    #command-position {
+            align: center top;
+            margin-top: 0;
+            padding-right: 0;
+            width: 1fr;
+
+            #position-input {
+                width: 1fr;
+            }
+
+            #velocity-input {
+                width: 1fr;
+            }
+
+            #acceleration-input {
+                width: 1fr;
+            }
+        }
+}
+
+/*******************/
+/* Servo Dashboard */
+/*******************/
+ServoDashboard {
+    width: auto;
+    height: auto;
+
+    /*.servo-status-widget-container {
+        border: none;
+        width: auto;
+        height: auto;
+
+        .jog-button-container {
+            width: 14vw;
+        }
+
+        #command-position {
+            margin-top: 0;
+            padding-right: 0;
+        }
+    }*/
+    
+    /** > * {
+        background: red;
+        padding-bottom: 0;
+    }
+    .dashboard-container {
+        background: green;
+        height: 1fr;
+    }*/
+}
+
+/****************************/
+/* Tone Generator Dashboard */
+/****************************/
+
+ToneGeneratorDashboard {
+    ToneGeneratorStatusWidget {
+        Input {
+            min-width: 15;
+        }
+    }
+}
+
+/******************/
+/* GPIO Dashboard */
+/******************/
+
+GPIODashboard {
+    .gpio-dashboard-container {
+        border: round $border_color;
+        height: auto;
+        width: auto;
+
+        .input-gpio-dashboard-container {
+            grid-size: 1;
+            grid-rows: auto;
+            grid-columns: auto;
+            width: auto;
+            height: auto;
+        }
+
+        .output-gpio-dashboard-container {
+            grid-size: 1;
+            grid-rows: auto;
+            grid-columns: auto;
+            width: auto;
+            height: auto;
+        }
+    }
+}
+
+/********************/
+/* Sensor Dashboard */
+/********************/
+
+/*SensorDashboard {
+    height: auto;
+    max-height: 32vh;
+    .dashboard-container {
+        grid-size: 1;
+        grid-rows: auto;
+        grid-columns: auto;
+        max-height: 34vh;
+    }
+}*/
+
+RGBLEDStatusWidget {
+    width: auto;
+    height: auto;
+
+    #set-color {
+        align: center top;
+        GlitchlessButton {
+            margin-left: 1;
+            margin-right: 1;
+            width: 1fr;
+        }
+    }
+}

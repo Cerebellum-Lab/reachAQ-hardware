@@ -1,0 +1,241 @@
+/*
+ * WhiskerWire Settings - config.jsonc
+ *
+ * This file contains adjustable parameters for the WhiskerWire application.
+ *
+ */
+
+{
+  /* The period, in seconds, between heartbeat message transmissions */
+  "Heartbeat Period": 1.0,
+
+  /* Temperature Sensor Settings */
+  "Temperature Sensor": {
+    /*
+    * The minimum period of time between display updates in seconds.
+    * If 0, updates will occur upon the reception of each associated message.
+    */
+    "Min Update Period": 0.750,
+    
+    "Graph": {
+      /*
+      * The maximum number of data points to display in the graph.
+      */
+      "Max Data Points": 30,
+
+      /*
+       * The minimum value for the graph's Y-axis
+       */
+      "Y Min": 0.0,
+
+      /*
+       * The maximum value for the graph's Y-axis
+       */
+      "Y Max": 85.0
+    }
+  },
+
+  /* Humidity Sensor Settings */
+  "Humidity Sensor": {
+    /*
+    * The minimum period of time between display updates in seconds.
+    * If 0, updates will occur upon the reception of each associated message.
+    */
+    "Min Update Period": 0.750,
+    
+    "Graph": {
+      /*
+      * The maximum number of data points to display in the graph.
+      */
+      "Max Data Points": 30,
+
+      /*
+       * The minimum value for the graph's Y-axis
+       */
+      "Y Min": 0.0,
+
+      /*
+       * The maximum value for the graph's Y-axis
+       */
+      "Y Max": 100.0
+    }
+  },
+
+  /* Pressure Sensor Settings */
+  "Pressure Sensor": {
+    /*
+    * The minimum period of time between display updates in seconds.
+    * If 0, updates will occur upon the reception of each associated message.
+    */
+    "Min Update Period": 0.750,
+    
+    "Graph": {
+      /*
+      * The maximum number of data points to display in the graph.
+      */
+      "Max Data Points": 30,
+
+      /*
+       * The minimum value for the graph's Y-axis
+       */
+      "Y Min": 0.0,
+
+      /*
+       * The maximum value for the graph's Y-axis
+       */
+      "Y Max": 3300.0
+    }
+  },
+
+  /* Load Cell Sensor Settings */
+  "Load Cell Sensor": {
+    /*
+    * The minimum period of time between display updates in seconds.
+    * If 0, updates will occur upon the reception of each associated message.
+    */
+    "Min Update Period": 0.750,
+    
+    "Graph": {
+      /*
+      * The maximum number of data points to display in the graph
+      */
+      "Max Data Points": 30,
+
+      /*
+       * The minimum value for the graph's Y-axis
+       */
+      "Y Min": -200.0,
+
+      /*
+       * The maximum value for the graph's Y-axis
+       */
+      "Y Max": 200.0
+    }
+  },
+
+  /* Stepper Motor Settings */
+  "Stepper Motor": {
+    /* The minimum commandable position - based on int16_t datatype (FIXME: Add units) */
+    "Min Position": -32768,
+
+    /* The maximum commandable position - based on int16_t datatype (FIXME: Add units) */
+    "Max Position": 32767,
+
+    /* The minimum configurable steps per revolution */
+    "Min Steps per Revolution": 1,
+
+    /* The maximum configurable steps per revolution (based on uint16_t datatype) */
+    "Max Steps per Revolution": 65535,
+
+    /* The minimum commandable velocity (FIXME: Add units & arbitrary value) */
+    "Min Velocity": 0,
+
+    /* The maximum commandable velocity (FIXME: Add units & arbitrary value) */
+    "Max Velocity": 10000,
+
+    /* The minimum commandable acceleration (FIXME: Add units & arbitrary value) */
+    "Min Acceleration": 0,
+
+    /* The maximum commandable acceleration (FIXME: Add units & arbitrary value) */
+    "Max Acceleration": 10000,
+
+    /* The move size associated with a small jog operation (FIXME: Add units & arbitrary value) */
+    "Small Jog Size": 10,
+
+    /* The move size associated with a big jog operation (FIXME: Add units & arbitrary value) */
+    "Big Jog Size": 100,
+
+    /* The velocity at which a jog operation is performed (FIXME: Add units & arbitrary value) */
+    "Jog Velocity": 100,
+
+    /* The acceleration at which a jog operation is performed (FIXME: Add units & arbitrary value) */
+    "Jog Acceleration": 100
+  },
+
+  /* Servo Motor Settings */
+  "Servo Motor": {
+    /* The minimum commandable position - based on int16_t datatype (FIXME: Add units) */
+    "Min Position": -32768,
+
+    /* The maximum commandable position - based on int16_t datatype (FIXME: Add units) */
+    "Max Position": 32767,
+
+    /* The minimum configurable PWM duration in microseconds (FIXME: arbitrary value) */
+    "Min PWM Duration": 1,
+
+    /* The maximum configurable PWM duration in microseconds (FIXME: arbitrary value) */
+    "Max PWM Duration": 2000,
+
+    /* The minimum commandable velocity (FIXME: Add units & arbitrary value) */
+    "Min Velocity": 0,
+
+    /* The maximum commandable velocity (FIXME: Add units & arbitrary value) */
+    "Max Velocity": 10000,
+
+    /* The minimum commandable acceleration (FIXME: Add units & arbitrary value) */
+    "Min Acceleration": 0,
+
+    /* The maximum commandable acceleration (FIXME: Add units & arbitrary value) */
+    "Max Acceleration": 10000,
+
+    /* The move size associated with a small jog operation (FIXME: Add units & arbitrary value) */
+    "Small Jog Size": 10,
+
+    /* The move size associated with a big jog operation (FIXME: Add units & arbitrary value) */
+    "Big Jog Size": 100,
+
+    /* The velocity at which a jog operation is performed (FIXME: Add units & arbitrary value) */
+    "Jog Velocity": 100,
+
+    /* The acceleration at which a jog operation is performed (FIXME: Add units & arbitrary value) */
+    "Jog Acceleration": 100
+  },
+
+  /* Tone Generator Settings */
+  "Tone Generator": {
+
+    /* The minimum commandable frequency in Hz */
+    "Min Frequency": 0,
+
+    /* The maximum commandable frequency in Hz */
+    "Max Frequency": 20000,
+
+    /* The minimum commandable duration in milliseconds */
+    "Min Duration": 0,
+
+    /* The maximum commandable duration in milliseconds */
+    "Max Duration": 65535,
+
+    /* The interval in milliseconds with which the duration display is interpolated */
+    "Interpolation Interval": 50
+  },
+
+  /* Analog Out Settings */
+  "Analog Out": {
+    /* The minimum commandable output value in millivolts */
+    "Min Output Value": 0.0,
+
+    /* The maximum commandable output value in millivolts */
+    "Max Output Value": 3300.0
+  },
+
+  /* Network Settings */
+  "Network": {
+    /*
+     * The period in seconds between connection status updates.
+     */
+    "Connection Status Period": 1.0,
+
+    /* 
+     * Timeout after which connection status switches
+     * from 'CONNECTED' to 'SEARCHING', in seconds.
+    */
+    "Connection Timeout": 3.0,
+
+    /* 
+     * Timeout after which connection status switches
+     * from 'SEARCHING' to 'DISCONNECTED', in seconds.
+    */
+    "Searching Timeout": 6.0
+  }
+}
