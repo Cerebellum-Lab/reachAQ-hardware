@@ -1,6 +1,7 @@
 from pyjerrycan import AnalogOut
 from ....watchable import Watchable
-from config import settings
+from .....config import settings
+
 
 class AnalogOutModel:
     """
@@ -9,7 +10,7 @@ class AnalogOutModel:
     """
     MIN_OUTPUT_VALUE = settings["Analog Out"]["Min Output Value"]
     MAX_OUTPUT_VALUE = settings["Analog Out"]["Max Output Value"]
-    
+
     def __init__(self, name: str, instance: int):
         """
         Initialize the AnalogOutModel with a name, instance, and value range.
@@ -51,7 +52,8 @@ class AnalogOutModel:
     def value_mv(self, value: int):
         """Sets the current output value in mV and triggers reactive updates."""
         if not self.is_valid_value_mv(value):
-            raise ValueError(f"Invalid Value (mV) <{value}>: must be on the interval [{self.MIN_OUTPUT_VALUE},{self.MAX_OUTPUT_VALUE}]")
+            raise ValueError(
+                f"Invalid Value (mV) <{value}>: must be on the interval [{self.MIN_OUTPUT_VALUE},{self.MAX_OUTPUT_VALUE}]")
         self._value_mv.value = value
 
     def update_from_message(self, msg: AnalogOut):

@@ -1,6 +1,7 @@
 from .sensor_model import SensorModel
 from pyjerrycan import TempHumRead
-from config import settings
+from .....config import settings
+
 
 class HumiditySensorModel(SensorModel):
     """
@@ -8,7 +9,7 @@ class HumiditySensorModel(SensorModel):
     Provides a method to update the sensor's value based on a TempHumRead message.
     """
     SETTINGS_KEY = "Humidity Sensor"
-    
+
     def __init__(self, name: str, instance: int):
         """
         Initialize the HumiditySensorModel with a name and instance ID.
@@ -27,4 +28,3 @@ class HumiditySensorModel(SensorModel):
             msg (TempHumRead): The message containing humidity data.
         """
         self.sensor_value = msg.humidity / 100.0  # Convert to percentage
-            

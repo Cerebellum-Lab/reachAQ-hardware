@@ -13,9 +13,10 @@ import os
 import time
 import asyncio
 from sys import exit
-from config import settings
+from .config import settings
 from functools import partial
-from widgets.glitchless_button import GlitchlessButton
+from .widgets.glitchless_button import GlitchlessButton
+from .utils import get_logger
 
 # Application version information
 APP_VERSION_MAJOR = 1
@@ -42,19 +43,22 @@ logging.basicConfig(
     format="[%(asctime)s][%(name)s][%(levelname)s]: %(message)s",
     handlers=[logging.FileHandler(LOG_FILE_PATH)]  # Write log to the specified file
 )
-logger = logging.getLogger("WhiskerWire")
+
+logger = get_logger()
 logger.info(f"WhiskerWire v{APP_VERSION}")  # Initial log entry for version
 
 # Import necessary modules for model handling and dashboard creation
-from model.model import Model, PelletModuleModel, MagnetModuleModel
-from module_dashboards.pellet_module_dashboard import PelletModuleDashboard
-from module_dashboards.magnet_module_dashboard import MagnetModuleDashboard
+from .model.model import Model, PelletModuleModel, MagnetModuleModel
+from .module_dashboards.pellet_module_dashboard import PelletModuleDashboard
+from .module_dashboards.magnet_module_dashboard import MagnetModuleDashboard
+
 
 # Enumeration for module connection status
 class ConnectionStatus(Enum):
     DISCONNECTED = 0  # Module is not connected
-    SEARCHING = 1     # Module is attempting to reconnect
-    CONNECTED = 2     # Module is successfully connected
+    SEARCHING = 1  # Module is attempting to reconnect
+    CONNECTED = 2  # Module is successfully connected
+
 
 # Color map for connection status indicators
 CONNECTION_STATUS_COLOR_MAP = {
@@ -63,24 +67,25 @@ CONNECTION_STATUS_COLOR_MAP = {
     ConnectionStatus.CONNECTED: "green"
 }
 
+
 # WhiskerWire main application class
 class WhiskerWire(App):
     CSS_PATH = "static/styles.tcss"  # Path to CSS file for styling
-    
+
     HEARTBEAT_PERIOD = settings["Heartbeat Period"]
-    
+
     CONNECTION_STATUS_PERIOD = settings["Network"]["Connection Status Period"]
     CONNECTION_TIMEOUT = settings["Network"]["Connection Timeout"]
     SEARCHING_TIMEOUT = settings["Network"]["Searching Timeout"]
-    
+
     def __init__(self, **kwargs):
-        
+
         # Initialize application, set up title with version info
         super().__init__(**kwargs)
         self.title += f" v{APP_VERSION}"
-        
+
         self.items = []
-        
+
         # Establish connection with JerryCAN device
         self.jc = JerryCAN()
         if self.jc.Open() != 0:
@@ -98,9 +103,10 @@ class WhiskerWire(App):
         self.connection_status = OrderedDict()
 
         # Emergency stop (E-STOP) button setup with initial style
-        self.e_stop_button = GlitchlessButton("E-STOP", variant="error", id="e-stop-button", action=partial(self.jc.EStop, True))
+        self.e_stop_button = GlitchlessButton("E-STOP", variant="error", id="e-stop-button",
+                                              action=partial(self.jc.EStop, True))
         self.e_stop_button.active_effect_duration = 0.2
-        
+
         self.header = Header(show_clock=True)
 
         # Register a cleanup function to run on application exit
@@ -156,7 +162,7 @@ class WhiskerWire(App):
     async def heartbeat(self) -> None:
         # Background task to send periodic heartbeat messages to connected modules
         while self._alive:
-            await asyncio.sleep(self.HEARTBEAT_PERIOD) # Sleep before next heartbeat
+            await asyncio.sleep(self.HEARTBEAT_PERIOD)  # Sleep before next heartbeat
             if any(status == ConnectionStatus.CONNECTED for status in self.connection_status.values()):
                 self.jc.Heartbeat()  # Send heartbeat if any module is connected
 
@@ -171,10 +177,12 @@ class WhiskerWire(App):
                 if duration >= self.CONNECTION_TIMEOUT and self.connection_status[dst_id] == ConnectionStatus.CONNECTED:
                     self.connection_status[dst_id] = ConnectionStatus.SEARCHING
                     self.call_from_thread(self.recompose)
-                elif duration >= self.SEARCHING_TIMEOUT and self.connection_status[dst_id] == ConnectionStatus.SEARCHING:
+                elif duration >= self.SEARCHING_TIMEOUT and self.connection_status[
+                    dst_id] == ConnectionStatus.SEARCHING:
                     self.connection_status[dst_id] = ConnectionStatus.DISCONNECTED
                     self.call_from_thread(self.recompose)
-                elif duration < self.CONNECTION_TIMEOUT and self.connection_status[dst_id] != ConnectionStatus.CONNECTED:
+                elif duration < self.CONNECTION_TIMEOUT and self.connection_status[
+                    dst_id] != ConnectionStatus.CONNECTED:
                     self.connection_status[dst_id] = ConnectionStatus.CONNECTED
                     self.call_from_thread(self.recompose)
 
@@ -191,8 +199,8 @@ class WhiskerWire(App):
                     elif isinstance(updated_module_model, MagnetModuleModel):
                         self.call_from_thread(self.add_magnet_module, updated_module_model)
                     self.call_from_thread(self.recompose)
-                #else:
-                    # Refresh dashboard for existing module
+                # else:
+                # Refresh dashboard for existing module
                 #    dashboard = (
                 #        self.pellet_dashboards if isinstance(updated_module_model, PelletModuleModel) else self.magnet_dashboards
                 #    )[updated_module_model.dst_id]
@@ -200,7 +208,6 @@ class WhiskerWire(App):
                 # Update last receive time for the module
                 self.last_rx_time[updated_module_model.dst_id] = time.time()
 
-    
     def compose(self) -> ComposeResult:
         # Compose the UI layout with header and dashboard items
         yield self.header
@@ -210,12 +217,16 @@ class WhiskerWire(App):
                 for pellet_dashboard in self.pellet_dashboards.values():
                     connection_status = self.connection_status[pellet_dashboard.model.dst_id]
                     connection_status_indicator = f"[{CONNECTION_STATUS_COLOR_MAP[connection_status]}]•[/{CONNECTION_STATUS_COLOR_MAP[connection_status]}]"
-                    with TabPane(title=f"[bold]Pellet Module [{str(pellet_dashboard.model.can_address)}] {connection_status_indicator} [/bold]", id=f"pellet-{pellet_dashboard.model.can_address}"):
+                    with TabPane(
+                            title=f"[bold]Pellet Module [{str(pellet_dashboard.model.can_address)}] {connection_status_indicator} [/bold]",
+                            id=f"pellet-{pellet_dashboard.model.can_address}"):
                         yield pellet_dashboard.compose_dashboard()
                 for magnet_dashboard in self.magnet_dashboards.values():
                     connection_status = self.connection_status[magnet_dashboard.model.dst_id]
                     connection_status_indicator = f"[{CONNECTION_STATUS_COLOR_MAP[connection_status]}]•[/{CONNECTION_STATUS_COLOR_MAP[connection_status]}]"
-                    with TabPane(title=f"[bold]Magnet Module [{str(magnet_dashboard.model.can_address)}] {connection_status_indicator} [/bold]", id=f"magnet-{magnet_dashboard.model.can_address}"):
+                    with TabPane(
+                            title=f"[bold]Magnet Module [{str(magnet_dashboard.model.can_address)}] {connection_status_indicator} [/bold]",
+                            id=f"magnet-{magnet_dashboard.model.can_address}"):
                         yield magnet_dashboard.compose_dashboard()
             # Add the E-Stop button
             yield self.e_stop_button
@@ -223,7 +234,9 @@ class WhiskerWire(App):
             # Add the TabbedContent widget
             with TabbedContent(initial="listening", id="module-tabs"):
                 with TabPane(title=f"Listening...", id=f"listening"):
-                    yield Container(Static("Listening for MouseGYM modules...\n(Make sure the can0 interface has been brought up)", id="listening-message"))
+                    yield Container(
+                        Static("Listening for MouseGYM modules...\n(Make sure the can0 interface has been brought up)",
+                               id="listening-message"))
 
     @on(Button.Pressed, "#e-stop-button")
     async def on_button_press(self, event):
@@ -257,6 +270,7 @@ class WhiskerWire(App):
     def on_unmount(self):
         # Stop all background tasks when app unmounts
         self._alive = False
+
 
 # Run the WhiskerWire application
 if __name__ == "__main__":

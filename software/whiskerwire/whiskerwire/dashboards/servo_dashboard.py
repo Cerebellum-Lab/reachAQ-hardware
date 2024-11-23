@@ -1,6 +1,7 @@
-from widgets.servo_status_widget import ServoStatusWidget
+from ..widgets.servo_status_widget import ServoStatusWidget
 from .status_widget_dashboard import StatusWidgetDashboard
-from model.models.driver_models.motor.servo.servos_model import *
+from ..model.models.driver_models.motor.servo.servos_model import *
+
 
 # ServoDashboard class for managing and displaying the status of multiple servos
 class ServoDashboard(StatusWidgetDashboard):
@@ -28,7 +29,8 @@ class ServoDashboard(StatusWidgetDashboard):
 
         # Initialize servo widgets based on the model
         self.servos: dict[int, ServoStatusWidget] = {
-            instance: ServoStatusWidget(servo, move, write_config, read_config) for instance, servo in self.model.motors.items()
+            instance: ServoStatusWidget(servo, move, write_config, read_config) for instance, servo in
+            self.model.motors.items()
         }
 
         # Call the parent constructor with the dashboard name and list of servo widgets

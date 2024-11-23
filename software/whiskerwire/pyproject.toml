@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "WhiskerWire"
+dynamic = ["version"]
+description = ''
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = []
+dependencies = [
+    "textual==0.81.0",
+    "pyjerrycan",
+    "JSON-minify==0.3.0",
+    "textual-plotext==0.2.1",
+    "click==8.1.7",
+]
+
+[project.scripts]
+whiskerwire = "whiskerwire.entry_points:whiskerwire_app"
+
+[tool.hatch.version]
+path = "whiskerwire/__about__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+    "mypy>=1.0.0",
+]

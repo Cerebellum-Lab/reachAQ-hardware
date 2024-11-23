@@ -1,5 +1,6 @@
 from .gpio_status_widget import GPIOStatusWidget
-from model.models.driver_models.gpio.gpio_model import GPIOModel
+from ..model.models.driver_models.gpio.gpio_model import GPIOModel
+
 
 # InputGPIOStatusWidget class for displaying the status of an input GPIO pin.
 # Inherits from GPIOStatusWidget to represent and track input-specific GPIO status.

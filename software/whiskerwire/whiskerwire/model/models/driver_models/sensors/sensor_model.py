@@ -1,14 +1,15 @@
 from collections import deque
 from time import time
 from ....watchable import Watchable
-from config import settings
+from .....config import settings
+
 
 class SensorModel:
     """
     Model representing a sensor, with attributes for name, instance, sensor value, and a data history.
     """
     SETTINGS_KEY: str
-    
+
     MAX_DATA_POINTS: int
     MIN_UPDATE_PERIOD: float
     Y_MIN: float
@@ -31,20 +32,21 @@ class SensorModel:
         # Read-only attributes
         self._name = name  # Sensor name
         self._instance = instance  # Unique identifier for this sensor instance
-        
+
         # Read-write attributes
-        self._sensor_value = Watchable(0, only_on_change=False, min_update_period=self.MIN_UPDATE_PERIOD)  # Latest sensor value
+        self._sensor_value = Watchable(0, only_on_change=False,
+                                       min_update_period=self.MIN_UPDATE_PERIOD)  # Latest sensor value
         self._sensor_data = deque(maxlen=self.MAX_DATA_POINTS)  # Circular buffer for historical data
-        
+
         # Initialize sensor data with zeroed values
         for _ in range(self.MAX_DATA_POINTS):
             self._sensor_data.append(0)
-        
+
         self._sensor_value.register_on_update(self.__update_sensor_data)
-    
+
     def __update_sensor_data(self):
         self._sensor_data.append(self.sensor_value)
-        
+
     @property
     def name(self) -> str:
         """str: Returns the name of the sensor."""

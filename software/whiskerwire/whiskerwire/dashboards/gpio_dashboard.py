@@ -1,16 +1,17 @@
 from textual.widgets import Static, Button
 from textual.containers import Horizontal, Vertical, Grid
 from textual import on
-from widgets.input_gpio_status_widget import InputGPIOStatusWidget
-from widgets.output_gpio_status_widget import OutputGPIOStatusWidget
+from ..widgets.input_gpio_status_widget import InputGPIOStatusWidget
+from ..widgets.output_gpio_status_widget import OutputGPIOStatusWidget
 from .status_widget_dashboard import StatusWidgetDashboard
 from pyjerrycan import GPIOWrite
-from model.models.driver_models.gpio.gpios_model import GPIOSModel
-from model.models.driver_models.gpio.gpio_model import GPIODirection
+from ..model.models.driver_models.gpio.gpios_model import GPIOSModel
+from ..model.models.driver_models.gpio.gpio_model import GPIODirection
 import logging
 from functools import partial
 
 logger = logging.getLogger("WhiskerWire")
+
 
 # GPIODashboard class for managing and displaying GPIO states and controls
 class GPIODashboard(StatusWidgetDashboard):
@@ -36,12 +37,13 @@ class GPIODashboard(StatusWidgetDashboard):
         # Separate GPIO widgets based on direction (input/output)
         self.input_gpios: dict[int, InputGPIOStatusWidget] = {}
         self.output_gpios: dict[int, OutputGPIOStatusWidget] = {}
-        
+
         for index, gpio in self.model.gpios.items():
             if gpio.direction == GPIODirection.INPUT:
                 self.input_gpios[index] = InputGPIOStatusWidget(gpio)
             elif gpio.direction == GPIODirection.OUTPUT:
-                self.output_gpios[index] = OutputGPIOStatusWidget(gpio, gpio_write=partial(gpio_write, instance=self.model.instance))
+                self.output_gpios[index] = OutputGPIOStatusWidget(gpio, gpio_write=partial(gpio_write,
+                                                                                           instance=self.model.instance))
 
         # Gather all GPIO widgets for dashboard display
         self.items = list(self.input_gpios.values()) + list(self.output_gpios.values())
@@ -60,14 +62,14 @@ class GPIODashboard(StatusWidgetDashboard):
 
         # Create sub-dashboard sections for output and input GPIOs
         sub_dashboards = []
-        
+
         if self.output_gpios:
             sub_dashboards.append(Vertical(
                 Static(f"[bold]Outputs[/bold]", classes="status-dashboard-title"),
                 Grid(*self.output_gpios.values(), classes="output-gpio-dashboard-container"),
                 classes="gpio-dashboard-container"
             ))
-        
+
         if self.input_gpios:
             sub_dashboards.append(Vertical(
                 Static(f"[bold]Inputs[/bold]", classes="status-dashboard-title"),

@@ -2,11 +2,12 @@ from textual.widgets import Static, Input
 from .status_widget import StatusWidget
 from .command_value_widget import CommandValueWidget
 from textual import on
-from model.models.driver_models.analog_out.analog_out_model import AnalogOutModel
+from ..model.models.driver_models.analog_out.analog_out_model import AnalogOutModel
 import logging
 from functools import partial
 
 logger = logging.getLogger("WhiskerWire")
+
 
 # AnalogOutWidget class inheriting from StatusWidget, specialized for displaying
 # and interacting with analog out values in the WhiskerWire application.
@@ -29,23 +30,23 @@ class AnalogOutWidget(StatusWidget):
 
         # Widget displaying the current analog value
         self.value_display = Static(
-            f"Value: {self.model.value_mv}mv", 
-            id="analog-status-value-display", 
+            f"Value: {self.model.value_mv}mv",
+            id="analog-status-value-display",
             classes="status-display"
         )
-        
+
         # CommandValueWidget for adjusting the analog value
         self.command_value_widget = CommandValueWidget("Command Value", ["value"], action=self.command_analog_out)
 
         # Add the command widget to the list of hidable items for conditional display
         self.hidable_items.append(self.command_value_widget)
-        
+
         # Register a callback to update the displayed value when model's value changes
         self.model._value_mv.register_on_update(self.on_value_mv_change)
-    
+
     def command_analog_out(self):
         command_value_dict = self.command_value_widget.get_values()
-        
+
         # Validate and assign the value from the command input
         try:
             value_mv = int(command_value_dict["value-input"])

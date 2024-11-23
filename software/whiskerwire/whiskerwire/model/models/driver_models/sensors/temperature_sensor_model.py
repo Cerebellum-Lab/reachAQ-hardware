@@ -1,6 +1,7 @@
 from .sensor_model import SensorModel
 from pyjerrycan import TempHumRead
-from config import settings
+from .....config import settings
+
 
 class TemperatureSensorModel(SensorModel):
     """
@@ -19,7 +20,7 @@ class TemperatureSensorModel(SensorModel):
         """
         self.MAX_DATA_POINTS = settings["Temperature Sensor"]["Graph"]["Max Data Points"]
         self.MIN_UPDATE_PERIOD = settings["Temperature Sensor"]["Min Update Period"]
-        
+
         super().__init__(name, instance)
 
     def update_from_message(self, msg: TempHumRead):

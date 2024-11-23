@@ -1,5 +1,6 @@
 from .sensor_status_widget import SensorStatusWidget
-from model.models.driver_models.sensors.temperature_sensor_model import TemperatureSensorModel
+from ..model.models.driver_models.sensors.temperature_sensor_model import TemperatureSensorModel
+
 
 # TemperatureStatusWidget class for displaying temperature sensor readings.
 # Inherits from SensorStatusWidget, configured specifically for temperature data.

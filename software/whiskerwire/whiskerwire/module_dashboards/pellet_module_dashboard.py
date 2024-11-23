@@ -1,15 +1,16 @@
 from textual.containers import Grid
-from dashboards.stepper_dashboard import StepperDashboard
-from dashboards.servo_dashboard import ServoDashboard
-from dashboards.gpio_dashboard import GPIODashboard
-from dashboards.tone_generator_dashboard import ToneGeneratorDashboard, ToneGeneratorStatusWidget
-from dashboards.analog_out_dashboard import AnalogOutDashboard, AnalogOutWidget
-from dashboards.door_sensor_dashboard import DoorSensorDashboard
-from widgets.rgb_led_status_widget import RGBLEDStatusWidget
+from ..dashboards.stepper_dashboard import StepperDashboard
+from ..dashboards.servo_dashboard import ServoDashboard
+from ..dashboards.gpio_dashboard import GPIODashboard
+from ..dashboards.tone_generator_dashboard import ToneGeneratorDashboard, ToneGeneratorStatusWidget
+from ..dashboards.analog_out_dashboard import AnalogOutDashboard, AnalogOutWidget
+from ..dashboards.door_sensor_dashboard import DoorSensorDashboard
+from ..widgets.rgb_led_status_widget import RGBLEDStatusWidget
 from .module_dashboard import ModuleDashboard
-from model.models.pellet_module_model import PelletModuleModel
+from ..model.models.pellet_module_model import PelletModuleModel
 from pyjerrycan import JerryCAN
 from functools import partial
+
 
 # PelletModuleDashboard class for managing and displaying the status of a pellet module.
 # Inherits from ModuleDashboard and includes sub-dashboards for stepper, servo, GPIO, tone generator, and analog outes.
@@ -50,9 +51,9 @@ class PelletModuleDashboard(ModuleDashboard):
             read_config=partial(jc.ServoCfgRead, dst_id=self.model.dst_id),
             move=partial(jc.ServoMove, dst_id=self.model.dst_id)
         )
-        
+
         self.door_sensor_dashboard = DoorSensorDashboard(self.model.door_sensors)
-        
+
         self.rgb_led = RGBLEDStatusWidget(self.model.rgb_led, write=partial(jc.RGBLEDWrite, dst_id=self.model.dst_id))
 
         # Initialize the AnalogOutDashboard with a single analog out widget
@@ -62,7 +63,8 @@ class PelletModuleDashboard(ModuleDashboard):
 
         # Initialize the ToneGeneratorDashboard with a single tone generator widget
         self.tone_generator_dashboard = ToneGeneratorDashboard(
-            ToneGeneratorStatusWidget(self.model.tone_generator, tone_write=partial(jc.ToneWrite, dst_id=self.model.dst_id))
+            ToneGeneratorStatusWidget(self.model.tone_generator,
+                                      tone_write=partial(jc.ToneWrite, dst_id=self.model.dst_id))
         )
 
         # Call the parent constructor to initialize the module dashboard with all sub-dashboards

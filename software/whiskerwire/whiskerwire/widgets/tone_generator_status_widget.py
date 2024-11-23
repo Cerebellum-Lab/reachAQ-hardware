@@ -2,18 +2,19 @@ from textual.widgets import Static, Input
 from .status_widget import StatusWidget
 from .command_value_widget import CommandValueWidget
 from textual import on
-from model.models.driver_models.tone_generator.tone_generator_model import ToneGeneratorModel
-from functools import partial 
+from ..model.models.driver_models.tone_generator.tone_generator_model import ToneGeneratorModel
+from functools import partial
 from time import time
 import logging
 
 logger = logging.getLogger("WhiskerWire")
 
+
 # ToneGeneratorStatusWidget class for displaying and controlling a tone generator's frequency and duration.
 # Inherits from StatusWidget, allowing for dynamic tone control.
 class ToneGeneratorStatusWidget(StatusWidget):
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
-    
+
     def __init__(self, model: ToneGeneratorModel, tone_write: callable, **kwargs):
         """
         Initialize the ToneGeneratorStatusWidget with a tone generator model and optional configurations.
@@ -29,18 +30,19 @@ class ToneGeneratorStatusWidget(StatusWidget):
 
         # Displays for showing frequency and remaining duration
         self.frequency_display = Static(
-            f"Tone Frequency: {self.model.frequency}Hz", 
-            id="tone-generator-frequency-display", 
+            f"Tone Frequency: {self.model.frequency}Hz",
+            id="tone-generator-frequency-display",
             classes="status-display"
         )
         self.duration_display = Static(
-            f"Time Remaining: {self.model.time_remaining}ms", 
-            id="tone-generator-duration-display", 
+            f"Time Remaining: {self.model.time_remaining}ms",
+            id="tone-generator-duration-display",
             classes="status-display"
         )
 
         # CommandValueWidget for setting tone frequency and duration
-        self.command_tone_widget = CommandValueWidget("Command Tone", ["frequency", "duration"], action=self.command_tone)
+        self.command_tone_widget = CommandValueWidget("Command Tone", ["frequency", "duration"],
+                                                      action=self.command_tone)
 
         # Add command widget to hidable items, shown only when selected
         self.hidable_items.append(self.command_tone_widget)
@@ -52,7 +54,7 @@ class ToneGeneratorStatusWidget(StatusWidget):
     def command_tone(self):
         command_value_dict = self.command_tone_widget.get_values()
         valid = True
-        
+
         try:
             frequency = int(command_value_dict["frequency-input"])
             if self.model.is_valid_frequency(frequency):
@@ -63,7 +65,7 @@ class ToneGeneratorStatusWidget(StatusWidget):
         except:
             self.command_tone_widget.set_input_error_status("frequency-input", True)
             valid = False
-            
+
         try:
             duration = int(command_value_dict["duration-input"])
             if self.model.is_valid_duration(duration):
@@ -73,9 +75,8 @@ class ToneGeneratorStatusWidget(StatusWidget):
                 valid = False
         except:
             self.command_tone_widget.set_input_error_status("duration-input", True)
-            valid = False    
-        
-            
+            valid = False
+
         if valid:
             self.tone_write(frequency=frequency, duration=duration)
             self.command_tone_widget.reset()
@@ -102,21 +103,21 @@ class ToneGeneratorStatusWidget(StatusWidget):
         """
         yield self.compose_title()  # Tone generator title
         yield self.frequency_display  # Frequency display
-        yield self.duration_display   # Duration display
+        yield self.duration_display  # Duration display
 
         if self.selected:
             yield self.command_tone_widget
 
     def __interpolate_time_remaining(self):
         if self.model.frequency != 0:
-            self.model.time_remaining = min(self.model.time_remaining, max(int(self.model.time_remaining - ((time() - self.model._time_remaining.last_update_time)*1000.0)), 0))
+            self.model.time_remaining = min(self.model.time_remaining, max(int(
+                self.model.time_remaining - ((time() - self.model._time_remaining.last_update_time) * 1000.0)), 0))
             if self.model.time_remaining == 0:
                 self.model.frequency = 0
-        
+
     def on_mount(self):
         """
         Set up periodic interpolation to decrement the remaining duration of the tone.
         Called when the widget is mounted.
         """
-        self.set_interval(float(self.model.INTERPOLATION_INTERVAL)/1000.0, self.__interpolate_time_remaining)
-        
+        self.set_interval(float(self.model.INTERPOLATION_INTERVAL) / 1000.0, self.__interpolate_time_remaining)

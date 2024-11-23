@@ -1,7 +1,8 @@
 from .gpio_status_widget import GPIOStatusWidget
 from .gpio_buttons import GPIOButtons
-from model.models.driver_models.gpio.gpio_model import GPIOModel
+from ..model.models.driver_models.gpio.gpio_model import GPIOModel
 from functools import partial
+
 
 # OutputGPIOStatusWidget class for managing the state of an output GPIO pin.
 # Inherits from GPIOStatusWidget, allowing control of the GPIO pin's state (LOW or HIGH).

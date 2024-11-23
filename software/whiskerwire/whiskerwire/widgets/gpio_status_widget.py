@@ -1,13 +1,14 @@
 from textual.widgets import Static
 from .status_widget import StatusWidget
-from model.models.driver_models.gpio.gpio_model import GPIOModel
-from model.models.driver_models.door_sensor.door_sensor_model import DoorSensorModel
+from ..model.models.driver_models.gpio.gpio_model import GPIOModel
+from ..model.models.driver_models.door_sensor.door_sensor_model import DoorSensorModel
 import logging
 
 logger = logging.getLogger("WhiskerWire")
 
 # A mapping to convert numeric GPIO states (0 or 1) to descriptive labels ("LOW" or "HIGH")
 STATE_MAP = ["LOW", "HIGH"]
+
 
 # GPIOStatusWidget class for displaying the state of a GPIO pin.
 # Inherits from StatusWidget and updates dynamically based on the GPIO model state.
@@ -25,7 +26,7 @@ class GPIOStatusWidget(StatusWidget):
         self.model = model
         # Initialize the parent widget with the GPIO name and instance index
         super().__init__(self.model.name, self.model.index, **kwargs)
-        
+
         # Static display for showing the GPIO state (LOW or HIGH)
         self.state_display = Static("State: LOW", id="gpio-state-display", classes="status-display")
 

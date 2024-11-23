@@ -1,8 +1,9 @@
 from textual.widgets import Button
-from widgets.tone_generator_status_widget import ToneGeneratorStatusWidget
+from ..widgets.tone_generator_status_widget import ToneGeneratorStatusWidget
 from .status_widget_dashboard import StatusWidgetDashboard
 from textual import on
 from pyjerrycan import Tone
+
 
 # ToneGeneratorDashboard class for managing and displaying the status of multiple tone generators
 class ToneGeneratorDashboard(StatusWidgetDashboard):

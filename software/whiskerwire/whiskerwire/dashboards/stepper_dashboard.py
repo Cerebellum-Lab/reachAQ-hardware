@@ -1,9 +1,10 @@
-from widgets.stepper_status_widget import StepperStatusWidget
+from ..widgets.stepper_status_widget import StepperStatusWidget
 from .status_widget_dashboard import StatusWidgetDashboard
-from model.models.driver_models.motor.stepper.steppers_model import *
+from ..model.models.driver_models.motor.stepper.steppers_model import *
 from pyjerrycan import AbsOrRel
 from textual.widgets import Button
 from textual import on
+
 
 # StepperDashboard class for managing and displaying the status of multiple steppers
 class StepperDashboard(StatusWidgetDashboard):
@@ -15,7 +16,8 @@ class StepperDashboard(StatusWidgetDashboard):
     """
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
 
-    def __init__(self, model: SteppersModel, write_config: callable, read_config: callable, move: callable, home: callable, **kwargs):
+    def __init__(self, model: SteppersModel, write_config: callable, read_config: callable, move: callable,
+                 home: callable, **kwargs):
         """
         Initialize the StepperDashboard.
 
@@ -31,7 +33,8 @@ class StepperDashboard(StatusWidgetDashboard):
 
         # Initialize stepper widgets based on the model
         self.steppers: dict[int, StepperStatusWidget] = {
-            instance: StepperStatusWidget(stepper, move, home, read_config, write_config) for instance, stepper in self.model.motors.items()
+            instance: StepperStatusWidget(stepper, move, home, read_config, write_config) for instance, stepper in
+            self.model.motors.items()
         }
 
         # Call the parent constructor with the dashboard name and list of stepper widgets

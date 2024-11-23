@@ -1,9 +1,10 @@
 from textual.widgets import Button
-from widgets.analog_out_widget import AnalogOutWidget
+from ..widgets.analog_out_widget import AnalogOutWidget
 from .status_widget_dashboard import StatusWidgetDashboard
 from textual import on
 from pyjerrycan import AnalogOut
 from functools import partial
+
 
 # AnalogOutDashboard class for managing and displaying the status of multiple analog outes
 class AnalogOutDashboard(StatusWidgetDashboard):

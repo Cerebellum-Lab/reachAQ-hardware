@@ -4,14 +4,15 @@ from textual.containers import Container, Horizontal, Vertical
 from .glitchless_button import GlitchlessButton
 from .util import to_valid_identifier
 from .labeled_input import LabeledInput
-from model.models.driver_models.motor.servo.servo_model import ServoModel
+from ..model.models.driver_models.motor.servo.servo_model import ServoModel
 import logging
 
 logger = logging.getLogger("WhiskerWire")
 
+
 class ServoConfigWidget(Widget):
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
-    
+
     def __init__(self, model: ServoModel, read_config: callable, write_config: callable, **kwargs):
         self.widget_name = "Servo Config"
         self.model = model
@@ -22,37 +23,45 @@ class ServoConfigWidget(Widget):
         self.write_config = write_config
 
         self.border_title = self.widget_name  # Display name on the widget's border
-    
+
         # Button for submitting the servo config
-        self.write_button = GlitchlessButton("Write", id=f"{self.id}-write-button", classes="command-value-button", action=self.write_servo_config)
-        
+        self.write_button = GlitchlessButton("Write", id=f"{self.id}-write-button", classes="command-value-button",
+                                             action=self.write_servo_config)
+
         # Button for reading the servo config
-        self.read_button = GlitchlessButton("Read", id=f"{self.id}-read-button", classes="command-value-button", action=self.read_servo_config)
-        
+        self.read_button = GlitchlessButton("Read", id=f"{self.id}-read-button", classes="command-value-button",
+                                            action=self.read_servo_config)
+
         # Create input fields with placeholders, each assigned a unique ID
-        self.min_position_widget = LabeledInput(value="", placeholder="Min Position", id="min-position-input", classes="command-value-input", label="Min Position")
-        self.max_position_widget = LabeledInput(value="", placeholder="Max Position", id="max-position-input", classes="command-value-input", label="Max Position")
-        self.min_pwm_duration_widget = LabeledInput(value="", placeholder="Min PWM Duration", id="min-pwm-duration-input", classes="command-value-input", label="Min PWM Duration")
-        self.max_pwm_duration_widget = LabeledInput(value="", placeholder="Max PWM Duration", id="max-pwm-duration-input", classes="command-value-input", label="Max PWM Duration")
-        #self.steps_per_revolution_widget.border_title = "Steps per Revolution"
-    
+        self.min_position_widget = LabeledInput(value="", placeholder="Min Position", id="min-position-input",
+                                                classes="command-value-input", label="Min Position")
+        self.max_position_widget = LabeledInput(value="", placeholder="Max Position", id="max-position-input",
+                                                classes="command-value-input", label="Max Position")
+        self.min_pwm_duration_widget = LabeledInput(value="", placeholder="Min PWM Duration",
+                                                    id="min-pwm-duration-input", classes="command-value-input",
+                                                    label="Min PWM Duration")
+        self.max_pwm_duration_widget = LabeledInput(value="", placeholder="Max PWM Duration",
+                                                    id="max-pwm-duration-input", classes="command-value-input",
+                                                    label="Max PWM Duration")
+        # self.steps_per_revolution_widget.border_title = "Steps per Revolution"
+
         self.model._min_position.register_on_update(self.on_min_position_change)
         self.model._max_position.register_on_update(self.on_max_position_change)
         self.model._min_pwm_duration_us.register_on_update(self.on_min_pwm_duration_change)
         self.model._max_pwm_duration_us.register_on_update(self.on_max_pwm_duration_change)
-    
+
     def on_min_position_change(self):
         self.min_position_widget.set_value(str(self.model.min_position))
-    
+
     def on_max_position_change(self):
         self.max_position_widget.set_value(str(self.model.max_position))
-    
+
     def on_min_pwm_duration_change(self):
         self.min_pwm_duration_widget.set_value(str(self.model.min_pwm_duration_us))
-    
+
     def on_max_pwm_duration_change(self):
         self.max_pwm_duration_widget.set_value(str(self.model.max_pwm_duration_us))
-    
+
     def write_servo_config(self):
         valid = True
         try:
@@ -65,7 +74,7 @@ class ServoConfigWidget(Widget):
         except:
             self.min_position_widget.set_error_status(True)
             valid = False
-        
+
         try:
             max_position = float(self.max_position)
             if self.model.is_valid_position(max_position):
@@ -76,7 +85,7 @@ class ServoConfigWidget(Widget):
         except:
             self.max_position_widget.set_error_status(True)
             valid = False
-        
+
         try:
             min_pwm_duration = float(self.min_pwm_duration)
             if self.model.is_valid_pwm_duration_us(min_pwm_duration):
@@ -87,7 +96,7 @@ class ServoConfigWidget(Widget):
         except:
             self.min_pwm_duration_widget.set_error_status(True)
             valid = False
-        
+
         try:
             max_pwm_duration = float(self.max_pwm_duration)
             if self.model.is_valid_pwm_duration_us(max_pwm_duration):
@@ -100,7 +109,8 @@ class ServoConfigWidget(Widget):
             valid = False
 
         if valid:
-            self.write_config(min_position=min_position, max_position=max_position, min_pwm_duration_us=min_pwm_duration, max_pwm_duration_us=max_pwm_duration)
+            self.write_config(min_position=min_position, max_position=max_position,
+                              min_pwm_duration_us=min_pwm_duration, max_pwm_duration_us=max_pwm_duration)
             self.min_position_widget.reset()
             self.max_position_widget.reset()
             self.min_pwm_duration_widget.reset()
@@ -123,14 +133,14 @@ class ServoConfigWidget(Widget):
                 self.read_button, self.write_button, id="servo-config-button-container"
             ),
             Vertical(
-            Horizontal(
-                self.min_position_widget, self.max_position_widget, classes="command-value-container"
+                Horizontal(
+                    self.min_position_widget, self.max_position_widget, classes="command-value-container"
+                ),
+                Horizontal(
+                    self.min_pwm_duration_widget, self.max_pwm_duration_widget, classes="command-value-container"
+                ),
+                classes="command-value-container"
             ),
-            Horizontal(
-                self.min_pwm_duration_widget, self.max_pwm_duration_widget, classes="command-value-container"
-            ),
-            classes="command-value-container"
-        ),
             classes="command-value-container"
         )
         """yield Vertical(
@@ -145,10 +155,10 @@ class ServoConfigWidget(Widget):
             ),
             classes="command-value-container"
         )"""
-    
+
     def on_mount(self):
         self.read_servo_config()
-    
+
     @property
     def min_position(self):
         return self.min_position_widget.value

@@ -1,9 +1,10 @@
 from pyjerrycan import Tone
 import logging
 from ....watchable import Watchable
-from config import settings
+from .....config import settings
 
 logger = logging.getLogger("WhiskerWire")
+
 
 class ToneGeneratorModel:
     """
@@ -15,7 +16,7 @@ class ToneGeneratorModel:
     MIN_DURATION = settings["Tone Generator"]["Min Duration"]
     MAX_DURATION = settings["Tone Generator"]["Max Duration"]
     INTERPOLATION_INTERVAL = settings["Tone Generator"]["Interpolation Interval"]
-    
+
     def __init__(self, name: str, instance: int):
         """
         Initialize the ToneGeneratorModel with a name and instance ID.
@@ -25,12 +26,12 @@ class ToneGeneratorModel:
             instance (int): The instance ID of the tone generator.
         """
         # Read-only attributes
-        self._name = name            # Name of the tone generator
-        self._instance = instance    # Unique identifier for this instance
-    
+        self._name = name  # Name of the tone generator
+        self._instance = instance  # Unique identifier for this instance
+
         # Read-write attributes
-        self._frequency = Watchable(0)          # Frequency of the tone in Hz
-        self._time_remaining = Watchable(0)     # Remaining time of the tone in milliseconds
+        self._frequency = Watchable(0)  # Frequency of the tone in Hz
+        self._time_remaining = Watchable(0)  # Remaining time of the tone in milliseconds
 
     @property
     def name(self) -> str:
@@ -56,7 +57,8 @@ class ToneGeneratorModel:
             value (int): The frequency in Hz.
         """
         if not self.is_valid_frequency(value):
-            raise ValueError(f"Invalid Duration/Time Remaining: must be on interval [{self.MIN_FREQUENCY},{self.MAX_FREQUENCY}]")    
+            raise ValueError(
+                f"Invalid Duration/Time Remaining: must be on interval [{self.MIN_FREQUENCY},{self.MAX_FREQUENCY}]")
         self._frequency.value = value
 
     @property
@@ -73,7 +75,8 @@ class ToneGeneratorModel:
             value (int): The remaining time in milliseconds.
         """
         if not self.is_valid_duration(value):
-            raise ValueError(f"Invalid Duration/Time Remaining <{value}>: must be on interval [{self.MIN_DURATION},{self.MAX_DURATION}]")    
+            raise ValueError(
+                f"Invalid Duration/Time Remaining <{value}>: must be on interval [{self.MIN_DURATION},{self.MAX_DURATION}]")
         self._time_remaining.value = value
 
     def is_valid_frequency(self, frequency: int) -> bool:

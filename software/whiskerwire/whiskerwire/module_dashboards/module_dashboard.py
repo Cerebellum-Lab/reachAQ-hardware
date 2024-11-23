@@ -1,11 +1,12 @@
 from textual.widget import Widget
 from textual.widgets import Static
 from textual.containers import Grid
-from dashboards.status_widget_dashboard import StatusWidgetDashboard
-from model.models.module_model import ModuleModel
+from ..dashboards.status_widget_dashboard import StatusWidgetDashboard
+from ..model.models.module_model import ModuleModel
 import logging
 
 logger = logging.getLogger("WhiskerWire")
+
 
 # Base class for managing and displaying status dashboards for a specific module.
 # The dashboard aggregates multiple StatusWidgetDashboard instances related to the module.
@@ -23,14 +24,14 @@ class ModuleDashboard(Widget):
             **kwargs: Additional keyword arguments passed to the parent class.
         """
         super().__init__(**kwargs)
-        
+
         self.model = model  # Module data model
         self.module_name = module_name  # Name of the module
         self.dashboards = dashboards  # List of associated status dashboards
-        
+
         self.title = Static(
-            f"[bold]{self.module_name} Module [{str(self.model.can_address)}][/bold]", 
-            id=f"{self.module_name.lower()}-dashboard-title", 
+            f"[bold]{self.module_name} Module [{str(self.model.can_address)}][/bold]",
+            id=f"{self.module_name.lower()}-dashboard-title",
             classes="module-dashboard-title"
         )
 
@@ -55,6 +56,6 @@ class ModuleDashboard(Widget):
         # Grid container holding all status dashboards related to the module
         yield Grid(
             *self.dashboards,
-            id=f"{self.module_name.lower()}-module-dashboard-container", 
+            id=f"{self.module_name.lower()}-module-dashboard-container",
             classes="module-dashboard-container"
         )

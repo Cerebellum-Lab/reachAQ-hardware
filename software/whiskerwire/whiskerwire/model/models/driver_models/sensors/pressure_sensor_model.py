@@ -1,6 +1,7 @@
 from .sensor_model import SensorModel
 from pyjerrycan import PressureRead
-from config import settings
+from .....config import settings
+
 
 class PressureSensorModel(SensorModel):
     """
@@ -19,7 +20,7 @@ class PressureSensorModel(SensorModel):
         """
         self.MAX_DATA_POINTS = settings["Pressure Sensor"]["Graph"]["Max Data Points"]
         self.MIN_UPDATE_PERIOD = settings["Pressure Sensor"]["Min Update Period"]
-        
+
         super().__init__(name, instance)
 
     def update_from_message(self, msg: PressureRead):

@@ -1,8 +1,9 @@
 from textual.widget import Widget
 from textual.widgets import Static
 from textual.containers import Grid
-from widgets.status_widget import StatusWidget
-from widgets.util import to_valid_identifier
+from ..widgets.status_widget import StatusWidget
+from ..widgets.util import to_valid_identifier
+
 
 # StatusWidgetDashboard class to manage and display a collection of status widgets in a dashboard
 class StatusWidgetDashboard(Widget):
@@ -24,14 +25,14 @@ class StatusWidgetDashboard(Widget):
         """
         # Call the parent constructor and initialize with "status-widget-dashboard" styling class
         super().__init__(classes="status-widget-dashboard", **kwargs)
-        
-        self.dashboard_name = dashboard_name                      # Name of the dashboard
-        self.identifier = to_valid_identifier(dashboard_name)     # Generate a valid identifier for the dashboard
+
+        self.dashboard_name = dashboard_name  # Name of the dashboard
+        self.identifier = to_valid_identifier(dashboard_name)  # Generate a valid identifier for the dashboard
 
         # Ensure items is a list of StatusWidget instances
         if not isinstance(items, list):
             items = [items]
-        self.items = items                                        # Store the list of status widgets
+        self.items = items  # Store the list of status widgets
 
     def compose(self):
         """
@@ -44,7 +45,7 @@ class StatusWidgetDashboard(Widget):
         """
         # Dashboard title
         yield Static(f"[bold]{self.dashboard_name}[/bold]", classes="status-dashboard-title")
-        
+
         # Dashboard container grid with status widgets
         yield Grid(
             *self.items,  # Each status widget in the grid
@@ -56,5 +57,5 @@ class StatusWidgetDashboard(Widget):
         for item in self.items:
             if item.selected:
                 return True
-        
+
         return False

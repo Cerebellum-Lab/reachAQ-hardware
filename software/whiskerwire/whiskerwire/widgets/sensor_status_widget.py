@@ -1,13 +1,14 @@
 from textual.widgets import Static
 from .status_widget import StatusWidget
 from .graph_widget import GraphWidget
-from model.models.driver_models.sensors.sensor_model import SensorModel
+from ..model.models.driver_models.sensors.sensor_model import SensorModel
+
 
 # Base class for sensor status widgets, providing a display for sensor values and a graph for data visualization.
 # Inherits from StatusWidget and is designed to work with any sensor model.
 class SensorStatusWidget(StatusWidget):
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
-    
+
     def __init__(self, model: SensorModel, unit: str = "", decimal_digits: int | None = None, **kwargs):
         """
         Initialize the SensorStatusWidget with a sensor model, unit, and optional graph bounds.
@@ -22,12 +23,12 @@ class SensorStatusWidget(StatusWidget):
         self.model = model
         super().__init__(self.model.name, self.model.instance, **kwargs)
         self.unit = unit  # Unit of measurement for the sensor
-        self.decimal_digits = decimal_digits # Number of decimal digits to display
-        
+        self.decimal_digits = decimal_digits  # Number of decimal digits to display
+
         # Static display for showing the current sensor value
         self.sensor_value_display = Static(
-            f"{self.widget_name}: {self.model.sensor_value}{self.unit}", 
-            id=f"{self.id}-display", 
+            f"{self.widget_name}: {self.model.sensor_value}{self.unit}",
+            id=f"{self.id}-display",
             classes="status-display"
         )
 
@@ -61,5 +62,5 @@ class SensorStatusWidget(StatusWidget):
         yield self.sensor_value_display  # Sensor value display
 
         # Ensure the plot refreshes to reflect the latest data
-        self.graph.plot.refresh()  
+        self.graph.plot.refresh()
         yield self.graph  # Add the graph widget

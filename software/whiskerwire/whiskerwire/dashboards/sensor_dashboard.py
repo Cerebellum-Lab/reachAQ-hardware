@@ -1,8 +1,9 @@
 from textual.widgets import Static, Button
 from textual.containers import Container, Grid
-from widgets.sensor_status_widget import SensorStatusWidget
+from ..widgets.sensor_status_widget import SensorStatusWidget
 from .status_widget_dashboard import StatusWidgetDashboard
 from textual import on
+
 
 # SensorDashboard class inheriting from StatusWidgetDashboard to manage various sensor widgets
 class SensorDashboard(StatusWidgetDashboard):
@@ -38,5 +39,4 @@ class SensorDashboard(StatusWidgetDashboard):
                 classes="sensor-grid"
             ),
             id="sensor-container"
-        )        
-        
+        )

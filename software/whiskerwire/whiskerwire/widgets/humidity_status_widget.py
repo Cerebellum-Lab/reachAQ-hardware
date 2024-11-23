@@ -1,5 +1,6 @@
 from .sensor_status_widget import SensorStatusWidget
-from model.models.driver_models.sensors.temperature_sensor_model import TemperatureSensorModel
+from ..model.models.driver_models.sensors.temperature_sensor_model import TemperatureSensorModel
+
 
 # HumidityStatusWidget class for displaying humidity levels as a percentage.
 # Inherits from SensorStatusWidget and is designed specifically for humidity sensors.
