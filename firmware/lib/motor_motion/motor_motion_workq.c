@@ -346,14 +346,14 @@ static void servo_work_submission_handler(struct k_work *work) {
 static void stepper_work_calculation_handler(struct k_work *work) {
     struct stepper_work_context *context = CONTAINER_OF(work, struct stepper_work_context, calculation_work);
     const ssize_t ret = motor_motion_stepper_generate_timing_table(context->buffers[context->current_buffer],
-                                                                   SERVO_BUFFER_SIZE, &context->context);
+                                                                   STEPPER_BUFFER_SIZE, &context->context);
     context->last_calculation_ret = ret;
     if (ret < 0) {
         LOG_ERR("Error generating servo table.");
         return;
     }
 
-    if (ret < SERVO_BUFFER_SIZE) {
+    if (ret < STEPPER_BUFFER_SIZE) {
         context->motion_calculation_done = true;
     }
 

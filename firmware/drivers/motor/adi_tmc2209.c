@@ -483,10 +483,9 @@ static int adi_tmc2209_init(const struct device *dev) {
     gconf_data.en_spreadcycle = 0;   // Use StealthChop
     gconf_data.shaft = 0;            // Do not invert the direction of the motor.
     // Don't set or unset index_otpw or index_step. The INDEX register is not read in this driver.
-    gconf_data.pdn_disable = 1;       // Using UART so set this per datasheet.
-    gconf_data.mstep_reg_select = 1;  // MS1 and MS2 are not connected so use UART registers.
-    gconf_data.multistep_filt =
-        1;  // Disable the filter for the multistep pulse. This electrical set-up doesn't need it.
+    gconf_data.pdn_disable = 0;       // Using UART so set this per datasheet.
+    gconf_data.mstep_reg_select = 0;  // MS1 and MS2 are not connected so use UART registers.
+    gconf_data.multistep_filt = 1;
 
     k_sleep(K_MSEC(10));  // I don't know why this works. Are we writing too soon after reading? but it is necessary.
     ret = adi_tmc2209_write(dev, REG_GCONF, (unsigned char *)&gconf_data);

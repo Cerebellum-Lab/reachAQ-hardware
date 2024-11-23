@@ -288,7 +288,7 @@ ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, const si
     const float servo_time_step = 0.02f;
     const float servo_entries_per_second = 50.0f;
     BUILD_ASSERT(servo_time_step == 1.0f / servo_entries_per_second,
-                 "Stepper time step must be 1 / stepper_entries_per_second");
+                 "Servo time step must be 1 / servo_entries_per_second");
     size_t n_entries = (size_t)((context->motion_profile.t_t - context->last_time_generated) *
                                 servo_entries_per_second);  // 50 = 1 / time_step
     if (n_entries > table_size) {
