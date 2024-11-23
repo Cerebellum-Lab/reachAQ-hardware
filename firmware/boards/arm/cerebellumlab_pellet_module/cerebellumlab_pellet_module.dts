@@ -9,7 +9,7 @@
 
 	chosen {
 		zephyr,console = &lpuart1;
-		zephyr,shell-uart = &cdc_acm_uart0;
+		zephyr,shell-uart = &lpuart1; // &cdc_acm_uart0;
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
 		zephyr,canbus = &fdcan3;
@@ -268,8 +268,8 @@
 		dmas = <&dmamux1 3 46 STM32_DMA_PRIORITY_MEDIUM>;
 		dma-names = "tx";
 
-		limit-switch-gpios = <&gpioa 8 GPIO_ACTIVE_LOW>;
 		driver-dev = <&stepper_driver0>;
+		limit-switch-gpios = <&gpioa 8 (GPIO_PULL_DOWN | GPIO_ACTIVE_LOW)>;
 	};
 };
 
@@ -293,8 +293,8 @@
 		dmas = <&dmamux1 4 53 STM32_DMA_PRIORITY_MEDIUM>;
 		dma-names = "tx";
 
-		limit-switch-gpios = <&gpioa 9 GPIO_ACTIVE_LOW>;
 		driver-dev = <&stepper_driver1>;
+		limit-switch-gpios = <&gpioa 9 (GPIO_PULL_DOWN | GPIO_ACTIVE_LOW)>;
 	};
 };
 
@@ -318,8 +318,8 @@
 		dmas = <&dmamux1 5 90 STM32_DMA_PRIORITY_MEDIUM>;
 		dma-names = "tx";
 
-		limit-switch-gpios = <&gpioa 10 GPIO_ACTIVE_LOW>;
 		driver-dev = <&stepper_driver2>;
+		limit-switch-gpios = <&gpioa 10 (GPIO_PULL_DOWN | GPIO_ACTIVE_LOW)>;
 	};
 };
 

@@ -432,6 +432,7 @@ int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per
             return -EINVAL;
     }
 
+    chopconf_data.intpol = 1;
     chopconf_data.mres = mres;
     k_sleep(K_MSEC(10));
     ret = adi_tmc2209_write(dev, REG_CHOPCONF, (unsigned char *)&chopconf_data);
@@ -439,7 +440,7 @@ int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per
 }
 
 static int adi_tmc2209_init(const struct device *dev) {
-    const int default_hold_current = 1;  // Let them freewheel by default
+    const int default_hold_current = 3;  // Let them freewheel by default
     const int default_run_current = 32;  // maximum current
     const int default_hold_delay = 15;   // Set the delay to the minimum to save power.
 
@@ -485,7 +486,7 @@ static int adi_tmc2209_init(const struct device *dev) {
     gconf_data.pdn_disable = 1;       // Using UART so set this per datasheet.
     gconf_data.mstep_reg_select = 1;  // MS1 and MS2 are not connected so use UART registers.
     gconf_data.multistep_filt =
-        0;  // Disable the filter for the multistep pulse. This electrical set-up doesn't need it.
+        1;  // Disable the filter for the multistep pulse. This electrical set-up doesn't need it.
 
     k_sleep(K_MSEC(10));  // I don't know why this works. Are we writing too soon after reading? but it is necessary.
     ret = adi_tmc2209_write(dev, REG_GCONF, (unsigned char *)&gconf_data);
