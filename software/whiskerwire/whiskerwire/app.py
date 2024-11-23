@@ -43,7 +43,7 @@ open(LOG_FILE_PATH, "w").close()  # Create an empty log file if it doesn't exist
 logging.basicConfig(
     level=logging.INFO,  # Set logging level to DEBUG for verbose output
     format="[%(asctime)s][%(name)s][%(levelname)s]: %(message)s",
-    handlers=[logging.FileHandler(LOG_FILE_PATH)]  # Write log to the specified file
+    handlers=[logging.FileHandler(LOG_FILE_PATH)],  # Write log to the specified file
 )
 
 logger = get_logger()
@@ -66,7 +66,7 @@ class ConnectionStatus(Enum):
 CONNECTION_STATUS_COLOR_MAP = {
     ConnectionStatus.DISCONNECTED: "red",
     ConnectionStatus.SEARCHING: "yellow",
-    ConnectionStatus.CONNECTED: "green"
+    ConnectionStatus.CONNECTED: "green",
 }
 
 
@@ -76,7 +76,9 @@ class WhiskerWire(App):
 
     def __init__(self, **kwargs):
         parser = argparse.ArgumentParser(description="WhiskerWire Application")
-        parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
+        parser.add_argument(
+            "--verbose", "-v", action="store_true", help="Enable verbose logging"
+        )
         parser.add_argument("--config", "-c", type=str, help="Path to config file")
         args = parser.parse_args()
 
@@ -102,7 +104,9 @@ class WhiskerWire(App):
         # Establish connection with JerryCAN device
         self.jc = JerryCAN()
         if self.jc.Open() != 0:
-            raise ConnectionRefusedError("Failed to open JerryCAN socket")  # Fail if unable to connect
+            raise ConnectionRefusedError(
+                "Failed to open JerryCAN socket"
+            )  # Fail if unable to connect
 
         # Initialize main model to manage app data and states
         self.model = Model()
@@ -116,8 +120,12 @@ class WhiskerWire(App):
         self.connection_status = OrderedDict()
 
         # Emergency stop (E-STOP) button setup with initial style
-        self.e_stop_button = GlitchlessButton("E-STOP", variant="error", id="e-stop-button",
-                                              action=partial(self.jc.EStop, True))
+        self.e_stop_button = GlitchlessButton(
+            "E-STOP",
+            variant="error",
+            id="e-stop-button",
+            action=partial(self.jc.EStop, True),
+        )
         self.e_stop_button.active_effect_duration = 0.2
 
         self.header = Header(show_clock=True)
@@ -176,7 +184,10 @@ class WhiskerWire(App):
         # Background task to send periodic heartbeat messages to connected modules
         while self._alive:
             await asyncio.sleep(self.HEARTBEAT_PERIOD)  # Sleep before next heartbeat
-            if any(status == ConnectionStatus.CONNECTED for status in self.connection_status.values()):
+            if any(
+                status == ConnectionStatus.CONNECTED
+                for status in self.connection_status.values()
+            ):
                 self.jc.Heartbeat()  # Send heartbeat if any module is connected
 
     @work(exclusive=False, thread=True)
@@ -185,17 +196,26 @@ class WhiskerWire(App):
         while self._alive:
             await asyncio.sleep(self.CONNECTION_STATUS_PERIOD)
             for dst_id, last_rx_time in self.last_rx_time.items():
-                duration = time.time() - last_rx_time  # Calculate time since last message
+                duration = (
+                    time.time() - last_rx_time
+                )  # Calculate time since last message
                 # Update status based on time since last message received
-                if duration >= self.CONNECTION_TIMEOUT and self.connection_status[dst_id] == ConnectionStatus.CONNECTED:
+                if (
+                    duration >= self.CONNECTION_TIMEOUT
+                    and self.connection_status[dst_id] == ConnectionStatus.CONNECTED
+                ):
                     self.connection_status[dst_id] = ConnectionStatus.SEARCHING
                     self.call_from_thread(self.recompose)
-                elif duration >= self.SEARCHING_TIMEOUT and self.connection_status[
-                    dst_id] == ConnectionStatus.SEARCHING:
+                elif (
+                    duration >= self.SEARCHING_TIMEOUT
+                    and self.connection_status[dst_id] == ConnectionStatus.SEARCHING
+                ):
                     self.connection_status[dst_id] = ConnectionStatus.DISCONNECTED
                     self.call_from_thread(self.recompose)
-                elif duration < self.CONNECTION_TIMEOUT and self.connection_status[
-                    dst_id] != ConnectionStatus.CONNECTED:
+                elif (
+                    duration < self.CONNECTION_TIMEOUT
+                    and self.connection_status[dst_id] != ConnectionStatus.CONNECTED
+                ):
                     self.connection_status[dst_id] = ConnectionStatus.CONNECTED
                     self.call_from_thread(self.recompose)
 
@@ -208,9 +228,13 @@ class WhiskerWire(App):
                 # Add new module dashboard if indicated, otherwise refresh existing
                 if new_module_flag:
                     if isinstance(updated_module_model, PelletModuleModel):
-                        self.call_from_thread(self.add_pellet_module, updated_module_model)
+                        self.call_from_thread(
+                            self.add_pellet_module, updated_module_model
+                        )
                     elif isinstance(updated_module_model, MagnetModuleModel):
-                        self.call_from_thread(self.add_magnet_module, updated_module_model)
+                        self.call_from_thread(
+                            self.add_magnet_module, updated_module_model
+                        )
                     self.call_from_thread(self.recompose)
                 # else:
                 # Refresh dashboard for existing module
@@ -228,18 +252,24 @@ class WhiskerWire(App):
             # Add the TabbedContent widget
             with TabbedContent(id="module-tabs"):
                 for pellet_dashboard in self.pellet_dashboards.values():
-                    connection_status = self.connection_status[pellet_dashboard.model.dst_id]
+                    connection_status = self.connection_status[
+                        pellet_dashboard.model.dst_id
+                    ]
                     connection_status_indicator = f"[{CONNECTION_STATUS_COLOR_MAP[connection_status]}]•[/{CONNECTION_STATUS_COLOR_MAP[connection_status]}]"
                     with TabPane(
-                            title=f"[bold]Pellet Module [{str(pellet_dashboard.model.can_address)}] {connection_status_indicator} [/bold]",
-                            id=f"pellet-{pellet_dashboard.model.can_address}"):
+                        title=f"[bold]Pellet Module [{str(pellet_dashboard.model.can_address)}] {connection_status_indicator} [/bold]",
+                        id=f"pellet-{pellet_dashboard.model.can_address}",
+                    ):
                         yield pellet_dashboard.compose_dashboard()
                 for magnet_dashboard in self.magnet_dashboards.values():
-                    connection_status = self.connection_status[magnet_dashboard.model.dst_id]
+                    connection_status = self.connection_status[
+                        magnet_dashboard.model.dst_id
+                    ]
                     connection_status_indicator = f"[{CONNECTION_STATUS_COLOR_MAP[connection_status]}]•[/{CONNECTION_STATUS_COLOR_MAP[connection_status]}]"
                     with TabPane(
-                            title=f"[bold]Magnet Module [{str(magnet_dashboard.model.can_address)}] {connection_status_indicator} [/bold]",
-                            id=f"magnet-{magnet_dashboard.model.can_address}"):
+                        title=f"[bold]Magnet Module [{str(magnet_dashboard.model.can_address)}] {connection_status_indicator} [/bold]",
+                        id=f"magnet-{magnet_dashboard.model.can_address}",
+                    ):
                         yield magnet_dashboard.compose_dashboard()
             # Add the E-Stop button
             yield self.e_stop_button
@@ -248,8 +278,11 @@ class WhiskerWire(App):
             with TabbedContent(initial="listening", id="module-tabs"):
                 with TabPane(title=f"Listening...", id=f"listening"):
                     yield Container(
-                        Static("Listening for MouseGYM modules...\n(Make sure the can0 interface has been brought up)",
-                               id="listening-message"))
+                        Static(
+                            "Listening for MouseGYM modules...\n(Make sure the can0 interface has been brought up)",
+                            id="listening-message",
+                        )
+                    )
 
     @on(Button.Pressed, "#e-stop-button")
     async def on_button_press(self, event):
@@ -262,7 +295,9 @@ class WhiskerWire(App):
         for module_dashboard in self.items:
             for dashboard in module_dashboard.dashboards:
                 for item in dashboard.items:
-                    if item.selected and not item.region.contains(event.screen_x, event.screen_y):
+                    if item.selected and not item.region.contains(
+                        event.screen_x, event.screen_y
+                    ):
                         item.on_click(event)
                         item.refresh(recompose=True)
                         return

@@ -14,10 +14,18 @@ class StepperDashboard(StatusWidgetDashboard):
 
     Inherits from StatusWidgetDashboard.
     """
+
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
 
-    def __init__(self, model: SteppersModel, write_config: callable, read_config: callable, move: callable,
-                 home: callable, **kwargs):
+    def __init__(
+        self,
+        model: SteppersModel,
+        write_config: callable,
+        read_config: callable,
+        move: callable,
+        home: callable,
+        **kwargs
+    ):
         """
         Initialize the StepperDashboard.
 
@@ -33,8 +41,10 @@ class StepperDashboard(StatusWidgetDashboard):
 
         # Initialize stepper widgets based on the model
         self.steppers: dict[int, StepperStatusWidget] = {
-            instance: StepperStatusWidget(stepper, move, home, read_config, write_config) for instance, stepper in
-            self.model.motors.items()
+            instance: StepperStatusWidget(
+                stepper, move, home, read_config, write_config
+            )
+            for instance, stepper in self.model.motors.items()
         }
 
         # Call the parent constructor with the dashboard name and list of stepper widgets

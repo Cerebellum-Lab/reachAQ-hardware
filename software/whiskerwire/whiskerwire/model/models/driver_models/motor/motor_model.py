@@ -11,6 +11,7 @@ class MotorModel:
     Model representing a motor, including attributes for name, instance, commandable position range,
     status, and position.
     """
+
     SETTINGS_KEY: str
 
     MIN_POSITION: float
@@ -34,7 +35,9 @@ class MotorModel:
             instance (int): The instance number of the motor.
         """
         if not self.SETTINGS_KEY:
-            raise NotImplementedError(f"The class {self.__class__} does not define a SETTINGS_KEY")
+            raise NotImplementedError(
+                f"The class {self.__class__} does not define a SETTINGS_KEY"
+            )
 
         settings = get_settings()
         self.MIN_POSITION = settings[self.SETTINGS_KEY]["Min Position"]
@@ -54,9 +57,13 @@ class MotorModel:
 
         # Read-write attributes
         self._status = Watchable(None)  # Current status of the motor
-        self._position = Watchable(0.0)  # Current position of the motor (defaulted to -1)
+        self._position = Watchable(
+            0.0
+        )  # Current position of the motor (defaulted to -1)
         self._max_velocity = 0.0  # Currently configured max velocity of the motor
-        self._max_acceleration = 0.0  # Currently configured max acceleration of the motor
+        self._max_acceleration = (
+            0.0  # Currently configured max acceleration of the motor
+        )
 
     @property
     def name(self) -> str:
@@ -90,7 +97,10 @@ class MotorModel:
 
     def is_valid_position(cls, position: float):
         try:
-            return float(position) >= cls.MIN_POSITION and float(position) <= cls.MAX_POSITION
+            return (
+                float(position) >= cls.MIN_POSITION
+                and float(position) <= cls.MAX_POSITION
+            )
         except Exception as e:
             logger.error("HERE {str(e)}")
             return False
@@ -105,7 +115,8 @@ class MotorModel:
         """
         if not self.is_valid_position(value):
             raise ValueError(
-                f"Invalid Position <{value}>: must be on the interval [{self.MIN_POSITION},{self.MAX_POSITION}]")
+                f"Invalid Position <{value}>: must be on the interval [{self.MIN_POSITION},{self.MAX_POSITION}]"
+            )
         self._position.value = value
 
     @property
@@ -114,7 +125,10 @@ class MotorModel:
 
     def is_valid_velocity(self, velocity: float):
         try:
-            return float(velocity) >= self.MIN_VELOCITY and float(velocity) <= self.MAX_VELOCITY
+            return (
+                float(velocity) >= self.MIN_VELOCITY
+                and float(velocity) <= self.MAX_VELOCITY
+            )
         except:
             return False
 
@@ -122,7 +136,8 @@ class MotorModel:
     def max_velocity(self, value: float):
         if not self.is_valid_velocity(value):
             raise ValueError(
-                f"Invalid Velocity <{value}>: must be on the interval [{self.MIN_VELOCITY},{self.MAX_VELOCITY}]")
+                f"Invalid Velocity <{value}>: must be on the interval [{self.MIN_VELOCITY},{self.MAX_VELOCITY}]"
+            )
         self._max_velocity = value
 
     @property
@@ -131,7 +146,10 @@ class MotorModel:
 
     def is_valid_acceleration(self, acceleration: float):
         try:
-            return float(acceleration) >= self.MIN_ACCELERATION and float(acceleration) <= self.MAX_ACCELERATION
+            return (
+                float(acceleration) >= self.MIN_ACCELERATION
+                and float(acceleration) <= self.MAX_ACCELERATION
+            )
         except:
             return False
 
@@ -139,5 +157,6 @@ class MotorModel:
     def max_acceleration(self, value: float):
         if not self.is_valid_acceleration(value):
             raise ValueError(
-                f"Invalid Acceleration <{value}>: must be on the interval [{self.MIN_ACCELERATION},{self.MAX_ACCELERATION}]")
+                f"Invalid Acceleration <{value}>: must be on the interval [{self.MIN_ACCELERATION},{self.MAX_ACCELERATION}]"
+            )
         self._max_acceleration = value

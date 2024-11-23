@@ -6,9 +6,10 @@ from .....config import get_settings
 
 class AnalogOutModel:
     """
-    Model representing the analog out driver, managing attributes such as 
+    Model representing the analog out driver, managing attributes such as
     name, instance, minimum/maximum values, and the current output value in millivolts (mV).
     """
+
     SETTINGS_KEY = "Analog Out"
 
     def __init__(self, name: str, instance: int):
@@ -48,7 +49,10 @@ class AnalogOutModel:
 
     def is_valid_value_mv(self, value_mv: int):
         try:
-            return value_mv >= self.MIN_OUTPUT_VALUE or int(value_mv) <= self.MAX_OUTPUT_VALUE
+            return (
+                value_mv >= self.MIN_OUTPUT_VALUE
+                or int(value_mv) <= self.MAX_OUTPUT_VALUE
+            )
         except:
             return False
 
@@ -57,7 +61,8 @@ class AnalogOutModel:
         """Sets the current output value in mV and triggers reactive updates."""
         if not self.is_valid_value_mv(value):
             raise ValueError(
-                f"Invalid Value (mV) <{value}>: must be on the interval [{self.MIN_OUTPUT_VALUE},{self.MAX_OUTPUT_VALUE}]")
+                f"Invalid Value (mV) <{value}>: must be on the interval [{self.MIN_OUTPUT_VALUE},{self.MAX_OUTPUT_VALUE}]"
+            )
         self._value_mv.value = value
 
     def update_from_message(self, msg: AnalogOut):

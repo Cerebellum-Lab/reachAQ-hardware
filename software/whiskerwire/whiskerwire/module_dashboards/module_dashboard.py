@@ -13,10 +13,16 @@ logger = logging.getLogger("WhiskerWire")
 class ModuleDashboard(Widget):
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
 
-    def __init__(self, module_name: str, model: ModuleModel, dashboards: list[StatusWidgetDashboard], **kwargs):
+    def __init__(
+        self,
+        module_name: str,
+        model: ModuleModel,
+        dashboards: list[StatusWidgetDashboard],
+        **kwargs,
+    ):
         """
         Initialize the ModuleDashboard with a module name, model, and associated dashboards.
-        
+
         Args:
             module_name (str): The name of the module.
             model (ModuleModel): The data model representing the module's properties.
@@ -32,13 +38,13 @@ class ModuleDashboard(Widget):
         self.title = Static(
             f"[bold]{self.module_name} Module [{str(self.model.can_address)}][/bold]",
             id=f"{self.module_name.lower()}-dashboard-title",
-            classes="module-dashboard-title"
+            classes="module-dashboard-title",
         )
 
     def compose_title(self):
         """
         Compose the title for the module dashboard, showing the module name and CAN address.
-        
+
         Returns:
             Static: A Static widget containing the module's title with its CAN ID.
         """
@@ -47,7 +53,7 @@ class ModuleDashboard(Widget):
     def compose(self):
         """
         Compose the layout of the ModuleDashboard, including the title and the associated dashboards.
-        
+
         Yields:
             Static and Grid: The title and a grid container of status dashboards for the module.
         """
@@ -57,5 +63,5 @@ class ModuleDashboard(Widget):
         yield Grid(
             *self.dashboards,
             id=f"{self.module_name.lower()}-module-dashboard-container",
-            classes="module-dashboard-container"
+            classes="module-dashboard-container",
         )

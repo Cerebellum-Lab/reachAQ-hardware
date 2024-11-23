@@ -3,11 +3,12 @@ from .driver_models.motor.servo.servos_model import ServosModel
 from pyjerrycan import JerryCANMsg, JerryCANCmdType, JerryCANCfgMsg
 from ..watchable import Watchable
 
+
 class ModuleModel:
     """
     Base model for a module with GPIO and servo components, supporting CAN communication.
     """
-    
+
     DEVICE_TYPE = None  # Define in subclasses for specific module types
 
     def __init__(self, can_address: int, gpios: GPIOSModel, servos: ServosModel):
@@ -18,7 +19,7 @@ class ModuleModel:
             can_address (int): The CAN address for the module (0-3).
             gpios (GPIOSModel): An instance of GPIOSModel representing GPIO states.
             servos (ServosModel): An instance of ServosModel representing servo states.
-        
+
         Raises:
             ValueError: If the CAN address is not in the range [0, 3].
         """
@@ -26,7 +27,9 @@ class ModuleModel:
 
         # Validate CAN address range
         if not (0 <= can_address <= 3):
-            raise ValueError(f"CAN address must be in the range [0, 3] - received {can_address}")
+            raise ValueError(
+                f"CAN address must be in the range [0, 3] - received {can_address}"
+            )
 
         self._can_address = can_address  # CAN address for the module
         self.gpios = gpios  # GPIO model instance for handling GPIO states
@@ -44,7 +47,7 @@ class ModuleModel:
     @property
     def dst_id(self) -> int:
         """int: Compute and return the destination ID by combining device type and CAN address."""
-        return (self.DEVICE_TYPE << 2) | self.can_address 
+        return (self.DEVICE_TYPE << 2) | self.can_address
 
     @property
     def estop_status(self) -> bool:
@@ -72,8 +75,8 @@ class ModuleModel:
         elif msg.type == JerryCANCmdType.STATUS:
             # Update servo statuses from the status message
             # Is now handled by servo status message
-            #self.servos.update_from_status_message(msg.status)
-            pass # FIXME: Update once new status message has been defined
+            # self.servos.update_from_status_message(msg.status)
+            pass  # FIXME: Update once new status message has been defined
         elif msg.type == JerryCANCmdType.SERVO_STATUS:
             # Update servo status from the servo status message
             self.servos.update_from_servo_status_message(msg.servo_status)

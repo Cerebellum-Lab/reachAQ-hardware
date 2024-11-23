@@ -5,9 +5,10 @@ from ......config import get_settings
 
 class ServoModel(MotorModel):
     """
-    Model representing a servo motor, inheriting from MotorModel. 
+    Model representing a servo motor, inheriting from MotorModel.
     Sets default commandable position limits specific to servos.
     """
+
     SETTINGS_KEY = "Servo Motor"
 
     def __init__(self, name: str, instance: int):
@@ -38,7 +39,8 @@ class ServoModel(MotorModel):
     def min_position(self, value: float):
         if not self.is_valid_position(value):
             raise ValueError(
-                f"Invalid Min Position <{value}>: must be on the interval [{self.MIN_POSITION},{self.MAX_POSITION}]")
+                f"Invalid Min Position <{value}>: must be on the interval [{self.MIN_POSITION},{self.MAX_POSITION}]"
+            )
         self._min_position.value = value
 
     @property
@@ -49,7 +51,8 @@ class ServoModel(MotorModel):
     def max_position(self, value: float):
         if not self.is_valid_position(value):
             raise ValueError(
-                f"Invalid Max Position <{value}>: must be on the interval [{self.MIN_POSITION},{self.MAX_POSITION}]")
+                f"Invalid Max Position <{value}>: must be on the interval [{self.MIN_POSITION},{self.MAX_POSITION}]"
+            )
         self._max_position.value = value
 
     @property
@@ -58,7 +61,10 @@ class ServoModel(MotorModel):
 
     def is_valid_pwm_duration_us(self, pwm_duration_us: float):
         try:
-            return float(pwm_duration_us) >= self.MIN_PWM_DURATION and int(pwm_duration_us) <= self.MAX_PWM_DURATION
+            return (
+                float(pwm_duration_us) >= self.MIN_PWM_DURATION
+                and int(pwm_duration_us) <= self.MAX_PWM_DURATION
+            )
         except:
             return False
 
@@ -66,7 +72,8 @@ class ServoModel(MotorModel):
     def min_pwm_duration_us(self, value: float):
         if not self.is_valid_pwm_duration_us(value):
             raise ValueError(
-                f"Invalid Min PWM Duration <{value}>: must be on the interval [{self.MIN_PWM_DURATION},{self.MAX_PWM_DURATION}]")
+                f"Invalid Min PWM Duration <{value}>: must be on the interval [{self.MIN_PWM_DURATION},{self.MAX_PWM_DURATION}]"
+            )
         self._min_pwm_duration_us.value = value
 
     @property
@@ -77,5 +84,6 @@ class ServoModel(MotorModel):
     def max_pwm_duration_us(self, value: float):
         if not self.is_valid_pwm_duration_us(value):
             raise ValueError(
-                f"Invalid Max PWM Duration <{value}>: must be on the interval [{self.MIN_PWM_DURATION},{self.MAX_PWM_DURATION}]")
+                f"Invalid Max PWM Duration <{value}>: must be on the interval [{self.MIN_PWM_DURATION},{self.MAX_PWM_DURATION}]"
+            )
         self._max_pwm_duration_us.value = value

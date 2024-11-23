@@ -8,6 +8,7 @@ class SensorModel:
     """
     Model representing a sensor, with attributes for name, instance, sensor value, and a data history.
     """
+
     SETTINGS_KEY: str
 
     MAX_DATA_POINTS: int
@@ -35,9 +36,12 @@ class SensorModel:
         self._instance = instance  # Unique identifier for this sensor instance
 
         # Read-write attributes
-        self._sensor_value = Watchable(0, only_on_change=False,
-                                       min_update_period=self.MIN_UPDATE_PERIOD)  # Latest sensor value
-        self._sensor_data = deque(maxlen=self.MAX_DATA_POINTS)  # Circular buffer for historical data
+        self._sensor_value = Watchable(
+            0, only_on_change=False, min_update_period=self.MIN_UPDATE_PERIOD
+        )  # Latest sensor value
+        self._sensor_data = deque(
+            maxlen=self.MAX_DATA_POINTS
+        )  # Circular buffer for historical data
 
         # Initialize sensor data with zeroed values
         for _ in range(self.MAX_DATA_POINTS):

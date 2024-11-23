@@ -8,11 +8,13 @@ from .driver_models.sensors.pressure_sensor_model import PressureSensorModel
 from .driver_models.sensors.load_cell_sensor_model import LoadCellSensorModel
 from pyjerrycan import JerryCANMsg, JerryCANCmdType
 
+
 class MagnetModuleModel(ModuleModel):
     """
     Model representing a magnet module, managing GPIO, servo, and sensor data.
     Inherits from ModuleModel and processes specific CAN messages for sensors.
     """
+
     DEVICE_TYPE = 0x01  # Device type identifier for the magnet module
 
     def __init__(self, can_address: int):
@@ -24,14 +26,13 @@ class MagnetModuleModel(ModuleModel):
         """
         super().__init__(
             can_address,
-            gpios=GPIOSModel([
-                GPIOModel("CONT0", 4, GPIODirection.INPUT), 
-                GPIOModel("CONT1", 5, GPIODirection.INPUT)
-            ]),
-            servos=ServosModel([
-                ServoModel("Servo 0", 0), 
-                ServoModel("Servo 1", 1)
-            ]),
+            gpios=GPIOSModel(
+                [
+                    GPIOModel("CONT0", 4, GPIODirection.INPUT),
+                    GPIOModel("CONT1", 5, GPIODirection.INPUT),
+                ]
+            ),
+            servos=ServosModel([ServoModel("Servo 0", 0), ServoModel("Servo 1", 1)]),
         )
 
         # Initialize sensor models for temperature, humidity, pressure, and load cell

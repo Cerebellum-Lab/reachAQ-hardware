@@ -33,10 +33,15 @@ class SensorDashboard(StatusWidgetDashboard):
             Container: Contains the dashboard title and a grid of sensor widgets.
         """
         yield Container(
-            Static(f"[bold]{self.dashboard_name}[/bold]", classes="status-dashboard-title"),  # Dashboard title
+            Static(
+                f"[bold]{self.dashboard_name}[/bold]", classes="status-dashboard-title"
+            ),  # Dashboard title
             Grid(
-                *[Container(item, classes="sensor-widget-container") for item in self.items],
-                classes="sensor-grid"
+                *[
+                    Container(item, classes="sensor-widget-container")
+                    for item in self.items
+                ],
+                classes="sensor-grid",
             ),
-            id="sensor-container"
+            id="sensor-container",
         )

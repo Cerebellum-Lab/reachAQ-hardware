@@ -1,18 +1,19 @@
 from textual.app import App, ComposeResult
 from widgets.command_value_widget import CommandValueWidget
 
+
 class Sandbox(App):
-    CSS_PATH="static/styles.tcss"
-    
-    def __init__(self, driver_class = None, css_path = None, watch_css = False):
+    CSS_PATH = "static/styles.tcss"
+
+    def __init__(self, driver_class=None, css_path=None, watch_css=False):
         self.theme = "textual-dark"
         super().__init__(driver_class, css_path, watch_css)
         self.cvw = CommandValueWidget("Test", ["value1", "value2"], action=self.on_send)
-        
-        
+
         for k, v in self.get_css_variables().items():
             with open("test2.txt", "w") as f:
                 f.write(f"{k}, {v}")
+
     def compose(self):
         yield self.cvw
 
@@ -43,6 +44,7 @@ class Sandbox(App):
 
         if valid:
             self.cvw.reset()
-    
+
+
 if __name__ == "__main__":
     Sandbox(watch_css=True).run()

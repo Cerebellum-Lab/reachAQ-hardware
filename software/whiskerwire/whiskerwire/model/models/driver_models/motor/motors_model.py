@@ -4,6 +4,7 @@ import sys
 
 logger = logging.getLogger("WhiskerWire")
 
+
 class MotorsModel:
     """
     Model representing a collection of motors, providing methods to access individual motors by name or instance,
@@ -23,11 +24,11 @@ class MotorsModel:
         # Ensure that no conflicts exist between motor names and instances
         names = [motor.name for motor in motors]
         instances = [motor.instance for motor in motors]
-        
+
         if len(names) != len(set(names)):
             logger.fatal("Duplicate motor names found in motors")
             sys.exit(1)
-        
+
         if len(instances) != len(set(instances)):
             logger.fatal("Duplicate motor instances found in motors")
             sys.exit(1)
@@ -48,7 +49,9 @@ class MotorsModel:
         try:
             return self.motors[instance]
         except KeyError:
-            logger.error(f"Failed to get motor with instance <{instance}> - a motor with the specified instance does not exist")
+            logger.error(
+                f"Failed to get motor with instance <{instance}> - a motor with the specified instance does not exist"
+            )
             return None
 
     def get_motor_by_name(self, name: str) -> MotorModel | None:
@@ -64,7 +67,9 @@ class MotorsModel:
         for motor in self.motors.values():
             if motor.name == name:
                 return motor
-        logger.error(f"Failed to get motor with name <'{name}'> - a motor with the specified name does not exist")
+        logger.error(
+            f"Failed to get motor with name <'{name}'> - a motor with the specified name does not exist"
+        )
         return None
 
     def get_motor(self, specifier: int | str) -> MotorModel | None:
@@ -84,7 +89,7 @@ class MotorsModel:
             return self.get_motor_by_instance(specifier)
         elif isinstance(specifier, str):
             return self.get_motor_by_name(specifier)
-        
+
         raise TypeError("Failed to get motor - specifier must be an int or str")
 
     def get_status(self, specifier: int | str) -> int | None:
@@ -129,7 +134,9 @@ class MotorsModel:
         """
         motor = self.get_motor(specifier)
         if motor is None:
-            logger.error(f"Failed to get position of motor with specifier <{specifier}>")
+            logger.error(
+                f"Failed to get position of motor with specifier <{specifier}>"
+            )
             return None
         return motor.position
 
@@ -143,6 +150,8 @@ class MotorsModel:
         """
         motor = self.get_motor(specifier)
         if motor is None:
-            logger.error(f"Failed to set position of motor with specifier <{specifier}>")
+            logger.error(
+                f"Failed to set position of motor with specifier <{specifier}>"
+            )
         else:
             motor.position = position

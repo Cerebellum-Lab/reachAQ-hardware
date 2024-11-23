@@ -9,6 +9,7 @@ class PressureSensorModel(SensorModel):
     Model representing a pressure sensor, inheriting from SensorModel.
     Provides a method to update the sensor's value based on a PressureRead message.
     """
+
     SETTINGS_KEY = "Pressure Sensor"
 
     def __init__(self, name: str, instance: int):
@@ -32,4 +33,6 @@ class PressureSensorModel(SensorModel):
         Args:
             msg (PressureRead): The message containing pressure data in millivolts.
         """
-        self.sensor_value = msg.pressure_mv  # Set sensor value directly from message pressure in mV
+        self.sensor_value = (
+            msg.pressure_mv
+        )  # Set sensor value directly from message pressure in mV

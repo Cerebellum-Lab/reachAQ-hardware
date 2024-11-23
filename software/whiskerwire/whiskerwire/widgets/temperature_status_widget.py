@@ -1,5 +1,7 @@
 from .sensor_status_widget import SensorStatusWidget
-from ..model.models.driver_models.sensors.temperature_sensor_model import TemperatureSensorModel
+from ..model.models.driver_models.sensors.temperature_sensor_model import (
+    TemperatureSensorModel,
+)
 
 
 # TemperatureStatusWidget class for displaying temperature sensor readings.
@@ -10,7 +12,7 @@ class TemperatureStatusWidget(SensorStatusWidget):
     def __init__(self, model: TemperatureSensorModel, **kwargs):
         """
         Initialize the TemperatureStatusWidget with a temperature sensor model and optional configurations.
-        
+
         Args:
             model (TemperatureSensorModel): The data model containing temperature sensor properties.
             **kwargs: Additional keyword arguments for widget customization.

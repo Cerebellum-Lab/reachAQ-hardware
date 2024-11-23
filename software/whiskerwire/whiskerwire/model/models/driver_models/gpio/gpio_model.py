@@ -1,14 +1,18 @@
 from enum import Enum
 from ....watchable import Watchable
 from textual import reactive
+
+
 class GPIODirection(Enum):
     """Enum representing the direction of a GPIO pin."""
+
     INPUT = 0
     OUTPUT = 1
 
+
 class GPIOModel:
     """
-    Model representing a GPIO (General Purpose Input/Output) pin, including its name, index, 
+    Model representing a GPIO (General Purpose Input/Output) pin, including its name, index,
     direction, and current state.
     """
 

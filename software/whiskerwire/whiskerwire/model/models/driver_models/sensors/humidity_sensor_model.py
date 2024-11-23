@@ -8,6 +8,7 @@ class HumiditySensorModel(SensorModel):
     Model representing a humidity sensor, inheriting from SensorModel.
     Provides a method to update the sensor's value based on a TempHumRead message.
     """
+
     SETTINGS_KEY = "Humidity Sensor"
 
     def __init__(self, name: str, instance: int):

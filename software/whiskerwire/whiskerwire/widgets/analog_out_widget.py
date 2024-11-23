@@ -17,7 +17,7 @@ class AnalogOutWidget(StatusWidget):
     def __init__(self, model: AnalogOutModel, analog_write: callable, **kwargs):
         """
         Initialize the AnalogOutWidget with a model and optional keyword arguments.
-        
+
         Args:
             model (AnalogOutModel): The data model containing the analog out attributes.
             **kwargs: Additional keyword arguments for widget configuration.
@@ -32,11 +32,13 @@ class AnalogOutWidget(StatusWidget):
         self.value_display = Static(
             f"Value: {self.model.value_mv}mv",
             id="analog-status-value-display",
-            classes="status-display"
+            classes="status-display",
         )
 
         # CommandValueWidget for adjusting the analog value
-        self.command_value_widget = CommandValueWidget("Command Value", ["value"], action=self.command_analog_out)
+        self.command_value_widget = CommandValueWidget(
+            "Command Value", ["value"], action=self.command_analog_out
+        )
 
         # Add the command widget to the list of hidable items for conditional display
         self.hidable_items.append(self.command_value_widget)
@@ -61,13 +63,15 @@ class AnalogOutWidget(StatusWidget):
         """
         Callback function to update the value display when `value_mv` in the model changes.
         """
-        self.value_display.update(f"Value: {self.model.value_mv}mv")  # Update value display
+        self.value_display.update(
+            f"Value: {self.model.value_mv}mv"
+        )  # Update value display
 
     def compose(self):
         """
         Compose the layout of the AnalogOutWidget.
         This includes the analog out title, value display, and command input (if selected).
-        
+
         Yields:
             Static: The title and value display widgets, and the command input if selected.
         """

@@ -27,7 +27,9 @@ class StatusWidgetDashboard(Widget):
         super().__init__(classes="status-widget-dashboard", **kwargs)
 
         self.dashboard_name = dashboard_name  # Name of the dashboard
-        self.identifier = to_valid_identifier(dashboard_name)  # Generate a valid identifier for the dashboard
+        self.identifier = to_valid_identifier(
+            dashboard_name
+        )  # Generate a valid identifier for the dashboard
 
         # Ensure items is a list of StatusWidget instances
         if not isinstance(items, list):
@@ -44,13 +46,15 @@ class StatusWidgetDashboard(Widget):
             Grid: A grid containing the status widgets.
         """
         # Dashboard title
-        yield Static(f"[bold]{self.dashboard_name}[/bold]", classes="status-dashboard-title")
+        yield Static(
+            f"[bold]{self.dashboard_name}[/bold]", classes="status-dashboard-title"
+        )
 
         # Dashboard container grid with status widgets
         yield Grid(
             *self.items,  # Each status widget in the grid
             id=f"{self.identifier}-dashboard-container",
-            classes="dashboard-container"
+            classes="dashboard-container",
         )
 
     def contains_selected_widget(self) -> bool:

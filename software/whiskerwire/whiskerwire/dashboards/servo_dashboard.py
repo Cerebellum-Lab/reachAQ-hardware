@@ -14,7 +14,14 @@ class ServoDashboard(StatusWidgetDashboard):
 
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
 
-    def __init__(self, model: ServosModel, write_config: callable, read_config: callable, move: callable, **kwargs):
+    def __init__(
+        self,
+        model: ServosModel,
+        write_config: callable,
+        read_config: callable,
+        move: callable,
+        **kwargs
+    ):
         """
         Initialize the ServoDashboard.
 
@@ -29,8 +36,8 @@ class ServoDashboard(StatusWidgetDashboard):
 
         # Initialize servo widgets based on the model
         self.servos: dict[int, ServoStatusWidget] = {
-            instance: ServoStatusWidget(servo, move, write_config, read_config) for instance, servo in
-            self.model.motors.items()
+            instance: ServoStatusWidget(servo, move, write_config, read_config)
+            for instance, servo in self.model.motors.items()
         }
 
         # Call the parent constructor with the dashboard name and list of servo widgets

@@ -9,10 +9,16 @@ from ..model.models.driver_models.sensors.sensor_model import SensorModel
 class SensorStatusWidget(StatusWidget):
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
 
-    def __init__(self, model: SensorModel, unit: str = "", decimal_digits: int | None = None, **kwargs):
+    def __init__(
+        self,
+        model: SensorModel,
+        unit: str = "",
+        decimal_digits: int | None = None,
+        **kwargs,
+    ):
         """
         Initialize the SensorStatusWidget with a sensor model, unit, and optional graph bounds.
-        
+
         Args:
             model (SensorModel): The data model containing sensor attributes and data.
             unit (str): The unit of measurement for the sensor (e.g., "°C", "mV").
@@ -29,7 +35,7 @@ class SensorStatusWidget(StatusWidget):
         self.sensor_value_display = Static(
             f"{self.widget_name}: {self.model.sensor_value}{self.unit}",
             id=f"{self.id}-display",
-            classes="status-display"
+            classes="status-display",
         )
 
         # GraphWidget for visualizing sensor data over time, with optional y-axis bounds
@@ -44,7 +50,9 @@ class SensorStatusWidget(StatusWidget):
         Refreshes the display to reflect the latest data.
         """
         if self.decimal_digits is None:
-            self.sensor_value_display.update(f"{self.widget_name}: {self.model.sensor_value}{self.unit}")
+            self.sensor_value_display.update(
+                f"{self.widget_name}: {self.model.sensor_value}{self.unit}"
+            )
         else:
             self.sensor_value_display.update(
                 f"{self.widget_name}: {self.model.sensor_value:.{self.decimal_digits}f}{self.unit}"
@@ -54,7 +62,7 @@ class SensorStatusWidget(StatusWidget):
     def compose(self):
         """
         Compose the layout of the SensorStatusWidget, including the sensor name, value, and graph.
-        
+
         Yields:
             Static and other widgets: The title, sensor value display, and graph widget.
         """

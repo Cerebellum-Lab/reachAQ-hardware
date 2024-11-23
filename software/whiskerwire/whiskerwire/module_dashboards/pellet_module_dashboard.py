@@ -2,7 +2,10 @@ from textual.containers import Grid
 from ..dashboards.stepper_dashboard import StepperDashboard
 from ..dashboards.servo_dashboard import ServoDashboard
 from ..dashboards.gpio_dashboard import GPIODashboard
-from ..dashboards.tone_generator_dashboard import ToneGeneratorDashboard, ToneGeneratorStatusWidget
+from ..dashboards.tone_generator_dashboard import (
+    ToneGeneratorDashboard,
+    ToneGeneratorStatusWidget,
+)
 from ..dashboards.analog_out_dashboard import AnalogOutDashboard, AnalogOutWidget
 from ..dashboards.door_sensor_dashboard import DoorSensorDashboard
 from ..widgets.rgb_led_status_widget import RGBLEDStatusWidget
@@ -20,9 +23,9 @@ class PelletModuleDashboard(ModuleDashboard):
     def __init__(self, jc: JerryCAN, model: PelletModuleModel, **kwargs):
         """
         Initialize the PelletModuleDashboard with JerryCAN, a model, and optional configurations.
-        
+
         This dashboard manages multiple sub-dashboards, including stepper, servo, GPIO, tone generator, and analog out.
-        
+
         Args:
             jc (JerryCAN): An instance of JerryCAN for handling CAN communication.
             model (PelletModuleModel): The data model for the pellet module.
@@ -49,22 +52,29 @@ class PelletModuleDashboard(ModuleDashboard):
             self.model.servos,
             write_config=partial(jc.ServoCfgWrite, dst_id=self.model.dst_id),
             read_config=partial(jc.ServoCfgRead, dst_id=self.model.dst_id),
-            move=partial(jc.ServoMove, dst_id=self.model.dst_id)
+            move=partial(jc.ServoMove, dst_id=self.model.dst_id),
         )
 
         self.door_sensor_dashboard = DoorSensorDashboard(self.model.door_sensors)
 
-        self.rgb_led = RGBLEDStatusWidget(self.model.rgb_led, write=partial(jc.RGBLEDWrite, dst_id=self.model.dst_id))
+        self.rgb_led = RGBLEDStatusWidget(
+            self.model.rgb_led, write=partial(jc.RGBLEDWrite, dst_id=self.model.dst_id)
+        )
 
         # Initialize the AnalogOutDashboard with a single analog out widget
         self.analog_out_dashboard = AnalogOutDashboard(
-            AnalogOutWidget(self.model.analog_out, analog_write=partial(jc.AnalogOutWrite, dst_id=self.model.dst_id))
+            AnalogOutWidget(
+                self.model.analog_out,
+                analog_write=partial(jc.AnalogOutWrite, dst_id=self.model.dst_id),
+            )
         )
 
         # Initialize the ToneGeneratorDashboard with a single tone generator widget
         self.tone_generator_dashboard = ToneGeneratorDashboard(
-            ToneGeneratorStatusWidget(self.model.tone_generator,
-                                      tone_write=partial(jc.ToneWrite, dst_id=self.model.dst_id))
+            ToneGeneratorStatusWidget(
+                self.model.tone_generator,
+                tone_write=partial(jc.ToneWrite, dst_id=self.model.dst_id),
+            )
         )
 
         # Call the parent constructor to initialize the module dashboard with all sub-dashboards
@@ -86,7 +96,7 @@ class PelletModuleDashboard(ModuleDashboard):
     def compose_dashboard(self):
         """
         Compose the layout of the PelletModuleDashboard, including stepper, servo, GPIO, tone generator, and analog out dashboards.
-        
+
         Returns:
             Grid: A grid layout containing all sub-dashboards.
         """

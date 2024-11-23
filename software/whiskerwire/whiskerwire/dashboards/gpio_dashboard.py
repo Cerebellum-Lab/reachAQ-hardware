@@ -42,8 +42,9 @@ class GPIODashboard(StatusWidgetDashboard):
             if gpio.direction == GPIODirection.INPUT:
                 self.input_gpios[index] = InputGPIOStatusWidget(gpio)
             elif gpio.direction == GPIODirection.OUTPUT:
-                self.output_gpios[index] = OutputGPIOStatusWidget(gpio, gpio_write=partial(gpio_write,
-                                                                                           instance=self.model.instance))
+                self.output_gpios[index] = OutputGPIOStatusWidget(
+                    gpio, gpio_write=partial(gpio_write, instance=self.model.instance)
+                )
 
         # Gather all GPIO widgets for dashboard display
         self.items = list(self.input_gpios.values()) + list(self.output_gpios.values())
@@ -58,24 +59,36 @@ class GPIODashboard(StatusWidgetDashboard):
             Static: Title for the dashboard.
             Horizontal: Container holding both input and output GPIO sections.
         """
-        yield Static(f"[bold]{self.dashboard_name}[/bold]", classes="status-dashboard-title")
+        yield Static(
+            f"[bold]{self.dashboard_name}[/bold]", classes="status-dashboard-title"
+        )
 
         # Create sub-dashboard sections for output and input GPIOs
         sub_dashboards = []
 
         if self.output_gpios:
-            sub_dashboards.append(Vertical(
-                Static(f"[bold]Outputs[/bold]", classes="status-dashboard-title"),
-                Grid(*self.output_gpios.values(), classes="output-gpio-dashboard-container"),
-                classes="gpio-dashboard-container"
-            ))
+            sub_dashboards.append(
+                Vertical(
+                    Static(f"[bold]Outputs[/bold]", classes="status-dashboard-title"),
+                    Grid(
+                        *self.output_gpios.values(),
+                        classes="output-gpio-dashboard-container",
+                    ),
+                    classes="gpio-dashboard-container",
+                )
+            )
 
         if self.input_gpios:
-            sub_dashboards.append(Vertical(
-                Static(f"[bold]Inputs[/bold]", classes="status-dashboard-title"),
-                Grid(*self.input_gpios.values(), classes="input-gpio-dashboard-container"),
-                classes="gpio-dashboard-container"
-            ))
+            sub_dashboards.append(
+                Vertical(
+                    Static(f"[bold]Inputs[/bold]", classes="status-dashboard-title"),
+                    Grid(
+                        *self.input_gpios.values(),
+                        classes="input-gpio-dashboard-container",
+                    ),
+                    classes="gpio-dashboard-container",
+                )
+            )
 
         # Arrange input and output sections horizontally within the dashboard
         yield Horizontal(*sub_dashboards, classes="dashboard-container")

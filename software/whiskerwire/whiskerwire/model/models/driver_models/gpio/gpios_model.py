@@ -5,6 +5,7 @@ import sys
 
 logger = logging.getLogger("WhiskerWire")
 
+
 class GPIOSModel:
     """
     Model representing a collection of GPIO pins, providing methods to access individual GPIOs by name or index
@@ -24,15 +25,15 @@ class GPIOSModel:
         # Ensure that no conflicts exist between GPIO names and indices
         names = [gpio.name for gpio in gpios]
         indices = [gpio.index for gpio in gpios]
-        
+
         if len(names) != len(set(names)):
             logger.fatal("Duplicate GPIO names found in gpios")
             sys.exit(1)
-        
+
         if len(indices) != len(set(indices)):
             logger.fatal("Duplicate GPIO indices found in gpios")
             sys.exit(1)
-        
+
         # Store GPIOs in a dictionary by their index for easy access
         self.gpios: dict[int, GPIOModel] = {gpio.index: gpio for gpio in gpios}
 
@@ -54,7 +55,9 @@ class GPIOSModel:
         try:
             return self.gpios[index]
         except KeyError:
-            logger.error(f"Failed to get GPIO with index <{index}> - a GPIO with the specified index does not exist")
+            logger.error(
+                f"Failed to get GPIO with index <{index}> - a GPIO with the specified index does not exist"
+            )
             return None
 
     def get_gpio_by_name(self, name: str) -> GPIOModel | None:
@@ -70,7 +73,9 @@ class GPIOSModel:
         for gpio in self.gpios.values():
             if gpio.name == name:
                 return gpio
-        logger.error(f"Failed to get GPIO with name <'{name}'> - a GPIO with the specified name does not exist")
+        logger.error(
+            f"Failed to get GPIO with name <'{name}'> - a GPIO with the specified name does not exist"
+        )
         return None
 
     def get_gpio(self, specifier: int | str) -> GPIOModel | None:
@@ -90,7 +95,7 @@ class GPIOSModel:
             return self.get_gpio_by_index(specifier)
         elif isinstance(specifier, str):
             return self.get_gpio_by_name(specifier)
-        
+
         raise TypeError("Failed to get GPIO - specifier must be an int or str")
 
     def get_state(self, specifier: int | str) -> bool | None:
@@ -132,7 +137,7 @@ class GPIOSModel:
         """
         # `instance` is unused as it's assumed only one instance of generic GPIOs exists
         state = msg.state
-        
+
         # Update each GPIO's state based on the message data
         for index, gpio in self.gpios.items():
             gpio.state = bool((state >> index) & 0b1)

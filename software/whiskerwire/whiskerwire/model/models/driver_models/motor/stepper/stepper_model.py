@@ -9,9 +9,10 @@ logger = logging.getLogger("WhiskerWire")
 
 class StepperModel(MotorModel):
     """
-    Model representing a stepper motor, inheriting from MotorModel. 
+    Model representing a stepper motor, inheriting from MotorModel.
     Includes additional properties for stepper-specific attributes such as the limit switch state.
     """
+
     SETTINGS_KEY = "Stepper Motor"
 
     def __init__(self, name: str, instance: int):
@@ -25,13 +26,21 @@ class StepperModel(MotorModel):
         super().__init__(name, instance)  # , self.SETTINGS_KEY)
 
         settings = get_settings()
-        self.MIN_STEPS_PER_REVOLUTION = settings[self.SETTINGS_KEY]["Min Steps per Revolution"]
-        self.MAX_STEPS_PER_REVOLUTION = settings[self.SETTINGS_KEY]["Max Steps per Revolution"]
+        self.MIN_STEPS_PER_REVOLUTION = settings[self.SETTINGS_KEY][
+            "Min Steps per Revolution"
+        ]
+        self.MAX_STEPS_PER_REVOLUTION = settings[self.SETTINGS_KEY][
+            "Max Steps per Revolution"
+        ]
 
-        self._limit_switch = Watchable(False)  # Indicates whether the limit switch is activated
+        self._limit_switch = Watchable(
+            False
+        )  # Indicates whether the limit switch is activated
         self._homing_status = Watchable(None)
         self._microsteps = Watchable(0)  # Might want to set only_on_change=False
-        self._steps_per_revolution = Watchable(0)  # Might want to set only_on_change=False
+        self._steps_per_revolution = Watchable(
+            0
+        )  # Might want to set only_on_change=False
 
     @property
     def limit_switch(self) -> bool:
@@ -83,8 +92,10 @@ class StepperModel(MotorModel):
 
     def is_valid_steps_per_revolution(self, steps_per_revolution: float):
         try:
-            return float(steps_per_revolution) >= self.MIN_STEPS_PER_REVOLUTION and float(
-                steps_per_revolution) <= self.MAX_STEPS_PER_REVOLUTION
+            return (
+                float(steps_per_revolution) >= self.MIN_STEPS_PER_REVOLUTION
+                and float(steps_per_revolution) <= self.MAX_STEPS_PER_REVOLUTION
+            )
         except:
             return False
 
@@ -92,5 +103,6 @@ class StepperModel(MotorModel):
     def steps_per_revolution(self, value: float):
         if not self.is_valid_steps_per_revolution(value):
             raise ValueError(
-                f"Invalid Steps per Revolution <{value}>: must be on the interval [{self.MIN_STEPS_PER_REVOLUTION},{self.MAX_STEPS_PER_REVOLUTION}]")
+                f"Invalid Steps per Revolution <{value}>: must be on the interval [{self.MIN_STEPS_PER_REVOLUTION},{self.MAX_STEPS_PER_REVOLUTION}]"
+            )
         self._steps_per_revolution.value = value

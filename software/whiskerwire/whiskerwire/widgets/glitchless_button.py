@@ -6,6 +6,7 @@ import logging
 
 logger = logging.getLogger("WhiskerWire")
 
+
 class GlitchlessButton(Button):
     def __init__(
         self,
@@ -17,7 +18,7 @@ class GlitchlessButton(Button):
         classes: str | None = None,
         disabled: bool = False,
         tooltip: RenderableType | None = None,
-        action = None
+        action=None
     ):
         """Create a Button widget.
 
@@ -31,11 +32,19 @@ class GlitchlessButton(Button):
             tooltip: Optional tooltip.
             action: Action to be run on button press
         """
-        super().__init__(label=label, variant=variant, name=name, id=id, classes=classes, disabled=disabled, tooltip=tooltip)
+        super().__init__(
+            label=label,
+            variant=variant,
+            name=name,
+            id=id,
+            classes=classes,
+            disabled=disabled,
+            tooltip=tooltip,
+        )
         self.active_effect_duration = 0.001
-        
+
         self.__action = action
-    
+
     def press(self):
         """Animate the button and send the [Pressed][textual.widgets.Button.Pressed] message.
 
@@ -52,6 +61,5 @@ class GlitchlessButton(Button):
         # Perform the specified action, if it exists
         if self.__action is not None:
             self.__action()
-        
+
         return self
-        

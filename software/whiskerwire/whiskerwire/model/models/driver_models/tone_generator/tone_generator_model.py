@@ -13,6 +13,7 @@ class ToneGeneratorModel:
     Model representing a tone generator.
     Provides methods for setting frequency and duration within defined limits and for updating from CAN messages.
     """
+
     SETTINGS_KEY = "Tone Generator"
 
     def __init__(self, name: str, instance: int):
@@ -28,7 +29,9 @@ class ToneGeneratorModel:
         self.MAX_FREQUENCY = settings[self.SETTINGS_KEY]["Max Frequency"]
         self.MIN_DURATION = settings[self.SETTINGS_KEY]["Min Duration"]
         self.MAX_DURATION = settings[self.SETTINGS_KEY]["Max Duration"]
-        self.INTERPOLATION_INTERVAL = settings[self.SETTINGS_KEY]["Interpolation Interval"]
+        self.INTERPOLATION_INTERVAL = settings[self.SETTINGS_KEY][
+            "Interpolation Interval"
+        ]
 
         # Read-only attributes
         self._name = name  # Name of the tone generator
@@ -36,7 +39,9 @@ class ToneGeneratorModel:
 
         # Read-write attributes
         self._frequency = Watchable(0)  # Frequency of the tone in Hz
-        self._time_remaining = Watchable(0)  # Remaining time of the tone in milliseconds
+        self._time_remaining = Watchable(
+            0
+        )  # Remaining time of the tone in milliseconds
 
     @property
     def name(self) -> str:
@@ -63,7 +68,8 @@ class ToneGeneratorModel:
         """
         if not self.is_valid_frequency(value):
             raise ValueError(
-                f"Invalid Duration/Time Remaining: must be on interval [{self.MIN_FREQUENCY},{self.MAX_FREQUENCY}]")
+                f"Invalid Duration/Time Remaining: must be on interval [{self.MIN_FREQUENCY},{self.MAX_FREQUENCY}]"
+            )
         self._frequency.value = value
 
     @property
@@ -81,18 +87,25 @@ class ToneGeneratorModel:
         """
         if not self.is_valid_duration(value):
             raise ValueError(
-                f"Invalid Duration/Time Remaining <{value}>: must be on interval [{self.MIN_DURATION},{self.MAX_DURATION}]")
+                f"Invalid Duration/Time Remaining <{value}>: must be on interval [{self.MIN_DURATION},{self.MAX_DURATION}]"
+            )
         self._time_remaining.value = value
 
     def is_valid_frequency(self, frequency: int) -> bool:
         try:
-            return int(frequency) >= self.MIN_FREQUENCY and int(frequency) <= self.MAX_FREQUENCY
+            return (
+                int(frequency) >= self.MIN_FREQUENCY
+                and int(frequency) <= self.MAX_FREQUENCY
+            )
         except:
             return False
 
     def is_valid_duration(self, duration: int) -> bool:
         try:
-            return int(duration) >= self.MIN_DURATION and int(duration) <= self.MAX_DURATION
+            return (
+                int(duration) >= self.MIN_DURATION
+                and int(duration) <= self.MAX_DURATION
+            )
         except:
             return False
 

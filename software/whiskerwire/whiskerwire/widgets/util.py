@@ -1,19 +1,20 @@
 from re import sub
 
+
 def to_valid_identifier(s: str) -> str:
     """
     Convert a string to a valid identifier.
-    
+
     This function transforms the input string into a format suitable for identifiers by:
     - Converting the string to lowercase.
     - Replacing spaces with hyphens.
     - Removing or replacing any invalid characters (anything other than letters, digits, or hyphens).
     - Stripping leading and trailing hyphens.
     - Reducing multiple consecutive hyphens to a single hyphen.
-    
+
     Args:
         s (str): The input string to convert.
-    
+
     Returns:
         str: The transformed string as a valid identifier.
     """
@@ -21,22 +22,23 @@ def to_valid_identifier(s: str) -> str:
     s = s.lower()
 
     # Replace spaces with hyphens
-    s = s.replace(' ', '-')
+    s = s.replace(" ", "-")
 
     # Replace any remaining invalid characters with hyphens (retain only letters, digits, and hyphens)
-    s = sub(r'[^a-z0-9-]+', '-', s)
+    s = sub(r"[^a-z0-9-]+", "-", s)
 
     # Remove leading and trailing hyphens
-    s = s.strip('-')
+    s = s.strip("-")
 
     # Replace multiple consecutive hyphens with a single hyphen
-    s = sub(r'-+', '-', s)
+    s = sub(r"-+", "-", s)
 
     return s
 
+
 def represents_int(s: str):
     """
-    Similar to the builtin str.isdigit() method, but acounts for the 
+    Similar to the builtin str.isdigit() method, but acounts for the
     possibility of negative integers - which isdigit() does not.
 
     Args:

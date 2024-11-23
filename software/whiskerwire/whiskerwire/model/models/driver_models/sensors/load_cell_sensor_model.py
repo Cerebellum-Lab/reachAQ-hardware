@@ -9,6 +9,7 @@ class LoadCellSensorModel(SensorModel):
     Model representing a load cell sensor, inheriting from SensorModel.
     Provides a method to update the sensor's value based on a LoadCellRead message.
     """
+
     SETTINGS_KEY = "Load Cell Sensor"
 
     def __init__(self, name: str, instance: int):
@@ -32,4 +33,6 @@ class LoadCellSensorModel(SensorModel):
         Args:
             msg (LoadCellRead): The message containing load cell data in millivolts.
         """
-        self.sensor_value = msg.load_mv  # Set sensor value directly from message load in mV
+        self.sensor_value = (
+            msg.load_mv
+        )  # Set sensor value directly from message load in mV

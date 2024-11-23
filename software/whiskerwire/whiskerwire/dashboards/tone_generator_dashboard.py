@@ -11,12 +11,13 @@ class ToneGeneratorDashboard(StatusWidgetDashboard):
     Dashboard to manage and control tone generators, providing an interface to send frequency and duration
     commands to each tone generator widget.
     """
+
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
 
     def __init__(self, tone_generators: list[ToneGeneratorStatusWidget], **kwargs):
         """
         Initialize the ToneGeneratorDashboard.
-        
+
         Args:
             tone_generators (list[ToneGeneratorStatusWidget]): A list of tone generator status widgets to display in the dashboard.
             write (callable): Function to send a tone write command to the tone generators.

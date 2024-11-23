@@ -11,10 +11,12 @@ from ..model.models.driver_models.microphone.microphone_model import MicrophoneM
 class GraphWidget(Widget):
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
 
-    def __init__(self, model: SensorModel | MicrophoneModel, marker: str = "braille", **kwargs):
+    def __init__(
+        self, model: SensorModel | MicrophoneModel, marker: str = "braille", **kwargs
+    ):
         """
         Initialize the GraphWidget with a data model, optional y-axis limits, and a marker style.
-        
+
         Args:
             model (SensorModel): The data model containing sensor readings for the graph.
             y_min (float | None): Optional minimum value for the y-axis.
@@ -49,7 +51,7 @@ class GraphWidget(Widget):
     def compose(self) -> ComposeResult:
         """
         Compose the layout of the GraphWidget, including the plot element.
-        
+
         Yields:
             PlotextPlot: The plot element configured for displaying sensor data.
         """

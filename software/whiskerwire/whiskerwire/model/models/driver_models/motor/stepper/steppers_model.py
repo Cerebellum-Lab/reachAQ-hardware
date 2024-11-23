@@ -69,10 +69,12 @@ class SteppersModel(MotorsModel):
         """
         stepper = self.get_motor(msg.motor_id)
         if stepper is not None:
-            stepper.status, stepper.homing_status, stepper.position, stepper.limit_switch = (msg.status,
-            msg.homing_status,
-            msg.position,
-            msg.limit_switch)
+            (
+                stepper.status,
+                stepper.homing_status,
+                stepper.position,
+                stepper.limit_switch,
+            ) = (msg.status, msg.homing_status, msg.position, msg.limit_switch)
 
     def update_from_cfg_message(self, msg: JerryCANCfgMsg.StepperCfg):
         """
@@ -86,4 +88,14 @@ class SteppersModel(MotorsModel):
         """
         stepper = self.get_motor(msg.motor_id)
         if stepper is not None:
-            stepper.microsteps, stepper.steps_per_revolution, stepper.max_velocity, stepper.max_acceleration = msg.min_step_inverse, msg.steps_per_revolution, msg.max_velocity, msg.max_acceleration
+            (
+                stepper.microsteps,
+                stepper.steps_per_revolution,
+                stepper.max_velocity,
+                stepper.max_acceleration,
+            ) = (
+                msg.min_step_inverse,
+                msg.steps_per_revolution,
+                msg.max_velocity,
+                msg.max_acceleration,
+            )

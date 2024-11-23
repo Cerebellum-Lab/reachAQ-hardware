@@ -10,7 +10,7 @@ class InputGPIOStatusWidget(GPIOStatusWidget):
     def __init__(self, model: GPIOModel, **kwargs):
         """
         Initialize the InputGPIOStatusWidget with a GPIO model.
-        
+
         Args:
             model (GPIOModel): The data model containing the GPIO pin's properties.
             **kwargs: Additional keyword arguments for widget customization.

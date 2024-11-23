@@ -12,7 +12,7 @@ from textual.color import Color
 logger = logging.getLogger("WhiskerWire")
 
 
-# CommandValueWidget class for capturing user input commands and displaying input fields 
+# CommandValueWidget class for capturing user input commands and displaying input fields
 # with a submission button in the WhiskerWire application.
 class CommandValueWidget(Widget):
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
@@ -21,11 +21,17 @@ class CommandValueWidget(Widget):
         HORIZONTAL = 0
         VERTICAL = 1
 
-    def __init__(self, widget_name: str, placeholders: list[str], orientation=Orientation.HORIZONTAL, action=None,
-                 **kwargs):
+    def __init__(
+        self,
+        widget_name: str,
+        placeholders: list[str],
+        orientation=Orientation.HORIZONTAL,
+        action=None,
+        **kwargs,
+    ):
         """
         Initialize the CommandValueWidget with a widget name and input placeholders.
-        
+
         Args:
             widget_name (str): The name of the widget, used for identification and border title.
             placeholders (list[str]): List of placeholder strings for each input field.
@@ -40,13 +46,21 @@ class CommandValueWidget(Widget):
         self.orientation = orientation
 
         # Button for submitting the input command
-        self.command_button = GlitchlessButton("Send", id=f"{self.id}-button", classes="command-value-button",
-                                               action=action)
+        self.command_button = GlitchlessButton(
+            "Send",
+            id=f"{self.id}-button",
+            classes="command-value-button",
+            action=action,
+        )
 
         # Create input fields with placeholders, each assigned a unique ID
         self.command_inputs: list[Input] = [
-            Input("", f"{placeholders[i]}", id=to_valid_identifier(f"{placeholders[i]}-input"),
-                  classes="command-value-input")
+            Input(
+                "",
+                f"{placeholders[i]}",
+                id=to_valid_identifier(f"{placeholders[i]}-input"),
+                classes="command-value-input",
+            )
             for i in range(len(placeholders))
         ]
 
@@ -54,23 +68,27 @@ class CommandValueWidget(Widget):
         """
         Compose the layout of the CommandValueWidget.
         Includes a horizontal arrangement of the "Send" button and input fields.
-        
+
         Yields:
             Horizontal: Container holding the button and input fields.
         """
         if self.orientation == self.Orientation.HORIZONTAL:
             yield Horizontal(
-                self.command_button, *self.command_inputs, classes="command-value-container"
+                self.command_button,
+                *self.command_inputs,
+                classes="command-value-container",
             )
         else:
             yield Vertical(
-                *self.command_inputs, self.command_button, classes="command-value-container"
+                *self.command_inputs,
+                self.command_button,
+                classes="command-value-container",
             )
 
     def get_values(self) -> dict[str, str]:
         """
         Retrieve the current values from all input fields in the widget.
-        
+
         Returns:
             dict[str, str]: A dictionary where keys are input IDs, and values are the input values.
         """

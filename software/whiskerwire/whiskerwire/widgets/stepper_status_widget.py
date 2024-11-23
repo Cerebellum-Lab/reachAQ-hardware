@@ -19,11 +19,18 @@ DEFAULT_STEPPER_JOG_MAX_ACCELERATION = 100
 class StepperStatusWidget(MotorStatusWidget):
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
 
-    def __init__(self, model: StepperModel, move: callable, home: callable, read_config: callable,
-                 write_config: callable, **kwargs):
+    def __init__(
+        self,
+        model: StepperModel,
+        move: callable,
+        home: callable,
+        read_config: callable,
+        write_config: callable,
+        **kwargs,
+    ):
         """
         Initialize the StepperStatusWidget with a stepper model and optional configurations.
-        
+
         Args:
             model (StepperModel): The data model containing stepper motor attributes.
             **kwargs: Additional keyword arguments for widget customization.
@@ -31,17 +38,32 @@ class StepperStatusWidget(MotorStatusWidget):
         super().__init__(model, move, *kwargs)
 
         # Static displays for limit switch status and homing status
-        self.limit_switch_display = Static(id="stepper-limit-switch-display", classes="status-display")
-        self.homing_status_display = Static(id="stepper-homing-status-display", classes="status-display")
+        self.limit_switch_display = Static(
+            id="stepper-limit-switch-display", classes="status-display"
+        )
+        self.homing_status_display = Static(
+            id="stepper-homing-status-display", classes="status-display"
+        )
 
         # Button to trigger homing operation
-        self.home_negative_button = GlitchlessButton("Home-", classes="home-button", id="negative-home-button",
-                                                     action=partial(home, motor_id=self.model.instance, forward=False))
-        self.home_positive_button = GlitchlessButton("Home+", classes="home-button", id="positive-home-button",
-                                                     action=partial(home, motor_id=self.model.instance, forward=True))
+        self.home_negative_button = GlitchlessButton(
+            "Home-",
+            classes="home-button",
+            id="negative-home-button",
+            action=partial(home, motor_id=self.model.instance, forward=False),
+        )
+        self.home_positive_button = GlitchlessButton(
+            "Home+",
+            classes="home-button",
+            id="positive-home-button",
+            action=partial(home, motor_id=self.model.instance, forward=True),
+        )
 
-        self.config_widget = StepperConfigWidget(self.model, partial(read_config, motor_id=self.model.instance),
-                                                 partial(write_config, motor_id=self.model.instance))
+        self.config_widget = StepperConfigWidget(
+            self.model,
+            partial(read_config, motor_id=self.model.instance),
+            partial(write_config, motor_id=self.model.instance),
+        )
 
         self.hidable_items.append(self.config_widget)
 
@@ -62,7 +84,7 @@ class StepperStatusWidget(MotorStatusWidget):
         """
         Compose the layout of the StepperStatusWidget.
         Includes the motor title, status, position, limit switch, homing status, and jog controls.
-        
+
         Yields:
             Static and other widgets: The title, status displays, limit switch, homing status, jog controls, and home button.
         """
@@ -73,7 +95,7 @@ class StepperStatusWidget(MotorStatusWidget):
                 self.position_display,  # Motor position display
                 self.limit_switch_display,  # Limit switch status display
                 self.homing_status_display,  # Homing status display
-                classes="stepper-status-widget-container"
+                classes="stepper-status-widget-container",
             )
         else:
             yield Horizontal(
@@ -84,15 +106,18 @@ class StepperStatusWidget(MotorStatusWidget):
                     self.limit_switch_display,  # Limit switch status display
                     self.homing_status_display,  # Homing status display
                     # Display jog controls, command position input, and home button if selected
-                    Horizontal(self.home_negative_button, self.home_positive_button, classes="home-buttons-container"),
+                    Horizontal(
+                        self.home_negative_button,
+                        self.home_positive_button,
+                        classes="home-buttons-container",
+                    ),
                     self.jog_buttons.compose_jog_buttons(),
-                    classes="stepper-status-widget-container"
+                    classes="stepper-status-widget-container",
                 ),
                 Container(
-                    self.config_widget,
-                    classes="stepper-status-widget-container"
+                    self.config_widget, classes="stepper-status-widget-container"
                 ),
-                classes="stepper-status-widget-container"
+                classes="stepper-status-widget-container",
             )
             yield self.command_position_widget
 
