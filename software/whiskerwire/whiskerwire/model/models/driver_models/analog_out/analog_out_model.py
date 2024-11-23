@@ -1,6 +1,7 @@
 from pyjerrycan import AnalogOut
+
 from ....watchable import Watchable
-from .....config import settings
+from .....config import get_settings
 
 
 class AnalogOutModel:
@@ -8,8 +9,7 @@ class AnalogOutModel:
     Model representing the analog out driver, managing attributes such as 
     name, instance, minimum/maximum values, and the current output value in millivolts (mV).
     """
-    MIN_OUTPUT_VALUE = settings["Analog Out"]["Min Output Value"]
-    MAX_OUTPUT_VALUE = settings["Analog Out"]["Max Output Value"]
+    SETTINGS_KEY = "Analog Out"
 
     def __init__(self, name: str, instance: int):
         """
@@ -19,6 +19,10 @@ class AnalogOutModel:
             name (str): The name of the analog out component.
             instance (int): The instance number of the analog out component.
         """
+
+        settings = get_settings()
+        self.MIN_OUTPUT_VALUE = settings[self.SETTINGS_KEY]["Min Output Value"]
+        self.MAX_OUTPUT_VALUE = settings[self.SETTINGS_KEY]["Max Output Value"]
 
         # Read-only attributes
         self._name = name

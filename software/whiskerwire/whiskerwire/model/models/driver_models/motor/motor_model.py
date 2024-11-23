@@ -1,6 +1,7 @@
-from ....watchable import Watchable
-from .....config import settings
 import logging
+
+from ....watchable import Watchable
+from .....config import get_settings
 
 logger = logging.getLogger("WhiskerWire")
 
@@ -35,6 +36,7 @@ class MotorModel:
         if not self.SETTINGS_KEY:
             raise NotImplementedError(f"The class {self.__class__} does not define a SETTINGS_KEY")
 
+        settings = get_settings()
         self.MIN_POSITION = settings[self.SETTINGS_KEY]["Min Position"]
         self.MAX_POSITION = settings[self.SETTINGS_KEY]["Max Position"]
         self.MIN_VELOCITY = settings[self.SETTINGS_KEY]["Min Velocity"]

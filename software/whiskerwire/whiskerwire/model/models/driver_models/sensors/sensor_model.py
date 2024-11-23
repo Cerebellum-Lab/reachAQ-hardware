@@ -1,7 +1,7 @@
 from collections import deque
-from time import time
+
 from ....watchable import Watchable
-from .....config import settings
+from .....config import get_settings
 
 
 class SensorModel:
@@ -24,6 +24,7 @@ class SensorModel:
             instance (int): The instance ID of the sensor.
             max_data_points (int): The maximum number of data points to retain for historical data (default is 30).
         """
+        settings = get_settings()
         self.MAX_DATA_POINTS = settings[self.SETTINGS_KEY]["Graph"]["Max Data Points"]
         self.Y_MIN = settings[self.SETTINGS_KEY]["Graph"]["Y Min"]
         self.Y_MAX = settings[self.SETTINGS_KEY]["Graph"]["Y Max"]

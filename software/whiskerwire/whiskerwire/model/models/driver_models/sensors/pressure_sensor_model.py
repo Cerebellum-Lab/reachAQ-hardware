@@ -1,6 +1,7 @@
-from .sensor_model import SensorModel
 from pyjerrycan import PressureRead
-from .....config import settings
+
+from .sensor_model import SensorModel
+from .....config import get_settings
 
 
 class PressureSensorModel(SensorModel):
@@ -18,6 +19,7 @@ class PressureSensorModel(SensorModel):
             name (str): The name of the pressure sensor.
             instance (int): The instance ID of the pressure sensor.
         """
+        settings = get_settings()
         self.MAX_DATA_POINTS = settings["Pressure Sensor"]["Graph"]["Max Data Points"]
         self.MIN_UPDATE_PERIOD = settings["Pressure Sensor"]["Min Update Period"]
 

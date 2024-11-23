@@ -1,6 +1,6 @@
-from .sensor_model import SensorModel
 from pyjerrycan import TempHumRead
-from .....config import settings
+
+from .sensor_model import SensorModel
 
 
 class HumiditySensorModel(SensorModel):

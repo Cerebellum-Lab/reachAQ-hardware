@@ -1,7 +1,6 @@
-from logging import config
 from ..motor_model import MotorModel
 from .....watchable import Watchable
-from ......config import settings
+from ......config import get_settings
 
 
 class ServoModel(MotorModel):
@@ -10,9 +9,6 @@ class ServoModel(MotorModel):
     Sets default commandable position limits specific to servos.
     """
     SETTINGS_KEY = "Servo Motor"
-
-    MIN_PWM_DURATION = settings["Servo Motor"]["Min PWM Duration"]
-    MAX_PWM_DURATION = settings["Servo Motor"]["Max PWM Duration"]
 
     def __init__(self, name: str, instance: int):
         """
@@ -24,6 +20,10 @@ class ServoModel(MotorModel):
         """
 
         super().__init__(name, instance)  # , self.SETTINGS_KEY)
+
+        settings = get_settings()
+        self.MIN_PWM_DURATION = settings[self.SETTINGS_KEY]["Min PWM Duration"]
+        self.MAX_PWM_DURATION = settings[self.SETTINGS_KEY]["Max PWM Duration"]
 
         self._min_position = Watchable(0.0, only_on_change=False)
         self._max_position = Watchable(0.0, only_on_change=False)

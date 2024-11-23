@@ -1,6 +1,7 @@
-from .sensor_model import SensorModel
 from pyjerrycan import TempHumRead
-from .....config import settings
+
+from .sensor_model import SensorModel
+from .....config import get_settings
 
 
 class TemperatureSensorModel(SensorModel):
@@ -18,6 +19,7 @@ class TemperatureSensorModel(SensorModel):
             name (str): The name of the temperature sensor.
             instance (int): The instance ID of the temperature sensor.
         """
+        settings = get_settings()
         self.MAX_DATA_POINTS = settings["Temperature Sensor"]["Graph"]["Max Data Points"]
         self.MIN_UPDATE_PERIOD = settings["Temperature Sensor"]["Min Update Period"]
 

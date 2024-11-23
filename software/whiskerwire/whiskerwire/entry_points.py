@@ -10,3 +10,7 @@ def whiskerwire_app():
     logging.error("WhiskerWire")
     app = WhiskerWire()
     app.run()
+
+
+if __name__ == "__main__":
+    whiskerwire_app()

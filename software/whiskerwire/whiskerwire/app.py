@@ -1,22 +1,24 @@
-from textual.app import App, ComposeResult
-from textual.widgets import Header, Button
-from textual import on, work
-from textual.widgets import TabbedContent, TabPane, Static
-from textual.containers import Container
-from datetime import datetime
-from pyjerrycan import JerryCAN, JerryCANMsg, JerryCANCmdType
-from collections import OrderedDict
-from enum import Enum
+import asyncio
 import atexit
 import logging
 import os
 import time
-import asyncio
-from sys import exit
-from .config import settings
+import argparse
+from collections import OrderedDict
+from datetime import datetime
+from enum import Enum
 from functools import partial
-from .widgets.glitchless_button import GlitchlessButton
+
+from pyjerrycan import JerryCAN, JerryCANMsg
+from textual import on, work
+from textual.app import App, ComposeResult
+from textual.containers import Container
+from textual.widgets import Header, Button
+from textual.widgets import TabbedContent, TabPane, Static
+
+from .config import get_settings, load_settings
 from .utils import get_logger
+from .widgets.glitchless_button import GlitchlessButton
 
 # Application version information
 APP_VERSION_MAJOR = 1
@@ -72,13 +74,24 @@ CONNECTION_STATUS_COLOR_MAP = {
 class WhiskerWire(App):
     CSS_PATH = "static/styles.tcss"  # Path to CSS file for styling
 
-    HEARTBEAT_PERIOD = settings["Heartbeat Period"]
-
-    CONNECTION_STATUS_PERIOD = settings["Network"]["Connection Status Period"]
-    CONNECTION_TIMEOUT = settings["Network"]["Connection Timeout"]
-    SEARCHING_TIMEOUT = settings["Network"]["Searching Timeout"]
-
     def __init__(self, **kwargs):
+        parser = argparse.ArgumentParser(description="WhiskerWire Application")
+        parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose logging")
+        parser.add_argument("--config", "-c", type=str, help="Path to config file")
+        args = parser.parse_args()
+
+        if args.verbose:
+            logger.setLevel(logging.DEBUG)
+
+        if args.config:
+            load_settings(args.config)
+
+        settings = get_settings()
+        self.HEARTBEAT_PERIOD = settings["Heartbeat Period"]
+
+        self.CONNECTION_STATUS_PERIOD = settings["Network"]["Connection Status Period"]
+        self.CONNECTION_TIMEOUT = settings["Network"]["Connection Timeout"]
+        self.SEARCHING_TIMEOUT = settings["Network"]["Searching Timeout"]
 
         # Initialize application, set up title with version info
         super().__init__(**kwargs)

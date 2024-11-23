@@ -1,6 +1,7 @@
-from .sensor_model import SensorModel
 from pyjerrycan import LoadCellRead
-from .....config import settings
+
+from .sensor_model import SensorModel
+from .....config import get_settings
 
 
 class LoadCellSensorModel(SensorModel):
@@ -18,6 +19,7 @@ class LoadCellSensorModel(SensorModel):
             name (str): The name of the load cell sensor.
             instance (int): The instance ID of the load cell sensor.
         """
+        settings = get_settings()
         self.MAX_DATA_POINTS = settings["Load Cell Sensor"]["Graph"]["Max Data Points"]
         self.MIN_UPDATE_PERIOD = settings["Load Cell Sensor"]["Min Update Period"]
 

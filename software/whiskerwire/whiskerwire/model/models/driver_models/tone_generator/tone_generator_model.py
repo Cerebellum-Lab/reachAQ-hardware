@@ -1,7 +1,9 @@
-from pyjerrycan import Tone
 import logging
+
+from pyjerrycan import Tone
+
 from ....watchable import Watchable
-from .....config import settings
+from .....config import get_settings
 
 logger = logging.getLogger("WhiskerWire")
 
@@ -11,11 +13,7 @@ class ToneGeneratorModel:
     Model representing a tone generator.
     Provides methods for setting frequency and duration within defined limits and for updating from CAN messages.
     """
-    MIN_FREQUENCY = settings["Tone Generator"]["Min Frequency"]
-    MAX_FREQUENCY = settings["Tone Generator"]["Max Frequency"]
-    MIN_DURATION = settings["Tone Generator"]["Min Duration"]
-    MAX_DURATION = settings["Tone Generator"]["Max Duration"]
-    INTERPOLATION_INTERVAL = settings["Tone Generator"]["Interpolation Interval"]
+    SETTINGS_KEY = "Tone Generator"
 
     def __init__(self, name: str, instance: int):
         """
@@ -25,6 +23,13 @@ class ToneGeneratorModel:
             name (str): The name of the tone generator.
             instance (int): The instance ID of the tone generator.
         """
+        settings = get_settings()
+        self.MIN_FREQUENCY = settings[self.SETTINGS_KEY]["Min Frequency"]
+        self.MAX_FREQUENCY = settings[self.SETTINGS_KEY]["Max Frequency"]
+        self.MIN_DURATION = settings[self.SETTINGS_KEY]["Min Duration"]
+        self.MAX_DURATION = settings[self.SETTINGS_KEY]["Max Duration"]
+        self.INTERPOLATION_INTERVAL = settings[self.SETTINGS_KEY]["Interpolation Interval"]
+
         # Read-only attributes
         self._name = name  # Name of the tone generator
         self._instance = instance  # Unique identifier for this instance

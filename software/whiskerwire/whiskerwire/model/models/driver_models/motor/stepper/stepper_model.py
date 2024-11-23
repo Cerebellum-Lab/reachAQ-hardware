@@ -1,8 +1,8 @@
-from multiprocessing import Value
-from ..motor_model import MotorModel
 import logging
+
+from ..motor_model import MotorModel
 from .....watchable import Watchable
-from ......config import settings
+from ......config import get_settings
 
 logger = logging.getLogger("WhiskerWire")
 
@@ -14,9 +14,6 @@ class StepperModel(MotorModel):
     """
     SETTINGS_KEY = "Stepper Motor"
 
-    MIN_STEPS_PER_REVOLUTION = settings[SETTINGS_KEY]["Min Steps per Revolution"]
-    MAX_STEPS_PER_REVOLUTION = settings[SETTINGS_KEY]["Max Steps per Revolution"]
-
     def __init__(self, name: str, instance: int):
         """
         Initialize the StepperModel with a name, instance, and predefined position limits.
@@ -26,6 +23,10 @@ class StepperModel(MotorModel):
             instance (int): The instance ID of the stepper motor.
         """
         super().__init__(name, instance)  # , self.SETTINGS_KEY)
+
+        settings = get_settings()
+        self.MIN_STEPS_PER_REVOLUTION = settings[self.SETTINGS_KEY]["Min Steps per Revolution"]
+        self.MAX_STEPS_PER_REVOLUTION = settings[self.SETTINGS_KEY]["Max Steps per Revolution"]
 
         self._limit_switch = Watchable(False)  # Indicates whether the limit switch is activated
         self._homing_status = Watchable(None)
