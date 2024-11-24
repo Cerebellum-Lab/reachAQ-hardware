@@ -13,11 +13,16 @@ RUN apt update && \
     DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
     build-essential \
     git \
-    cmake \
     ninja-build \
     wget \
     python3 \
     python3-dev \
     python3-pip
+
+# Install a recent version of cmake
+RUN cd /usr/local && \
+    wget https://github.com/Kitware/CMake/releases/download/v3.31.0/cmake-3.31.0-linux-x86_64.sh && \
+    /bin/sh cmake-3.31.0-linux-x86_64.sh --skip-license && \
+    rm cmake-3.31.0-linux-x86_64.sh
 
 RUN pip3 install pybind11 mypy pytest
