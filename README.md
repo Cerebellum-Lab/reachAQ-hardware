@@ -26,7 +26,7 @@ the [firmware/README.md](firmware/README.md) file.
 ```bash
 cmake -B build -GNinja -DCMAKE_INSTALL_PREFIX:PATH=../tmp
 ninja -C build
-ninja -C install
+ninja -C build install
 ```
 
 > **_NOTE:_** At various points in the build process, the console output may stop showing any updates for several
