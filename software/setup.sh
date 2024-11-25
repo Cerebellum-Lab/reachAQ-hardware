@@ -32,19 +32,30 @@ if [ -n "$VIRTUAL_ENV" ]; then
     deactivate
 fi
 
+if [ -d "whiskerwire/.venv" ]; then
+  echo -e "${GREEN}Found existing Virtual Environment!${ENDCOLOR}"
+else
+    echo -e "${CYAN}Could not find Virtual Environment, creating new one...${ENDCOLOR}"
+    echo -e "${YELLOW}Ignore the above message if this is your first time running this script${ENDCOLOR}"
+	
+    # Create Virtual Environment if it does not exist
+    python3 -m venv ./whiskerwire/.venv
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}Virtual Environment created successfully!${ENDCOLOR}"
+    else
+        echo -e "${RED}Creation of Virtual Environment failed with exit code $?${ENDCOLOR}"
+        exit
+    fi
+fi
+
+# Activate Virtual Environment
 source ./whiskerwire/.venv/bin/activate
 
-echo -e "${GREEN}Virtual Environment activated successfully!${ENDCOLOR}"
-
-echo -e "${CYAN}Installing Python requirements...${ENDCOLOR}"
-
-pip install -r ./whiskerwire/requirements.txt
-
 if [ $? -eq 0 ]; then
-    echo -e "${GREEN}Requirements installed successfully!${ENDCOLOR}"
+    echo -e "${GREEN}Virtual Environment activated successfully!${ENDCOLOR}"
 else
-    echo -e "${RED}Failed to install requirements - pip failed with exit code $?${ENDCOLOR}"
-    exit
+    echo -e "${RED}Virtual Environment activation failed with exit code $?${ENDCOLOR}"
 fi
 
 echo -e "${CYAN}Installing PyJerryCAN...${ENDCOLOR}"
@@ -62,6 +73,23 @@ else
     else
 	    echo -e "${RED}PyJerryCAN installation failed with exit code $?${ENDCOLOR}"
     	    exit
+    fi
+fi
+
+echo -e "${CYAN}Installing WhiskerWire...${ENDCOLOR}"
+
+WHISKERWIRE_VERSION=$(pip show "whiskerwire" 2>/dev/null | grep "^Version:" | awk '{print $2}')
+
+if [ -n "$WHISKERWIRE_VERSION" ]; then
+    echo -e "${GREEN}Existing installation of WhiskerWire found in Virtual Environment: whiskerwire==$WHISKERWIRE_VERSION${ENDCOLOR}"
+    echo -e "${YELLOW}If you are unsure if this the latest version, run 'pip install -e ./whiskerwire' - or run 'pip uninstall whiskerwire' and then run this script again${ENDCOLOR}"
+else
+    pip install -e ./whiskerwire
+    if [ $? -eq 0 ]; then
+	echo -e "${GREEN}WhiskerWire installed successfully!${ENDCOLOR}"
+    else
+	echo -e "${RED}WhiskerWire installation failed with exit code $?${ENDCOLOR}"
+	exit
     fi
 fi
 
