@@ -108,6 +108,12 @@ int ll_motor_start_dma(const struct device *dev) {
     return 0;
 }
 
+// Return the number of blocks that are in the motor movement queue
+int ll_motor_queue_get_num_used(const struct device *dev) {
+    const ll_motor_cfg_t *cfg = dev->config;
+    return k_msgq_num_used_get(cfg->msgq);
+}
+
 int ll_motor_queue_data(const struct device *dev, uint32_t *buf, size_t len, k_timeout_t timeout) {
     const ll_motor_cfg_t *cfg = dev->config;
     ll_motor_data_t *data = dev->data;

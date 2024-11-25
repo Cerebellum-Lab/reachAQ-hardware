@@ -247,11 +247,11 @@ static float time_at_displacement_hat(const float displacement_hat, const float 
         const float ret = acceleration_region_halleys_method(displacement_hat, min_step, timer_increment, context);
         if (ret == NAN) {
             /* Apparently invalid. Try the next region. N.B.--This should never happen. */
-            return context->sgn * ((displacement_hat - context->y_s) / context->v_w + context->t_s);
+            return ((displacement_hat - context->y_s) / context->v_w + context->t_s);
         }
         return ret;
     } else if (displacement_hat <= context->y_f - context->y_a) {
-        return context->sgn * ((displacement_hat - context->y_s) / context->v_w + context->t_s);
+        return ((displacement_hat - context->y_s) / context->v_w + context->t_s);
     } else if (displacement_hat < context->y_f) {
         const float reflected_displacement = context->y_f - displacement_hat;
         return context->t_t -
@@ -289,8 +289,8 @@ ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, const si
     const float servo_entries_per_second = 50.0f;
     BUILD_ASSERT(servo_time_step == 1.0f / servo_entries_per_second,
                  "Servo time step must be 1 / servo_entries_per_second");
-    size_t n_entries = (size_t)((context->motion_profile.t_t - context->last_time_generated) *
-                                servo_entries_per_second);  // 50 = 1 / time_step
+    size_t n_entries =
+        (size_t)((context->motion_profile.t_t - context->last_time_generated) * servo_entries_per_second);
     if (n_entries > table_size) {
         n_entries = table_size;
     }

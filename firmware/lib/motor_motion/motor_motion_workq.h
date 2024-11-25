@@ -23,10 +23,10 @@ struct servo_work_context {
     servo_buffer_set buffers;
     size_t current_buffer;
     ssize_t last_calculation_ret;
-    atomic_flag dma_in_use;
     atomic_flag e_stop_triggered;
+    bool motion_done;
     bool motion_calculation_done;
-    struct k_work calculation_work;
+    struct k_work_delayable calculation_work;
     struct k_work_delayable submission_work;
     ll_servo_cb_t servo_cb;
 };
@@ -37,13 +37,12 @@ struct stepper_work_context {
     stepper_buffer_set buffers;
     size_t current_buffer;
     ssize_t last_calculation_ret;
-    atomic_flag dma_in_use;
     atomic_flag e_stop_triggered;
     atomic_flag homing_in_progress;
     _Atomic ll_stepper_dir_t homing_direction;
+    bool motion_done;
     bool motion_calculation_done;
-    struct k_work calculation_work;
-    struct k_work_delayable submission_work;
+    struct k_work_delayable calculation_work;
     struct k_work_delayable check_driver_work;
     ll_stepper_cb_t stepper_cb;
 };

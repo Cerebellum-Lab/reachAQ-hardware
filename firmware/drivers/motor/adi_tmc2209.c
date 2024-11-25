@@ -388,12 +388,13 @@ int adi_tmc2209_set_ihold_irun(const struct device *dev, const uint8_t hold_curr
 }
 
 int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per_fullstep) {
+    const adi_tmc2209_config_t *config = dev->config;
     struct CHOPCONF_data_fields chopconf_data = {0};
 
     int ret = adi_tmc2209_read(dev, REG_CHOPCONF, (unsigned char *)&chopconf_data);
 
     if (ret < 0) {
-        LOG_ERR("Failed (%d) to read chopconf data", ret);
+        LOG_ERR("[Dev: %d] Failed (%d) to read chopconf data", config->address, ret);
         return -EIO;
     }
 
@@ -428,7 +429,7 @@ int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per
             mres = 0;
             break;
         default:
-            LOG_ERR("Invalid microstep: %u", steps_per_fullstep);
+            LOG_ERR("[Dev: %d] Invalid microstep: %u", config->address, steps_per_fullstep);
             return -EINVAL;
     }
 

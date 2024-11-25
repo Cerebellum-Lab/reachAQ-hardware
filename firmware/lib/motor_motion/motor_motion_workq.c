@@ -74,17 +74,10 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
      .buffers = {{0}},                                                                       \
      .current_buffer = 0,                                                                    \
      .last_calculation_ret = 0,                                                              \
-     .dma_in_use = {.__val = 0},                                                             \
      .e_stop_triggered = {.__val = 0},                                                       \
+     .motion_done = true,                                                                    \
      .motion_calculation_done = true,                                                        \
      .calculation_work =                                                                     \
-         {                                                                                   \
-             .node = {.next = NULL},                                                         \
-             .handler = NULL,                                                                \
-             .queue = NULL,                                                                  \
-             .flags = 0,                                                                     \
-         },                                                                                  \
-     .submission_work =                                                                      \
          {                                                                                   \
              .work =                                                                         \
                  {                                                                           \
@@ -134,17 +127,10 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
      .buffers = {{0}},                                                                       \
      .current_buffer = 0,                                                                    \
      .last_calculation_ret = 0,                                                              \
-     .dma_in_use = {.__val = 0},                                                             \
      .e_stop_triggered = {.__val = 0},                                                       \
+     .motion_done = true,                                                                    \
      .motion_calculation_done = true,                                                        \
      .calculation_work =                                                                     \
-         {                                                                                   \
-             .node = {.next = NULL},                                                         \
-             .handler = NULL,                                                                \
-             .queue = NULL,                                                                  \
-             .flags = 0,                                                                     \
-         },                                                                                  \
-     .submission_work =                                                                      \
          {                                                                                   \
              .work =                                                                         \
                  {                                                                           \
@@ -210,7 +196,7 @@ void stepper_set_position_to_zero(const struct device *dev) {
     }
 
     motor_motion_stepper_set_current_position(&context->context, 0.0f);
-    context->motion_calculation_done = true;
+    context->motion_done = true;
 }
 
 void servo_set_position_to_zero(const struct device *dev) {
@@ -230,29 +216,51 @@ void servo_set_position_to_zero(const struct device *dev) {
 #define REVOLUTIONS_BACKWARDS_AFTER_HOMING 2
 static void stepper_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
                                          void *user_data) {
+    // Due to the limitations of the GPIO callback mechanism, this data is only available
+    // in DMA queue events, not the limit switch event.
+    struct stepper_work_context *context = user_data;
+
     switch (event) {
         case LL_MOTOR_EVENT_DMA_BLOCK_COMPLETE:
-            break;
-        case LL_MOTOR_EVENT_DMA_QUEUE_EMPTY: {
-            // Due to the limitations of the GPIO callback mechanism, this data is only available
-            // in DMA queue events, not the limit switch event.
-            struct stepper_work_context *context = user_data;
-            if (context != NULL) {
-                atomic_flag_clear(&context->dma_in_use);
+            // When a block has been completed, the buffer is free to use for the next calculation, if needed
+            LOG_DBG("DMA block complete");
+            if (context != NULL && !context->motion_calculation_done) {
+                k_work_schedule_for_queue(&motor_workq, &context->calculation_work, K_NO_WAIT);
             }
             break;
-        }
+        case LL_MOTOR_EVENT_DMA_QUEUE_EMPTY:
+            LOG_DBG("MOTION_DONE");
+            if (context != NULL) {
+                // When the driver runs out of data to send, the motion is done
+                context->motion_done = true;
+
+                // TODO: Need Jacob to validate if this makes sense- I do not have a setup to test
+                // If homing was in progress, mark the final position
+                if (atomic_flag_test_and_set(&context->homing_in_progress)) {
+                    stepper_set_position_to_zero(context->dev);
+                    stepper_set_parameters(context->dev, context->context.motion_profile.v_max * 4.0f, -1.0f, -1.0f,
+                                           -1.0f);
+                }
+                atomic_flag_clear(&context->homing_in_progress);
+            }
+            break;
         case LL_MOTOR_EVENT_LIMIT_SWITCH:
             LOG_DBG("Limit switch event");
             stepper_motor_stop(dev);
             stepper_cancel_all_work(dev);
-            struct stepper_work_context *context = find_stepper_context_from_device(dev);
-            if (atomic_flag_test_and_set(&context->homing_in_progress)) {
-                stepper_move_relative(dev, context->homing_direction == LL_STEPPER_DIR_FORWARD
-                                               ? -REVOLUTIONS_BACKWARDS_AFTER_HOMING
-                                               : REVOLUTIONS_BACKWARDS_AFTER_HOMING);
-            } else {
-                atomic_flag_clear(&context->homing_in_progress);
+            context = find_stepper_context_from_device(dev);
+
+            if (context != NULL) {
+                context->motion_done = true;
+                context->motion_calculation_done = true;
+                // TODO: Get a comment in here about what is going on
+                if (atomic_flag_test_and_set(&context->homing_in_progress)) {
+                    stepper_move_relative(dev, context->homing_direction == LL_STEPPER_DIR_FORWARD
+                                                   ? -REVOLUTIONS_BACKWARDS_AFTER_HOMING
+                                                   : REVOLUTIONS_BACKWARDS_AFTER_HOMING);
+                } else {
+                    atomic_flag_clear(&context->homing_in_progress);
+                }
             }
             break;
         default:
@@ -265,13 +273,20 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
 #ifdef CONFIG_DT_HAS_LL_SERVO_ENABLED
 static void servo_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
                                        void *user_data) {
+    struct servo_work_context *context = user_data;
+
     switch (event) {
         case LL_MOTOR_EVENT_DMA_BLOCK_COMPLETE:
+            // When a block has been completed, the buffer is free to use for the next calculation, if needed
+            LOG_WRN("DMA block complete");
+            if (context != NULL && !context->motion_calculation_done) {
+                k_work_schedule_for_queue(&motor_workq, &context->calculation_work, K_NO_WAIT);
+            }
             break;
         case LL_MOTOR_EVENT_DMA_QUEUE_EMPTY: {
-            struct servo_work_context *context = user_data;
+            LOG_WRN("MOTION_DONE");
             if (context != NULL) {
-                atomic_flag_clear(&context->dma_in_use);
+                context->motion_done = true;
             }
             break;
         }
@@ -291,23 +306,23 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
 
 void stepper_cancel_all_work(const struct device *dev) {
     struct stepper_work_context *context = find_stepper_context_from_device(dev);
-    k_work_cancel(&context->calculation_work);
-    k_work_cancel_delayable(&context->submission_work);
+    k_work_cancel_delayable(&context->calculation_work);
     k_work_cancel_delayable(&context->check_driver_work);
-    atomic_flag_clear(&context->dma_in_use);
-    context->motion_calculation_done = false;
+    context->motion_done = true;
+    context->motion_calculation_done = true;
 }
 
 void servo_cancel_all_work(const struct device *dev) {
     struct servo_work_context *context = find_servo_context_from_device(dev);
-    k_work_cancel(&context->calculation_work);
-    k_work_cancel_delayable(&context->submission_work);
-    atomic_flag_clear(&context->dma_in_use);
-    context->motion_calculation_done = false;
+    k_work_cancel_delayable(&context->calculation_work);
+    context->motion_done = true;
+    context->motion_calculation_done = true;
 }
 
 static void servo_work_calculation_handler(struct k_work *work) {
-    struct servo_work_context *context = CONTAINER_OF(work, struct servo_work_context, calculation_work);
+    struct k_work_delayable *dwork = k_work_delayable_from_work(work);
+    struct servo_work_context *context = CONTAINER_OF(dwork, struct servo_work_context, calculation_work);
+
     const ssize_t ret = motor_motion_servo_generate_displacement_table(context->buffers[context->current_buffer],
                                                                        SERVO_BUFFER_SIZE, &context->context);
     context->last_calculation_ret = ret;
@@ -316,73 +331,45 @@ static void servo_work_calculation_handler(struct k_work *work) {
         return;
     }
 
-    if (ret < SERVO_BUFFER_SIZE) {
-        context->motion_calculation_done = true;
-    }
-
-    if (ret > 0) {
-        k_work_schedule_for_queue(&motor_workq, &context->submission_work, K_NO_WAIT);
-    }
-}
-
-static void servo_work_submission_handler(struct k_work *work) {
-    struct k_work_delayable *dwork = k_work_delayable_from_work(work);
-    struct servo_work_context *context = CONTAINER_OF(dwork, struct servo_work_context, submission_work);
-
-    if (atomic_flag_test_and_set(&context->dma_in_use)) {
-        k_work_reschedule_for_queue(&motor_workq, dwork, K_MSEC(10));
-        return;
-    }
-
-    ll_queue_servo_positions(context->dev, context->buffers[context->current_buffer],
-                             context->last_calculation_ret * sizeof(uint32_t), K_FOREVER);
-    context->current_buffer = 1 - context->current_buffer;  // Alternate buffers
-
-    if (!context->motion_calculation_done) {
-        k_work_submit_to_queue(&motor_workq, &context->calculation_work);
-    }
-}
-
-static void stepper_work_calculation_handler(struct k_work *work) {
-    struct stepper_work_context *context = CONTAINER_OF(work, struct stepper_work_context, calculation_work);
-    const ssize_t ret = motor_motion_stepper_generate_timing_table(context->buffers[context->current_buffer],
-                                                                   STEPPER_BUFFER_SIZE, &context->context);
-    context->last_calculation_ret = ret;
-    if (ret < 0) {
-        LOG_ERR("Error generating servo table.");
-        return;
-    }
-
+    // Entire buffer wasn't needed which indicates all the steps have been planned and no more calculations are required
+    // If nothing was calculated, then the motor is already at the target position
     if (ret < STEPPER_BUFFER_SIZE) {
         context->motion_calculation_done = true;
     }
 
-    if (ret > 0) {
-        k_work_schedule_for_queue(&motor_workq, &context->submission_work, K_NO_WAIT);
-    }
+    // Add the buffer onto the servo driver queue
+    ll_queue_servo_positions(context->dev, context->buffers[context->current_buffer],
+                             context->last_calculation_ret * sizeof(uint32_t), K_FOREVER);
+
+    // Increment the buffer pointer
+    context->current_buffer = (context->current_buffer + 1) % BUFS_PER_MOTOR;
 }
 
-static void stepper_work_submission_handler(struct k_work *work) {
+static void stepper_work_calculation_handler(struct k_work *work) {
     struct k_work_delayable *dwork = k_work_delayable_from_work(work);
-    struct stepper_work_context *context = CONTAINER_OF(dwork, struct stepper_work_context, submission_work);
+    struct stepper_work_context *context = CONTAINER_OF(dwork, struct stepper_work_context, calculation_work);
 
-    if (atomic_flag_test_and_set(&context->dma_in_use)) {
-        k_work_reschedule_for_queue(&motor_workq, dwork, K_MSEC(10));
+    const ssize_t ret = motor_motion_stepper_generate_timing_table(context->buffers[context->current_buffer],
+                                                                   STEPPER_BUFFER_SIZE, &context->context);
+    context->last_calculation_ret = ret;
+    if (ret < 0) {
+        LOG_ERR("Error generating stepper table.");
         return;
     }
 
-    ll_queue_servo_positions(context->dev, context->buffers[context->current_buffer],
-                             context->last_calculation_ret * sizeof(uint32_t), K_FOREVER);
-    context->current_buffer = 1 - context->current_buffer;  // Alternate buffers
-    if (!context->motion_calculation_done) {
-        k_work_submit_to_queue(&motor_workq, &context->calculation_work);
-    } else {
-        if (atomic_flag_test_and_set(&context->homing_in_progress)) {
-            stepper_set_position_to_zero(context->dev);
-            stepper_set_parameters(context->dev, context->context.motion_profile.v_max * 4.0f, -1.0f, -1.0f, -1.0f);
-        }
-        atomic_flag_clear(&context->homing_in_progress);
+    // Entire buffer wasn't needed which indicates all the steps have been planned and no more calculations are required
+    // If nothing was calculated, then the motor is already at the target position
+    if (ret < STEPPER_BUFFER_SIZE) {
+        context->motion_calculation_done = true;
     }
+
+    // Add the buffer onto the stepper driver queue
+    LOG_DBG("Q buf %d [%p]", context->current_buffer, (void *)context->buffers[context->current_buffer]);
+    ll_queue_stepper_positions(context->dev, context->buffers[context->current_buffer],
+                               context->last_calculation_ret * sizeof(uint32_t), K_FOREVER);
+
+    // Increment the buffer pointer
+    context->current_buffer = (context->current_buffer + 1) % BUFS_PER_MOTOR;
 }
 
 static void stepper_work_check_driver_handler(struct k_work *work) {
@@ -417,14 +404,12 @@ static int motor_workq_init_and_start(void) {
     k_work_queue_init(&motor_workq);
 
     for (size_t i = 0; i < ARRAY_SIZE(stepper_contexts); i++) {
-        k_work_init(&stepper_contexts[i].calculation_work, stepper_work_calculation_handler);
-        k_work_init_delayable(&stepper_contexts[i].submission_work, stepper_work_submission_handler);
+        k_work_init_delayable(&stepper_contexts[i].calculation_work, stepper_work_calculation_handler);
         k_work_init_delayable(&stepper_contexts[i].check_driver_work, stepper_work_check_driver_handler);
     }
 
     for (size_t i = 0; i < ARRAY_SIZE(servo_contexts); i++) {
-        k_work_init(&servo_contexts[i].calculation_work, servo_work_calculation_handler);
-        k_work_init_delayable(&servo_contexts[i].submission_work, servo_work_submission_handler);
+        k_work_init_delayable(&servo_contexts[i].calculation_work, servo_work_calculation_handler);
     }
 
     int ret = settings_subsys_init();
@@ -443,7 +428,7 @@ static int motor_workq_init_and_start(void) {
         const ll_motor_cfg_t *motor_data = motor_dev->config;
         const struct device *stepper_driver_dev = motor_data->stepper_driver_device;
         if (stepper_driver_dev != NULL) {
-            adi_tmc2209_set_microstep(stepper_driver_dev, (uint32_t)(1.0f / context->context.min_step));
+            adi_tmc2209_set_microstep(stepper_driver_dev, (uint32_t)context->context.min_step);
         }
     }
 
@@ -508,7 +493,7 @@ int servo_move_to_position(const struct device *dev, const float target_position
         return -ENODEV;
     }
 
-    if (context->motion_calculation_done == false) {
+    if (context->motion_done == false) {
         LOG_ERR("Attempted to move motor while already in motion.");
         return -EBUSY;
     }
@@ -523,9 +508,31 @@ int servo_move_to_position(const struct device *dev, const float target_position
         return -EDOM;
     }
 
+    context->motion_done = false;
     context->motion_calculation_done = false;
 
-    k_work_submit_to_queue(&motor_workq, &context->calculation_work);
+    // Start calculating the motion profile and load as many blocks as possible
+    for (int i = 0; i < BUFS_PER_MOTOR; i++) {
+        const ssize_t gen_table_ret = motor_motion_servo_generate_displacement_table(
+            context->buffers[context->current_buffer], SERVO_BUFFER_SIZE, &context->context);
+        context->last_calculation_ret = gen_table_ret;
+        if (ret < 0) {
+            LOG_ERR("Error generating servo table: %d", gen_table_ret);
+            return gen_table_ret;
+        }
+
+        // Queue the buffer to the driver to start the motor motion
+        ll_queue_servo_positions(context->dev, context->buffers[i], gen_table_ret * sizeof(uint32_t), K_FOREVER);
+
+        // If the buffer wasn't full, then this is done and the next buffer isn't needed
+        if (gen_table_ret < SERVO_BUFFER_SIZE) {
+            context->motion_calculation_done = true;
+            break;
+        }
+    }
+
+    // Increment the buffer pointer
+    context->current_buffer = (context->current_buffer + 1) % BUFS_PER_MOTOR;
 
     return 0;
 }
@@ -570,11 +577,10 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
         return -ENODEV;
     }
 
-    if (atomic_flag_test_and_set(&context->dma_in_use) || !context->motion_calculation_done) {
-        LOG_ERR("Attempted to move motor while already in motion.");
+    if (!context->motion_done) {
+        LOG_ERR("Attempted to move while move is active");
         return -EBUSY;
     }
-    atomic_flag_clear(&context->dma_in_use);
 
     if (atomic_flag_test_and_set(&context->e_stop_triggered)) {
         LOG_ERR("Attempted to move motor after e-stop without homing!");
@@ -603,11 +609,37 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
         return -EDOM;
     }
 
+    context->motion_done = false;
     context->motion_calculation_done = false;
 
     ll_stepper_enable(dev);
 
-    k_work_submit_to_queue(&motor_workq, &context->calculation_work);
+    // Start calculating the motion profile and load as many blocks as possible
+    for (int i = 0; i < BUFS_PER_MOTOR; i++) {
+        context->current_buffer = i;
+        const ssize_t gen_table_ret =
+            motor_motion_stepper_generate_timing_table(context->buffers[i], STEPPER_BUFFER_SIZE, &context->context);
+        context->last_calculation_ret = gen_table_ret;
+
+        // Error out if calculation didn't succeed
+        if (gen_table_ret < 0) {
+            LOG_ERR("Error generating stepper table.");
+            return gen_table_ret;
+        }
+
+        // Submit the buffer to the driver to start the motor motion
+        LOG_WRN("INIT:Q buf %d [%p]", context->current_buffer, (void *)context->buffers[context->current_buffer]);
+        ll_queue_stepper_positions(dev, context->buffers[i], gen_table_ret * sizeof(uint32_t), K_FOREVER);
+
+        // If the buffer wasn't full, then this is done and the next buffer isn't needed
+        if (gen_table_ret < STEPPER_BUFFER_SIZE) {
+            context->motion_calculation_done = true;
+            break;
+        }
+    }
+
+    // Increment the buffer pointer
+    context->current_buffer = (context->current_buffer + 1) % BUFS_PER_MOTOR;
 
     return 0;
 }
@@ -632,7 +664,7 @@ int stepper_go_home_slowly(const struct device *dev, bool forward) {
         return -ENOTSUP;
     }
 
-    if (work_context->motion_calculation_done == false) {
+    if (work_context->motion_done == false) {
         LOG_ERR("Attempted to move motor while already in motion.");
         return -EBUSY;
     }
