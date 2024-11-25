@@ -6,7 +6,7 @@
 	(paper "A4")
 	(title_block
 		(title "Autotrainer Pellet Module - External IO")
-		(date "2024-11-18")
+		(date "2024-11-25")
 		(rev "v1.2")
 		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
@@ -4024,7 +4024,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-801-0038"
+		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-BNC50-3511"
 			(at 62.23 30.48 0)
 			(effects
 				(font
@@ -4201,7 +4201,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-801-0038"
+		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-BNC50-3511"
 			(at 121.92 30.48 0)
 			(effects
 				(font
@@ -6246,7 +6246,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-801-0038"
+		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-BNC50-3511"
 			(at 248.92 49.53 0)
 			(effects
 				(font
@@ -6809,7 +6809,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-801-0038"
+		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-BNC50-3511"
 			(at 248.92 64.77 0)
 			(effects
 				(font
@@ -7471,7 +7471,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-801-0038"
+		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-BNC50-3511"
 			(at 248.92 33.02 0)
 			(effects
 				(font
@@ -8218,7 +8218,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-801-0038"
+		(property "Footprint" "Leaf_Connectors:Conn_BNC_KH-BNC50-3511"
 			(at 248.92 83.82 0)
 			(effects
 				(font

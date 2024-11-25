@@ -6,7 +6,7 @@
 	(paper "A4")
 	(title_block
 		(title "Autotrainer Pellet Module - MCU")
-		(date "2024-11-18")
+		(date "2024-11-25")
 		(rev "v1.2")
 		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
@@ -4027,6 +4027,10 @@
 		(uuid "5e088eb2-65fb-479d-95fb-f0362fa0f715")
 	)
 	(no_connect
+		(at 161.29 95.25)
+		(uuid "6754262e-e084-446b-9370-0c5bcd3c6971")
+	)
+	(no_connect
 		(at 49.53 55.88)
 		(uuid "73b4549a-41fe-4385-9f4d-cdbce13829ee")
 	)
@@ -4655,16 +4659,6 @@
 			(type default)
 		)
 		(uuid "5cf3e9b6-17d3-40ba-b963-4909b096f27e")
-	)
-	(wire
-		(pts
-			(xy 166.37 95.25) (xy 161.29 95.25)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5d963308-0932-4a8f-b237-03ec031388d4")
 	)
 	(wire
 		(pts
@@ -6856,18 +6850,6 @@
 			(justify left)
 		)
 		(uuid "9a694911-3efd-4471-9fc9-7750e809928e")
-	)
-	(hierarchical_label "LED_FAULT"
-		(shape input)
-		(at 166.37 95.25 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "a45f8d75-993c-4ba2-85a9-e6e4c57244bc")
 	)
 	(hierarchical_label "3V3"
 		(shape input)

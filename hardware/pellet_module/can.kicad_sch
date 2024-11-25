@@ -6,7 +6,7 @@
 	(paper "A4")
 	(title_block
 		(title "Autotrainer Pellet Module - Power & Data Conn")
-		(date "2024-11-18")
+		(date "2024-11-25")
 		(rev "v1.2")
 		(company "Christie Lab, CU-Anschutz")
 		(comment 1 "Prepared by LeafLabs, LLC")
