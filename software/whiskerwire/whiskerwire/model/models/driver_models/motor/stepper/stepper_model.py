@@ -1,10 +1,9 @@
-import logging
-
 from ..motor_model import MotorModel
 from .....watchable import Watchable
 from ......config import get_settings
+from ......utils import get_logger, is_power_of_two
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class StepperModel(MotorModel):
@@ -77,7 +76,7 @@ class StepperModel(MotorModel):
         return self._microsteps.value
 
     def is_valid_microsteps(self, value: int):
-        return (value & (value - 1) == 0) and value != 0
+        return is_power_of_two(value)
 
     @microsteps.setter
     def microsteps(self, value: int):

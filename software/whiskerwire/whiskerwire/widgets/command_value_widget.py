@@ -4,12 +4,11 @@ from textual.widgets import Input
 from textual.containers import Horizontal, Vertical
 from textual.events import Click
 from .glitchless_button import GlitchlessButton
-from .util import to_valid_identifier
+from ..utils import get_logger, to_valid_identifier
 from enum import Enum
-import logging
 from textual.color import Color
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 # CommandValueWidget class for capturing user input commands and displaying input fields

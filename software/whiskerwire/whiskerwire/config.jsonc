@@ -169,6 +169,21 @@
     /* The maximum commandable output value in millivolts */
     "Max Output Value": 3300.0
   },
+  "Microphone": {
+    /*
+    * The minimum period of time between display updates in seconds.
+    * If 0, updates will occur upon the reception of each associated message.
+    */
+    "Min Update Period": 0.25,
+    "Graph": {
+      /* The size of the FFT (number of bins) */
+      "FFT Size": 64,
+      "Y Min": 0,
+      "Y Max": 1e11
+    },
+    /* The maximum duration for which a stream can be open in seconds */
+    "Stream Timeout": 10.0
+  },
   /* Network Settings */
   "Network": {
     /*

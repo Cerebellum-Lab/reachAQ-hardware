@@ -6,11 +6,11 @@ from ..widgets.temperature_status_widget import TemperatureStatusWidget
 from ..widgets.humidity_status_widget import HumidityStatusWidget
 from ..widgets.pressure_status_widget import PressureStatusWidget
 from ..widgets.load_cell_status_widget import LoadCellStatusWidget
+from ..widgets.microphone_status_widget import MicrophoneStatusWidget
 from .module_dashboard import ModuleDashboard
 from ..model.models.magnet_module_model import MagnetModuleModel
 from pyjerrycan import JerryCAN
 from functools import partial
-import logging
 
 from ..utils import get_logger
 
@@ -48,6 +48,8 @@ class MagnetModuleDashboard(ModuleDashboard):
             move=partial(jc.ServoMove, dst_id=self.model.dst_id),
         )
 
+        self.microphone_status_widget = MicrophoneStatusWidget(self.model.microphone)
+
         # Initialize the SensorDashboard with temperature, humidity, pressure, and load cell widgets
         self.sensor_dashboard = SensorDashboard(
             [
@@ -82,6 +84,7 @@ class MagnetModuleDashboard(ModuleDashboard):
         return Grid(
             self.servo_dashboard,
             self.gpio_dashboard,
+            self.microphone_status_widget,
             self.sensor_dashboard,
             id=f"{self.module_name.lower()}-module-dashboard-container",
             classes="module-dashboard-container",

@@ -50,9 +50,9 @@ else
 
     # Check if the virtual environment was created successfully
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}\tVirtual Environment created successfully!${ENDCOLOR}"
+        echo -e "${GREEN}\t\tVirtual Environment created successfully!${ENDCOLOR}"
     else
-        echo -e "${RED}\tCreation of Virtual Environment failed with exit code $?${ENDCOLOR}"
+        echo -e "${RED}\t\tCreation of Virtual Environment failed with exit code $?${ENDCOLOR}"
         exit
     fi
 fi

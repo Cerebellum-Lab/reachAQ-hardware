@@ -1,11 +1,10 @@
-import logging
-
 from pyjerrycan import Tone
 
 from ....watchable import Watchable
 from .....config import get_settings
+from .....utils import get_logger
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class ToneGeneratorModel:

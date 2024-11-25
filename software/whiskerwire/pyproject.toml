@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 keywords = []
 dependencies = [
-    "textual==0.81.0",
+    "textual==0.79.1",
     "pyjerrycan",
     "JSON-minify==0.3.0",
     "textual-plotext==0.2.1",

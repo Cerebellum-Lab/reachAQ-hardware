@@ -1,6 +1,6 @@
 from textual.widget import Widget
 from textual.containers import Horizontal
-from .util import to_valid_identifier
+from ..utils import to_valid_identifier
 from .glitchless_button import GlitchlessButton
 from functools import partial
 

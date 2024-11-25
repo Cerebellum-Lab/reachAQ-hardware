@@ -3,9 +3,9 @@ from textual.widgets import Select, Label
 from textual.widgets._select import SelectType, NoSelection, BLANK, SelectCurrent
 from typing import Iterable
 from rich.console import RenderableType
-import logging
+from ..utils import get_logger
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class LabeledSelect(Widget):

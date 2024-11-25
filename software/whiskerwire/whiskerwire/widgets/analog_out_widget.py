@@ -1,12 +1,11 @@
-from textual.widgets import Static, Input
+from textual.widgets import Static
 from .status_widget import StatusWidget
 from .command_value_widget import CommandValueWidget
-from textual import on
 from ..model.models.driver_models.analog_out.analog_out_model import AnalogOutModel
-import logging
+from ..utils import get_logger
 from functools import partial
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 # AnalogOutWidget class inheriting from StatusWidget, specialized for displaying

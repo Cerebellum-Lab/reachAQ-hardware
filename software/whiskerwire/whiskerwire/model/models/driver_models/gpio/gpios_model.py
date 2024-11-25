@@ -1,9 +1,9 @@
 from .gpio_model import GPIOModel
+from .....utils import get_logger
 from pyjerrycan import GPIORead
-import logging
 import sys
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class GPIOSModel:

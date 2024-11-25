@@ -2,8 +2,6 @@ from textual.widgets import Static, Input
 from .status_widget import StatusWidget
 from .command_value_widget import CommandValueWidget
 from .jog_buttons import JogButtons
-from textual import on
-from .util import represents_int
 from ..model.models.driver_models.motor.motor_model import MotorModel
 from functools import partial
 from pyjerrycan import AbsOrRel

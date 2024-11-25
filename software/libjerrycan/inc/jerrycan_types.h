@@ -246,7 +246,10 @@ typedef struct __attribute__((packed)) {
 BUILD_ASSERT(sizeof(jerrycan_cmd_audio_data_cmd_t) == 4, "jerrycan_cmd_audio_data_cmd_t should be 4 bytes");
 
 typedef struct __attribute__((packed)) {
-    uint8_t payload[JERRYCAN_MAX_PAYLOAD_SIZE];
+    union {
+        uint8_t payload[JERRYCAN_MAX_PAYLOAD_SIZE];
+        float magnitudes[JERRYCAN_MAX_PAYLOAD_SIZE / sizeof(float)];
+    };
 } jerrycan_cmd_audio_data_t;
 
 BUILD_ASSERT(sizeof(jerrycan_cmd_audio_data_t) == JERRYCAN_MAX_PAYLOAD_SIZE,

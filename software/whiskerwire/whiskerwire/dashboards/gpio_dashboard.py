@@ -1,16 +1,15 @@
-from textual.widgets import Static, Button
+from textual.widgets import Static
 from textual.containers import Horizontal, Vertical, Grid
-from textual import on
 from ..widgets.input_gpio_status_widget import InputGPIOStatusWidget
 from ..widgets.output_gpio_status_widget import OutputGPIOStatusWidget
 from .status_widget_dashboard import StatusWidgetDashboard
 from pyjerrycan import GPIOWrite
 from ..model.models.driver_models.gpio.gpios_model import GPIOSModel
 from ..model.models.driver_models.gpio.gpio_model import GPIODirection
-import logging
+from ..utils import get_logger
 from functools import partial
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 # GPIODashboard class for managing and displaying GPIO states and controls

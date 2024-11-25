@@ -2,9 +2,9 @@ from textual.widgets import Static
 from .status_widget import StatusWidget
 from ..model.models.driver_models.gpio.gpio_model import GPIOModel
 from ..model.models.driver_models.door_sensor.door_sensor_model import DoorSensorModel
-import logging
+from ..utils import get_logger
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 # A mapping to convert numeric GPIO states (0 or 1) to descriptive labels ("LOW" or "HIGH")
 STATE_MAP = ["LOW", "HIGH"]

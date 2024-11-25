@@ -1,14 +1,12 @@
 from textual.widget import Widget
-from textual.widgets import Input, Select, Label
-from textual.containers import Container, Horizontal, Vertical
+from textual.containers import Horizontal, Vertical
 from .glitchless_button import GlitchlessButton
-from .util import to_valid_identifier
+from ..utils import get_logger, to_valid_identifier
 from .labeled_input import LabeledInput
 from .labeled_select import LabeledSelect
 from ..model.models.driver_models.motor.stepper.stepper_model import StepperModel
-import logging
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 MICROSTEP_OPTIONS = [("8", "8"), ("16", "16"), ("32", "32"), ("64", "64")]
 

@@ -1,9 +1,8 @@
-import logging
-
+from .....utils import get_logger
 from ....watchable import Watchable
 from .....config import get_settings
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class MotorModel:

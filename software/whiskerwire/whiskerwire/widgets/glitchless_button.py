@@ -1,10 +1,10 @@
 from textual.widgets import Button
 from textual.widgets.button import ButtonVariant
-from rich.text import TextType
 from rich.console import RenderableType
-import logging
+from rich.text import TextType
+from ..utils import get_logger
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class GlitchlessButton(Button):

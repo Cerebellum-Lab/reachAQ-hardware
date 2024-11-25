@@ -2,12 +2,11 @@ from textual.widget import Widget
 from textual.widgets import Input, Select, Label
 from textual.containers import Container, Horizontal, Vertical
 from .glitchless_button import GlitchlessButton
-from .util import to_valid_identifier
+from ..utils import get_logger, to_valid_identifier
 from .labeled_input import LabeledInput
 from ..model.models.driver_models.motor.servo.servo_model import ServoModel
-import logging
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class ServoConfigWidget(Widget):

@@ -1,7 +1,7 @@
 from ....watchable import Watchable
-import logging
+from .....utils import get_logger
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 MIN_RGB_VALUE = 0
 MAX_RGB_VALUE = 100

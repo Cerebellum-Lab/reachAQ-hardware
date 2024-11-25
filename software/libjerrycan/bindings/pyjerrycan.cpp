@@ -269,9 +269,13 @@ PYBIND11_MODULE(pyjerrycan, m) {
 
     py::class_<jerrycan_cmd_audio_data_t>(m, "AudioData")
         .def(py::init<>())
-        .def_property("payload",
-            [](const jerrycan_cmd_audio_data_t &a) { return a.payload; },
-            [](jerrycan_cmd_audio_data_t &a, uint8_t v[JERRYCAN_MAX_PAYLOAD_SIZE]) { std::memcpy(a.payload, v, JERRYCAN_MAX_PAYLOAD_SIZE); })
+        .def_property("magnitudes",
+            [](const jerrycan_cmd_audio_data_t &a) { return std::vector<float>(a.magnitudes, a.magnitudes + JERRYCAN_MAX_PAYLOAD_SIZE/sizeof(float)); },
+            [](jerrycan_cmd_audio_data_t &a, const std::vector<float> &v) { 
+                if (v.size() != JERRYCAN_MAX_PAYLOAD_SIZE/sizeof(float)) {
+                    throw std::runtime_error("Size mismatch: Expected array of size " + std::to_string(JERRYCAN_MAX_PAYLOAD_SIZE/sizeof(float)));
+                }
+                std::memcpy(a.magnitudes, v.data(), JERRYCAN_MAX_PAYLOAD_SIZE); })
     ;
 
     py::class_<jerrycan_cmd_bootloader_command_t> bootloader_command(m, "JerryCANBootloaderCmd");

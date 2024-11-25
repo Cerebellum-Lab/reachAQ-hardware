@@ -1,10 +1,9 @@
 from .stepper_model import StepperModel
 from ..motors_model import MotorsModel
 from pyjerrycan import Status, JerryCANCfgMsg, StepperStatus
-import logging
-import sys
+from ......utils import get_logger
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class SteppersModel(MotorsModel):

@@ -1,10 +1,10 @@
 from .models.pellet_module_model import PelletModuleModel
 from .models.magnet_module_model import MagnetModuleModel
 from pyjerrycan import JerryCAN, JerryCANCmdType, JerryCANMsg
-import logging
+from ..utils import get_logger
 from .watchable import Watchable
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class Model:

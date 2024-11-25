@@ -15,6 +15,8 @@ from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.widgets import Header, Button
 from textual.widgets import TabbedContent, TabPane, Static
+from importlib.metadata import distribution
+from json import loads
 
 from .config import get_settings, load_settings
 from .utils import get_logger
@@ -26,8 +28,19 @@ APP_VERSION_MINOR = 1
 APP_VERSION_PATCH = 0
 APP_VERSION = f"{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}.{APP_VERSION_PATCH}"
 
+dist = distribution("whiskerwire")
+content = dist.read_text("direct_url.json")
+if content is not None:
+    direct_url_data = loads(content)
+    WHISKERWIRE_DIR = direct_url_data["url"][
+        7:
+    ]  # Strip "file://" from beginning of path
+else:
+    print("Failed to acquire WhiskerWire directory from package metadata")
+    exit(1)
+
 # Log file directory and structure setup
-LOG_DIR = os.path.abspath("logs")  # Base directory for logs
+LOG_DIR = os.path.abspath(f"{WHISKERWIRE_DIR}/logs")  # Base directory for logs
 LOG_SUBDIR = datetime.now().strftime("%Y-%m-%d")  # Subdirectory by date
 LOG_FILE = f"{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}.log"  # Log file name with timestamp
 

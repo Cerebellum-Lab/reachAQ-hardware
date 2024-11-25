@@ -2,10 +2,9 @@ from textual.widget import Widget
 from textual.widgets import Static
 from textual.events import Click, Enter, Leave
 from textual import on
-from .util import to_valid_identifier
-import logging
+from ..utils import get_logger, to_valid_identifier
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 # Base class for a status widget in the dashboard, used to display dynamic statuses

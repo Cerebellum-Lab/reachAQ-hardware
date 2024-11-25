@@ -107,7 +107,7 @@ MagnetModuleDashboard {
         column-span: 1;
         row-span: 1;
         height: auto;
-        max-height: 79vh;
+        max-height: 65vh;
         align: left top;
         max-width: 46vw;
 
@@ -203,7 +203,7 @@ PelletModuleDashboard {
 
 .graph-widget {
     width: 21vw;
-    height: 28vh;
+    height: 20vh;
 }
 
 /************************/
@@ -501,8 +501,8 @@ SensorStatusWidget {
         min-width: 10vw;
     }
     height: auto;
-    min-height: 37vh;
-    max-height: 38vh;
+    min-height: 30vh;
+    max-height: 31vh;
 
     .tare-stack {
         height: auto;
@@ -738,21 +738,6 @@ GPIODashboard {
     }
 }
 
-/********************/
-/* Sensor Dashboard */
-/********************/
-
-/*SensorDashboard {
-    height: auto;
-    max-height: 32vh;
-    .dashboard-container {
-        grid-size: 1;
-        grid-rows: auto;
-        grid-columns: auto;
-        max-height: 34vh;
-    }
-}*/
-
 RGBLEDStatusWidget {
     width: auto;
     height: auto;
@@ -765,4 +750,19 @@ RGBLEDStatusWidget {
             width: 1fr;
         }
     }
+}
+
+MicrophoneStatusWidget {
+    dock: bottom;
+    min-width: 45vw;
+    GraphWidget {
+        min-width: 45vw;
+        max-width: 45vw;
+        min-height: 14vh;
+        max-height: 14vh;
+    }
+    min-height: 22vh;
+    max-height: 22vh;
+    margin-bottom: 1;
+    margin-left: 96;
 }

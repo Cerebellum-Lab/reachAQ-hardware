@@ -1,9 +1,11 @@
 from textual.app import ComposeResult
 from textual.widget import Widget
 from textual_plotext import PlotextPlot
-from .util import to_valid_identifier
+from ..utils import to_valid_identifier, get_logger
 from ..model.models.driver_models.sensors.sensor_model import SensorModel
 from ..model.models.driver_models.microphone.microphone_model import MicrophoneModel
+
+logger = get_logger()
 
 
 # GraphWidget class for visualizing sensor data as a graph.
@@ -12,7 +14,11 @@ class GraphWidget(Widget):
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
 
     def __init__(
-        self, model: SensorModel | MicrophoneModel, marker: str = "braille", **kwargs
+        self,
+        model: SensorModel | MicrophoneModel,
+        marker: str = "braille",
+        show_y_ticks: bool = True,
+        **kwargs,
     ):
         """
         Initialize the GraphWidget with a data model, optional y-axis limits, and a marker style.
@@ -38,9 +44,18 @@ class GraphWidget(Widget):
 
         # Configure x-axis settings, disabling tick marks
         self.plot.plt.xticks([], [])
+        if not show_y_ticks:
+            self.plot.plt.yticks([0.0], ["0.0"])
 
         # Set the x-axis limit based on the maximum number of data points
-        self.plot.plt.xlim(left=0, right=self.model.MAX_DATA_POINTS)
+        if isinstance(self.model, SensorModel):
+            self.plot.plt.xlim(left=0, right=self.model.MAX_DATA_POINTS)
+        elif isinstance(self.model, MicrophoneModel):
+            self.plot.plt.xticks(
+                [0, self.model.FFT_SIZE // 2, self.model.FFT_SIZE],
+                ["0", f"{self.model.FFT_SIZE//2}", f"{self.model.FFT_SIZE}"],
+            )
+            self.plot.plt.xlim(left=0, right=self.model.FFT_SIZE)
 
         # Set the plotting marker style
         self.marker = marker
@@ -70,7 +85,7 @@ class GraphWidget(Widget):
         # Plot the current sensor data with the specified marker style
         if isinstance(self.model, SensorModel):
             plt.plot(self.model.sensor_data, marker=self.marker)
-        elif (self.model) == MicrophoneModel:
+        elif isinstance(self.model, MicrophoneModel):
             plt.plot(self.model.fft_data, marker=self.marker)
 
         # Apply y-axis limits

@@ -3,11 +3,11 @@ from ..model.models.driver_models.sensors.load_cell_sensor_model import (
     LoadCellSensorModel,
 )
 from textual.containers import Horizontal, Vertical
-import logging
+from ..utils import get_logger
 from .glitchless_button import GlitchlessButton
 from functools import partial
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 # LoadCellStatusWidget class for displaying load cell sensor readings.

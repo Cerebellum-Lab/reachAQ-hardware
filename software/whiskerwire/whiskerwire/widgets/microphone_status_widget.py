@@ -1,18 +1,15 @@
+from ..model.models.driver_models.microphone.microphone_model import MicrophoneModel
 from .status_widget import StatusWidget
 from .graph_widget import GraphWidget
-from model.models.driver_models.microphone import MicrophoneModel
+from ..utils import get_logger
+
+logger = get_logger()
 
 
 class MicrophoneStatusWidget(StatusWidget):
     CSS_PATH = "static/styles.tcss"  # Path to the CSS file for styling the widget
 
-    def __init__(
-        self,
-        model: MicrophoneModel,
-        y_min: float | None = None,
-        y_max: float | None = None,
-        **kwargs
-    ):
+    def __init__(self, model: MicrophoneModel, **kwargs):
         """
         Initialize the MicrophoneStatusWidget with a microphone model and optional configurations.
 
@@ -27,9 +24,9 @@ class MicrophoneStatusWidget(StatusWidget):
         super().__init__(self.model.name, self.model.instance, **kwargs)
 
         # GraphWidget for visualizing sensor data, with optional y-axis bounds
-        self.graph = GraphWidget(self.model, y_min, y_max)
+        self.graph = GraphWidget(self.model, show_y_ticks=False)
 
-        self.model.register_on_fft_data_change(self.on_fft_data_change)
+        self.model._fft_data.register_on_update(self.on_fft_data_change)
 
     def on_fft_data_change(self):
         self.refresh(recompose=True)

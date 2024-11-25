@@ -1,8 +1,8 @@
 from .door_sensor_model import DoorSensorModel
+from .....utils import get_logger
 from pyjerrycan import Doors
-import logging
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class DoorSensorsModel:

@@ -1,8 +1,8 @@
 from .motor_model import MotorModel
-import logging
+from .....utils import get_logger
 import sys
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class MotorsModel:

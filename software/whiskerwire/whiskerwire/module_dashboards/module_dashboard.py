@@ -3,9 +3,9 @@ from textual.widgets import Static
 from textual.containers import Grid
 from ..dashboards.status_widget_dashboard import StatusWidgetDashboard
 from ..model.models.module_model import ModuleModel
-import logging
+from ..utils import get_logger
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 # Base class for managing and displaying status dashboards for a specific module.

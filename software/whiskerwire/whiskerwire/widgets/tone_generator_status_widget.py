@@ -1,15 +1,14 @@
 from textual.widgets import Static, Input
 from .status_widget import StatusWidget
 from .command_value_widget import CommandValueWidget
-from textual import on
 from ..model.models.driver_models.tone_generator.tone_generator_model import (
     ToneGeneratorModel,
 )
 from functools import partial
 from time import time
-import logging
+from ..utils import get_logger
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 # ToneGeneratorStatusWidget class for displaying and controlling a tone generator's frequency and duration.

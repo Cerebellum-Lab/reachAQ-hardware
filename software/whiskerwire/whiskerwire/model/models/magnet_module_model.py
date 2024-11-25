@@ -6,6 +6,7 @@ from .driver_models.sensors.temperature_sensor_model import TemperatureSensorMod
 from .driver_models.sensors.humidity_sensor_model import HumiditySensorModel
 from .driver_models.sensors.pressure_sensor_model import PressureSensorModel
 from .driver_models.sensors.load_cell_sensor_model import LoadCellSensorModel
+from .driver_models.microphone.microphone_model import MicrophoneModel
 from pyjerrycan import JerryCANMsg, JerryCANCmdType
 
 
@@ -40,6 +41,7 @@ class MagnetModuleModel(ModuleModel):
         self.humidity_sensor = HumiditySensorModel("Humidity Sensor 0", 0)
         self.pressure_sensor = PressureSensorModel("Pressure Sensor 0", 0)
         self.load_cell_sensor = LoadCellSensorModel("Load Cell Sensor 0", 0)
+        self.microphone = MicrophoneModel("Microphone 0", 0)
 
     def process_message(self, msg: JerryCANMsg):
         """
@@ -65,5 +67,10 @@ class MagnetModuleModel(ModuleModel):
         elif type == JerryCANCmdType.LOAD_CELL_READ:
             # Update load cell sensor from the LOAD_CELL_READ message
             self.load_cell_sensor.update_from_message(msg.load_cell_read)
-
+        elif type == JerryCANCmdType.AUDIO_MAGNITUDE_DATA_BEGIN:
+            self.microphone.update_from_audio_data_cmd_start_message(msg.audio_data_cmd)
+        elif type == JerryCANCmdType.AUDIO_MAGNITUDE_DATA_CONT:
+            self.microphone.update_from_audio_data_message(msg.audio_data)
+        elif type == JerryCANCmdType.AUDIO_MAGNITUDE_DATA_END:
+            self.microphone.update_from_audio_data_cmd_end_message(msg.audio_data_cmd)
         return type

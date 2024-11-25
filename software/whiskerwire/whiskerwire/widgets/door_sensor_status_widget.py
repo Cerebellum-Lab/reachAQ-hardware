@@ -1,8 +1,8 @@
 from ..model.models.driver_models.door_sensor.door_sensor_model import DoorSensorModel
 from .input_gpio_status_widget import InputGPIOStatusWidget
-import logging
+from ..utils import get_logger
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class DoorSensorStatusWidget(InputGPIOStatusWidget):

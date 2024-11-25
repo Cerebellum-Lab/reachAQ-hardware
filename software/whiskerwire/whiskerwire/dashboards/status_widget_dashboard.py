@@ -2,7 +2,7 @@ from textual.widget import Widget
 from textual.widgets import Static
 from textual.containers import Grid
 from ..widgets.status_widget import StatusWidget
-from ..widgets.util import to_valid_identifier
+from ..utils import to_valid_identifier
 
 
 # StatusWidgetDashboard class to manage and display a collection of status widgets in a dashboard

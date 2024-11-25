@@ -1,10 +1,9 @@
 from .servo_model import ServoModel
 from ..motors_model import MotorsModel
 from pyjerrycan import Status, JerryCANCfgMsg, ServoStatus
-import logging
-import sys
+from ......utils import get_logger
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class ServosModel(MotorsModel):

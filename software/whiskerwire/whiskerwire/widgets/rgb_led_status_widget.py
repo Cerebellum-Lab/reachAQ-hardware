@@ -5,9 +5,9 @@ from .glitchless_button import GlitchlessButton
 from textual.containers import Container
 from .command_value_widget import CommandValueWidget
 from textual.events import Click
-import logging
+from ..utils import get_logger
 
-logger = logging.getLogger("WhiskerWire")
+logger = get_logger()
 
 
 class RGBLEDStatusWidget(StatusWidget):
