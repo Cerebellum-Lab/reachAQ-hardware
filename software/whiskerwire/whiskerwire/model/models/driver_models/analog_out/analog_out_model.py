@@ -47,7 +47,8 @@ class AnalogOutModel:
         """int: Returns the current output value in mV."""
         return self._value_mv
 
-    def is_valid_value_mv(self, value_mv: int):
+    def is_valid_value_mv(self, value_mv: int) -> bool:
+        """bool: Returns True if the given value is a valid value_mv, else False"""
         try:
             return (
                 value_mv >= self.MIN_OUTPUT_VALUE

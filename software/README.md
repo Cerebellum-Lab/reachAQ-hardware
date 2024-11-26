@@ -5,14 +5,20 @@ A diagnostic tool for observing and manipulating the state of the MouseGYM modul
 ### libjerrycan / pyjerrycan
 A C++ Library for interacting with the hardware modules over CANbus, as well as python bindings for the library.
 
-## How to use WhiskerWire (Standard)
+## Bringing up the CAN Interface
+- Run `sudo scripts/utilities/can_setup.sh` to bring up `can0`
 
-- Run `sudo ./setup.sh` to bring up the CAN interface and install the `pyjerrycan` and `whiskerwire` packages
-- Run `source ./whiskerwire/.venv/bin/activate` to activate the virtual environment
-- Run `whiskerwire` with the virtual environment activated
+## Bringing up the Virtual Environment
+- If a virtual environment does not yet exist, create one by running `python3 -m venv .venv`
+- To activate the virtual environment, run `source .venv/bin/activate`
+
+## Installing Dependencies
+- With the virtual environment activated, run `pip install -r requirements.txt`
+
+## How to use WhiskerWire
+- With the CAN interface brought up and the virtual environment activated, run `whiskerwire`
 
 ## Running over SSH
-
 - To minimize latency when running WhiskerWire over SSH, use the compression and multiplexing options, and a fast
   encryption cipher
 - This is accomplished by running `ssh -C -M -c aes128-cbc leaflabs@cuanschutz-jetson`
