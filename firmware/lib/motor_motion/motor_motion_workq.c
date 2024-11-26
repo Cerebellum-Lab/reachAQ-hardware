@@ -428,7 +428,7 @@ static int motor_workq_init_and_start(void) {
         const ll_motor_cfg_t *motor_data = motor_dev->config;
         const struct device *stepper_driver_dev = motor_data->stepper_driver_device;
         if (stepper_driver_dev != NULL) {
-            adi_tmc2209_set_microstep(stepper_driver_dev, (uint32_t)context->context.min_step);
+            adi_tmc2209_set_microstep(stepper_driver_dev, (uint32_t)(1.0f / context->context.min_step));
         }
     }
 
