@@ -27,8 +27,32 @@
 // Chopper Control Registers
 #define REG_CHOPCONF 0x6CU
 #define REG_DRV_STATUS 0x6FU
+#define REG_PWMCONF 0x70U
 
 struct __attribute__((packed)) DRV_STATUS_data_fields {
+    uint8_t otpw : 1;
+    uint8_t ot : 1;
+    uint8_t s2ga : 1;
+    uint8_t s2gb : 1;
+    uint8_t s2vsa : 1;
+    uint8_t s2vsb : 1;
+    uint8_t ola : 1;
+    uint8_t olb : 1;
+    uint8_t t120 : 1;
+    uint8_t t143 : 1;
+    uint8_t t150 : 1;
+    uint8_t t157 : 1;
+    uint8_t : 4;
+    uint8_t cs_actual : 5;
+    uint8_t : 3;
+    uint8_t : 6;
+    uint8_t stealth : 1;
+    uint8_t stst : 1;
+};
+
+BUILD_ASSERT(sizeof(struct DRV_STATUS_data_fields) == DATA_LENGTH);
+
+struct __attribute__((packed)) PWMCONF_data_fields {
     uint8_t pwm_ofs : 8;
     uint8_t pwm_grad : 8;
     uint8_t pwm_freq : 2;
@@ -40,7 +64,7 @@ struct __attribute__((packed)) DRV_STATUS_data_fields {
     uint8_t pwm_lim : 4;
 };
 
-BUILD_ASSERT(sizeof(struct DRV_STATUS_data_fields) == DATA_LENGTH);
+BUILD_ASSERT(sizeof(struct PWMCONF_data_fields) == DATA_LENGTH);
 
 struct __attribute__((packed)) MSCURACT_data_fields {
     int8_t cur_b : 8;
@@ -73,6 +97,94 @@ typedef enum rw_bit {
     WRITE = 1,
 } rw_bit_t;
 
+/* Register addresses and contents tables */
+struct __attribute__((packed)) GCONF_data_fields {
+    uint8_t i_scale_analog : 1;
+    uint8_t internal_Rsense : 1;
+    uint8_t en_spreadcycle : 1;
+    uint8_t shaft : 1;
+    uint8_t index_otpw : 1;
+    uint8_t index_step : 1;
+    uint8_t pdn_disable : 1;
+    uint8_t mstep_reg_select : 1;
+    uint8_t multistep_filt : 1;
+    uint8_t test_mode_DO_NOT_USE : 1;
+    uint8_t : 6;
+    uint8_t : 8;
+    uint8_t : 8;
+};
+
+BUILD_ASSERT(sizeof(struct GCONF_data_fields) == DATA_LENGTH);
+
+struct __attribute__((packed)) GSTAT_data_fields {
+    uint8_t reset : 1;
+    uint8_t drv_err : 1;
+    uint8_t uv_cp : 1;
+    uint8_t : 5;
+    uint8_t : 8;
+    uint8_t : 8;
+    uint8_t : 8;
+};
+
+BUILD_ASSERT(sizeof(struct GSTAT_data_fields) == DATA_LENGTH);
+
+struct __attribute__((packed)) IHOLD_IRUN_data_fields {
+    uint8_t : 8;
+    uint8_t iholddelay : 4;  // 0 = instant power down, 1..15 = n * 2^18 clocks
+    uint8_t : 4;
+    uint8_t irun : 5;  // 0 = 1/32 ... 31 = 32/32
+    uint8_t : 3;
+    uint8_t ihold : 5;  // 0 = 1/32 ... 31 = 32/32
+    uint8_t : 3;
+};
+
+BUILD_ASSERT(sizeof(struct IHOLD_IRUN_data_fields) == DATA_LENGTH);
+
+struct __attribute__((packed)) NODECONF_data_fields {
+    uint8_t : 8;
+    uint8_t send_delay : 4;  // delay before reply is sent
+    uint8_t : 4;
+    uint8_t : 8;
+    uint8_t : 8;
+};
+
+BUILD_ASSERT(sizeof(struct NODECONF_data_fields) == DATA_LENGTH);
+
+struct __attribute__((packed)) CHOPCONF_data_fields {
+    uint32_t toff : 4;
+    uint32_t hstrt : 3;
+    uint32_t hend : 4;
+    uint32_t : 3;
+    uint32_t tbl : 2;
+    uint32_t vsense : 1;
+    uint32_t : 6;
+    uint32_t mres : 4;
+    uint32_t intpol : 1;
+    uint32_t dedge : 1;
+    uint32_t diss2g : 1;
+    uint32_t diss2vs : 1;
+};
+
+BUILD_ASSERT(sizeof(struct CHOPCONF_data_fields) == DATA_LENGTH);
+
+typedef union __attribute__((packed)) {
+    uint8_t as_bytes[4];
+    uint32_t as_uint32;
+    struct GCONF_data_fields gconf;
+    struct GSTAT_data_fields gstat;
+    struct IHOLD_IRUN_data_fields ihold_irun;
+    struct NODECONF_data_fields nodeconf;
+    struct IOIN_data_fields ioin;
+    struct CHOPCONF_data_fields chopconf;
+    struct MSCURACT_data_fields mscuract;
+    struct DRV_STATUS_data_fields drv_status;
+    struct PWMCONF_data_fields pwmconf;
+    uint32_t ifcnt;
+    uint32_t tstep;
+    uint32_t sg_result;
+    uint32_t mscnt;
+} adi_tmc2209_reg_t;
+
 struct __attribute__((packed)) write_datagram_fields {
     uint8_t sync : 4;      // invariably 0b0101 = 0x5
     uint8_t reserved : 4;  // Doesn't matter but contributes to CRC
@@ -82,7 +194,7 @@ struct __attribute__((packed)) write_datagram_fields {
     uint8_t reg_address : 7;
     rw_bit_t rw : 1;  // 1 for write
 
-    uint8_t data[DATA_LENGTH];  // Data to write
+    adi_tmc2209_reg_t data;  // Data to write
 
     uint8_t crc;
 };
@@ -124,7 +236,7 @@ struct __attribute__((packed)) reply_datagram_fields {
     uint8_t reg_address : 7;
     rw_bit_t rw : 1;  // 0 for read
 
-    uint8_t data[DATA_LENGTH];  // Data read
+    adi_tmc2209_reg_t data;  // Data read
 
     uint8_t crc;
 };
@@ -136,84 +248,3 @@ typedef union reply_datagram {
 
 BUILD_ASSERT(sizeof(struct reply_datagram_fields) == sizeof(read_reply_datagram_t));
 BUILD_ASSERT(sizeof(read_reply_datagram_t) == RP_PACKET_LENGTH);
-
-/* Register addresses and contents tables */
-/* Bytes are sent MSB first (so the bytes look backwards from the datasheet, but the bits are in the right order) */
-
-struct __attribute__((packed)) GCONF_data_fields {
-    uint8_t : 8;
-    uint8_t : 8;
-
-    uint8_t multistep_filt : 1;
-    uint8_t test_mode_DO_NOT_USE : 1;
-    uint8_t : 6;
-
-    uint8_t i_scale_analog : 1;
-    uint8_t internal_Rsense : 1;
-    uint8_t en_spreadcycle : 1;
-    uint8_t shaft : 1;
-    uint8_t index_otpw : 1;
-    uint8_t index_step : 1;
-    uint8_t pdn_disable : 1;
-    uint8_t mstep_reg_select : 1;
-};
-
-BUILD_ASSERT(sizeof(struct GCONF_data_fields) == DATA_LENGTH);
-
-struct __attribute__((packed)) GSTAT_data_fields {
-    uint8_t : 8;
-    uint8_t : 8;
-    uint8_t : 8;
-
-    uint8_t reset : 1;
-    uint8_t drv_err : 1;
-    uint8_t uv_cp : 1;
-};
-
-BUILD_ASSERT(sizeof(struct GSTAT_data_fields) == DATA_LENGTH);
-
-struct __attribute__((packed)) IHOLD_IRUN_data_fields {
-    uint8_t : 8;
-    uint8_t iholddelay : 4;  // 0 = instant power down, 1..15 = n * 2^18 clocks
-    uint8_t : 4;
-    uint8_t irun : 5;  // 0 = 1/32 ... 31 = 32/32
-    uint8_t : 3;
-    uint8_t ihold : 5;  // 0 = 1/32 ... 31 = 32/32
-    uint8_t : 3;
-};
-
-BUILD_ASSERT(sizeof(struct IHOLD_IRUN_data_fields) == DATA_LENGTH);
-
-struct __attribute__((packed)) NODECONF_data_fields {
-    uint8_t : 8;
-    uint8_t : 8;
-    uint8_t send_delay : 4;  // delay before reply is sent
-    uint8_t : 4;
-    uint8_t : 8;
-};
-
-BUILD_ASSERT(sizeof(struct NODECONF_data_fields) == DATA_LENGTH);
-
-struct __attribute__((packed)) CHOPCONF_data_fields {
-    uint8_t mres : 4;
-    uint8_t intpol : 1;
-    uint8_t dedge : 1;
-    uint8_t diss2g : 1;
-    uint8_t dss2vs : 1;
-
-    uint8_t tbl1 : 1;
-    uint8_t vsense : 1;
-    uint8_t : 6;
-
-    uint8_t hend1 : 1;
-    uint8_t hend2 : 1;
-    uint8_t hend3 : 1;
-    uint8_t : 4;
-    uint8_t tbl0 : 1;
-
-    uint8_t toff : 4;
-    uint8_t hstrt : 3;
-    uint8_t hend0 : 1;
-};
-
-BUILD_ASSERT(sizeof(struct CHOPCONF_data_fields) == DATA_LENGTH);

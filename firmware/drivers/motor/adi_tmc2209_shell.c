@@ -10,202 +10,164 @@
 #define DEV_GET_COMMA(id) DEVICE_DT_GET(id),
 static const struct device *adi_devs[] = {DT_FOREACH_STATUS_OKAY(adi_tmc2209, DEV_GET_COMMA)};
 
-static int dump_gconf(const struct shell *shell, const int device) {
+static adi_tmc2209_reg_t read_device_reg(const struct shell *shell, const int device, const int reg) {
     const struct device *dev = adi_devs[device];
     struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
-    uint32_t val;
+    adi_tmc2209_reg_t val;
+    int ret = api->read(dev, reg, &val);
+    if (ret < 0) {
+        shell_print(shell, "Failed to read register: %d", ret);
+    }
 
+    return val;
+}
+
+static int dump_gconf(const struct shell *shell, const int device) {
     // GCONF
-    int ret = api->read(dev, REG_GCONF, (uint8_t *)&val);
-    val = sys_be32_to_cpu(val);
-    struct GCONF_data_fields *gconf = (struct GCONF_data_fields *)&val;
+    struct GCONF_data_fields gconf = read_device_reg(shell, device, REG_GCONF).gconf;
     shell_print(shell, "GCONF:");
-    shell_print(shell, "  multistep_filt: %d", gconf->multistep_filt);
-    shell_print(shell, "  test_mode: %d", gconf->test_mode_DO_NOT_USE);
-    shell_print(shell, "  i_scale_analog: %d", gconf->i_scale_analog);
-    shell_print(shell, "  internal_Rsense: %d", gconf->internal_Rsense);
-    shell_print(shell, "  en_spreadcycle: %d", gconf->en_spreadcycle);
-    shell_print(shell, "  shaft: %d", gconf->shaft);
-    shell_print(shell, "  index_otpw: %d", gconf->index_otpw);
-    shell_print(shell, "  index_step: %d", gconf->index_step);
-    shell_print(shell, "  pdn_disable: %d", gconf->pdn_disable);
-    shell_print(shell, "  mstep_reg_select: %d", gconf->mstep_reg_select);
+    shell_print(shell, "  i_scale_analog: %d", gconf.i_scale_analog);
+    shell_print(shell, "  internal_Rsense: %d", gconf.internal_Rsense);
+    shell_print(shell, "  en_spreadcycle: %d", gconf.en_spreadcycle);
+    shell_print(shell, "  shaft: %d", gconf.shaft);
+    shell_print(shell, "  index_otpw: %d", gconf.index_otpw);
+    shell_print(shell, "  index_step: %d", gconf.index_step);
+    shell_print(shell, "  pdn_disable: %d", gconf.pdn_disable);
+    shell_print(shell, "  mstep_reg_select: %d", gconf.mstep_reg_select);
+    shell_print(shell, "  multistep_filt: %d", gconf.multistep_filt);
+    shell_print(shell, "  test_mode: %d", gconf.test_mode_DO_NOT_USE);
 
-    return ret;
+    return 0;
 }
 
 static int dump_gstat(const struct shell *shell, const int device) {
-    const struct device *dev = adi_devs[device];
-    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
-    uint32_t val;
-
     // GSTAT
-    int ret = api->read(dev, REG_GSTAT, (uint8_t *)&val);
-    val = sys_be32_to_cpu(val);
-    struct GSTAT_data_fields *gstat = (struct GSTAT_data_fields *)&val;
+    struct GSTAT_data_fields gstat = read_device_reg(shell, device, REG_GSTAT).gstat;
     shell_print(shell, "GSTAT:");
-    shell_print(shell, "  reset: %d", gstat->reset);
-    shell_print(shell, "  drv_err: %d", gstat->drv_err);
-    shell_print(shell, "  uv_cp: %d", gstat->uv_cp);
+    shell_print(shell, "  reset: %d", gstat.reset);
+    shell_print(shell, "  drv_err: %d", gstat.drv_err);
+    shell_print(shell, "  uv_cp: %d", gstat.uv_cp);
 
-    return ret;
+    return 0;
 }
 
 static int dump_ifcnt(const struct shell *shell, const int device) {
-    const struct device *dev = adi_devs[device];
-    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
-    uint32_t val;
-
     // IFCNT
-    int ret = api->read(dev, REG_IFCNT, (uint8_t *)&val);
-    val = sys_be32_to_cpu(val);
-    shell_print(shell, "IFCNT: %d", val);
+    shell_print(shell, "IFCNT: %d", read_device_reg(shell, device, REG_IFCNT).ifcnt);
 
-    return ret;
+    return 0;
 }
 
 static int dump_ihold_irun(const struct shell *shell, const int device) {
-    const struct device *dev = adi_devs[device];
-    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
-    uint32_t val;
-
-    // I
-    int ret = api->read(dev, REG_IOIN, (uint8_t *)&val);
-    val = sys_be32_to_cpu(val);
-    struct IHOLD_IRUN_data_fields *ihold_irun = (struct IHOLD_IRUN_data_fields *)&val;
+    // IHOLD_IRUN
+    struct IHOLD_IRUN_data_fields ihold_irun = read_device_reg(shell, device, REG_IHOLD_IRUN).ihold_irun;
     shell_print(shell, "IHOLD_IRUN:");
-    shell_print(shell, "  iholddelay: %d", ihold_irun->iholddelay);
-    shell_print(shell, "  irun: %d", ihold_irun->irun);
-    shell_print(shell, "  ihold: %d", ihold_irun->ihold);
+    shell_print(shell, "  iholddelay: %d", ihold_irun.iholddelay);
+    shell_print(shell, "  irun: %d", ihold_irun.irun);
+    shell_print(shell, "  ihold: %d", ihold_irun.ihold);
 
-    return ret;
+    return 0;
 }
 
 static int dump_ioin(const struct shell *shell, const int device) {
-    const struct device *dev = adi_devs[device];
-    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
-    uint32_t val;
-
     // IOIN
-    int ret = api->read(dev, REG_IOIN, (uint8_t *)&val);
-    val = sys_be32_to_cpu(val);
-    struct IOIN_data_fields *ioin = (struct IOIN_data_fields *)&val;
+    struct IOIN_data_fields ioin = read_device_reg(shell, device, REG_IOIN).ioin;
     shell_print(shell, "IOIN:");
-    shell_print(shell, "  enn: %d", ioin->enn);
-    shell_print(shell, "  ms1: %d", ioin->ms1);
-    shell_print(shell, "  ms2: %d", ioin->ms2);
-    shell_print(shell, "  diag: %d", ioin->diag);
-    shell_print(shell, "  pdn_uart: %d", ioin->pdn_uart);
-    shell_print(shell, "  step: %d", ioin->step);
-    shell_print(shell, "  spread_en: %d", ioin->spread_en);
-    shell_print(shell, "  dir: %d", ioin->dir);
-    shell_print(shell, "  version: 0x%x", ioin->version);
+    shell_print(shell, "  enn: %d", ioin.enn);
+    shell_print(shell, "  ms1: %d", ioin.ms1);
+    shell_print(shell, "  ms2: %d", ioin.ms2);
+    shell_print(shell, "  diag: %d", ioin.diag);
+    shell_print(shell, "  pdn_uart: %d", ioin.pdn_uart);
+    shell_print(shell, "  step: %d", ioin.step);
+    shell_print(shell, "  spread_en: %d", ioin.spread_en);
+    shell_print(shell, "  dir: %d", ioin.dir);
+    shell_print(shell, "  version: 0x%x", ioin.version);
 
-    return ret;
+    return 0;
 }
 
 static int dump_tstep(const struct shell *shell, const int device) {
-    const struct device *dev = adi_devs[device];
-    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
-    uint32_t val;
-
     // TSTEP
-    int ret = api->read(dev, REG_TSTEP, (uint8_t *)&val);
-    val = sys_be32_to_cpu(val);
-    shell_print(shell, "TSTEP: %d", val);
-
-    return ret;
+    shell_print(shell, "TSTEP: %d", read_device_reg(shell, device, REG_TSTEP).tstep);
+    return 0;
 }
 
 static int dump_sg_result(const struct shell *shell, const int device) {
-    const struct device *dev = adi_devs[device];
-    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
-    uint32_t val;
-
     // SG_RESULT
-    int ret = api->read(dev, REG_SG_RESULT, (uint8_t *)&val);
-    val = sys_be32_to_cpu(val);
-    shell_print(shell, "SG_RESULT: %d", val);
-
-    return ret;
+    shell_print(shell, "SG_RESULT: %d", read_device_reg(shell, device, REG_SG_RESULT).sg_result);
+    return 0;
 }
 
 static int dump_mscnt(const struct shell *shell, const int device) {
-    const struct device *dev = adi_devs[device];
-    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
-    uint32_t val;
-
     // MSCNT
-    int ret = api->read(dev, REG_MSCNT, (uint8_t *)&val);
-    val = sys_be32_to_cpu(val);
-    shell_print(shell, "MSCNT: %d", val);
-
-    return ret;
+    shell_print(shell, "MSCNT: %d", read_device_reg(shell, device, REG_MSCNT).mscnt);
+    return 0;
 }
 
 static int dump_mscuract(const struct shell *shell, const int device) {
-    const struct device *dev = adi_devs[device];
-    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
-    uint32_t val;
-
     // MSCURACT
-    int ret = api->read(dev, REG_MSCURACT, (uint8_t *)&val);
-    val = sys_be32_to_cpu(val);
-    struct MSCURACT_data_fields *mscuract = (struct MSCURACT_data_fields *)&val;
+    struct MSCURACT_data_fields mscuract = read_device_reg(shell, device, REG_MSCURACT).mscuract;
     shell_print(shell, "MSCURACT:");
-    shell_print(shell, "  cur_b: %d", mscuract->cur_b);
-    shell_print(shell, "  cur_a: %d", mscuract->cur_a);
-
-    return ret;
+    shell_print(shell, "  cur_b: %d", mscuract.cur_b);
+    shell_print(shell, "  cur_a: %d", mscuract.cur_a);
+    return 0;
 }
 
 static int dump_chopconf(const struct shell *shell, const int device) {
-    const struct device *dev = adi_devs[device];
-    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
-    uint32_t val;
-
     // CHOPCONF
-    int ret = api->read(dev, REG_CHOPCONF, (uint8_t *)&val);
-    val = sys_be32_to_cpu(val);
-    struct CHOPCONF_data_fields *chopconf = (struct CHOPCONF_data_fields *)&val;
+    struct CHOPCONF_data_fields chopconf = read_device_reg(shell, device, REG_CHOPCONF).chopconf;
     shell_print(shell, "CHOPCONF:");
-    shell_print(shell, "  mres: %d", chopconf->mres);
-    shell_print(shell, "  intpol: %d", chopconf->intpol);
-    shell_print(shell, "  dedge: %d", chopconf->dedge);
-    shell_print(shell, "  diss2g: %d", chopconf->diss2g);
-    shell_print(shell, "  dss2vs: %d", chopconf->dss2vs);
-    shell_print(shell, "  tbl1: %d", chopconf->tbl1);
-    shell_print(shell, "  hend1: %d", chopconf->hend1);
-    shell_print(shell, "  hend2: %d", chopconf->hend2);
-    shell_print(shell, "  hend3: %d", chopconf->hend3);
-    shell_print(shell, "  tbl0: %d", chopconf->tbl0);
-    shell_print(shell, "  toff: %d", chopconf->toff);
-    shell_print(shell, "  hstrt: %d", chopconf->hstrt);
-    shell_print(shell, "  hend0: %d", chopconf->hend0);
+    shell_print(shell, "  toff: %d", chopconf.toff);
+    shell_print(shell, "  hstrt: %d", chopconf.hstrt);
+    shell_print(shell, "  hend: %d", chopconf.hend);
+    shell_print(shell, "  tbl: %d", chopconf.tbl);
+    shell_print(shell, "  vsense: %d", chopconf.vsense);
+    shell_print(shell, "  mres: %d", chopconf.mres);
+    shell_print(shell, "  intpol: %d", chopconf.intpol);
+    shell_print(shell, "  dedge: %d", chopconf.dedge);
+    shell_print(shell, "  diss2g: %d", chopconf.diss2g);
+    shell_print(shell, "  diss2vs: %d", chopconf.diss2vs);
 
-    return ret;
+    return 0;
 }
 
 static int dump_drv_status(const struct shell *shell, const int device) {
-    const struct device *dev = adi_devs[device];
-    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
-    uint32_t val;
-
     // DRV_STATUS
-    int ret = api->read(dev, REG_DRV_STATUS, (uint8_t *)&val);
-    val = sys_be32_to_cpu(val);
-    struct DRV_STATUS_data_fields *drv_status = (struct DRV_STATUS_data_fields *)&val;
+    struct DRV_STATUS_data_fields drv_status = read_device_reg(shell, device, REG_DRV_STATUS).drv_status;
     shell_print(shell, "DRV_STATUS:");
-    shell_print(shell, "  pwm_ofs: %d", drv_status->pwm_ofs);
-    shell_print(shell, "  pwm_grad: %d", drv_status->pwm_grad);
-    shell_print(shell, "  pwm_freq: %d", drv_status->pwm_freq);
-    shell_print(shell, "  pwm_autoscale: %d", drv_status->pwm_autoscale);
-    shell_print(shell, "  pwm_autograd: %d", drv_status->pwm_autograd);
-    shell_print(shell, "  freewheel: %d", drv_status->freewheel);
-    shell_print(shell, "  pwm_reg: %d", drv_status->pwm_reg);
-    shell_print(shell, "  pwm_lim: %d", drv_status->pwm_lim);
+    shell_print(shell, "  otpw: %d", drv_status.otpw);
+    shell_print(shell, "  ot: %d", drv_status.ot);
+    shell_print(shell, "  s2ga: %d", drv_status.s2ga);
+    shell_print(shell, "  s2gb: %d", drv_status.s2gb);
+    shell_print(shell, "  s2vsa: %d", drv_status.s2vsa);
+    shell_print(shell, "  s2vsb: %d", drv_status.s2vsb);
+    shell_print(shell, "  ola: %d", drv_status.ola);
+    shell_print(shell, "  olb: %d", drv_status.olb);
+    shell_print(shell, "  t120: %d", drv_status.t120);
+    shell_print(shell, "  t143: %d", drv_status.t143);
+    shell_print(shell, "  t150: %d", drv_status.t150);
+    shell_print(shell, "  t157: %d", drv_status.t157);
+    shell_print(shell, "  cs_actual: %d", drv_status.cs_actual);
+    shell_print(shell, "  stealth: %d", drv_status.stealth);
+    shell_print(shell, "  stst: %d", drv_status.stst);
 
-    return ret;
+    return 0;
+}
+
+static int dump_pwmconf(const struct shell *shell, const int device) {
+    // DRV_STATUS
+    struct PWMCONF_data_fields pwmconf = read_device_reg(shell, device, REG_PWMCONF).pwmconf;
+    shell_print(shell, "PWMCONF:");
+    shell_print(shell, "  pwm_ofs: %d", pwmconf.pwm_ofs);
+    shell_print(shell, "  pwm_grad: %d", pwmconf.pwm_grad);
+    shell_print(shell, "  pwm_freq: %d", pwmconf.pwm_freq);
+    shell_print(shell, "  pwm_autoscale: %d", pwmconf.pwm_autoscale);
+    shell_print(shell, "  pwm_autograd: %d", pwmconf.pwm_autograd);
+    shell_print(shell, "  freewheel: %d", pwmconf.freewheel);
+    shell_print(shell, "  pwm_reg: %d", pwmconf.pwm_reg);
+    shell_print(shell, "  pwm_lim: %d", pwmconf.pwm_lim);
+
+    return 0;
 }
 
 static int cmd_dump_registers(const struct shell *shell, const int argc, const char *argv[]) {
@@ -240,7 +202,7 @@ static int cmd_dump_registers(const struct shell *shell, const int argc, const c
     dump_mscuract(shell, device);
 
     dump_chopconf(shell, device);
-    dump_drv_status(shell, device);
+    dump_pwmconf(shell, device);
 
     return 0;
 }
@@ -277,12 +239,6 @@ static int cmd_read_register(const struct shell *shell, const int argc, const ch
         return -EINVAL;
     }
 
-    uint8_t data[4];
-    const int ret = api->read(dev, reg, data);
-
-    shell_print(shell, "Data at 0x%02X: 0x%02X 0x%02X 0x%02X 0x%02X, returned %d", reg, data[0], data[1], data[2],
-                data[3], ret);
-
     switch (reg) {
         case REG_GCONF:
             dump_gconf(shell, device);
@@ -317,9 +273,19 @@ static int cmd_read_register(const struct shell *shell, const int argc, const ch
         case REG_DRV_STATUS:
             dump_drv_status(shell, device);
             break;
+        case REG_PWMCONF:
+            dump_pwmconf(shell, device);
+            break;
+        default: {
+            adi_tmc2209_reg_t val;
+            const int ret = api->read(dev, reg, &val);
+
+            shell_print(shell, "Data at 0x%02X: 0x%02X 0x%02X 0x%02X 0x%02X, returned %d", reg, val.as_bytes[0],
+                        val.as_bytes[1], val.as_bytes[2], val.as_bytes[3], ret);
+        } break;
     }
 
-    return ret < 0 ? ret : 0;
+    return 0;
 }
 
 static int cmd_write_register(const struct shell *shell, const int argc, const char *argv[]) {
@@ -354,20 +320,17 @@ static int cmd_write_register(const struct shell *shell, const int argc, const c
         return -EINVAL;
     }
 
-    union {
-        uint32_t as_word;
-        uint8_t as_bytes[4];
-    } data;
     // Use `strtoll` here otherwise we run into sign errors.
-    data.as_word = (uint32_t)strtoll(argv[3], &endptr, 16);
+    adi_tmc2209_reg_t data;
+    data.as_uint32 = (uint32_t)strtoll(argv[3], &endptr, 16);
     if (*endptr != '\0') {
         shell_print(shell, "Invalid data: %s", argv[3]);
         return -EINVAL;
     }
 
-    const int ret = api->write(dev, reg, data.as_bytes);
+    const int ret = api->write(dev, reg, data);
 
-    shell_print(shell, "Wrote 0x%08X to 0x%02X, returned %d", data.as_word, reg, ret);
+    shell_print(shell, "Wrote 0x%08X to 0x%02X, returned %d", data.as_uint32, reg, ret);
     return ret < 0 ? ret : 0;
 }
 

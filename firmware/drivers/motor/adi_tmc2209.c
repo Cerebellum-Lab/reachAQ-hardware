@@ -5,6 +5,7 @@
 #include <zephyr/drivers/uart.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/ring_buffer.h>
 
 #include "adi_tmc2209_types.h"
@@ -135,8 +136,11 @@ static int write_single_line_uart_and_flush_read(const struct device *dev, const
  * @retval 0 on success,
  * @retval -errno on error.
  */
-static int adi_tmc2209_write(const struct device *dev, const uint8_t reg_address, const uint8_t *data) {
+static int adi_tmc2209_write(const struct device *dev, const uint8_t reg_address, adi_tmc2209_reg_t data) {
     const adi_tmc2209_config_t *config = dev->config;
+
+    // Convert from host to network byte order
+    data.as_uint32 = sys_cpu_to_be32(data.as_uint32);
 
     write_datagram_t datagram = {{
         .sync = SYNC_NIBBLE,
@@ -144,14 +148,11 @@ static int adi_tmc2209_write(const struct device *dev, const uint8_t reg_address
         .address = config->address,
         .reg_address = reg_address,
         .rw = WRITE,
-        .data = {data[0], data[1], data[2], data[3]},
+        .data = data,
         .crc = 0,  // appease warnings
     }};
 
     store_crc(datagram.raw, sizeof(datagram.raw));
-
-    LOG_DBG("data: %02X %02X %02X %02X", data[0], data[1], data[2], data[3]);
-
     write_single_line_uart_and_flush_read(dev, datagram.raw, sizeof(datagram.raw));
 
     return 0;
@@ -162,13 +163,17 @@ static int adi_tmc2209_write(const struct device *dev, const uint8_t reg_address
  *
  * @param dev Device handle; must not be NULL
  * @param reg_address
- * @param data must be at least 4 bytes long.
+ * @param data must be 4 bytes long.
  *
  * @retval 0 on success
  * @retval -errno on error.
  */
-static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address, uint8_t *data) {
+static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address, adi_tmc2209_reg_t *data) {
     const adi_tmc2209_config_t *config = dev->config;
+
+    if (data == NULL) {
+        return -EINVAL;
+    }
 
     read_datagram_t datagram = {{
         .sync = SYNC_NIBBLE,
@@ -206,10 +211,8 @@ static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address,
         return -EIO;
     }
 
-    // The size of `data` is inevitably 4, as all registers on the TMC2209 are 32 bits long.
-    for (size_t i = 0; i < sizeof(reply_datagram.fields.data); i++) {
-        data[i] = reply_datagram.fields.data[i];
-    }
+    // Convert the endianess of the response data
+    data->as_uint32 = sys_be32_to_cpu(reply_datagram.fields.data.as_uint32);
 
     return 0;
 }
@@ -221,20 +224,22 @@ int adi_tmc2209_set_ihold_irun(const struct device *dev, const uint8_t hold_curr
         return -EINVAL;
     }
 
-    struct IHOLD_IRUN_data_fields data = {
-        .ihold = hold_current - 1,
-        .irun = run_current - 1,
-        .iholddelay = hold_delay,
+    adi_tmc2209_reg_t val = {
+        .ihold_irun =
+            {
+                .ihold = hold_current - 1,
+                .irun = run_current - 1,
+                .iholddelay = hold_delay,
+            },
     };
 
-    return adi_tmc2209_write(dev, REG_IHOLD_IRUN, (unsigned char *)&data);
+    return adi_tmc2209_write(dev, REG_IHOLD_IRUN, val);
 }
 
 int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per_fullstep) {
     const adi_tmc2209_config_t *config = dev->config;
-    struct CHOPCONF_data_fields chopconf_data = {0};
-
-    int ret = adi_tmc2209_read(dev, REG_CHOPCONF, (unsigned char *)&chopconf_data);
+    adi_tmc2209_reg_t val = {0};
+    int ret = adi_tmc2209_read(dev, REG_CHOPCONF, &val);
 
     if (ret < 0) {
         LOG_ERR("[Dev: %d] Failed (%d) to read chopconf data", config->address, ret);
@@ -276,10 +281,10 @@ int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per
             return -EINVAL;
     }
 
-    chopconf_data.intpol = 1;
-    chopconf_data.mres = mres;
+    val.chopconf.intpol = 1;
+    val.chopconf.mres = mres;
     k_sleep(K_MSEC(10));
-    ret = adi_tmc2209_write(dev, REG_CHOPCONF, (unsigned char *)&chopconf_data);
+    ret = adi_tmc2209_write(dev, REG_CHOPCONF, val);
     return ret;
 }
 
@@ -289,28 +294,28 @@ static int adi_tmc2209_init(const struct device *dev) {
     const int default_hold_delay = 15;
 
     // Check GSTAT & clear reset
-    struct GSTAT_data_fields gstat_data = {0};
-    int ret = adi_tmc2209_read(dev, REG_GSTAT, (unsigned char *)&gstat_data);
+    adi_tmc2209_reg_t val;
+    int ret = adi_tmc2209_read(dev, REG_GSTAT, &val);
     if (ret < 0) {
         LOG_ERR("Failed (%d) to read gstat data", ret);
     } else {
-        LOG_DBG("GSTAT flags reset [%d] drv_err [%d] uv_cp [%d]", gstat_data.reset, gstat_data.drv_err,
-                gstat_data.uv_cp);
-        gstat_data.reset = 1;
-        ret = adi_tmc2209_write(dev, REG_GSTAT, (unsigned char *)&gstat_data);
+        LOG_DBG("GSTAT flags reset [%d] drv_err [%d] uv_cp [%d]", val.gstat.reset, val.gstat.drv_err, val.gstat.uv_cp);
+
+        // Write back to clear the status flags
+        ret = adi_tmc2209_write(dev, REG_GSTAT, val);
         if (ret < 0) {
             LOG_ERR("Failed (%d) to write gstat data to reset", ret);
         }
     }
 
-    struct NODECONF_data_fields node_cfg = {
-        .send_delay = SEND_DELAY,
-    };
     k_sleep(K_MSEC(10));
-    adi_tmc2209_write(dev, REG_NODECONF, (unsigned char *)&node_cfg);
 
-    struct GCONF_data_fields gconf_data = {0};
-    ret = adi_tmc2209_read(dev, REG_GCONF, (unsigned char *)&gconf_data);
+    val.as_uint32 = 0;
+    val.nodeconf.send_delay = SEND_DELAY;
+    adi_tmc2209_write(dev, REG_NODECONF, val);
+
+    ret = adi_tmc2209_read(dev, REG_GCONF, &val);
+    struct GCONF_data_fields gconf_data = val.gconf;
 
     if (ret < 0) {
         LOG_WRN("Couldn't read GCONF. Setting defaults.");
@@ -332,13 +337,15 @@ static int adi_tmc2209_init(const struct device *dev) {
     gconf_data.multistep_filt = 0;
 
     k_sleep(K_MSEC(10));  // I don't know why this works. Are we writing too soon after reading? but it is necessary.
-    ret = adi_tmc2209_write(dev, REG_GCONF, (unsigned char *)&gconf_data);
+    val.gconf = gconf_data;
+    ret = adi_tmc2209_write(dev, REG_GCONF, val);
 
     if (ret < 0) {
         LOG_ERR("Couldn't write GCONF. Defaults may be wrong!");
     }
 
-    ret = adi_tmc2209_read(dev, REG_GCONF, (unsigned char *)&gconf_data);
+    ret = adi_tmc2209_read(dev, REG_GCONF, &val);
+    gconf_data = val.gconf;
     if (ret < 0) {
         LOG_ERR("Couldn't read GCONF. Defaults may be wrong!");
     } else {
