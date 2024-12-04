@@ -168,6 +168,25 @@ static int cmd_read_register(const struct shell *shell, const int argc, const ch
 
     shell_print(shell, "Data at 0x%02X: 0x%02X 0x%02X 0x%02X 0x%02X, returned %d", reg, data[0], data[1], data[2],
                 data[3], ret);
+
+    switch (reg) {
+        case REG_GCONF:
+            dump_gconf(shell, device);
+            break;
+        case REG_GSTAT:
+            dump_gstat(shell, device);
+            break;
+        case REG_IFCNT:
+            dump_ifcnt(shell, device);
+            break;
+        case REG_IHOLD_IRUN:
+            dump_ihold_irun(shell, device);
+            break;
+        case REG_IOIN:
+            dump_ioin(shell, device);
+            break;
+    }
+
     return ret < 0 ? ret : 0;
 }
 
