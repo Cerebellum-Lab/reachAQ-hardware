@@ -6,15 +6,50 @@
 #define RD_PACKET_LENGTH 4  // packet length when requesting a read from the IC
 #define RP_PACKET_LENGTH 8  // packet length when receiving a reply from the IC
 
+// General Configuration Registers
 #define REG_GCONF 0x00U
 #define REG_GSTAT 0x01U
 #define REG_IFCNT 0x02U
 #define REG_NODECONF 0x03U
 #define REG_IOIN 0x06U
 
+// Velocity Dependent Control Registers
 #define REG_IHOLD_IRUN 0x10U
+#define REG_TSTEP 0x12U
 
+// StallGuard Control Registers
+#define REG_SG_RESULT 0x41U
+
+// Sequencer Registers
+#define REG_MSCNT 0x6AU
+#define REG_MSCURACT 0x6BU
+
+// Chopper Control Registers
 #define REG_CHOPCONF 0x6CU
+#define REG_DRV_STATUS 0x6FU
+
+struct __attribute__((packed)) DRV_STATUS_data_fields {
+    uint8_t pwm_ofs : 8;
+    uint8_t pwm_grad : 8;
+    uint8_t pwm_freq : 2;
+    uint8_t pwm_autoscale : 1;
+    uint8_t pwm_autograd : 1;
+    uint8_t freewheel : 2;
+    uint8_t : 2;
+    uint8_t pwm_reg : 4;
+    uint8_t pwm_lim : 4;
+};
+
+BUILD_ASSERT(sizeof(struct DRV_STATUS_data_fields) == DATA_LENGTH);
+
+struct __attribute__((packed)) MSCURACT_data_fields {
+    int8_t cur_b : 8;
+    uint8_t : 8;
+    int8_t cur_a : 8;
+    int8_t : 8;
+};
+
+BUILD_ASSERT(sizeof(struct MSCURACT_data_fields) == DATA_LENGTH);
 
 struct __attribute__((packed)) IOIN_data_fields {
     uint32_t enn : 1;

@@ -69,7 +69,7 @@ static int dump_ihold_irun(const struct shell *shell, const int device) {
     struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
     uint32_t val;
 
-    // IHOLD_IRUN
+    // I
     int ret = api->read(dev, REG_IOIN, (uint8_t *)&val);
     val = sys_be32_to_cpu(val);
     struct IHOLD_IRUN_data_fields *ihold_irun = (struct IHOLD_IRUN_data_fields *)&val;
@@ -104,6 +104,110 @@ static int dump_ioin(const struct shell *shell, const int device) {
     return ret;
 }
 
+static int dump_tstep(const struct shell *shell, const int device) {
+    const struct device *dev = adi_devs[device];
+    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
+    uint32_t val;
+
+    // TSTEP
+    int ret = api->read(dev, REG_TSTEP, (uint8_t *)&val);
+    val = sys_be32_to_cpu(val);
+    shell_print(shell, "TSTEP: %d", val);
+
+    return ret;
+}
+
+static int dump_sg_result(const struct shell *shell, const int device) {
+    const struct device *dev = adi_devs[device];
+    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
+    uint32_t val;
+
+    // SG_RESULT
+    int ret = api->read(dev, REG_SG_RESULT, (uint8_t *)&val);
+    val = sys_be32_to_cpu(val);
+    shell_print(shell, "SG_RESULT: %d", val);
+
+    return ret;
+}
+
+static int dump_mscnt(const struct shell *shell, const int device) {
+    const struct device *dev = adi_devs[device];
+    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
+    uint32_t val;
+
+    // MSCNT
+    int ret = api->read(dev, REG_MSCNT, (uint8_t *)&val);
+    val = sys_be32_to_cpu(val);
+    shell_print(shell, "MSCNT: %d", val);
+
+    return ret;
+}
+
+static int dump_mscuract(const struct shell *shell, const int device) {
+    const struct device *dev = adi_devs[device];
+    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
+    uint32_t val;
+
+    // MSCURACT
+    int ret = api->read(dev, REG_MSCURACT, (uint8_t *)&val);
+    val = sys_be32_to_cpu(val);
+    struct MSCURACT_data_fields *mscuract = (struct MSCURACT_data_fields *)&val;
+    shell_print(shell, "MSCURACT:");
+    shell_print(shell, "  cur_b: %d", mscuract->cur_b);
+    shell_print(shell, "  cur_a: %d", mscuract->cur_a);
+
+    return ret;
+}
+
+static int dump_chopconf(const struct shell *shell, const int device) {
+    const struct device *dev = adi_devs[device];
+    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
+    uint32_t val;
+
+    // CHOPCONF
+    int ret = api->read(dev, REG_CHOPCONF, (uint8_t *)&val);
+    val = sys_be32_to_cpu(val);
+    struct CHOPCONF_data_fields *chopconf = (struct CHOPCONF_data_fields *)&val;
+    shell_print(shell, "CHOPCONF:");
+    shell_print(shell, "  mres: %d", chopconf->mres);
+    shell_print(shell, "  intpol: %d", chopconf->intpol);
+    shell_print(shell, "  dedge: %d", chopconf->dedge);
+    shell_print(shell, "  diss2g: %d", chopconf->diss2g);
+    shell_print(shell, "  dss2vs: %d", chopconf->dss2vs);
+    shell_print(shell, "  tbl1: %d", chopconf->tbl1);
+    shell_print(shell, "  hend1: %d", chopconf->hend1);
+    shell_print(shell, "  hend2: %d", chopconf->hend2);
+    shell_print(shell, "  hend3: %d", chopconf->hend3);
+    shell_print(shell, "  tbl0: %d", chopconf->tbl0);
+    shell_print(shell, "  toff: %d", chopconf->toff);
+    shell_print(shell, "  hstrt: %d", chopconf->hstrt);
+    shell_print(shell, "  hend0: %d", chopconf->hend0);
+
+    return ret;
+}
+
+static int dump_drv_status(const struct shell *shell, const int device) {
+    const struct device *dev = adi_devs[device];
+    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
+    uint32_t val;
+
+    // DRV_STATUS
+    int ret = api->read(dev, REG_DRV_STATUS, (uint8_t *)&val);
+    val = sys_be32_to_cpu(val);
+    struct DRV_STATUS_data_fields *drv_status = (struct DRV_STATUS_data_fields *)&val;
+    shell_print(shell, "DRV_STATUS:");
+    shell_print(shell, "  pwm_ofs: %d", drv_status->pwm_ofs);
+    shell_print(shell, "  pwm_grad: %d", drv_status->pwm_grad);
+    shell_print(shell, "  pwm_freq: %d", drv_status->pwm_freq);
+    shell_print(shell, "  pwm_autoscale: %d", drv_status->pwm_autoscale);
+    shell_print(shell, "  pwm_autograd: %d", drv_status->pwm_autograd);
+    shell_print(shell, "  freewheel: %d", drv_status->freewheel);
+    shell_print(shell, "  pwm_reg: %d", drv_status->pwm_reg);
+    shell_print(shell, "  pwm_lim: %d", drv_status->pwm_lim);
+
+    return ret;
+}
+
 static int cmd_dump_registers(const struct shell *shell, const int argc, const char *argv[]) {
     if (argc < 2) {
         shell_print(shell, "Usage: %s <device>", argv[0]);
@@ -125,8 +229,18 @@ static int cmd_dump_registers(const struct shell *shell, const int argc, const c
     dump_gconf(shell, device);
     dump_gstat(shell, device);
     dump_ifcnt(shell, device);
-    dump_ihold_irun(shell, device);
     dump_ioin(shell, device);
+
+    dump_ihold_irun(shell, device);
+    dump_tstep(shell, device);
+
+    dump_sg_result(shell, device);
+
+    dump_mscnt(shell, device);
+    dump_mscuract(shell, device);
+
+    dump_chopconf(shell, device);
+    dump_drv_status(shell, device);
 
     return 0;
 }
@@ -184,6 +298,24 @@ static int cmd_read_register(const struct shell *shell, const int argc, const ch
             break;
         case REG_IOIN:
             dump_ioin(shell, device);
+            break;
+        case REG_TSTEP:
+            dump_tstep(shell, device);
+            break;
+        case REG_SG_RESULT:
+            dump_sg_result(shell, device);
+            break;
+        case REG_MSCNT:
+            dump_mscnt(shell, device);
+            break;
+        case REG_MSCURACT:
+            dump_mscuract(shell, device);
+            break;
+        case REG_CHOPCONF:
+            dump_chopconf(shell, device);
+            break;
+        case REG_DRV_STATUS:
+            dump_drv_status(shell, device);
             break;
     }
 
