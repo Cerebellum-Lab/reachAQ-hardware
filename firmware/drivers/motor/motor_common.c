@@ -148,6 +148,7 @@ int ll_motor_init(const struct device *dev) {
 
     data->motor_device = dev;
 
+#if 0
     // Initialize the limit switch GPIO if it exists
     if (cfg->limit_switch_pin.port != NULL) {
         gpio_init_callback(&data->limit_switch_cb, ll_motor_limit_switch_callback, BIT(cfg->limit_switch_pin.pin));
@@ -169,6 +170,7 @@ int ll_motor_init(const struct device *dev) {
                     ret);
         }
     }
+#endif
 
     // Initialize the callbacks list
     sys_slist_init(&data->callbacks);

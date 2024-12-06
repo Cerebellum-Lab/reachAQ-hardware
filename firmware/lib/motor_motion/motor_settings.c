@@ -16,7 +16,6 @@ LOG_MODULE_REGISTER(motor_settings);
 // Common keys
 #define MAX_VELOCITY_KEY "v_max"
 #define MAX_ACCELERATION_KEY "a_max"
-#define LAST_POSITION_KEY "p_last"
 
 // Servo keys
 #define MIN_ANGLE_KEY "o_min"
@@ -55,15 +54,6 @@ static int servo_settings_set(const char *key, size_t len, settings_read_cb read
         if (max_acceleration > 0.0f) {
             context->context.motion_profile.a_max = max_acceleration;
         }
-    } else if (strncmp(key, LAST_POSITION_KEY, sizeof(LAST_POSITION_KEY) - 1) == 0) {
-        float last_position;
-        const int ret = read_cb(cb_arg, &last_position, sizeof(last_position));
-        if (ret < 0) {
-            LOG_ERR("Failed to read last_position from settings: %d", ret);
-            return ret;
-        }
-        LOG_DBG("restored last_position: %f", (double)last_position);
-        context->context.last_position_generated = last_position;
     } else if (strncmp(key, MIN_ANGLE_KEY, sizeof(MIN_ANGLE_KEY) - 1) == 0) {
         float min_angle;
         const int ret = read_cb(cb_arg, &min_angle, sizeof(min_angle));
@@ -167,16 +157,6 @@ int servo_settings_export(const struct device *dev, const size_t dt_id,
     }
     LOG_DBG("Saved max_acceleration: %f", (double)context->context.motion_profile.a_max);
 
-    static char last_position_key[] = GENERATE_SERVO_TEMPLATE(LAST_POSITION_KEY);
-    last_position_key[id_number_index] = itoa(dt_id);
-    ret = storage_func(last_position_key, &context->context.last_position_generated,
-                       sizeof(context->context.last_position_generated));
-    if (ret < 0) {
-        LOG_ERR("Failed to write last_position_generated to settings: %d", ret);
-        return ret;
-    }
-    LOG_DBG("Saved last_position_generated: %f", (double)context->context.last_position_generated);
-
     static char min_angle_key[] = GENERATE_SERVO_TEMPLATE(MIN_ANGLE_KEY);
     min_angle_key[id_number_index] = itoa(dt_id);
     ret = storage_func(min_angle_key, &context->context.min_angle, sizeof(context->context.min_angle));
@@ -274,15 +254,6 @@ static int stepper_settings_set(const char *key, size_t len, settings_read_cb re
         if (max_acceleration > 0.0f) {
             context->context.motion_profile.a_max = max_acceleration;
         }
-    } else if (strncmp(key, LAST_POSITION_KEY, sizeof(LAST_POSITION_KEY) - 1) == 0) {
-        float last_position;
-        const int ret = read_cb(cb_arg, &last_position, sizeof(last_position));
-        if (ret < 0) {
-            LOG_ERR("Failed to read last_position from settings: %d", ret);
-            return -EINVAL;
-        }
-        LOG_DBG("restored last_position: %f", (double)last_position);
-        context->context.last_position_generated = last_position;
     } else if (strncmp(key, MIN_STEP_KEY, sizeof(MIN_STEP_KEY) - 1) == 0) {
         float min_step;
         const int ret = read_cb(cb_arg, &min_step, sizeof(min_step));
@@ -349,16 +320,6 @@ static int stepper_settings_export(const struct device *dev, const size_t dt_id,
         return ret;
     }
     LOG_DBG("Saved max_acceleration: %f", (double)context->context.motion_profile.a_max);
-
-    static char last_position_key[] = GENERATE_STEPPER_TEMPLATE(LAST_POSITION_KEY);
-    last_position_key[id_number_index] = itoa(dt_id);
-    ret = storage_func(last_position_key, &context->context.last_position_generated,
-                       sizeof(context->context.last_position_generated));
-    if (ret < 0) {
-        LOG_ERR("Failed to write last_position to settings: %d", ret);
-        return ret;
-    }
-    LOG_DBG("Saved last_position: %f", (double)context->context.last_position_generated);
 
     static char min_step_key[] = GENERATE_STEPPER_TEMPLATE(MIN_STEP_KEY);
     min_step_key[id_number_index] = itoa(dt_id);

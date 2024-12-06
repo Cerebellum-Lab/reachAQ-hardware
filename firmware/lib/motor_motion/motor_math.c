@@ -108,6 +108,11 @@ int motor_motion_stepper_init_context_struct(const float start, const float end,
         return -EINVAL;
     }
 
+    LOG_ERR("Parameters: y_f: %f y_s: %f y_a: %f v_w: %f t_o: %f t_a: %f t_k: %f t_s: %f t_t: %f",
+        (double)context->motion_profile.y_f, (double)context->motion_profile.y_s, (double)context->motion_profile.y_a,
+        (double)context->motion_profile.v_w, (double)context->motion_profile.t_o, (double)context->motion_profile.t_a,
+        (double)context->motion_profile.t_k, (double)context->motion_profile.t_s, (double)context->motion_profile.t_t);
+
     context->last_position_generated = start;
     context->last_time_generated = 0.0f;
     context->min_step = min_step;
@@ -191,11 +196,11 @@ static float acceleration_region_halleys_method(const float displacement_hat, co
                                   * converge in 3 iterations or fewer! */
 
     const float time_tolerance = timer_increment / 2.0f > FLT_EPSILON ? timer_increment / 2.0f : FLT_EPSILON;
-    const float position_tolerance = min_step / 4.0f;
+    const float position_tolerance = min_step / 8.0f;
 
     /* The cosine term is, on average, 0 so `time` is a good first guess. Though it uses an expensive `sqrtf`,
      * it provides such an excellent guess that it will save us a lot of computation later. */
-    float time = sqrtf((displacement_hat) * 4.0f / context->a_max);
+    float time = sqrtf((displacement_hat) * 4.0f / context->a_max + context->k_s);
 
     float displacement_now = acceleration_region_displacement_hat(time, context);
     float difference = displacement_now - displacement_hat;  // This is the actual function we are finding the root of.
@@ -213,6 +218,7 @@ static float acceleration_region_halleys_method(const float displacement_hat, co
              * are close to the root (and the guess puts us very close to the root), so we just break out of the loop
              * if the time adjustment is too small or if floating point loss of precision makes the adjustment
              * meaningless. */
+            LOG_ERR("Invalid adjustment in Halley's method: %f", (double)adjustment);
             break;
         }
 
@@ -246,12 +252,13 @@ static float time_at_displacement_hat(const float displacement_hat, const float 
     } else if (displacement_hat <= context->y_a) {
         const float ret = acceleration_region_halleys_method(displacement_hat, min_step, timer_increment, context);
         if (ret == NAN) {
+            LOG_ERR("Halley's method returned NAN");
             /* Apparently invalid. Try the next region. N.B.--This should never happen. */
-            return ((displacement_hat - context->y_s) / context->v_w + context->t_s);
+            return (displacement_hat - context->y_s) / context->v_w + context->t_s;
         }
         return ret;
     } else if (displacement_hat <= context->y_f - context->y_a) {
-        return ((displacement_hat - context->y_s) / context->v_w + context->t_s);
+        return (displacement_hat - context->y_s) / context->v_w + context->t_s;
     } else if (displacement_hat < context->y_f) {
         const float reflected_displacement = context->y_f - displacement_hat;
         return context->t_t -
@@ -330,23 +337,28 @@ ssize_t motor_motion_stepper_generate_timing_table(uint32_t *table, const size_t
     float this_time = context->last_time_generated;
     float this_position = context->last_position_generated;
     for (size_t i = 0; i < n_entries; i++) {
-        this_position = context->last_position_generated + context->motion_profile.sgn * (float)(i + 1) *
+        this_position = context->last_position_generated + context->motion_profile.sgn * (float)i *
                                                                context->min_step / context->steps_per_revolution;
         this_time =
             time_at_position(this_position, context->min_step, context->timer_increment, &context->motion_profile);
 
         // Take the ceiling to be conservative about velocity & acceleration.
+        if (this_time < last_time) {
+            LOG_ERR("This time (%f) less than last time (%f) at position %f (pulse %f)", (double)this_time, (double)last_time, (double)this_position, (double) (this_position * context->steps_per_revolution / context->min_step));
+        }
         const float time_delta = ceilf((this_time - last_time) / time_step);
 
         if (time_delta >= (float)UINT16_MAX) {
             // This is the maximum value that can be sent over the DMA. The upper word is completely unused.
+            LOG_ERR("Time_delta (%f) exceeded UINT16_MAX at position %f", (double)time_delta, (double)this_position);
             table[i] = UINT16_MAX;
         } else if (time_delta <= 1.0f || isnan(time_delta) || isinf(time_delta)) {
             // Sending even a single zero over the DMA will stop the timer, and negative numbers
             // should (theoretically) never happen. In either case, just send the minimum value.
-            table[i] = 1;
+            LOG_ERR("Time_delta is out of range (%f) at position %f", (double)time_delta, (double)this_position);
+            table[i] = 10;
         } else {
-            table[i] = (uint32_t)time_delta;
+            table[i] = (uint32_t)lroundf(time_delta);
         }
 
         last_time = this_time;

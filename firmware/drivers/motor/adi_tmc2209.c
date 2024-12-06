@@ -282,6 +282,10 @@ int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per
     }
 
     val.chopconf.intpol = 1;
+    val.chopconf.dedge = 0;
+    val.chopconf.tbl = 2;
+    val.chopconf.hstrt = 4;
+    val.chopconf.hend = 0;
     val.chopconf.mres = mres;
     k_sleep(K_MSEC(10));
     ret = adi_tmc2209_write(dev, REG_CHOPCONF, val);
@@ -290,7 +294,7 @@ int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per
 
 static int adi_tmc2209_init(const struct device *dev) {
     const int default_hold_current = 1;
-    const int default_run_current = 10;
+    const int default_run_current = 4;
     const int default_hold_delay = 15;
 
     // Check GSTAT & clear reset
@@ -331,7 +335,7 @@ static int adi_tmc2209_init(const struct device *dev) {
     gconf_data.internal_Rsense = 0;  // External sense resistors are connected.
     gconf_data.en_spreadcycle = 0;   // Use StealthChop
     gconf_data.shaft = 0;            // Do not invert the direction of the motor.
-    // Don't set or unset index_otpw or index_step. The INDEX register is not read in this driver.
+    // Don't set or unset index_otpw or index_step. The INDEX pin is disconnected.
     gconf_data.pdn_disable = 1;       // Using UART so set this per datasheet.
     gconf_data.mstep_reg_select = 1;  // MS1 and MS2 are not connected so use UART registers.
     gconf_data.multistep_filt = 0;
@@ -362,6 +366,7 @@ static int adi_tmc2209_init(const struct device *dev) {
     }
 
     // FULLSTEP by default.
+    k_sleep(K_MSEC(10));
     ret = adi_tmc2209_set_microstep(dev, 1);
     if (ret < 0) {
         LOG_ERR("Failed (%d) to set microstep", ret);
