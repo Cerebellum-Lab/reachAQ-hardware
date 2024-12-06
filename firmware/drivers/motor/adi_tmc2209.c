@@ -292,6 +292,27 @@ int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per
     return ret;
 }
 
+static int adi_tmc2209_allow_true_freewheeling(const struct device *dev) {
+    const adi_tmc2209_config_t *config = dev->config;
+    adi_tmc2209_reg_t val = { 0 };
+    int ret = adi_tmc2209_read(dev, REG_PWMCONF, &val);
+
+    if (ret < 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to read pwmconf", config->address, ret);
+        return -EIO;
+    }
+
+    k_sleep(K_MSEC(10));
+    val.pwmconf.freewheel = 0x01;
+    ret = adi_tmc2209_write(dev, REG_PWMCONF, val);
+    if (ret < 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to write pwmconf", config->address, ret);
+        return -EIO;
+    }
+
+    return 0;
+}
+
 static int adi_tmc2209_init(const struct device *dev) {
     const int default_hold_current = 1;
     const int default_run_current = 4;
@@ -370,6 +391,11 @@ static int adi_tmc2209_init(const struct device *dev) {
     ret = adi_tmc2209_set_microstep(dev, 1);
     if (ret < 0) {
         LOG_ERR("Failed (%d) to set microstep", ret);
+    }
+
+    ret = adi_tmc2209_allow_true_freewheeling(dev);
+    if (ret < 0) {
+        LOG_ERR("Failed (%d) to allow freewheeling", ret);
     }
 
     return ret;
