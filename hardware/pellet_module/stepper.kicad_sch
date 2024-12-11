@@ -2547,8 +2547,8 @@
 				)
 			)
 		)
-		(property "Value" "100m"
-			(at 170.942 99.314 90)
+		(property "Value" "180m"
+			(at 169.672 99.314 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2582,7 +2582,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAJ010KT5E"
+		(property "MPN" "ERJ-3BSJR18V"
 			(at 175.26 97.79 0)
 			(effects
 				(font
@@ -2591,7 +2591,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C247025"
+		(property "LCSC" "C2087876"
 			(at 175.26 97.79 0)
 			(effects
 				(font
@@ -3136,7 +3136,7 @@
 			)
 		)
 		(property "Value" "2.2uF"
-			(at 172.72 83.566 90)
+			(at 172.212 83.566 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3548,8 +3548,8 @@
 				)
 			)
 		)
-		(property "Value" "100m"
-			(at 170.942 112.014 90)
+		(property "Value" "180m"
+			(at 169.672 112.014 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3583,7 +3583,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAJ010KT5E"
+		(property "MPN" "ERJ-3BSJR18V"
 			(at 175.26 110.49 0)
 			(effects
 				(font
@@ -3592,7 +3592,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C247025"
+		(property "LCSC" "C2087876"
 			(at 175.26 110.49 0)
 			(effects
 				(font
