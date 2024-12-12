@@ -471,6 +471,8 @@ int ll_generic_gpio_register_state_change_handler(const struct device *dev, void
             interrupt_type = GPIO_INT_EDGE_FALLING;
         } else if (!strcmp(cfg->enable_input_interrupts[i], "BOTH")) {
             interrupt_type = GPIO_INT_EDGE_BOTH;
+        } else {
+            continue;
         }
 
         const int ret = gpio_pin_interrupt_configure_dt(&pins[i], interrupt_type);
@@ -493,12 +495,14 @@ int ll_generic_gpio_register_state_change_handler(const struct device *dev, void
             interrupt_type = GPIO_INT_EDGE_FALLING;
         } else if (!strcmp(cfg->enable_output_interrupts[i], "BOTH")) {
             interrupt_type = GPIO_INT_EDGE_BOTH;
+        } else {
+            continue;
         }
 
         const int ret = gpio_pin_interrupt_configure_dt(&pins[i], interrupt_type);
         if (ret != 0) {
             LOG_ERR("Failed to register state change handler: Error configuring interrupt for pin <%s> - %d",
-                    ll_generic_gpio_lookup_readable_pin_name(dev, i), ret);
+                    ll_generic_gpio_lookup_writable_pin_name(dev, i), ret);
             return ret;
         }
     }
