@@ -79,7 +79,7 @@
 						    "STIM2",
 						    "STIM3",
 							"HEARTBEAT";
-		output-gpio-interrupt-enable = "BOTH", "BOTH", "BOTH", "BOTH", "DISABLE";
+		output-gpio-interrupt-enable = "BOTH", "BOTH", "DISABLE", "DISABLE", "DISABLE";
 	};
 
 	tone_generator {
