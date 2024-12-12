@@ -108,7 +108,8 @@ int motor_motion_stepper_init_context_struct(const float start, const float end,
         return -EINVAL;
     }
 
-    LOG_ERR("Parameters: y_f: %f y_s: %f y_a: %f v_w: %f t_o: %f t_a: %f t_k: %f t_s: %f t_t: %f",
+    LOG_ERR(
+        "Parameters: y_f: %f y_s: %f y_a: %f v_w: %f t_o: %f t_a: %f t_k: %f t_s: %f t_t: %f",
         (double)context->motion_profile.y_f, (double)context->motion_profile.y_s, (double)context->motion_profile.y_a,
         (double)context->motion_profile.v_w, (double)context->motion_profile.t_o, (double)context->motion_profile.t_a,
         (double)context->motion_profile.t_k, (double)context->motion_profile.t_s, (double)context->motion_profile.t_t);
@@ -337,14 +338,16 @@ ssize_t motor_motion_stepper_generate_timing_table(uint32_t *table, const size_t
     float this_time = context->last_time_generated;
     float this_position = context->last_position_generated;
     for (size_t i = 0; i < n_entries; i++) {
-        this_position = context->last_position_generated + context->motion_profile.sgn * (float)i *
-                                                               context->min_step / context->steps_per_revolution;
+        this_position = context->last_position_generated +
+                        context->motion_profile.sgn * (float)i * context->min_step / context->steps_per_revolution;
         this_time =
             time_at_position(this_position, context->min_step, context->timer_increment, &context->motion_profile);
 
         // Take the ceiling to be conservative about velocity & acceleration.
         if (this_time < last_time) {
-            LOG_ERR("This time (%f) less than last time (%f) at position %f (pulse %f)", (double)this_time, (double)last_time, (double)this_position, (double) (this_position * context->steps_per_revolution / context->min_step));
+            LOG_ERR("This time (%f) less than last time (%f) at position %f (pulse %f)", (double)this_time,
+                    (double)last_time, (double)this_position,
+                    (double)(this_position * context->steps_per_revolution / context->min_step));
         }
         const float time_delta = ceilf((this_time - last_time) / time_step);
 

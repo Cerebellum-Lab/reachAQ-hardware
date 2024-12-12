@@ -294,7 +294,7 @@ int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per
 
 static int adi_tmc2209_allow_true_freewheeling(const struct device *dev) {
     const adi_tmc2209_config_t *config = dev->config;
-    adi_tmc2209_reg_t val = { 0 };
+    adi_tmc2209_reg_t val = {0};
     int ret = adi_tmc2209_read(dev, REG_PWMCONF, &val);
 
     if (ret < 0) {
