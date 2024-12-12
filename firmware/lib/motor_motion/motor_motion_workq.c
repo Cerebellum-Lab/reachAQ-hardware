@@ -246,6 +246,7 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
             break;
         case LL_MOTOR_EVENT_LIMIT_SWITCH:
             LOG_DBG("Limit switch event");
+#if 0
             stepper_motor_stop(dev);
             stepper_cancel_all_work(dev);
             context = find_stepper_context_from_device(dev);
@@ -262,6 +263,9 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
                     atomic_flag_clear(&context->homing_in_progress);
                 }
             }
+#endif
+            const ll_motor_cfg_t *cfg = dev->config;
+            LOG_ERR("Limit switch event for stepper %d", cfg->motor_id);
             break;
         default:
             LOG_WRN("Unknown stepper motor event: %d", event);
