@@ -21,4 +21,4 @@ A C++ Library for interacting with the hardware modules over CANbus, as well as 
 ## Running over SSH
 - To minimize latency when running WhiskerWire over SSH, use the compression and multiplexing options, and a fast
   encryption cipher
-- This is accomplished by running `ssh -C -M -c aes128-cbc leaflabs@cuanschutz-jetson`
+- This is accomplished by running `ssh -C -M -c aes128-gcm@openssh.com leaflabs@cuanschutz-jetson`
