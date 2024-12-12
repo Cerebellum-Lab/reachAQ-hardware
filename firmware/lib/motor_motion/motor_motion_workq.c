@@ -213,7 +213,7 @@ void servo_set_position_to_zero(const struct device *dev) {
 /* ***** Callbacks ***** */
 #ifdef CONFIG_DT_HAS_LL_STEPPER_ENABLED
 
-#define REVOLUTIONS_BACKWARDS_AFTER_HOMING 2
+#define REVOLUTIONS_BACKWARDS_AFTER_HOMING 2.0f
 static void stepper_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
                                          void *user_data) {
     // Due to the limitations of the GPIO callback mechanism, this data is only available
@@ -234,10 +234,12 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
                 // When the driver runs out of data to send, the motion is done
                 context->motion_done = true;
 
-                // TODO: Need Jacob to validate if this makes sense- I do not have a setup to test
-                // If homing was in progress, mark the final position
+                // If homing was in progress, mark the final position as 0 (which will be
+                // +/- REVOLUTIONS_BACKWARDS_AFTER_HOMING away from the 0 to which it was set below
+                // during the limit switch event itself).
                 if (atomic_flag_test_and_set(&context->homing_in_progress)) {
                     stepper_set_position_to_zero(context->dev);
+                    // For homing, the v_max is cut in 4 so restore its former value.
                     stepper_set_parameters(context->dev, context->context.motion_profile.v_max * 4.0f, -1.0f, -1.0f,
                                            -1.0f);
                 }
@@ -246,24 +248,26 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
             break;
         case LL_MOTOR_EVENT_LIMIT_SWITCH:
             LOG_DBG("Limit switch event");
-#if 0
             stepper_motor_stop(dev);
             stepper_cancel_all_work(dev);
+            stepper_set_position_to_zero(context->dev);
+
             context = find_stepper_context_from_device(dev);
 
             if (context != NULL) {
                 context->motion_done = true;
                 context->motion_calculation_done = true;
-                // TODO: Get a comment in here about what is going on
+                // If we are homing, then a limit switch event is expected. Go "backwards" from the direction in which
+                // we were going a certain number of revolutions to make sure that the limit switch is no longer
+                // being triggered.
                 if (atomic_flag_test_and_set(&context->homing_in_progress)) {
-                    stepper_move_relative(dev, context->homing_direction == LL_STEPPER_DIR_FORWARD
-                                                   ? -REVOLUTIONS_BACKWARDS_AFTER_HOMING
-                                                   : REVOLUTIONS_BACKWARDS_AFTER_HOMING);
+                    stepper_move_to_position(dev, context->homing_direction == LL_STEPPER_DIR_FORWARD
+                                                    ? -REVOLUTIONS_BACKWARDS_AFTER_HOMING
+                                                    : REVOLUTIONS_BACKWARDS_AFTER_HOMING);
                 } else {
                     atomic_flag_clear(&context->homing_in_progress);
                 }
             }
-#endif
             const ll_motor_cfg_t *cfg = dev->config;
             LOG_ERR("Limit switch event for stepper %d", cfg->motor_id);
             break;

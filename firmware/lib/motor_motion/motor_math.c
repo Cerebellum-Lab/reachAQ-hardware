@@ -108,7 +108,7 @@ int motor_motion_stepper_init_context_struct(const float start, const float end,
         return -EINVAL;
     }
 
-    LOG_ERR(
+    LOG_INF(
         "Parameters: y_f: %f y_s: %f y_a: %f v_w: %f t_o: %f t_a: %f t_k: %f t_s: %f t_t: %f",
         (double)context->motion_profile.y_f, (double)context->motion_profile.y_s, (double)context->motion_profile.y_a,
         (double)context->motion_profile.v_w, (double)context->motion_profile.t_o, (double)context->motion_profile.t_a,
