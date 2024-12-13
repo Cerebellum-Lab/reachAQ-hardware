@@ -12,6 +12,7 @@ workflow:
 variables:
   FF_SCRIPT_SECTIONS: "true"
   FIRMWARE_PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/module_firmware/${CI_COMMIT_TAG}"
+  PYPI_PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi"
 
 # Job that is run on merge requests
 check_formatting:
@@ -96,7 +97,11 @@ build_whiskerwire:
         - docker/pybind11/**/*
   script:
     - cd software/whiskerwire
-    - pip3 wheel ../libjerrycan . -w wheels
+    - pip3 wheel ../libjerrycan . -w ${CI_PROJECT_DIR}/wheels
+  artifacts:
+    paths:
+      - ${CI_PROJECT_DIR}/wheels/whiskerwire*.whl
+      - ${CI_PROJECT_DIR}/wheels/pyjerrycan*.whl
 
 # Generate diffs for PCB projects
 .generate_hardware_diffs_template: &generate_hardware_diffs_template
@@ -144,8 +149,8 @@ generate_jetson_diffs:
     PROJECT_DIR: hardware/jetson_breakout
     PROJECT_FILE: jetson_breakout.kicad_pro
 
-# Create release packages for tagged commits
-upload_job:
+# Upload the module firmware binaries to the package registry
+upload_fw_job:
   stage: release
   image: curlimages/curl:latest
   needs:
@@ -170,13 +175,28 @@ upload_job:
         fi
       done
 
+# Upload python packages to the package registry
+upload_py_job:
+  stage: release
+  image: python
+  rules:
+    - if: $CI_COMMIT_TAG
+  variables:
+    TWINE_USERNAME: gitlab-ci-token
+    TWINE_PASSWORD: $CI_JOB_TOKEN
+  script:
+    - pip install twine
+    - python -m twine upload --repository-url $PYPI_PACKAGE_REGISTRY_URL ${CI_PROJECT_DIR}/wheels/*
+
+# Create a release package for the module firmware and python packages
 release_job:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   rules:
     - if: $CI_COMMIT_TAG
   needs:
-    - job: upload_job
+    - job: upload_fw_job
+    - job: upload_py_job
   script:
     - echo "Creating release package for $CI_COMMIT_TAG"
   release:
@@ -188,3 +208,7 @@ release_job:
           url: "${FIRMWARE_PACKAGE_REGISTRY_URL}/pellet_module_fw_${CI_COMMIT_TAG}.bin"
         - name: "Magnet Firmware"
           url: "${FIRMWARE_PACKAGE_REGISTRY_URL}/magnet_module_fw_${CI_COMMIT_TAG}.bin"
+        - name: "WhiskerWire"
+          url: "https://gitlab.leaflabs.com/cuanschutz/autotrainer/-/packages/25"
+        - name: "PyJerryCan"
+          url: "https://gitlab.leaflabs.com/cuanschutz/autotrainer/-/packages/24"
