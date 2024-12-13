@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
@@ -17,11 +17,15 @@ dependencies = [
     "click==8.1.7",
 ]
 
-[project.scripts]
-whiskerwire = "whiskerwire.entry_points:whiskerwire_app"
+[tool.hatch.build.hooks.vcs]
+version-file = "whiskerwire/__about__.py"
 
 [tool.hatch.version]
-path = "whiskerwire/__about__.py"
+source = "vcs"
+raw-options = { root = "../.."}
+
+[project.scripts]
+whiskerwire = "whiskerwire.entry_points:whiskerwire_app"
 
 [tool.hatch.envs.types]
 extra-dependencies = [
