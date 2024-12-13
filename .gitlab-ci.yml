@@ -72,18 +72,30 @@ build_magnet_firmware:
     BOARD: cerebellumlab_magnet_module
 
 # Build pyjerrycan/libjerrycan
-build_libjerrycan:
+.build_libjerrycan: &build_libjerrycan
   image: registry.gitlab.leaflabs.com/cuanschutz/autotrainer/pybind11
   stage: build
-  tags:
-    - linux
   rules:
     - changes:
         - software/libjerrycan/**/*
         - docker/pybind11/**/*
   script:
     - cd software/libjerrycan
-    - pip3 wheel .
+    - pip3 wheel . -w ${CI_PROJECT_DIR}/wheels
+  artifacts:
+    paths:
+      - ${CI_PROJECT_DIR}/wheels/pyjerrycan*.whl
+
+# Build architecture specific wheels for pyjerrycan
+build_pyjerrycan_x86_64:
+  <<: *build_libjerrycan
+  tags:
+    - linux
+
+build_pyjerrycan_arm64:
+  <<: *build_libjerrycan
+  tags:
+    - arm
 
 # Build WhiskerWire
 build_whiskerwire:
@@ -101,7 +113,6 @@ build_whiskerwire:
   artifacts:
     paths:
       - ${CI_PROJECT_DIR}/wheels/whiskerwire*.whl
-      - ${CI_PROJECT_DIR}/wheels/pyjerrycan*.whl
 
 # Generate diffs for PCB projects
 .generate_hardware_diffs_template: &generate_hardware_diffs_template
@@ -181,6 +192,13 @@ upload_py_job:
   image: python
   rules:
     - if: $CI_COMMIT_TAG
+  needs:
+    - job: build_pyjerrycan_x86_64
+      artifacts: true
+    - job: build_pyjerrycan_arm64
+      artifacts: true
+    - job: build_whiskerwire
+      artifacts: true
   variables:
     TWINE_USERNAME: gitlab-ci-token
     TWINE_PASSWORD: $CI_JOB_TOKEN

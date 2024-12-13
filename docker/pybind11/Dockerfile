@@ -1,10 +1,7 @@
 #
 # Build a Docker image with tools to build a pybind11 package
 # Update the container image by running:
-# $ docker buildx build -t registry.gitlab.leaflabs.com/cuanschutz/autotrainer/pybind11 .
-#
-# Update the container registry by running:
-# $ docker push registry.gitlab.leaflabs.com/cuanschutz/autotrainer/pybind11
+# $ docker buildx build --platform linux/arm64,linux/amd64 -t registry.gitlab.leaflabs.com/cuanschutz/autotrainer/pybind11 --push .
 #
 
 FROM ubuntu AS build
@@ -25,4 +22,4 @@ RUN cd /usr/local && \
     /bin/sh cmake-3.31.0-linux-x86_64.sh --skip-license && \
     rm cmake-3.31.0-linux-x86_64.sh
 
-RUN pip3 install pybind11 mypy pytest
+RUN pip3 install --break-system-packages pybind11 mypy pytest
