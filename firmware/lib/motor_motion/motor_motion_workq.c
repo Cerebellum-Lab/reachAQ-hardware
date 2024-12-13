@@ -262,8 +262,8 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
                 // being triggered.
                 if (atomic_flag_test_and_set(&context->homing_in_progress)) {
                     stepper_move_to_position(dev, context->homing_direction == LL_STEPPER_DIR_FORWARD
-                                                    ? -REVOLUTIONS_BACKWARDS_AFTER_HOMING
-                                                    : REVOLUTIONS_BACKWARDS_AFTER_HOMING);
+                                                      ? -REVOLUTIONS_BACKWARDS_AFTER_HOMING
+                                                      : REVOLUTIONS_BACKWARDS_AFTER_HOMING);
                 } else {
                     atomic_flag_clear(&context->homing_in_progress);
                 }
