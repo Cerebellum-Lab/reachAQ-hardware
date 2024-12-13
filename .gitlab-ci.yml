@@ -208,7 +208,3 @@ release_job:
           url: "${FIRMWARE_PACKAGE_REGISTRY_URL}/pellet_module_fw_${CI_COMMIT_TAG}.bin"
         - name: "Magnet Firmware"
           url: "${FIRMWARE_PACKAGE_REGISTRY_URL}/magnet_module_fw_${CI_COMMIT_TAG}.bin"
-        - name: "WhiskerWire"
-          url: "https://gitlab.leaflabs.com/cuanschutz/autotrainer/-/packages/25"
-        - name: "PyJerryCan"
-          url: "https://gitlab.leaflabs.com/cuanschutz/autotrainer/-/packages/24"
