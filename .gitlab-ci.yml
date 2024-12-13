@@ -35,8 +35,8 @@ check_formatting:
       - deps
   artifacts:
     paths:
-      - firmware/${MODULE}_fw.hex
-      - firmware/${MODULE}_bootloader.hex
+      - firmware/*.hex
+      - firmware/*.bin
   rules:
     - changes:
         - firmware/**/*
@@ -47,8 +47,11 @@ check_formatting:
     - west update
     - cd ${MODULE}
     - west build -p --sysbuild -b ${BOARD}
-    - cp build/${MODULE}/zephyr/zephyr.signed.hex ../${MODULE}_fw.hex
-    - cp build/mcuboot/zephyr/zephyr.hex ../${MODULE}_bootloader.hex
+    - GIT_DESCRIBE=$(git describe --tags --always --dirty)
+    - cp build/${MODULE}/zephyr/zephyr.signed.hex ../${MODULE}_fw_${GIT_DESCRIBE}.hex
+    - cp build/${MODULE}/zephyr/zephyr.signed.bin ../${MODULE}_fw_${GIT_DESCRIBE}.bin
+    - cp build/mcuboot/zephyr/zephyr.hex ../${MODULE}_${GIT_DESCRIBE}_bootloader.hex
+    - cp build/mcuboot/zephyr/zephyr.bin ../${MODULE}_${GIT_DESCRIBE}_bootloader.bin
 
 build_pellet_firmware:
   <<: *build_firmware_template
