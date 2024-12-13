@@ -1,12 +1,17 @@
 stages:
   - check
   - build
+  - release
 
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+variables:
+  FF_SCRIPT_SECTIONS: "true"
+  FIRMWARE_PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/module_firmware/${CI_COMMIT_TAG}"
 
 # Job that is run on merge requests
 check_formatting:
@@ -138,3 +143,48 @@ generate_jetson_diffs:
   variables:
     PROJECT_DIR: hardware/jetson_breakout
     PROJECT_FILE: jetson_breakout.kicad_pro
+
+# Create release packages for tagged commits
+upload_job:
+  stage: release
+  image: curlimages/curl:latest
+  needs:
+    - job: build_pellet_firmware
+      artifacts: true
+    - job: build_magnet_firmware
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - echo "${PACKAGE_REGISTRY_URL}"
+    - >
+      for file in firmware/*.bin; do
+        if [ -f "$file" ]; then
+          filename=$(basename "$file")
+          echo "$file"
+          echo "$filename"
+          curl --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+               --upload-file "$file" \
+               "${FIRMWARE_PACKAGE_REGISTRY_URL}/$filename"
+          echo "Uploaded: $filename"
+        fi
+      done
+
+release_job:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG
+  needs:
+    - job: upload_job
+  script:
+    - echo "Creating release package for $CI_COMMIT_TAG"
+  release:
+    tag_name: $CI_COMMIT_TAG
+    description: "CI/CD Release $CI_COMMIT_TAG"
+    assets:
+      links:
+        - name: "Pellet Firmware"
+          url: "${FIRMWARE_PACKAGE_REGISTRY_URL}/pellet_module_fw_${CI_COMMIT_TAG}.bin"
+        - name: "Magnet Firmware"
+          url: "${FIRMWARE_PACKAGE_REGISTRY_URL}/magnet_module_fw_${CI_COMMIT_TAG}.bin"
