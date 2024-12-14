@@ -18,8 +18,8 @@ RUN apt update && \
 
 # Install a recent version of cmake
 RUN cd /usr/local && \
-    wget https://github.com/Kitware/CMake/releases/download/v3.31.0/cmake-3.31.0-linux-x86_64.sh && \
-    /bin/sh cmake-3.31.0-linux-x86_64.sh --skip-license && \
-    rm cmake-3.31.0-linux-x86_64.sh
+    wget https://github.com/Kitware/CMake/releases/download/v3.31.2/cmake-3.31.2-linux-$(uname -p).sh && \
+    /bin/sh cmake-*.sh --skip-license && \
+    rm cmake-*.sh
 
 RUN pip3 install --break-system-packages pybind11 mypy pytest

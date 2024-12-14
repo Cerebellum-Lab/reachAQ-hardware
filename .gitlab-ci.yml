@@ -12,6 +12,7 @@ workflow:
 variables:
   FF_SCRIPT_SECTIONS: "true"
   FIRMWARE_PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/module_firmware/${CI_COMMIT_TAG}"
+  HOST_TOOLS_PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/host_tools/${CI_COMMIT_TAG}"
   PYPI_PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi"
 
 # Job that is run on merge requests
@@ -97,6 +98,39 @@ build_pyjerrycan_arm64:
   tags:
     - arm
 
+# Build jerrycan_updater
+.build_jerrycan_updater: &build_jerrycan_updater
+  image: registry.gitlab.leaflabs.com/cuanschutz/autotrainer/pybind11
+  stage: build
+  rules:
+    - changes:
+        - software/jerrycan_updater/**/*
+        - docker/pybind11/**/*
+  script:
+    - GIT_DESCRIBE=$(git describe --tags --always --dirty)
+    - cmake -B build -DCMAKE_INSTALL_PREFIX:PATH=../tmp -GNinja
+    - ninja -C build jerrycan_updater
+    - mkdir host_tools
+    - cp build/software/jerrycan_updater/jerrycan_updater host_tools/jerrycan_updater_${GIT_DESCRIBE}_${PLATFORM}
+  artifacts:
+    paths:
+      - host_tools/jerrycan_updater_*
+
+# Build architecture specific versions of jerrycan_updater
+build_jerrycan_updater_x86_64:
+  <<: *build_jerrycan_updater
+  variables:
+    PLATFORM: x86_64
+  tags:
+    - linux
+
+build_jerrycan_updater_arm64:
+  <<: *build_jerrycan_updater
+  variables:
+    PLATFORM: arm64
+  tags:
+    - arm
+
 # Build WhiskerWire
 build_whiskerwire:
   image: registry.gitlab.leaflabs.com/cuanschutz/autotrainer/pybind11
@@ -160,7 +194,32 @@ generate_jetson_diffs:
     PROJECT_DIR: hardware/jetson_breakout
     PROJECT_FILE: jetson_breakout.kicad_pro
 
-# Upload the module firmware binaries to the package registry
+# Upload host tools to the package registry
+upload_host_tools:
+  stage: release
+  image: curlimages/curl:latest
+  needs:
+    - job: build_jerrycan_updater_x86_64
+      artifacts: true
+    - job: build_jerrycan_updater_arm64
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - >
+      for file in host_tools/*; do
+        if [ -f "$file" ]; then
+          filename=$(basename "$file")
+          echo "$file"
+          echo "$filename"
+          curl --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+               --upload-file "$file" \
+               "${HOST_TOOLS_PACKAGE_REGISTRY_URL}/$filename"
+          echo "Uploaded: $filename"
+        fi
+      done
+
+# Upload the module firmware binaries and host tools to the package registry
 upload_fw_job:
   stage: release
   image: curlimages/curl:latest
@@ -215,6 +274,7 @@ release_job:
   needs:
     - job: upload_fw_job
     - job: upload_py_job
+    - job: upload_host_tools
   script:
     - echo "Creating release package for $CI_COMMIT_TAG"
   release:
@@ -226,3 +286,7 @@ release_job:
           url: "${FIRMWARE_PACKAGE_REGISTRY_URL}/pellet_module_fw_${CI_COMMIT_TAG}.bin"
         - name: "Magnet Firmware"
           url: "${FIRMWARE_PACKAGE_REGISTRY_URL}/magnet_module_fw_${CI_COMMIT_TAG}.bin"
+        - name: "JerryCAN Updater (x86_64)"
+          url: "${HOST_TOOLS_PACKAGE_REGISTRY_URL}/jerrycan_updater_${CI_COMMIT_TAG}_x86_64"
+        - name: "JerryCAN Updater (arm64)"
+          url: "${HOST_TOOLS_PACKAGE_REGISTRY_URL}/jerrycan_updater_${CI_COMMIT_TAG}_arm64"

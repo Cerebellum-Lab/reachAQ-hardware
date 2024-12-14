@@ -4,6 +4,8 @@ project(MouseGym)
 
 add_subdirectory(software)
 
+if (FALSE) # Disable attempts to build firmware for now
+
 # Use west to build the firmware images
 set(MAGNET_MODULE_BIN_PATH ${CMAKE_SOURCE_DIR}/firmware/magnet_module/build/magnet_module/zephyr/zephyr.signed.bin)
 add_custom_command(
@@ -38,3 +40,5 @@ install(
         DESTINATION ${CMAKE_INSTALL_PREFIX}/firmware
         RENAME pellet_module.bin
 )
+
+endif()
