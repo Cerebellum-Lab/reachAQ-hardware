@@ -22,6 +22,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(spdlog)
 
 add_executable(jerrycan_updater main.cpp)
-target_link_libraries(jerrycan_updater PRIVATE jerrycan Boost::program_options spdlog::spdlog)
+target_link_libraries(jerrycan_updater PRIVATE -static -static-libgcc -static-libstdc++ jerrycan Boost::program_options spdlog::spdlog)
 
 install(TARGETS jerrycan_updater)
