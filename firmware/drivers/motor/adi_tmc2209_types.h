@@ -16,6 +16,7 @@
 // Velocity Dependent Control Registers
 #define REG_IHOLD_IRUN 0x10U
 #define REG_TSTEP 0x12U
+#define REG_TPWMTHRS 0x13U
 
 // StallGuard Control Registers
 #define REG_SG_RESULT 0x41U
@@ -154,7 +155,7 @@ struct __attribute__((packed)) CHOPCONF_data_fields {
     uint32_t toff : 4;
     uint32_t hstrt : 3;
     uint32_t hend : 4;
-    uint32_t : 3;
+    uint32_t : 4;
     uint32_t tbl : 2;
     uint32_t vsense : 1;
     uint32_t : 6;

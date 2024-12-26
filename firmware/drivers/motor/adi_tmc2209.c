@@ -315,7 +315,7 @@ static int adi_tmc2209_allow_true_freewheeling(const struct device *dev) {
 
 static int adi_tmc2209_init(const struct device *dev) {
     const int default_hold_current = 1;
-    const int default_run_current = 4;
+    const int default_run_current = 10;
     const int default_hold_delay = 15;
 
     // Check GSTAT & clear reset
@@ -396,6 +396,13 @@ static int adi_tmc2209_init(const struct device *dev) {
     ret = adi_tmc2209_allow_true_freewheeling(dev);
     if (ret < 0) {
         LOG_ERR("Failed (%d) to allow freewheeling", ret);
+    }
+
+    val.as_uint32 = (1 << 20) - 1;  // max value
+    k_sleep(K_MSEC(10));
+    ret = adi_tmc2209_write(dev, REG_TPWMTHRS, val);
+    if (ret < 0) {
+        LOG_ERR("Failed (%d) to set PWM threshold register", ret);
     }
 
     return ret;
