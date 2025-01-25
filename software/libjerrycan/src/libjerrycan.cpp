@@ -6,6 +6,7 @@
 #include <spdlog/spdlog.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 #include <cerrno>
 
@@ -226,17 +227,14 @@ int JerryCAN::EStop(bool enable) {
 int JerryCAN::StepperMove(uint8_t dst_id, uint8_t motor_id, float position, float max_velocity, float max_acceleration,
                           abs_or_rel_t abs_or_rel) {
     // Send a stepper move message
-    jerrycan_msg_t msg = {
-        .type = JERRYCAN_CMD_STEPPER_MOVE,
-        .stepper_move =
-            {
-                .motor_id = motor_id,
-                .abs_or_rel = abs_or_rel,
-                .position = position,
-                .max_velocity = max_velocity,
-                .max_acceleration = max_acceleration,
-            },
-    };
+    jerrycan_msg_t msg;
+    msg.type = JERRYCAN_CMD_STEPPER_MOVE;
+    msg.stepper_move.motor_id = motor_id;
+    msg.stepper_move.rsvd0 = 0;
+    msg.stepper_move.abs_or_rel = abs_or_rel;
+    msg.stepper_move.position = position;
+    msg.stepper_move.max_velocity = max_velocity;
+    msg.stepper_move.max_acceleration = max_acceleration;
 
     return SendMessage(msg, dst_id);
 }
@@ -244,17 +242,14 @@ int JerryCAN::StepperMove(uint8_t dst_id, uint8_t motor_id, float position, floa
 int JerryCAN::ServoMove(uint8_t dst_id, uint8_t motor_id, float position, float max_velocity, float max_acceleration,
                         abs_or_rel_t abs_or_rel) {
     // Send a servo move message
-    jerrycan_msg_t msg = {
-        .type = JERRYCAN_CMD_SERVO_MOVE,
-        .servo_move =
-            {
-                .motor_id = motor_id,
-                .abs_or_rel = abs_or_rel,
-                .position = position,
-                .max_velocity = max_velocity,
-                .max_acceleration = max_acceleration,
-            },
-    };
+    jerrycan_msg_t msg;
+    msg.type = JERRYCAN_CMD_SERVO_MOVE;
+    msg.servo_move.motor_id = motor_id;
+    msg.servo_move.rsvd0 = 0;
+    msg.servo_move.abs_or_rel = abs_or_rel;
+    msg.servo_move.position = position;
+    msg.servo_move.max_velocity = max_velocity;
+    msg.servo_move.max_acceleration = max_acceleration;
 
     return SendMessage(msg, dst_id);
 }
