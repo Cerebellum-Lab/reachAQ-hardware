@@ -35,17 +35,17 @@ static void print_context_variables(const motor_motion_profile_t *context) {
     fprintf(stderr, "t_t: %f\n", context->t_t);
 }
 
-static void print_servo_values(const uint32_t *servo_values, const size_t n_values) {
+static void print_servo_values(const uint32_t *servo_values, const size_t n_values, const size_t start_n) {
     for (size_t i = 0; i < n_values; i++) {
-        printf("%u, %f\n", servo_values[i], 0.02 * i);
+        printf("%u, %f\n", servo_values[i], 0.02 * (i + start_n));
     }
 }
 
-static void print_stepper_values(stepper_motor_context_t *context, const uint32_t *stepper_values,
-                                 const size_t n_values) {
-    float current_time = 0.0f;
+static void print_stepper_values(const stepper_motor_context_t *const context, const uint32_t *stepper_values,
+                                 const size_t n_values, const size_t start_n) {
+    static float current_time = 0.0f;
     for (size_t i = 0; i < n_values; i++) {
-        printf("%f, %f\n", i * 0.5, current_time);
+        printf("%f, %f\n", (float)(start_n + i + 1) * context->min_step, current_time);
         current_time += (float)stepper_values[i] * context->timer_increment;
     }
 }
@@ -124,8 +124,6 @@ static struct argp_option options[] = {
     {"end", 'y', "end", 0, "End Position", 2},
     {"max-velocity", 'v', "velocity", 0, "Max velocity", 2},
     {"max-acceleration", 'a', "acceleration", 0, "Max acceleration", 2},
-    {"radius", 'r', "radius", 0,
-     "Radius of the rotor. If given, all units must be in terms of this, not steps or degrees.", 2},
     {0, 0, 0, 0, "Servo Parameters", 3},
     {"min-angle", 'm', "min", 0, "Minimum angle", 3},
     {"max-angle", 'M', "max", 0, "Maximum angle", 3},
@@ -139,7 +137,7 @@ static struct argp_option options[] = {
     {"verify-max-velocity", 'V', 0, 0, "Verify max velocity", 5},
     {"verify-max-acceleration", 'A', 0, 0, "Verify max acceleration", 5},
     {0},
-    {},
+    {0},
 };
 
 struct arguments {
@@ -150,7 +148,6 @@ struct arguments {
     float end;
     float max_velocity;
     float max_acceleration;
-    float radius;
     float min_angle;
     float max_angle;
     float angle_adjustment;
@@ -200,13 +197,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
         case 'a':
             arguments->max_acceleration = strtof(arg, &end);
             if (*end != '\0') {
-                fprintf(stderr, "Couldn't parse max acceleartion: %s\n", arg);
-            }
-            break;
-        case 'r':
-            arguments->radius = strtof(arg, &end);
-            if (*end != '\0') {
-                fprintf(stderr, "Couldn't parse radius: %s\n", arg);
+                fprintf(stderr, "Couldn't parse max acceleration: %s\n", arg);
             }
             break;
         case 'm':
@@ -268,8 +259,6 @@ static int model_and_verify_servo(const struct arguments *arguments) {
     static servo_motor_context_t servo_context = {0};
     static uint32_t servo_values[SERVO_VALUES_NUM];
 
-    servo_context.motion_profile.radius = arguments->radius;
-
     if (arguments->max_velocity == 0.0f || arguments->max_acceleration == 0.0f) {
         fprintf(stderr, "Max velocity and max acceleration must be non-zero.\n");
         return -EINVAL;
@@ -282,12 +271,16 @@ static int model_and_verify_servo(const struct arguments *arguments) {
     int ret = motor_motion_servo_init_context_struct(arguments->start, arguments->end, arguments->max_velocity,
                                                      arguments->max_acceleration, arguments->servo_pwm_min_angle,
                                                      arguments->servo_pwm_max_angle, &servo_context);
+    servo_context.pwm_timer_increment = 0.5;  // corresponds to 2MHz, hardcoded
+    servo_context.min_angle = arguments->min_angle;
+    servo_context.max_angle = arguments->max_angle;
     if (ret < 0) {
         fprintf(stderr, "Failed to initialize servo context: %d\n", ret);
         print_context_variables(&servo_context.motion_profile);
         return ret;
     }
 
+    size_t running_count = 0;
     ssize_t n_vals = motor_motion_servo_generate_displacement_table(servo_values, SERVO_VALUES_NUM, &servo_context);
     ssize_t j = 0;
     while (n_vals > 0) {
@@ -297,8 +290,9 @@ static int model_and_verify_servo(const struct arguments *arguments) {
                 &servo_context, servo_values, ret, arguments->verify_max_velocity, arguments->verify_max_acceleration);
         }
         if (arguments->print) {
-            print_servo_values(servo_values, ret);
+            print_servo_values(servo_values, n_vals, running_count);
         }
+        running_count += n_vals;
         n_vals = motor_motion_servo_generate_displacement_table(servo_values, SERVO_VALUES_NUM, &servo_context);
     }
 
@@ -316,7 +310,6 @@ static int model_and_verify_stepper(const struct arguments *arguments) {
     static uint32_t stepper_values[STEPPER_VALUES_NUM];
 
     stepper_context.steps_per_revolution = arguments->steps_per_revolution;
-    stepper_context.motion_profile.radius = arguments->radius;
 
     if (arguments->max_velocity == 0.0f || arguments->max_acceleration == 0.0f) {
         fprintf(stderr, "Max velocity and max acceleration must be non-zero.\n");
@@ -345,6 +338,7 @@ static int model_and_verify_stepper(const struct arguments *arguments) {
         return ret;
     }
 
+    size_t running_count = 0;
     ssize_t n_vals = motor_motion_stepper_generate_timing_table(stepper_values, STEPPER_VALUES_NUM, &stepper_context);
     ssize_t j = 0;
     while (n_vals > 0) {
@@ -355,8 +349,9 @@ static int model_and_verify_stepper(const struct arguments *arguments) {
                                                          arguments->verify_max_acceleration);
         }
         if (arguments->print) {
-            print_stepper_values(&stepper_context, stepper_values, ret);
+            print_stepper_values(&stepper_context, stepper_values, n_vals, running_count);
         }
+        running_count += n_vals;
         n_vals = motor_motion_stepper_generate_timing_table(stepper_values, STEPPER_VALUES_NUM, &stepper_context);
     }
 
@@ -370,8 +365,7 @@ static int model_and_verify_stepper(const struct arguments *arguments) {
 
 int main(const int argc, char *argv[]) {
     static struct arguments arguments = {0};
-    static stepper_motor_context_t stepper_context = {0};
-    static struct argp argp = {options, parse_opt, args_doc, doc};
+    static struct argp argp = {options, parse_opt, args_doc, doc, NULL, NULL, NULL};
 
     argp_parse(&argp, argc, argv, 0, 0, &arguments);
 

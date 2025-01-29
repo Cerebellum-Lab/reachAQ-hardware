@@ -186,7 +186,7 @@ static float displacement(const float time, const motor_motion_profile_t *contex
  * We are really using Halley's method on the function `difference = displacement_hat(t) - displacement_hat`.
  */
 static float acceleration_region_halleys_method(const float displacement_hat, const float min_step,
-                                                const float timer_increment, const motor_motion_profile_t *context) {
+                                                const motor_motion_profile_t *context) {
     if (displacement_hat <= 0.0f || displacement_hat > context->y_a) {
         /* Invalid outside of this region */
         return NAN;
@@ -194,14 +194,13 @@ static float acceleration_region_halleys_method(const float displacement_hat, co
 
     const size_t max_iters = 16; /* Prevent pathological case where this never converges. With a good guess,
                                   * this should never happen. Testing (see the `test/` folder) shows that we
-                                  * converge in 3 iterations or fewer! */
+                                  * converge in 5 iterations or fewer! */
 
-    const float time_tolerance = timer_increment / 2.0f > FLT_EPSILON ? timer_increment / 2.0f : FLT_EPSILON;
-    const float position_tolerance = min_step / 8.0f;
+    const float position_tolerance = min_step / 48.0f / 8.0f;  // (steps/pulse) / (steps/rev) / 8 = 1/8 * revs/pulse
 
     /* The cosine term is, on average, 0 so `time` is a good first guess. Though it uses an expensive `sqrtf`,
      * it provides such an excellent guess that it will save us a lot of computation later. */
-    float time = sqrtf((displacement_hat) * 4.0f / context->a_max + context->k_s);
+    float time = sqrtf((displacement_hat) * 4.0f / context->a_max);
 
     float displacement_now = acceleration_region_displacement_hat(time, context);
     float difference = displacement_now - displacement_hat;  // This is the actual function we are finding the root of.
@@ -213,7 +212,7 @@ static float acceleration_region_halleys_method(const float displacement_hat, co
         const float adjustment =
             2.0f * difference * velocity_now / (2.0f * velocity_now * velocity_now - difference * acceleration_now);
 
-        if (isnan(adjustment) || isinf(adjustment) || fabsf((time - adjustment) - time) < time_tolerance) {
+        if (isnan(adjustment) || isinf(adjustment)) {
             /* Inspection reveals that in this region, the denominator in `adjustment` should never be zero or invalid.
              * Nevertheless, we check for it here. The adjustment is monotonic and decreasing in magnitude when we
              * are close to the root (and the guess puts us very close to the root), so we just break out of the loop
@@ -232,7 +231,7 @@ static float acceleration_region_halleys_method(const float displacement_hat, co
 
 #ifdef BENCH_TEST
     if (print_n_iterations) {
-        printf("%04.4f, %04.4f, %zu\n", displacement_hat, time, n_iters);
+        printf("%04.4f, %04.4f, %lu\n", time, displacement_hat, n_iters);
     }
 #endif
 
@@ -246,12 +245,12 @@ static float acceleration_region_halleys_method(const float displacement_hat, co
  * solution. For the regions where acceleration is nonzero, we use Halley's function helper method and
  * use total versions of the velocity and acceleration in those regions so that it always converges.
  */
-static float time_at_displacement_hat(const float displacement_hat, const float min_step, const float timer_increment,
+static float time_at_displacement_hat(const float displacement_hat, const float min_step,
                                       const motor_motion_profile_t *context) {
     if (displacement_hat <= 0.0f) {
         return 0.0f;
     } else if (displacement_hat <= context->y_a) {
-        const float ret = acceleration_region_halleys_method(displacement_hat, min_step, timer_increment, context);
+        const float ret = acceleration_region_halleys_method(displacement_hat, min_step, context);
         if (ret == NAN) {
             LOG_ERR("Halley's method returned NAN");
             /* Apparently invalid. Try the next region. N.B.--This should never happen. */
@@ -262,19 +261,17 @@ static float time_at_displacement_hat(const float displacement_hat, const float 
         return (displacement_hat - context->y_s) / context->v_w + context->t_s;
     } else if (displacement_hat < context->y_f) {
         const float reflected_displacement = context->y_f - displacement_hat;
-        return context->t_t -
-               acceleration_region_halleys_method(reflected_displacement, min_step, timer_increment, context);
+        return context->t_t - acceleration_region_halleys_method(reflected_displacement, min_step, context);
     } else {
         /* displacement >= context->y_f */
         return context->t_t;
     }
 }
 
-static float time_at_position(const float position, const float min_step, const float timer_increment,
-                              const motor_motion_profile_t *context) {
+static float time_at_position(const float position, const float min_step, const motor_motion_profile_t *context) {
     const float displacement = position - context->start_pos;
     const float displacement_hat = context->sgn * displacement;
-    const float time = time_at_displacement_hat(displacement_hat, min_step, timer_increment, context);
+    const float time = time_at_displacement_hat(displacement_hat, min_step, context);
     return time;
 }
 
@@ -283,7 +280,7 @@ static float time_at_position(const float position, const float min_step, const 
  * Convert (actual) degrees to the PWM count.
  */
 static uint32_t degrees_to_pwm_count(const servo_motor_context_t *context, const float degree) {
-    const float nominal_degrees = degree + context->min_angle - context->angle_adjustment;
+    const float nominal_degrees = degree - context->angle_adjustment;
     return (uint32_t)roundf(
         (((nominal_degrees - context->min_angle) * (context->max_angle_pwm - context->min_angle_pwm)) /
              (context->max_angle - context->min_angle) +
@@ -338,18 +335,16 @@ ssize_t motor_motion_stepper_generate_timing_table(uint32_t *table, const size_t
     float this_time = context->last_time_generated;
     float this_position = context->last_position_generated;
     for (size_t i = 0; i < n_entries; i++) {
-        this_position = context->last_position_generated +
-                        context->motion_profile.sgn * (float)i * context->min_step / context->steps_per_revolution;
-        this_time =
-            time_at_position(this_position, context->min_step, context->timer_increment, &context->motion_profile);
+        this_position = context->last_position_generated + context->motion_profile.sgn * (float)(i + 1) *
+                                                               context->min_step / context->steps_per_revolution;
+        this_time = time_at_position(this_position, context->min_step, &context->motion_profile);
 
-        // Take the ceiling to be conservative about velocity & acceleration.
         if (this_time < last_time) {
             LOG_ERR("This time (%f) less than last time (%f) at position %f (pulse %f)", (double)this_time,
                     (double)last_time, (double)this_position,
                     (double)(this_position * context->steps_per_revolution / context->min_step));
         }
-        const float time_delta = ceilf((this_time - last_time) / time_step);
+        const float time_delta = (this_time - last_time) / time_step;
 
         if (time_delta >= (float)UINT16_MAX) {
             // This is the maximum value that can be sent over the DMA. The upper word is completely unused.

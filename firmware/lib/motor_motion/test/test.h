@@ -6,7 +6,9 @@
 
 extern int print_n_iterations;
 
-#define PRINT_ERR(...) fprintf(stderr, __VA_ARGS__)
+#define PRINT_ERR(...)            \
+    fprintf(stderr, __VA_ARGS__); \
+    fputc('\n', stderr);
 
 #define LOG_ERR(...) PRINT_ERR(__VA_ARGS__)
 #define LOG_WRN(...) PRINT_ERR(__VA_ARGS__)

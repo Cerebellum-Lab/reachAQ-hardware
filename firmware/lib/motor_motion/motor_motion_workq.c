@@ -250,9 +250,9 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
             LOG_DBG("Limit switch event");
             stepper_motor_stop(dev);
             stepper_cancel_all_work(dev);
-            stepper_set_position_to_zero(context->dev);
 
             context = find_stepper_context_from_device(dev);
+            stepper_set_position_to_zero(context->dev);
 
             if (context != NULL) {
                 context->motion_done = true;

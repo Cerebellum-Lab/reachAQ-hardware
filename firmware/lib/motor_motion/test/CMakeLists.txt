@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.29)
 
 project(motor_motion_test)
 
+set(CMAKE_C_FLAGS "-pedantic -Wall -Wextra")
+
 add_executable(motor_motion_test)
 
 add_compile_definitions(BENCH_TEST)
