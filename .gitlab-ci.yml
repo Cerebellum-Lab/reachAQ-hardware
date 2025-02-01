@@ -34,8 +34,6 @@ check_formatting:
 .build_firmware_template: &build_firmware_template
   image: registry.gitlab.leaflabs.com/cuanschutz/autotrainer/zephyr-sdk
   stage: build
-  tags:
-    - linux
   cache:
     key: deps-cache
     paths:
@@ -90,13 +88,11 @@ build_magnet_firmware:
 # Build architecture specific wheels for pyjerrycan
 build_pyjerrycan_x86_64:
   <<: *build_libjerrycan
-  tags:
-    - linux
 
 build_pyjerrycan_arm64:
   <<: *build_libjerrycan
   tags:
-    - arm
+    - arm64
 
 # Build jerrycan_updater
 .build_jerrycan_updater: &build_jerrycan_updater
@@ -121,22 +117,18 @@ build_jerrycan_updater_x86_64:
   <<: *build_jerrycan_updater
   variables:
     PLATFORM: x86_64
-  tags:
-    - linux
 
 build_jerrycan_updater_arm64:
   <<: *build_jerrycan_updater
   variables:
     PLATFORM: arm64
   tags:
-    - arm
+    - arm64
 
 # Build WhiskerWire
 build_whiskerwire:
   image: registry.gitlab.leaflabs.com/cuanschutz/autotrainer/pybind11
   stage: build
-  tags:
-    - linux
   rules:
     - changes:
         - software/whiskerwire/**/*
