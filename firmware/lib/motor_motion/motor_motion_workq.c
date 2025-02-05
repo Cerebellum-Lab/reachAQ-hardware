@@ -252,9 +252,9 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
             stepper_cancel_all_work(dev);
 
             context = find_stepper_context_from_device(dev);
-            stepper_set_position_to_zero(context->dev);
 
             if (context != NULL) {
+                stepper_set_position_to_zero(context->dev);
                 context->motion_done = true;
                 context->motion_calculation_done = true;
                 // If we are homing, then a limit switch event is expected. Go "backwards" from the direction in which
@@ -521,6 +521,7 @@ int servo_move_to_position(const struct device *dev, const float target_position
 
     // Start calculating the motion profile and load as many blocks as possible
     for (int i = 0; i < BUFS_PER_MOTOR; i++) {
+        context->current_buffer = i;
         const ssize_t gen_table_ret = motor_motion_servo_generate_displacement_table(
             context->buffers[context->current_buffer], SERVO_BUFFER_SIZE, &context->context);
         context->last_calculation_ret = gen_table_ret;
