@@ -38,7 +38,11 @@ struct stepper_work_context {
     size_t current_buffer;
     ssize_t last_calculation_ret;
     atomic_flag e_stop_triggered;
-    atomic_flag homing_in_progress;
+    _Atomic enum {
+        NOT_HOMING,
+        HOMING_TOWARDS_LIMIT_SWITCH,
+        MOVING_FROM_LIMIT_SWITCH,
+    } homing;
     _Atomic ll_stepper_dir_t homing_direction;
     bool motion_done;
     bool motion_calculation_done;

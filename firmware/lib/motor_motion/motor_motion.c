@@ -12,21 +12,16 @@ LOG_MODULE_REGISTER(motor_motion);
 
 void motor_motion_stepper_set_current_position(stepper_motor_context_t *context, const float position) {
     context->motion_profile.end_pos = position;
+    context->last_position_generated = position;
 }
 
 void motor_motion_servo_set_current_position(servo_motor_context_t *context, const float position) {
     context->angle_adjustment = context->motion_profile.start_pos - position;
 }
 
-void stepper_motor_stop(const struct device *dev) {
-    ll_stepper_disable(dev);
-    ll_stepper_dma_stop(dev);
-}
+void stepper_motor_stop(const struct device *dev) { ll_stepper_disable(dev); }
 
-void servo_motor_stop(const struct device *dev) {
-    ll_servo_enable(dev, false);
-    ll_servo_dma_stop(dev);
-}
+void servo_motor_stop(const struct device *dev) { ll_servo_enable(dev, false); }
 
 #define DT_GET_COMMA(id) DEVICE_DT_GET(id),
 static const struct device *const stepper_motors[] = {DT_FOREACH_STATUS_OKAY(ll_stepper, DT_GET_COMMA)};

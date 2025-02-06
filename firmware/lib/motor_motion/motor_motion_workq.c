@@ -128,6 +128,7 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
      .current_buffer = 0,                                                                    \
      .last_calculation_ret = 0,                                                              \
      .e_stop_triggered = {.__val = 0},                                                       \
+     .homing = NOT_HOMING,                                                                   \
      .motion_done = true,                                                                    \
      .motion_calculation_done = true,                                                        \
      .calculation_work =                                                                     \
@@ -212,8 +213,6 @@ void servo_set_position_to_zero(const struct device *dev) {
 
 /* ***** Callbacks ***** */
 #ifdef CONFIG_DT_HAS_LL_STEPPER_ENABLED
-
-#define REVOLUTIONS_BACKWARDS_AFTER_HOMING 2.0f
 static void stepper_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
                                          void *user_data) {
     // Due to the limitations of the GPIO callback mechanism, this data is only available
@@ -231,42 +230,50 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
         case LL_MOTOR_EVENT_DMA_QUEUE_EMPTY:
             LOG_DBG("MOTION_DONE");
             if (context != NULL) {
-                // When the driver runs out of data to send, the motion is done
-                context->motion_done = true;
+                switch (context->homing) {
+                    case NOT_HOMING:
+                        // When the driver runs out of data to send, the motion is done
+                        context->motion_done = true;
+                        break;
 
-                // If homing was in progress, mark the final position as 0 (which will be
-                // +/- REVOLUTIONS_BACKWARDS_AFTER_HOMING away from the 0 to which it was set below
-                // during the limit switch event itself).
-                if (atomic_flag_test_and_set(&context->homing_in_progress)) {
-                    stepper_set_position_to_zero(context->dev);
-                    // For homing, the v_max is cut in 4 so restore its former value.
-                    stepper_set_parameters(context->dev, context->context.motion_profile.v_max * 4.0f, -1.0f, -1.0f,
-                                           -1.0f);
+                    case MOVING_FROM_LIMIT_SWITCH: /* FALLTHROUGH */
+                    case HOMING_TOWARDS_LIMIT_SWITCH:
+                        if (!context->motion_calculation_done) {
+                            k_work_schedule_for_queue(&motor_workq, &context->calculation_work, K_NO_WAIT);
+                        }
+                        break;
                 }
-                atomic_flag_clear(&context->homing_in_progress);
             }
             break;
         case LL_MOTOR_EVENT_LIMIT_SWITCH:
-            LOG_DBG("Limit switch event");
-            stepper_motor_stop(dev);
-            stepper_cancel_all_work(dev);
-
+            // Context is NULL during this event because of limitations of the GPIO driver
             context = find_stepper_context_from_device(dev);
-
             if (context != NULL) {
-                stepper_set_position_to_zero(context->dev);
-                context->motion_done = true;
-                context->motion_calculation_done = true;
-                // If we are homing, then a limit switch event is expected. Go "backwards" from the direction in which
-                // we were going a certain number of revolutions to make sure that the limit switch is no longer
-                // being triggered.
-                if (atomic_flag_test_and_set(&context->homing_in_progress)) {
-                    stepper_move_to_position(dev, context->homing_direction == LL_STEPPER_DIR_FORWARD
-                                                      ? -REVOLUTIONS_BACKWARDS_AFTER_HOMING
-                                                      : REVOLUTIONS_BACKWARDS_AFTER_HOMING);
-                } else {
-                    atomic_flag_clear(&context->homing_in_progress);
+                switch (context->homing) {
+                    case HOMING_TOWARDS_LIMIT_SWITCH:
+                        stepper_set_position_to_zero(dev);
+                        context->homing = MOVING_FROM_LIMIT_SWITCH;
+                        ll_stepper_set_direction(dev, context->homing_direction == LL_STEPPER_DIR_FORWARD
+                                                          ? LL_STEPPER_DIR_BACKWARD
+                                                          : LL_STEPPER_DIR_FORWARD);
+                        break;
+                    case MOVING_FROM_LIMIT_SWITCH:
+                        // extraneous event because we are still touching the switch.
+                        break;
+                    case NOT_HOMING: /* FALLTHROUGH */
+                    default:
+                        // Hit limit switch during ordinary motion, stop immediately and await further instruction.
+                        stepper_motor_stop(dev);
+                        stepper_cancel_all_work(dev);
+                        stepper_set_position_to_zero(dev);
+                        break;
                 }
+            } else {
+                // Cannot ascertain if stepper is homing. This should _never_ happen with the way the code is written,
+                // but better safe than sorry.
+                stepper_motor_stop(dev);
+                stepper_cancel_all_work(dev);
+                stepper_set_position_to_zero(dev);
             }
             const ll_motor_cfg_t *cfg = dev->config;
             LOG_ERR("Limit switch event for stepper %d", cfg->motor_id);
@@ -317,7 +324,6 @@ void stepper_cancel_all_work(const struct device *dev) {
     k_work_cancel_delayable(&context->calculation_work);
     k_work_cancel_delayable(&context->check_driver_work);
     context->motion_done = true;
-    context->motion_calculation_done = true;
 }
 
 void servo_cancel_all_work(const struct device *dev) {
@@ -353,31 +359,72 @@ static void servo_work_calculation_handler(struct k_work *work) {
     context->current_buffer = (context->current_buffer + 1) % BUFS_PER_MOTOR;
 }
 
+#define slow_pulses_ms 200.0f
+size_t stepper_generate_at_slow_velocity(const struct stepper_work_context *context, uint32_t *buf) {
+    // Generate up to slow_pulses_ms of "slow" pulses at 1/4 of the max velocity
+    const float seconds_per_pulse = 4.0f / context->context.motion_profile.v_max /
+                                    context->context.steps_per_revolution * context->context.min_step;
+
+    size_t n_pulses = (size_t)floorf(slow_pulses_ms / 1000.0f / seconds_per_pulse);
+
+    if (n_pulses > STEPPER_BUFFER_SIZE) {
+        n_pulses = STEPPER_BUFFER_SIZE;
+    }
+
+    for (size_t i = 0; i < n_pulses; i++) {
+        buf[i] = lroundf(seconds_per_pulse / context->context.timer_increment);
+    }
+
+    return n_pulses;
+}
+
 static void stepper_work_calculation_handler(struct k_work *work) {
     struct k_work_delayable *dwork = k_work_delayable_from_work(work);
     struct stepper_work_context *context = CONTAINER_OF(dwork, struct stepper_work_context, calculation_work);
 
-    const ssize_t ret = motor_motion_stepper_generate_timing_table(context->buffers[context->current_buffer],
-                                                                   STEPPER_BUFFER_SIZE, &context->context);
-    context->last_calculation_ret = ret;
-    if (ret < 0) {
-        LOG_ERR("Error generating stepper table.");
-        return;
+    switch (context->homing) {
+        case NOT_HOMING: {
+            const ssize_t ret = motor_motion_stepper_generate_timing_table(context->buffers[context->current_buffer],
+                                                                           STEPPER_BUFFER_SIZE, &context->context);
+            context->last_calculation_ret = ret;
+            if (ret < 0) {
+                LOG_ERR("Error generating stepper table.");
+                return;
+            }
+
+            // Entire buffer wasn't needed which indicates all the steps have been planned and no more calculations are
+            // required If nothing was calculated, then the motor is already at the target position
+            if (ret < STEPPER_BUFFER_SIZE) {
+                context->motion_calculation_done = true;
+            }
+
+            // Add the buffer onto the stepper driver queue
+            LOG_DBG("Q buf %d [%p]", context->current_buffer, (void *)context->buffers[context->current_buffer]);
+            ll_queue_stepper_positions(context->dev, context->buffers[context->current_buffer],
+                                       context->last_calculation_ret * sizeof(uint32_t), K_FOREVER);
+
+            // Increment the buffer pointer
+            context->current_buffer = (context->current_buffer + 1) % BUFS_PER_MOTOR;
+        } break;
+
+        case MOVING_FROM_LIMIT_SWITCH: {
+            const ll_motor_cfg_t *cfg = context->dev->config;
+            const int status = gpio_pin_get_dt(&cfg->limit_switch_pin);
+            if (status) {
+                context->motion_calculation_done = true;
+            }
+        } /* FALLTHROUGH */
+        case HOMING_TOWARDS_LIMIT_SWITCH: {
+            const size_t ret = stepper_generate_at_slow_velocity(context, context->buffers[context->current_buffer]);
+            context->last_calculation_ret = ret;
+
+            LOG_DBG("Q buf %d [%p]", context->current_buffer, (void *)context->buffers[context->current_buffer]);
+            ll_queue_stepper_positions(context->dev, context->buffers[context->current_buffer],
+                                       context->last_calculation_ret * sizeof(uint32_t), K_FOREVER);
+
+            context->current_buffer = (context->current_buffer + 1) % BUFS_PER_MOTOR;
+        } break;
     }
-
-    // Entire buffer wasn't needed which indicates all the steps have been planned and no more calculations are required
-    // If nothing was calculated, then the motor is already at the target position
-    if (ret < STEPPER_BUFFER_SIZE) {
-        context->motion_calculation_done = true;
-    }
-
-    // Add the buffer onto the stepper driver queue
-    LOG_DBG("Q buf %d [%p]", context->current_buffer, (void *)context->buffers[context->current_buffer]);
-    ll_queue_stepper_positions(context->dev, context->buffers[context->current_buffer],
-                               context->last_calculation_ret * sizeof(uint32_t), K_FOREVER);
-
-    // Increment the buffer pointer
-    context->current_buffer = (context->current_buffer + 1) % BUFS_PER_MOTOR;
 }
 
 static void stepper_work_check_driver_handler(struct k_work *work) {
@@ -678,28 +725,22 @@ int stepper_go_home_slowly(const struct device *dev, bool forward) {
         return -EBUSY;
     }
 
-    /*
-     * Choose an "impossible position" that is far enough away from the current position that the motor will never
-     * reach it (or, indeed, leave the constant velocity section of the motor motion profile). This is based on the
-     * 500 revolutions of the motor. Approach this via a slow velocity (1/4 of the max).
-     *
-     * Then, rely on the limit switch/callback behavior to stop the motor and set the position (and restore the old
-     * maxes).
-     */
-    const float IMPOSSIBLE_POSITION = 500;
-    const float SLOW_VELOCITY = context->motion_profile.v_max * 0.25f;
-
-    const int ret = stepper_set_parameters(dev, SLOW_VELOCITY, -1.0f, -1.0f, -1.0f);
-    if (ret != 0) {
-        LOG_ERR("Failed to set SLOW VELOCITY parameter for homing.");
-        return -EDOM;
-    }
-
     atomic_flag_clear(&work_context->e_stop_triggered);
-    atomic_flag_test_and_set(&work_context->homing_in_progress);
+    work_context->homing = HOMING_TOWARDS_LIMIT_SWITCH;
     work_context->homing_direction = forward ? LL_STEPPER_DIR_FORWARD : LL_STEPPER_DIR_BACKWARD;
+    work_context->motion_calculation_done = false;
 
-    return stepper_move_to_position(dev, forward ? IMPOSSIBLE_POSITION : -IMPOSSIBLE_POSITION);
+    ll_stepper_set_direction(dev, work_context->homing_direction);
+
+    const size_t ret = stepper_generate_at_slow_velocity(work_context, work_context->buffers[0]);
+    work_context->last_calculation_ret = (ssize_t)ret;
+
+    LOG_DBG("Q buf %d [%p]", work_context->current_buffer, (void *)work_context->buffers[0]);
+    ll_queue_stepper_positions(dev, work_context->buffers[0], work_context->last_calculation_ret * sizeof(uint32_t),
+                               K_FOREVER);
+
+    work_context->current_buffer = 1 % BUFS_PER_MOTOR;
+    return 0;
 }
 
 /* ***** Getters ***** */
