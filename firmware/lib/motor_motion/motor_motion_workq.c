@@ -263,16 +263,12 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
                     case NOT_HOMING: /* FALLTHROUGH */
                     default:
                         // Hit limit switch during ordinary motion, stop immediately and await further instruction.
-                        stepper_motor_stop(dev);
-                        stepper_cancel_all_work(dev);
                         stepper_set_position_to_zero(dev);
                         break;
                 }
             } else {
                 // Cannot ascertain if stepper is homing. This should _never_ happen with the way the code is written,
                 // but better safe than sorry.
-                stepper_motor_stop(dev);
-                stepper_cancel_all_work(dev);
                 stepper_set_position_to_zero(dev);
             }
             const ll_motor_cfg_t *cfg = dev->config;
@@ -359,7 +355,7 @@ static void servo_work_calculation_handler(struct k_work *work) {
     context->current_buffer = (context->current_buffer + 1) % BUFS_PER_MOTOR;
 }
 
-#define slow_pulses_ms 200.0f
+#define slow_pulses_ms 100.0f
 size_t stepper_generate_at_slow_velocity(const struct stepper_work_context *context, uint32_t *buf) {
     // Generate up to slow_pulses_ms of "slow" pulses at 1/4 of the max velocity
     const float seconds_per_pulse = 4.0f / context->context.motion_profile.v_max /
@@ -408,12 +404,11 @@ static void stepper_work_calculation_handler(struct k_work *work) {
         } break;
 
         case MOVING_FROM_LIMIT_SWITCH: {
-            const ll_motor_cfg_t *cfg = context->dev->config;
-            const int status = gpio_pin_get_dt(&cfg->limit_switch_pin);
-            if (status) {
-                context->motion_calculation_done = true;
-            }
-        } /* FALLTHROUGH */
+            context->motion_calculation_done = true;
+            context->motion_done = true;
+            context->homing = NOT_HOMING;
+            break;
+        }
         case HOMING_TOWARDS_LIMIT_SWITCH: {
             const size_t ret = stepper_generate_at_slow_velocity(context, context->buffers[context->current_buffer]);
             context->last_calculation_ret = ret;
