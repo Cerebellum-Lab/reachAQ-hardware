@@ -51,8 +51,8 @@ static void stepper_handler(jerrycan_msg_t *msg) {
     LOG_INF(
         "Received stepper move message: motor_id=%d, abs_or_rel=%d, position=%f, max_velocity=%f, "
         "max_acceleration=%f",
-        msg->stepper_move.motor_id, msg->stepper_move.abs_or_rel, msg->stepper_move.position,
-        msg->stepper_move.max_velocity, msg->stepper_move.max_acceleration);
+        msg->stepper_move.motor_id, msg->stepper_move.abs_or_rel, (double)msg->stepper_move.position,
+        (double)msg->stepper_move.max_velocity, (double)msg->stepper_move.max_acceleration);
 
     const struct device *dev = stepper_motor_by_id(msg->stepper_move.motor_id);
     if (dev == NULL) {
@@ -90,8 +90,8 @@ static void stepper_cfg_write_handler(jerrycan_msg_t *msg) {
     }
 
     LOG_INF("Received stepper config write message: motor_id=%d, min_step_inverse=%f, steps_per_revolution=%f",
-            msg->cfg_write.stepper.motor_id, msg->cfg_write.stepper.min_step_inverse,
-            msg->cfg_write.stepper.steps_per_revolution);
+            msg->cfg_write.stepper.motor_id, (double)msg->cfg_write.stepper.min_step_inverse,
+            (double)msg->cfg_write.stepper.steps_per_revolution);
 
     const struct device *dev = stepper_motor_by_id(msg->cfg_write.stepper.motor_id);
     if (dev == NULL) {

@@ -50,8 +50,8 @@ static void servo_handler(jerrycan_msg_t *msg) {
     LOG_INF(
         "Received servo move message: motor_id=%d, abs_or_rel=%d, position=%f, max_velocity=%f, "
         "max_acceleration=%f",
-        msg->servo_move.motor_id, msg->servo_move.abs_or_rel, msg->servo_move.position, msg->servo_move.max_velocity,
-        msg->servo_move.max_acceleration);
+        msg->servo_move.motor_id, msg->servo_move.abs_or_rel, (double)msg->servo_move.position,
+        (double)msg->servo_move.max_velocity, (double)msg->servo_move.max_acceleration);
 
     const struct device *dev = servo_motor_by_id(msg->servo_move.motor_id);
     if (dev == NULL) {
@@ -91,8 +91,9 @@ static void servo_cfg_write_handler(jerrycan_msg_t *msg) {
     LOG_INF(
         "Received servo config write message: motor_id=%d, min_position=%f, max_position=%f, min_pwm_duration_us=%f, "
         "max_pwm_duration_us=%f",
-        msg->cfg_write.servo.motor_id, msg->cfg_write.servo.min_position, msg->cfg_write.servo.max_position,
-        msg->cfg_write.servo.min_pwm_duration_us, msg->cfg_write.servo.max_pwm_duration_us);
+        msg->cfg_write.servo.motor_id, (double)msg->cfg_write.servo.min_position,
+        (double)msg->cfg_write.servo.max_position, (double)msg->cfg_write.servo.min_pwm_duration_us,
+        (double)msg->cfg_write.servo.max_pwm_duration_us);
 
     const struct device *dev = servo_motor_by_id(msg->cfg_write.servo.motor_id);
     if (dev == NULL) {
