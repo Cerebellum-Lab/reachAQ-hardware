@@ -476,3 +476,16 @@
 		status = "disabled";
 	};
 };
+
+// Configure pull-downs for the stepper motor STEP pins
+&tim20_ch3_pc8 {
+	bias-pull-down;
+};
+
+&tim1_ch3_pc2 {
+	bias-pull-down;
+};
+
+&tim8_ch4_pc9 {
+	bias-pull-down;
+};
