@@ -208,6 +208,55 @@ static int cmd_dump_registers(const struct shell *shell, const int argc, const c
     return 0;
 }
 
+static int dump_otp(const struct shell *shell, const int device) {
+    const struct device *dev = adi_devs[device];
+    struct adi_tmc2209_driver_api *api = (struct adi_tmc2209_driver_api *)dev->api;
+    adi_tmc2209_reg_t current_otp = {0};
+
+    const int ret = api->read(dev, REG_OTP_READ, &current_otp);
+    if (ret < 0) {
+        shell_print(shell, "Failed to read OTP register: %d", ret);
+        return ret;
+    }
+    shell_print(shell, "OTP:");
+    shell_print(shell, "  fclktrim: %d", current_otp.otp_read.otp_fclktrim_DO_NOT_USE);
+    shell_print(shell, "  ottrim: %d", current_otp.otp_read.otp_ottrim);
+    shell_print(shell, "  internalrsense: %d", current_otp.otp_read.otp_internalrsense);
+    shell_print(shell, "  tbl: %d", current_otp.otp_read.otp_tbl);
+    shell_print(shell, "  pwm_grad: %d", current_otp.otp_read.otp_pwm_grad);
+    shell_print(shell, "  pwm_autograd: %d", current_otp.otp_read.otp_pwm_autograd);
+    shell_print(shell, "  tpwmthrs: %d", current_otp.otp_read.otp_tpwmthrs);
+    shell_print(shell, "  pwm_ofs: %d", current_otp.otp_read.otp_pwm_ofs);
+    shell_print(shell, "  pwm_reg: %d", current_otp.otp_read.otp_pwm_reg);
+    shell_print(shell, "  pwm_freq: %d", current_otp.otp_read.otp_pwm_freq);
+    shell_print(shell, "  iholddelay: %d", current_otp.otp_read.otp_iholddelay);
+    shell_print(shell, "  ihold: %d", current_otp.otp_read.otp_ihold);
+    shell_print(shell, "  otp_en_spreadcycle: %d", current_otp.otp_read.otp_en_spreadcycle);
+
+    return 0;
+}
+
+static int cmd_dump_otp(const struct shell *shell, const int argc, const char *argv[]) {
+    if (argc < 2) {
+        shell_print(shell, "Usage: %s <device>", argv[0]);
+        return -EINVAL;
+    }
+
+    char *endptr;
+    const int device = strtol(argv[1], &endptr, 10);
+    if (*endptr != '\0') {
+        shell_print(shell, "Invalid device number: %s", argv[1]);
+        return -EINVAL;
+    }
+
+    if (device < 0 || device >= ARRAY_SIZE(adi_devs)) {
+        shell_print(shell, "Invalid device number: %d", device);
+        return -EINVAL;
+    }
+
+    return dump_otp(shell, device);
+}
+
 static int cmd_read_register(const struct shell *shell, const int argc, const char *argv[]) {
     if (argc < 3) {
         shell_print(shell, "Usage: %s <device> 0x<register>", argv[0]);
@@ -338,6 +387,7 @@ static int cmd_write_register(const struct shell *shell, const int argc, const c
 SHELL_STATIC_SUBCMD_SET_CREATE(subcmds, SHELL_CMD_ARG(read, NULL, "Read a register", cmd_read_register, 3, 0),
                                SHELL_CMD_ARG(write, NULL, "Write a register", cmd_write_register, 4, 0),
                                SHELL_CMD_ARG(dump, NULL, "Dump all registers", cmd_dump_registers, 2, 0),
+                               SHELL_CMD_ARG(dump_otp, NULL, "Dump the OTP memory", cmd_dump_otp, 2, 0),
                                SHELL_SUBCMD_SET_END);
 
 SHELL_CMD_REGISTER(adi_tmc2209, &subcmds, "TMC2209 register access", NULL);

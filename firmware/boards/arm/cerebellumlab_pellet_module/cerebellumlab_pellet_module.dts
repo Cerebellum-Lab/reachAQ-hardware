@@ -466,4 +466,13 @@
 		reg = <0x02>;
 		status = "okay";
 	};
+
+	stepper_dummy: stepper_dummy@3 {
+		// This is a dummy device, not connected on this board, for verifying
+		// UART transactions via a logic analyzer if `status` is set
+		// to `okay`.
+		compatible = "adi,tmc2209";
+		reg = <0x03>;
+		status = "disabled";
+	};
 };

@@ -7,6 +7,11 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/ring_buffer.h>
+#include <zephyr/sys/util_macro.h>
+
+#ifndef IS_BIT_SET
+#define IS_BIT_SET(value, bit) ((((value) >> (bit)) & (0x1)) != 0)
+#endif
 
 #include "adi_tmc2209_types.h"
 
@@ -210,10 +215,143 @@ static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address,
         return -EIO;
     }
 
-    // Convert the endianess of the response data
+    // Convert the endianness of the response data
     data->as_uint32 = sys_be32_to_cpu(reply_datagram.fields.data.as_uint32);
 
     return 0;
+}
+
+/**
+ * Set the OTP to match the values in `otp_data`. It is only possible to set currently unset
+ * bits due to the IC's specifications. If there are bits set in the OTP when read which are
+ * not set in `otp_data`, except the otp_fclktrim bits (see below),
+ * it will not attempt to set any other bits and return -ENOTSUP. If the OTP data is already
+ * matching, it will return 0 and take no further action.
+ *
+ * EXCEPTIONS TO THE ABOVE: The otp_fclktrim bits are used by the factory and will not be set
+ * by this driver under any circumstances. If `otp_data.otp_fclktrim` is not 0, this
+ * function will return -EPERM.
+ *
+ * @param dev
+ * @param otp_data data to match to
+ * @return 0 if the OTP is already set to the value, no further action is taken,
+ *         1 if the OTP has been set successfully to match,
+ *         -EIO on any error from called IO functions (it will log the return value),
+ *              do not assume all bits have been set!
+ *         -EAGAIN if, when rereading the OTP, it has not been set properly,
+ *         -ENOTSUP if there is a bit unset in `otp_fields` which is set in the read OTP,
+ *         -EPERM if `otp_data.otp_fclktrim` is not 0.
+ */
+static int adi_tmc2209_set_otp(const struct device *dev, const struct OTP_READ_data_fields otp_data) {
+    const size_t BYTES_USED = 3U;
+    const size_t BITS_PER_BYTE = 8;  // Not using `unsigned char`s, so CHAR_BIT is inappropriate.
+    const adi_tmc2209_config_t *config = dev->config;
+    adi_tmc2209_reg_t current_otp = {0};
+    const adi_tmc2209_reg_t new_otp = {.otp_read = otp_data};
+
+    if (otp_data.otp_fclktrim_DO_NOT_USE != 0) {
+        return -EPERM;
+    }
+
+    int ret = adi_tmc2209_read(dev, REG_OTP_READ, &current_otp);
+    if (ret < 0) {
+        if (config->address != 0x03) {
+            LOG_ERR("[Device : %d] Error reading current OTP: %d, can't continue.", config->address, ret);
+            return -EIO;
+        } else {
+            current_otp.as_uint32 = 0x0D;
+        }
+    }
+
+    LOG_INF("[Device : %d] Current OTP: 0x%08X", config->address, current_otp.as_uint32);
+    current_otp.otp_read.otp_fclktrim_DO_NOT_USE = 0;  // Unset this to avoid trying to program it
+
+    const uint32_t old_otp_val = current_otp.as_uint32;
+    const uint32_t new_otp_val = new_otp.as_uint32;
+
+    if (old_otp_val == new_otp_val) {
+        // Nothing to do
+        return 0;
+    }
+
+    // Verify that no bits are set in the current otp that are not in the new otp
+    for (size_t bit = 0; bit < BYTES_USED * BITS_PER_BYTE; bit++) {
+        if (IS_BIT_SET(old_otp_val, bit) && !IS_BIT_SET(new_otp_val, bit)) {
+            LOG_ERR("Bit %d is set in old OTP but unset in new OTP", bit);
+            return -ENOTSUP;
+        }
+    }  // Is there a bit-twiddling hack for this? Maybe (old_otp_val & ~new_otp_val) == 0?
+
+    for (size_t byte = 0; byte < BYTES_USED; byte++) {
+        const uint8_t old_otp_byte = (old_otp_val >> (byte * 8)) & 0xFF;
+        const uint8_t new_otp_byte = (new_otp_val >> (byte * 8)) & 0xFF;
+        if (new_otp_byte != old_otp_byte) {
+            for (size_t bit = 0; bit < 8; bit++) {
+                if (IS_BIT_SET(new_otp_byte, bit)) {
+                    if (!IS_BIT_SET(old_otp_byte, bit)) {
+                        __ASSERT(!(byte == 0 && bit < 5),
+                                 "ATTEMPTED to set fclktrim bytes in OTP, program configuration erro");
+                        const adi_tmc2209_reg_t write_reg = {
+                            .otp_program =
+                                {
+                                    .otpbit = bit,
+                                    .otpbyte = byte,
+                                    .otpmagic = OTP_MAGIC,
+                                },
+                        };
+                        ret = adi_tmc2209_write(dev, REG_OTP_PROG, write_reg);
+                        if (ret < 0) {
+                            LOG_ERR("[Dev: %d] IO Failure when setting OTP: %d", config->address, ret);
+                            return -EIO;
+                        }
+                    }  // else nothing to do here
+                } else {
+                    // Out of an abundance of caution
+                    __ASSERT(BIT_IS_SET(new_otp_byte, bit), "Attempt to unset OTP bit which is already set");
+                }
+            }
+        }
+    }
+
+    ret = adi_tmc2209_read(dev, REG_OTP_READ, &current_otp);
+    if (ret < 0) {
+        LOG_ERR("[Device : %d] Error re-reading OTP after set: %d", config->address, ret);
+        return -EAGAIN;  // Is this more appropriate than -EIO?
+    }
+    current_otp.otp_read.otp_fclktrim_DO_NOT_USE = 0;
+
+    if (current_otp.as_uint32 != new_otp_val) {
+        LOG_ERR("[Device : %d] Current OTP: 0x%08X, attempted new OTP: 0x%08X, do not match when re-reading.",
+                config->address, current_otp.as_uint32, new_otp_val);
+        return -EAGAIN;
+    }
+
+    LOG_INF("Successfully updated OTP");
+
+    return 1;
+}
+
+/**
+ * Read the OTP, bitwise-or it with the mask provided and set the new OTP to that. Useful if you just
+ * want to set one bit or register.
+ *
+ * @param dev Device to set OTP for
+ * @param OTP_READ_data_fields MASK for the OTP_READ register
+ * @return value from adi_tmc2209_set_otp
+ */
+static int adi_tmc2209_set_otp_or(const struct device *dev, struct OTP_READ_data_fields otp_data_mask) {
+    const adi_tmc2209_config_t *config = dev->config;
+    const adi_tmc2209_reg_t reg_mask = {.otp_read = otp_data_mask};
+    adi_tmc2209_reg_t current_otp = {0};
+    const int ret = adi_tmc2209_read(dev, REG_OTP_READ, &current_otp);
+    if (ret < 0) {
+        LOG_ERR("[Device : %d] Error reading current OTP: %d", config->address, ret);
+        return -EIO;
+    }
+
+    adi_tmc2209_reg_t new_otp = {.as_uint32 = current_otp.as_uint32 | reg_mask.as_uint32};
+    new_otp.otp_read.otp_fclktrim_DO_NOT_USE = 0;
+    return adi_tmc2209_set_otp(dev, new_otp.otp_read);
 }
 
 /**
@@ -243,7 +381,7 @@ static int adi_tmc2209_set_default_gconf_stealthchop(const struct device *dev) {
     }
 
     if (reg.gconf.test_mode_DO_NOT_USE) {
-        LOG_ERR("[Dev: %d], GCONF test mode enabled, not supporteed!", config->address);
+        LOG_ERR("[Dev: %d], GCONF test mode enabled, not supported!", config->address);
         return -ENOTSUP;
     }
 
@@ -414,6 +552,10 @@ static int adi_tmc2209_coolstep_disable(const struct device *dev) {
 static int adi_tmc2209_init(const struct device *dev) {
     const adi_tmc2209_config_t *config = dev->config;
 
+    struct OTP_READ_data_fields otp_to_prog = {0};
+    otp_to_prog.otp_ihold = 1;
+    adi_tmc2209_set_otp(dev, otp_to_prog);
+
     adi_tmc2209_reg_t val = {0};
 
     val.as_uint32 = 0;
@@ -433,6 +575,7 @@ static int adi_tmc2209_init(const struct device *dev) {
     }
 
     // Configure SEND_DELAY to avoid issues with other drivers.
+    val.as_uint32 = 0;
     val.nodeconf.send_delay = SEND_DELAY;
     adi_tmc2209_write(dev, REG_NODECONF, val);
     if (ret < 0) {
@@ -471,6 +614,8 @@ static int adi_tmc2209_init(const struct device *dev) {
     if (ret < 0) {
         LOG_ERR("[Dev: %d] Failed (%d) to set chopconf", config->address, ret);
     }
+
+    (void)adi_tmc2209_coolstep_disable(dev);
 
     ret = adi_tmc2209_set_pwmconf_stealthchop(dev);
     if (ret < 0) {

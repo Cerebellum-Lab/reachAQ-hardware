@@ -13,6 +13,11 @@
 #define REG_NODECONF 0x03U
 #define REG_IOIN 0x06U
 
+// OTP registers
+#define REG_OTP_PROG 0x04
+#define REG_OTP_READ 0x05
+#define OTP_MAGIC 0xBD
+
 // Velocity Dependent Control Registers
 #define REG_IHOLD_IRUN 0x10U
 #define REG_TSTEP 0x12U
@@ -101,6 +106,36 @@ typedef enum rw_bit {
     WRITE = 1,
 } rw_bit_t;
 
+struct __attribute__((packed)) OTP_PROGRAM_data_fields {
+    uint32_t otpbit : 3;  // Bit of byte to burn
+    uint32_t : 1;
+    uint32_t otpbyte : 2;  // Byte to burn
+    uint32_t : 2;
+    uint32_t otpmagic : 8;  // Invariably OTP_MAGIC to enable programming
+    uint32_t : 16;
+};
+
+BUILD_ASSERT(sizeof(struct OTP_PROGRAM_data_fields) == DATA_LENGTH);
+
+struct __attribute__((packed)) OTP_READ_data_fields {
+    uint32_t otp_fclktrim_DO_NOT_USE : 5;
+    uint32_t otp_ottrim : 1;
+    uint32_t otp_internalrsense : 1;
+    uint32_t otp_tbl : 1;
+    uint32_t otp_pwm_grad : 4;
+    uint32_t otp_pwm_autograd : 1;
+    uint32_t otp_tpwmthrs : 3;
+    uint32_t otp_pwm_ofs : 1;
+    uint32_t otp_pwm_reg : 1;
+    uint32_t otp_pwm_freq : 1;
+    uint32_t otp_iholddelay : 2;
+    uint32_t otp_ihold : 2;
+    uint32_t otp_en_spreadcycle : 1;
+    uint32_t : 8;
+};
+
+BUILD_ASSERT(sizeof(struct OTP_READ_data_fields) == DATA_LENGTH);
+
 /* Register addresses and contents tables */
 struct __attribute__((packed)) GCONF_data_fields {
     uint8_t i_scale_analog : 1;
@@ -121,13 +156,13 @@ struct __attribute__((packed)) GCONF_data_fields {
 BUILD_ASSERT(sizeof(struct GCONF_data_fields) == DATA_LENGTH);
 
 struct __attribute__((packed)) GSTAT_data_fields {
-    uint8_t reset : 1;
-    uint8_t drv_err : 1;
-    uint8_t uv_cp : 1;
-    uint8_t : 5;
-    uint8_t : 8;
-    uint8_t : 8;
-    uint8_t : 8;
+    uint32_t reset : 1;
+    uint32_t drv_err : 1;
+    uint32_t uv_cp : 1;
+    uint32_t : 5;
+    uint32_t : 8;
+    uint32_t : 8;
+    uint32_t : 8;
 };
 
 BUILD_ASSERT(sizeof(struct GSTAT_data_fields) == DATA_LENGTH);
@@ -190,6 +225,8 @@ typedef union __attribute__((packed)) {
     struct GCONF_data_fields gconf;
     struct GSTAT_data_fields gstat;
     struct IHOLD_IRUN_data_fields ihold_irun;
+    struct OTP_READ_data_fields otp_read;
+    struct OTP_PROGRAM_data_fields otp_program;
     struct COOLCONF_data_fields coolconf;
     struct NODECONF_data_fields nodeconf;
     struct IOIN_data_fields ioin;
