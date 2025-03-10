@@ -19,7 +19,10 @@
 #define REG_TPWMTHRS 0x13U
 
 // StallGuard Control Registers
+#define REG_TCOOLTHRS 0x14U
+#define REG_SGTHRS 0x40U
 #define REG_SG_RESULT 0x41U
+#define REG_COOLCONF 0x42U
 
 // Sequencer Registers
 #define REG_MSCNT 0x6AU
@@ -130,13 +133,12 @@ struct __attribute__((packed)) GSTAT_data_fields {
 BUILD_ASSERT(sizeof(struct GSTAT_data_fields) == DATA_LENGTH);
 
 struct __attribute__((packed)) IHOLD_IRUN_data_fields {
-    uint8_t : 8;
-    uint8_t iholddelay : 4;  // 0 = instant power down, 1..15 = n * 2^18 clocks
-    uint8_t : 4;
-    uint8_t irun : 5;  // 0 = 1/32 ... 31 = 32/32
-    uint8_t : 3;
-    uint8_t ihold : 5;  // 0 = 1/32 ... 31 = 32/32
-    uint8_t : 3;
+    uint32_t ihold : 5;
+    uint32_t : 3;
+    uint32_t irun : 5;
+    uint32_t : 3;
+    uint32_t iholddelay : 4;
+    uint32_t : 12;
 };
 
 BUILD_ASSERT(sizeof(struct IHOLD_IRUN_data_fields) == DATA_LENGTH);
@@ -150,6 +152,20 @@ struct __attribute__((packed)) NODECONF_data_fields {
 };
 
 BUILD_ASSERT(sizeof(struct NODECONF_data_fields) == DATA_LENGTH);
+
+struct __attribute__((packed)) COOLCONF_data_fields {
+    uint32_t semin : 4;
+    uint32_t : 1;
+    uint32_t seup : 2;
+    uint32_t : 1;
+    uint32_t semax : 4;
+    uint32_t : 1;
+    uint32_t sedn : 2;
+    uint32_t seimin : 1;
+    uint32_t : 16;
+};
+
+BUILD_ASSERT(sizeof(struct COOLCONF_data_fields) == DATA_LENGTH);
 
 struct __attribute__((packed)) CHOPCONF_data_fields {
     uint32_t toff : 4;
@@ -174,6 +190,7 @@ typedef union __attribute__((packed)) {
     struct GCONF_data_fields gconf;
     struct GSTAT_data_fields gstat;
     struct IHOLD_IRUN_data_fields ihold_irun;
+    struct COOLCONF_data_fields coolconf;
     struct NODECONF_data_fields nodeconf;
     struct IOIN_data_fields ioin;
     struct CHOPCONF_data_fields chopconf;

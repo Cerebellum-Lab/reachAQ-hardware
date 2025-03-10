@@ -27,6 +27,8 @@ typedef struct adi_tmc2209_data {
 #define SEND_DELAY 2  // ((N div 2) * 2 + 1) * 8 clock cycles
 #define HOST_ADDR 0xFFU
 
+#define SLEEP_DELAY() k_sleep(K_MSEC(10))
+
 /**
  * @returns crc of `data[0 : size]` (Polynomial is x^8 + x^2 + x + 1.)
  */
@@ -111,10 +113,7 @@ static int read_single_line_uart(const struct device *dev, uint8_t *buf, const s
 
 static int write_single_line_uart_and_flush_read(const struct device *dev, const uint8_t *buf, const size_t size) {
     /* Write the datagram to the UART. The driver will echo the datagram back to us so we go ahead
-     * and read it to flush it from the buffer. Occasionally, the second byte (aka, byte 1) will be
-     * missing from the re-read. This is very odd! And it happens despite `single-wire` setting or
-     * speed setting in the device tree. The code detects this and takes care of either
-     * the case where it omits the second byte or the case where we read the full datagram.
+     * and read it to flush it from the buffer.
      */
     const adi_tmc2209_config_t *config = dev->config;
     uint8_t rx_buf[WR_PACKET_LENGTH];
@@ -151,7 +150,7 @@ static int adi_tmc2209_write(const struct device *dev, const uint8_t reg_address
         .data = data,
         .crc = 0,  // appease warnings
     }};
-
+    SLEEP_DELAY();
     store_crc(datagram.raw, sizeof(datagram.raw));
     write_single_line_uart_and_flush_read(dev, datagram.raw, sizeof(datagram.raw));
 
@@ -185,7 +184,7 @@ static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address,
     }};
 
     store_crc(datagram.raw, sizeof(datagram.raw));
-
+    SLEEP_DELAY();
     write_single_line_uart_and_flush_read(dev, datagram.raw, sizeof(datagram.raw));
 
     read_reply_datagram_t reply_datagram = {0};
@@ -217,6 +216,47 @@ static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address,
     return 0;
 }
 
+/**
+ * Configure GCONF to use:
+ * * internal voltage reference,
+ * * external sense resistors,
+ * * StealthChop,
+ * * UART on the PDN_UART pin,
+ * * microstep resolution using mres rather than MS1 and MS2, and
+ * * no multistep filtering.
+ *
+ * Use the existing configurations for shaft direction, index_otpw, index_stop.
+ *
+ * Fails if the test_mode bit is set.
+ *
+ * @param dev Device to configure
+ * @return 0 on success, -errno on error
+ */
+static int adi_tmc2209_set_default_gconf_stealthchop(const struct device *dev) {
+    const adi_tmc2209_config_t *config = dev->config;
+    adi_tmc2209_reg_t reg;
+    int ret = adi_tmc2209_read(dev, REG_GCONF, &reg);
+    if (ret != 0) {
+        LOG_ERR("[Dev: %d], couldn't read GCONF! %d", config->address, ret);
+        // There may be garbage in `reg`
+        reg.as_uint32 = 0;
+    }
+
+    if (reg.gconf.test_mode_DO_NOT_USE) {
+        LOG_ERR("[Dev: %d], GCONF test mode enabled, not supporteed!", config->address);
+        return -ENOTSUP;
+    }
+
+    reg.gconf.i_scale_analog = 0;
+    reg.gconf.internal_Rsense = 0;
+    reg.gconf.en_spreadcycle = 0;
+    reg.gconf.pdn_disable = 1;
+    reg.gconf.mstep_reg_select = 1;
+    reg.gconf.multistep_filt = 0;
+    ret = adi_tmc2209_write(dev, REG_GCONF, reg);
+    return ret;
+}
+
 int adi_tmc2209_set_ihold_irun(const struct device *dev, const uint8_t hold_current, const uint8_t run_current,
                                const uint8_t hold_delay) {
     if (hold_current > 32 || hold_current < 1 || run_current > 32 || run_current < 1 || hold_delay > 15) {
@@ -224,15 +264,11 @@ int adi_tmc2209_set_ihold_irun(const struct device *dev, const uint8_t hold_curr
         return -EINVAL;
     }
 
-    adi_tmc2209_reg_t val = {
-        .ihold_irun =
-            {
-                .ihold = hold_current - 1,
-                .irun = run_current - 1,
-                .iholddelay = hold_delay,
-            },
-    };
+    adi_tmc2209_reg_t val = {0};
 
+    val.ihold_irun.ihold = hold_current - 1;
+    val.ihold_irun.irun = run_current - 1;
+    val.ihold_irun.iholddelay = hold_delay;
     return adi_tmc2209_write(dev, REG_IHOLD_IRUN, val);
 }
 
@@ -281,128 +317,164 @@ int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per
             return -EINVAL;
     }
 
-    val.chopconf.intpol = 1;
-    val.chopconf.dedge = 0;
-    val.chopconf.tbl = 2;
-    val.chopconf.hstrt = 4;
-    val.chopconf.hend = 0;
     val.chopconf.mres = mres;
-    k_sleep(K_MSEC(10));
     ret = adi_tmc2209_write(dev, REG_CHOPCONF, val);
     return ret;
 }
 
-static int adi_tmc2209_allow_true_freewheeling(const struct device *dev) {
+/**
+ * Set CHOPCONF with our settings for StealthChop mode, to wit:
+ * * Do not use double-edged step impulses (`dedge`). It is incompatible with the
+ *   mode of the STM32 timer peripheral we are using.
+ * * Use full (256-microstep) interpolation.
+ * * Use full vsense.
+ * * Set tbl = 0.
+ * * Set toff to default (if it is 0, the driver does not operate).
+ * * Set hend and hstrt to default values for StealthChop
+ *
+ * @param dev
+ * @return
+ */
+static int adi_tmc2209_set_chopconf_stealthchop(const struct device *dev) {
     const adi_tmc2209_config_t *config = dev->config;
     adi_tmc2209_reg_t val = {0};
-    int ret = adi_tmc2209_read(dev, REG_PWMCONF, &val);
-
+    int ret = adi_tmc2209_read(dev, REG_CHOPCONF, &val);
     if (ret < 0) {
-        LOG_ERR("[Dev: %d] Failed (%d) to read pwmconf", config->address, ret);
-        return -EIO;
+        LOG_ERR("[Dev: %d] Failed (%d) to read chopconf data", config->address, ret);
+        val.as_uint32 = 0x10000053;  // reset default
     }
 
-    k_sleep(K_MSEC(10));
-    val.pwmconf.freewheel = 0x01;
-    ret = adi_tmc2209_write(dev, REG_PWMCONF, val);
-    if (ret < 0) {
-        LOG_ERR("[Dev: %d] Failed (%d) to write pwmconf", config->address, ret);
-        return -EIO;
-    }
-
-    return 0;
+    val.chopconf.dedge = 0;
+    val.chopconf.intpol = 1;
+    val.chopconf.vsense = 0;
+    val.chopconf.tbl = 0;
+    val.chopconf.hend = 0;
+    val.chopconf.hstrt = 5;
+    val.chopconf.toff = 3;
+    ret = adi_tmc2209_write(dev, REG_CHOPCONF, val);
+    return ret;
 }
 
-static int adi_tmc2209_init(const struct device *dev) {
-    const int default_hold_current = 1;
-    const int default_run_current = 10;
-    const int default_hold_delay = 15;
+/**
+ * Set the PWMCONF register for our application.
+ * * Set it to freewheel if we haven't already.
+ * * Set pwm_freq to 1 per datasheet suggestion for internal clock (p. 40).
+ * * Set autograd to no and fill in PWM_GRAD and PWM_OFS with known good values.
+ *
+ * @param dev device to configure
+ * @return 0 on success, -errno on error
+ */
+static int adi_tmc2209_set_pwmconf_stealthchop(const struct device *dev) {
+    const adi_tmc2209_config_t *config = dev->config;
+    adi_tmc2209_reg_t val = {0};
 
-    // Check GSTAT & clear reset
-    adi_tmc2209_reg_t val;
+    int ret = adi_tmc2209_read(dev, REG_PWMCONF, &val);
+    if (ret < 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to read pwmconf", config->address, ret);
+        val.as_uint32 = 0xC10D0024;  // Reset default
+    }
+
+    val.pwmconf.pwm_autograd = 0;
+    val.pwmconf.pwm_autoscale = 1;
+    val.pwmconf.freewheel = 1;
+    val.pwmconf.pwm_freq = 1;
+    val.pwmconf.pwm_grad = 0x76;
+    val.pwmconf.pwm_ofs = 0xff;
+
+    ret = adi_tmc2209_write(dev, REG_PWMCONF, val);
+    return ret;
+}
+
+/**
+ * Disable coolstep on `dev`. It is unreliable on these motors.
+ *
+ * @return 0 on success, -errno on failure
+ */
+static int adi_tmc2209_coolstep_disable(const struct device *dev) {
+    const adi_tmc2209_config_t *config = dev->config;
+    adi_tmc2209_reg_t reg = {0};
+    int ret = adi_tmc2209_read(dev, REG_COOLCONF, &reg);
+    if (ret < 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to read coolstep", config->address, ret);
+        reg.as_uint32 = 0;
+    }
+    reg.coolconf.semin = 0;
+    ret = adi_tmc2209_write(dev, REG_COOLCONF, reg);
+    return ret;
+}
+
+/**
+ * Configure this driver according to our motors' characteristics. Some general notes:
+ * * We are using the internal clock which is factory trimmed to 12MHz.
+ * * We want to *always* use StealthChop. SpreadCycle is very bad on these motors.
+ *
+ * @param dev
+ * @return 0 on success, -errno on error
+ */
+static int adi_tmc2209_init(const struct device *dev) {
+    const adi_tmc2209_config_t *config = dev->config;
+
+    adi_tmc2209_reg_t val = {0};
+
+    val.as_uint32 = 0;
+    // Clear reset and print diagnostics from GSTAT.
     int ret = adi_tmc2209_read(dev, REG_GSTAT, &val);
     if (ret < 0) {
-        LOG_ERR("Failed (%d) to read gstat data", ret);
+        LOG_ERR("[Dev: %d] Failed (%d) to read gstat data", config->address, ret);
     } else {
-        LOG_DBG("GSTAT flags reset [%d] drv_err [%d] uv_cp [%d]", val.gstat.reset, val.gstat.drv_err, val.gstat.uv_cp);
+        LOG_DBG("[Dev: %d] GSTAT flags reset [%d] drv_err [%d] uv_cp [%d]", config->address, val.gstat.reset,
+                val.gstat.drv_err, val.gstat.uv_cp);
 
-        // Write back to clear the status flags
+        // Write back to clear the status flags.
         ret = adi_tmc2209_write(dev, REG_GSTAT, val);
         if (ret < 0) {
             LOG_ERR("Failed (%d) to write gstat data to reset", ret);
         }
     }
 
-    k_sleep(K_MSEC(10));
-
-    val.as_uint32 = 0;
+    // Configure SEND_DELAY to avoid issues with other drivers.
     val.nodeconf.send_delay = SEND_DELAY;
     adi_tmc2209_write(dev, REG_NODECONF, val);
-
-    ret = adi_tmc2209_read(dev, REG_GCONF, &val);
-    struct GCONF_data_fields gconf_data = val.gconf;
-
     if (ret < 0) {
-        LOG_WRN("Couldn't read GCONF. Setting defaults.");
-        memset(&gconf_data, 0, sizeof(gconf_data));  // There may be garbage in the struct.
+        LOG_ERR("[Dev: %d] Failed (%d) to write nodeconf", config->address, ret);
     }
 
-    if (gconf_data.test_mode_DO_NOT_USE) {
-        LOG_ERR("Test mode is enabled on the chip. This is not supported.");
-        return -ENOTSUP;
-    }
-
-    gconf_data.i_scale_analog = 0;   // Use internal voltage reference. VREF is disconnected on the board.
-    gconf_data.internal_Rsense = 0;  // External sense resistors are connected.
-    gconf_data.en_spreadcycle = 0;   // Use StealthChop
-    gconf_data.shaft = 0;            // Do not invert the direction of the motor.
-    // Don't set or unset index_otpw or index_step. The INDEX pin is disconnected.
-    gconf_data.pdn_disable = 1;       // Using UART so set this per datasheet.
-    gconf_data.mstep_reg_select = 1;  // MS1 and MS2 are not connected so use UART registers.
-    gconf_data.multistep_filt = 0;
-
-    k_sleep(K_MSEC(10));  // I don't know why this works. Are we writing too soon after reading? but it is necessary.
-    val.gconf = gconf_data;
-    ret = adi_tmc2209_write(dev, REG_GCONF, val);
-
+    // Configure GCONF next to avoid PDN_UART pin weirdness.
+    ret = adi_tmc2209_set_default_gconf_stealthchop(dev);
     if (ret < 0) {
-        LOG_ERR("Couldn't write GCONF. Defaults may be wrong!");
+        LOG_ERR("[Dev: %d] Failed (%d) to set default GCONF", config->address, ret);
     }
 
-    ret = adi_tmc2209_read(dev, REG_GCONF, &val);
-    gconf_data = val.gconf;
+    // Set IHOLD and IRUN according to our motor's characteristics.
+    const uint8_t default_irun = 9;         // 9 => 353mA RMS current (nominal for these motors)
+    const uint8_t default_ihold = 1;        // Use as little current as possible in standstill to reduce heating.
+    const uint8_t default_iholddelay = 15;  // Use the greatest time because otherwise it's choppy/
+    ret = adi_tmc2209_set_ihold_irun(dev, default_ihold, default_irun, default_iholddelay);
     if (ret < 0) {
-        LOG_ERR("Couldn't read GCONF. Defaults may be wrong!");
-    } else {
-        LOG_DBG(
-            "GCONF data: pdn_disable = %d, internal_Rsense = %d, en_spreadcycle = %d, shaft = %d, i_scale_analog = %d",
-            gconf_data.pdn_disable, gconf_data.internal_Rsense, gconf_data.en_spreadcycle, gconf_data.shaft,
-            gconf_data.i_scale_analog);
+        LOG_ERR("[Dev: %d] Failed (%d) to set irun", config->address, ret);
     }
 
-    k_sleep(K_MSEC(10));  // added here out of an abundance of caution, see comment above.
-    ret = adi_tmc2209_set_ihold_irun(dev, default_hold_current, default_run_current, default_hold_delay);
-    if (ret < 0) {
-        LOG_ERR("Failed (%d) to set IHOLD_IRUN register", ret);
-    }
-
-    // FULLSTEP by default.
-    k_sleep(K_MSEC(10));
-    ret = adi_tmc2209_set_microstep(dev, 1);
-    if (ret < 0) {
-        LOG_ERR("Failed (%d) to set microstep", ret);
-    }
-
-    ret = adi_tmc2209_allow_true_freewheeling(dev);
-    if (ret < 0) {
-        LOG_ERR("Failed (%d) to allow freewheeling", ret);
-    }
-
-    val.as_uint32 = (1 << 20) - 1;  // max value
-    k_sleep(K_MSEC(10));
+    // Set TPWMTHRS to 0 so that StealthChop is always enabled
+    val.as_uint32 = 0;
     ret = adi_tmc2209_write(dev, REG_TPWMTHRS, val);
     if (ret < 0) {
-        LOG_ERR("Failed (%d) to set PWM threshold register", ret);
+        LOG_ERR("[Dev: %d] Failed (%d) to write TPWMTHRS -- SpreadCycle may become enabled", config->address, ret);
+    }
+
+    // Set single-stepping by default
+    ret = adi_tmc2209_set_microstep(dev, 1);
+    if (ret < 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to set microstep", config->address, ret);
+    }
+
+    ret = adi_tmc2209_set_chopconf_stealthchop(dev);
+    if (ret < 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to set chopconf", config->address, ret);
+    }
+
+    ret = adi_tmc2209_set_pwmconf_stealthchop(dev);
+    if (ret < 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to set pwmconf", config->address, ret);
     }
 
     return ret;

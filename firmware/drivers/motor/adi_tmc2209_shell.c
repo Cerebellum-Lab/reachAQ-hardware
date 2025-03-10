@@ -203,6 +203,7 @@ static int cmd_dump_registers(const struct shell *shell, const int argc, const c
 
     dump_chopconf(shell, device);
     dump_pwmconf(shell, device);
+    dump_drv_status(shell, device);
 
     return 0;
 }

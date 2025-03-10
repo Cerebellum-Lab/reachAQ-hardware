@@ -146,7 +146,8 @@ int ll_stepper_get_limit_switch_state(const struct device *dev) {
         .stop_on_dma_complete = true,                                                                     \
         .limit_switch_pin = GPIO_DT_SPEC_INST_GET_OR(idx, limit_switch_gpios, {0}),                       \
         .dir_pin = GPIO_DT_SPEC_INST_GET(idx, dir_gpios),                                                 \
-        .stepper_driver_device = DEVICE_DT_GET(DT_INST_PROP(idx, driver_dev)),                            \
+        .stepper_driver_device = COND_CODE_1(DT_NODE_HAS_PROP(DT_INST(idx, ll_stepper), driver_dev),      \
+                                             DEVICE_DT_GET(DT_INST_PROP(idx, driver_dev)), NULL),         \
         .motor_id = idx,                                                                                  \
     };                                                                                                    \
                                                                                                           \

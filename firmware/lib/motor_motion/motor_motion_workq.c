@@ -38,7 +38,7 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
 // Default 'min_step' of stepper (number of steps, incl. microstepping, done per pulse)
 #define STEPPER_DEFAULT_MIN_STEP 1.0f
 // Default 'steps_per_revolution' of stepper
-#define STEPPER_DEFAULT_STEPS_PER_REVOLUTION 48
+#define STEPPER_DEFAULT_STEPS_PER_REVOLUTION 48.0f
 
 #define DEV_DEFINE_SERVO_CONTEXT(id)                                                         \
     {.dev = DEVICE_DT_GET(id),                                                               \
