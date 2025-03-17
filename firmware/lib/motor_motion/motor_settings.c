@@ -241,7 +241,7 @@ static int stepper_settings_set(const char *key, size_t len, settings_read_cb re
         }
         LOG_DBG("restored max_velocity: %f", (double)max_velocity);
         if (max_velocity > 0.0f) {
-            context->context.motion_profile.v_max = max_velocity;
+            context->motor_max_velocity = max_velocity;
         }
     } else if (strncmp(key, MAX_ACCELERATION_KEY, sizeof(MAX_ACCELERATION_KEY) - 1) == 0) {
         float max_acceleration;
@@ -252,7 +252,7 @@ static int stepper_settings_set(const char *key, size_t len, settings_read_cb re
         }
         LOG_DBG("restored max_acceleration: %f", (double)max_acceleration);
         if (max_acceleration > 0.0f) {
-            context->context.motion_profile.a_max = max_acceleration;
+            context->motor_max_acceleration = max_acceleration;
         }
     } else if (strncmp(key, MIN_STEP_KEY, sizeof(MIN_STEP_KEY) - 1) == 0) {
         float min_step;
@@ -263,7 +263,7 @@ static int stepper_settings_set(const char *key, size_t len, settings_read_cb re
         }
         LOG_DBG("restored min_step: %f", (double)min_step);
         if (min_step > 0.0f) {
-            context->context.min_step = min_step;
+            context->min_step = min_step;
         }
     } else if (strncmp(key, STEPS_PER_REVOLUTION_KEY, sizeof(STEPS_PER_REVOLUTION_KEY) - 1) == 0) {
         float steps_per_revolution;
@@ -274,7 +274,7 @@ static int stepper_settings_set(const char *key, size_t len, settings_read_cb re
         }
         LOG_DBG("restored steps_per_revolution: %f", (double)steps_per_revolution);
         if (steps_per_revolution > 0.0f) {
-            context->context.steps_per_revolution = steps_per_revolution;
+            context->motor_steps_per_revolution = steps_per_revolution;
         }
     } else {
         LOG_WRN("Unknown key: %s", key);
@@ -303,42 +303,40 @@ static int stepper_settings_export(const struct device *dev, const size_t dt_id,
 
     static char max_velocity_key[] = GENERATE_STEPPER_TEMPLATE(MAX_VELOCITY_KEY);
     max_velocity_key[id_number_index] = itoa(dt_id);
-    ret = storage_func(max_velocity_key, &context->context.motion_profile.v_max,
-                       sizeof(context->context.motion_profile.v_max));
+    ret = storage_func(max_velocity_key, &context->motor_max_velocity, sizeof(context->motor_max_velocity));
     if (ret < 0) {
         LOG_ERR("Failed to write max_velocity to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved max_velocity: %f", (double)context->context.motion_profile.v_max);
+    LOG_DBG("Saved max_velocity: %f", (double)context->motor_max_velocity);
 
     static char max_acceleration_key[] = GENERATE_STEPPER_TEMPLATE(MAX_ACCELERATION_KEY);
     max_acceleration_key[id_number_index] = itoa(dt_id);
-    ret = storage_func(max_acceleration_key, &context->context.motion_profile.a_max,
-                       sizeof(context->context.motion_profile.a_max));
+    ret = storage_func(max_acceleration_key, &context->motor_max_acceleration, sizeof(context->motor_max_acceleration));
     if (ret < 0) {
         LOG_ERR("Failed to write max_acceleration to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved max_acceleration: %f", (double)context->context.motion_profile.a_max);
+    LOG_DBG("Saved max_acceleration: %f", (double)context->motor_max_acceleration);
 
     static char min_step_key[] = GENERATE_STEPPER_TEMPLATE(MIN_STEP_KEY);
     min_step_key[id_number_index] = itoa(dt_id);
-    ret = storage_func(min_step_key, &context->context.min_step, sizeof(context->context.min_step));
+    ret = storage_func(min_step_key, &context->min_step, sizeof(context->min_step));
     if (ret < 0) {
         LOG_ERR("Failed to write min_step to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved min_step: %f", (double)context->context.min_step);
+    LOG_DBG("Saved min_step: %f", (double)context->min_step);
 
     static char steps_per_revolution_key[] = GENERATE_STEPPER_TEMPLATE(STEPS_PER_REVOLUTION_KEY);
     steps_per_revolution_key[id_number_index] = itoa(dt_id);
-    ret = storage_func(steps_per_revolution_key, &context->context.steps_per_revolution,
-                       sizeof(context->context.steps_per_revolution));
+    ret = storage_func(steps_per_revolution_key, &context->motor_steps_per_revolution,
+                       sizeof(context->motor_steps_per_revolution));
     if (ret < 0) {
         LOG_ERR("Failed to write steps_per_revolution to settings: %d", ret);
         return ret;
     }
-    LOG_DBG("Saved steps_per_revolution: %f", (double)context->context.steps_per_revolution);
+    LOG_DBG("Saved steps_per_revolution: %f", (double)context->motor_steps_per_revolution);
 
     return 0;
 }

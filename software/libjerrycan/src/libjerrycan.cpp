@@ -288,12 +288,15 @@ int JerryCAN::CfgRead(uint8_t dst_id, jerrycan_cmd_cfg_t &cfg) {
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t min_step_inverse, float steps_per_revolution) {
+int JerryCAN::StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t min_step_inverse, float steps_per_revolution,
+                              float motor_max_velocity, float motor_max_acceleration) {
     jerrycan_cmd_cfg_t cfg_write = {.type = JERRYCAN_CFG_STEPPER,
                                     .stepper = {
                                         .motor_id = motor_id,
                                         .min_step_inverse = min_step_inverse,
                                         .steps_per_revolution = steps_per_revolution,
+                                        .motor_max_velocity = motor_max_velocity,
+                                        .motor_max_acceleration = motor_max_acceleration,
                                     }};
 
     return CfgWrite(dst_id, cfg_write);

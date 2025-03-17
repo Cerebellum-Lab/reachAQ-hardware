@@ -255,12 +255,8 @@ static int adi_tmc2209_set_otp(const struct device *dev, const struct OTP_READ_d
 
     int ret = adi_tmc2209_read(dev, REG_OTP_READ, &current_otp);
     if (ret < 0) {
-        if (config->address != 0x03) {
-            LOG_ERR("[Device : %d] Error reading current OTP: %d, can't continue.", config->address, ret);
-            return -EIO;
-        } else {
-            current_otp.as_uint32 = 0x0D;
-        }
+        LOG_ERR("[Device : %d] Error reading current OTP: %d, can't continue.", config->address, ret);
+        return -EIO;
     }
 
     LOG_INF("[Device : %d] Current OTP: 0x%08X", config->address, current_otp.as_uint32);
@@ -290,7 +286,7 @@ static int adi_tmc2209_set_otp(const struct device *dev, const struct OTP_READ_d
                 if (IS_BIT_SET(new_otp_byte, bit)) {
                     if (!IS_BIT_SET(old_otp_byte, bit)) {
                         __ASSERT(!(byte == 0 && bit < 5),
-                                 "ATTEMPTED to set fclktrim bytes in OTP, program configuration erro");
+                                 "ATTEMPTED to set fclktrim bytes in OTP, program configuration error.");
                         const adi_tmc2209_reg_t write_reg = {
                             .otp_program =
                                 {
@@ -372,7 +368,7 @@ static int adi_tmc2209_set_otp_or(const struct device *dev, struct OTP_READ_data
  */
 static int adi_tmc2209_set_default_gconf_stealthchop(const struct device *dev) {
     const adi_tmc2209_config_t *config = dev->config;
-    adi_tmc2209_reg_t reg;
+    adi_tmc2209_reg_t reg = {0};
     int ret = adi_tmc2209_read(dev, REG_GCONF, &reg);
     if (ret != 0) {
         LOG_ERR("[Dev: %d], couldn't read GCONF! %d", config->address, ret);
@@ -461,14 +457,12 @@ int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per
 }
 
 /**
- * Set CHOPCONF with our settings for StealthChop mode, to wit:
+ * Set CHOPCONF with our settings for our modes, to wit:
  * * Do not use double-edged step impulses (`dedge`). It is incompatible with the
  *   mode of the STM32 timer peripheral we are using.
  * * Use full (256-microstep) interpolation.
- * * Use full vsense.
- * * Set tbl = 0.
- * * Set toff to default (if it is 0, the driver does not operate).
- * * Set hend and hstrt to default values for StealthChop
+ * * Use half-scale vsense for greater current dynamic range.
+ * * Set hend, hstrt, toff, tbl to values which work in the enclosure.
  *
  * @param dev
  * @return
@@ -484,11 +478,11 @@ static int adi_tmc2209_set_chopconf_stealthchop(const struct device *dev) {
 
     val.chopconf.dedge = 0;
     val.chopconf.intpol = 1;
-    val.chopconf.vsense = 0;
-    val.chopconf.tbl = 0;
+    val.chopconf.vsense = 1;
+    val.chopconf.tbl = 3;
     val.chopconf.hend = 0;
-    val.chopconf.hstrt = 5;
-    val.chopconf.toff = 3;
+    val.chopconf.hstrt = 4;
+    val.chopconf.toff = 2;
     ret = adi_tmc2209_write(dev, REG_CHOPCONF, val);
     return ret;
 }
@@ -497,7 +491,8 @@ static int adi_tmc2209_set_chopconf_stealthchop(const struct device *dev) {
  * Set the PWMCONF register for our application.
  * * Set it to freewheel if we haven't already.
  * * Set pwm_freq to 1 per datasheet suggestion for internal clock (p. 40).
- * * Set autograd to no and fill in PWM_GRAD and PWM_OFS with known good values.
+ * * Set autograd and autoscale to yes but fill in PWM_GRAD and PWM_OFS with known good values
+ *   to use until the driver can get enough data to adapt.
  *
  * @param dev device to configure
  * @return 0 on success, -errno on error
@@ -512,7 +507,7 @@ static int adi_tmc2209_set_pwmconf_stealthchop(const struct device *dev) {
         val.as_uint32 = 0xC10D0024;  // Reset default
     }
 
-    val.pwmconf.pwm_autograd = 0;
+    val.pwmconf.pwm_autograd = 1;
     val.pwmconf.pwm_autoscale = 1;
     val.pwmconf.freewheel = 1;
     val.pwmconf.pwm_freq = 1;
@@ -544,7 +539,7 @@ static int adi_tmc2209_coolstep_disable(const struct device *dev) {
 /**
  * Configure this driver according to our motors' characteristics. Some general notes:
  * * We are using the internal clock which is factory trimmed to 12MHz.
- * * We want to *always* use StealthChop. SpreadCycle is very bad on these motors.
+ * * We want to use StealthChop by default but SpreadCycle when we go fast enough.
  *
  * @param dev
  * @return 0 on success, -errno on error
@@ -589,22 +584,31 @@ static int adi_tmc2209_init(const struct device *dev) {
     }
 
     // Set IHOLD and IRUN according to our motor's characteristics.
-    const uint8_t default_irun = 9;         // 9 => 353mA RMS current (nominal for these motors)
+    const uint8_t default_irun = 10;        // 9 => 353mA RMS current (nominal for these motors), but lower is better
+                                            // Note: we have vsense set to ON here, so the value is effectively halved.
     const uint8_t default_ihold = 1;        // Use as little current as possible in standstill to reduce heating.
-    const uint8_t default_iholddelay = 15;  // Use the greatest time because otherwise it's choppy/
+    const uint8_t default_iholddelay = 15;  // Use the greatest time because otherwise it's choppy at low speed.
     ret = adi_tmc2209_set_ihold_irun(dev, default_ihold, default_irun, default_iholddelay);
     if (ret < 0) {
         LOG_ERR("[Dev: %d] Failed (%d) to set irun", config->address, ret);
     }
 
-    // Set TPWMTHRS to 0 so that StealthChop is always enabled
-    val.as_uint32 = 0;
+    // Set TPOWERDOOWN lower (to save current/heating) but still high enough to use autoconf
+    // for both SpreadCycle and StealthChop.
+    val.as_uint32 = 4;
+    ret = adi_tmc2209_write(dev, REG_TPOWERDOWN, val);
+    if (ret < 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to set TPOWERDOWN", config->address, ret);
+    }
+
+    // Empirical testing shows that SpreadCycle works better than StealthChop at these speeds.
+    val.as_uint32 = 1500;
     ret = adi_tmc2209_write(dev, REG_TPWMTHRS, val);
     if (ret < 0) {
         LOG_ERR("[Dev: %d] Failed (%d) to write TPWMTHRS -- SpreadCycle may become enabled", config->address, ret);
     }
 
-    // Set single-stepping by default
+    // Set single-stepping by default.
     ret = adi_tmc2209_set_microstep(dev, 1);
     if (ret < 0) {
         LOG_ERR("[Dev: %d] Failed (%d) to set microstep", config->address, ret);
@@ -615,7 +619,20 @@ static int adi_tmc2209_init(const struct device *dev) {
         LOG_ERR("[Dev: %d] Failed (%d) to set chopconf", config->address, ret);
     }
 
-    (void)adi_tmc2209_coolstep_disable(dev);
+    ret = adi_tmc2209_coolstep_disable(dev);
+    if (ret < 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to disable coolstep", config->address, ret);
+    }
+
+    // Disable StallGuard. At low velocities, it's extremely unreliable and is my
+    // best guess as to the problems we were seeing in the enclosures before. At high
+    // velocities, we tend to pass through resonances that make the values go all over
+    // the place. We are using SpreadCycle there anyways, so just turn this off.
+    val.as_uint32 = 0;
+    ret = adi_tmc2209_write(dev, REG_SGTHRS, val);
+    if (ret < 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to write SGTHRS", config->address, ret);
+    }
 
     ret = adi_tmc2209_set_pwmconf_stealthchop(dev);
     if (ret < 0) {

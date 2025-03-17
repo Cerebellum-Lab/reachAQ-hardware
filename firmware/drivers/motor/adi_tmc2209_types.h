@@ -20,6 +20,7 @@
 
 // Velocity Dependent Control Registers
 #define REG_IHOLD_IRUN 0x10U
+#define REG_TPOWERDOWN 0x11
 #define REG_TSTEP 0x12U
 #define REG_TPWMTHRS 0x13U
 

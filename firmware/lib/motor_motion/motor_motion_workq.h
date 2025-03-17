@@ -18,11 +18,15 @@ typedef uint32_t servo_buffer_set[BUFS_PER_MOTOR][SERVO_BUFFER_SIZE];
 typedef uint32_t stepper_buffer_set[BUFS_PER_MOTOR][STEPPER_BUFFER_SIZE];
 
 struct servo_work_context {
-    const struct device *dev;
+    const struct device *dev;  // Motor device to use
+
+    // Parameters for the current movement
     servo_motor_context_t context;
     servo_buffer_set buffers;
     size_t current_buffer;
     ssize_t last_calculation_ret;
+
+    // Parameters about movement overall
     atomic_flag e_stop_triggered;
     bool motion_done;
     bool motion_calculation_done;
@@ -32,11 +36,15 @@ struct servo_work_context {
 };
 
 struct stepper_work_context {
-    const struct device *dev;
+    const struct device *dev;  // Motor device to use
+
+    // Parameters for the current movement
     stepper_motor_context_t context;
     stepper_buffer_set buffers;
     size_t current_buffer;
     ssize_t last_calculation_ret;
+
+    // Parameters about overall movement state
     atomic_flag e_stop_triggered;
     _Atomic enum {
         NOT_HOMING,
@@ -49,6 +57,16 @@ struct stepper_work_context {
     struct k_work_delayable calculation_work;
     struct k_work_delayable check_driver_work;
     ll_stepper_cb_t stepper_cb;
+
+    // Motion parameters that should be constant for the motor
+    // (Load these from the settings, they are rarely changed.)
+    float motor_max_velocity;
+    float motor_max_acceleration;
+    float motor_steps_per_revolution;
+    float timer_increment;  // Time (in seconds) between successive pulses of the timer.
+
+    // Motion parameters to use for future movements
+    float min_step;
 };
 
 /**
@@ -85,8 +103,8 @@ int servo_move_relative(const struct device *dev, float delta_position);
  *
  * @retval -ENODEV if the device is not found among the static context structs.
  */
-int stepper_set_parameters(const struct device *dev, float max_velocity, float max_acceleration, float min_step,
-                           float steps_per_revolution);
+int stepper_set_parameters(const struct device *dev, float motor_max_velocity, float motor_max_acceleration,
+                           float motor_min_step, float motor_steps_per_revolution);
 
 /**
  * Move to the position specified, using the motion profiles in `motor_math.*`.
@@ -94,12 +112,14 @@ int stepper_set_parameters(const struct device *dev, float max_velocity, float m
  * @retval -ENODEV if the device is not found in the list.
  * @retval -EBUSY if another motion profile is already running.
  */
-int stepper_move_to_position(const struct device *dev, float target_position);
+int stepper_move_to_position(const struct device *dev, float target_position, float movement_max_velocity,
+                             float movement_max_acceleration);
 
 /*
  * Move relative to the current position. Wrapper around `stepper_move_to_position`.
  */
-int stepper_move_relative(const struct device *dev, float delta_position);
+int stepper_move_relative(const struct device *dev, float delta_position, float movement_max_veloocity,
+                          float movements_max_acceleration);
 
 /*
  * Choose some "impossible position" which is very large and approach it

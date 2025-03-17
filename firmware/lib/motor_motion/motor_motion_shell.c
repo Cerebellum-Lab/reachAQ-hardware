@@ -263,7 +263,7 @@ static int cmd_stepper_set_physical_parameters(const struct shell *shell, size_t
 }
 
 static int cmd_stepper_move(const struct shell *shell, size_t argc, char **argv) {
-    if (argc != 3) {
+    if (argc != 5) {
         shell_print(shell, "Invalid number of arguments");
         return -EINVAL;
     }
@@ -280,13 +280,25 @@ static int cmd_stepper_move(const struct shell *shell, size_t argc, char **argv)
         return -EINVAL;
     }
 
+    const float max_v = strtof(argv[3], &endptr);
+    if (*endptr != '\0') {
+        shell_print(shell, "Couldn't parse max acceleration");
+        return -EINVAL;
+    }
+
+    const float max_a = strtof(argv[4], &endptr);
+    if (*endptr != '\0') {
+        shell_print(shell, "Couldn't parse max velocity");
+        return -EINVAL;
+    }
+
     const struct device *const stepper_dev = stepper_motor_by_id(stepper);
     if (stepper_dev == NULL) {
         shell_print(shell, "Invalid stepper number");
         return -EINVAL;
     }
 
-    const int ret = stepper_move_to_position(stepper_dev, position);
+    const int ret = stepper_move_to_position(stepper_dev, position, max_v, max_a);
     if (ret != 0) {
         shell_print(shell, "Failed to move stepper to position: %d", ret);
         return -EINVAL;
@@ -383,10 +395,10 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
                   "Set the Physical parameters (max velocity and acceleration) for a stepper motor.\nUsage: "
                   "stepper_set_physical <stepper> <max_velocity> <max_acceleration>",
                   cmd_stepper_set_physical_parameters, 4, 0),
-    SHELL_CMD_ARG(
-        stepper_move, NULL,
-        "Move a stepper motor to the specified position sinusoidally.\nUsage: stepper_move <stepper> <position",
-        cmd_stepper_move, 3, 0),
+    SHELL_CMD_ARG(stepper_move, NULL,
+                  "Move a stepper motor to the specified position sinusoidally.\nUsage: stepper_move <stepper> "
+                  "<position> <movement_max_velocity> <movement_max_acceleration>",
+                  cmd_stepper_move, 5, 0),
     SHELL_CMD_ARG(stepper_stop, NULL, "Stop a stepper motor\nUsage: stepper_stop <stepper>", cmd_stepper_stop, 2, 0),
     SHELL_CMD_ARG(stepper_home, NULL,
                   "Home a stepper\nUsage: stepper_home <stepper> <forward>\nwhere <forward> is either 0 or 1",

@@ -28,7 +28,8 @@ class JerryCAN {
 
     int CfgRead(uint8_t dst_id, jerrycan_cmd_cfg_t &cfg);
 
-    int StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t min_step_inverse, float steps_per_revolution);
+    int StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t min_step_inverse, float steps_per_revolution,
+                        float motor_max_velocity, float motor_max_acceleration);
 
     int ServoCfgWrite(uint8_t dst_id, uint8_t motor_id, float min_position, float max_position,
                       float min_pwm_duration_us, float max_pwm_duration_us);

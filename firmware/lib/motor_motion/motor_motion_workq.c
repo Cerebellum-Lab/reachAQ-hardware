@@ -39,6 +39,10 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
 #define STEPPER_DEFAULT_MIN_STEP 1.0f
 // Default 'steps_per_revolution' of stepper
 #define STEPPER_DEFAULT_STEPS_PER_REVOLUTION 48.0f
+// Default 'max_velocity' of stepper
+#define STEPPER_DEFAULT_MAX_VELOCITY 20.0f
+// Default 'max_acceleration' of stepper
+#define STEPPER_DEFAULT_MAX_ACCELERATION 100.0f
 
 #define DEV_DEFINE_SERVO_CONTEXT(id)                                                         \
     {.dev = DEVICE_DT_GET(id),                                                               \
@@ -95,71 +99,79 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
          .node = {.next = NULL},                                                             \
      }},
 
-#define DEV_DEFINE_STEPPER_CONTEXT(id)                                                       \
-    {.dev = DEVICE_DT_GET(id),                                                               \
-     .context =                                                                              \
-         {                                                                                   \
-             .motion_profile =                                                               \
-                 {                                                                           \
-                     .start_pos = 0,                                                         \
-                     .end_pos = 0,                                                           \
-                     .a_max = 0,                                                             \
-                     .v_max = 0,                                                             \
-                     .sgn = 0,                                                               \
-                     .y_f = 0,                                                               \
-                     .y_s = 0,                                                               \
-                     .y_a = 0,                                                               \
-                     .v_w = 0,                                                               \
-                     .t_o = 0,                                                               \
-                     .t_a = 0,                                                               \
-                     .omega = 0,                                                             \
-                     .k_s = 0,                                                               \
-                     .t_k = 0,                                                               \
-                     .t_s = 0,                                                               \
-                     .t_t = 0,                                                               \
-                 },                                                                          \
-             .min_step = STEPPER_DEFAULT_MIN_STEP,                                           \
-             .timer_increment = (DT_PROP(DT_PARENT(id), st_prescaler) + 1.0f) / 170e6f,      \
-             .steps_per_revolution = STEPPER_DEFAULT_STEPS_PER_REVOLUTION,                   \
-             .last_time_generated = 0.0f,                                                    \
-             .last_position_generated = 0.0f,                                                \
-         },                                                                                  \
-     .buffers = {{0}},                                                                       \
-     .current_buffer = 0,                                                                    \
-     .last_calculation_ret = 0,                                                              \
-     .e_stop_triggered = {.__val = 0},                                                       \
-     .homing = NOT_HOMING,                                                                   \
-     .motion_done = true,                                                                    \
-     .motion_calculation_done = true,                                                        \
-     .calculation_work =                                                                     \
-         {                                                                                   \
-             .work =                                                                         \
-                 {                                                                           \
-                     .node = {.next = NULL},                                                 \
-                     .handler = NULL,                                                        \
-                     .queue = NULL,                                                          \
-                     .flags = 0,                                                             \
-                 },                                                                          \
-             .timeout = {.node = {{.head = NULL}, {.tail = NULL}}, .fn = NULL, .dticks = 0}, \
-             .queue = NULL,                                                                  \
-         },                                                                                  \
-     .check_driver_work =                                                                    \
-         {                                                                                   \
-             .work =                                                                         \
-                 {                                                                           \
-                     .node = {.next = NULL},                                                 \
-                     .handler = NULL,                                                        \
-                     .queue = NULL,                                                          \
-                     .flags = 0,                                                             \
-                 },                                                                          \
-             .timeout = {.node = {{.head = NULL}, {.tail = NULL}}, .fn = NULL, .dticks = 0}, \
-             .queue = NULL,                                                                  \
-         },                                                                                  \
-     .stepper_cb = {                                                                         \
-         .func = stepper_motor_event_callback,                                               \
-         .user_data = NULL,                                                                  \
-         .node = {.next = NULL},                                                             \
-     }},
+#define DEV_DEFINE_STEPPER_CONTEXT(id)                                                          \
+    {                                                                                           \
+        .dev = DEVICE_DT_GET(id),                                                               \
+        .context =                                                                              \
+            {                                                                                   \
+                .motion_profile =                                                               \
+                    {                                                                           \
+                        .start_pos = 0,                                                         \
+                        .end_pos = 0,                                                           \
+                        .a_max = 0,                                                             \
+                        .v_max = 0,                                                             \
+                        .sgn = 0,                                                               \
+                        .y_f = 0,                                                               \
+                        .y_s = 0,                                                               \
+                        .y_a = 0,                                                               \
+                        .v_w = 0,                                                               \
+                        .t_o = 0,                                                               \
+                        .t_a = 0,                                                               \
+                        .omega = 0,                                                             \
+                        .k_s = 0,                                                               \
+                        .t_k = 0,                                                               \
+                        .t_s = 0,                                                               \
+                        .t_t = 0,                                                               \
+                    },                                                                          \
+                .min_step = 0.0f,                                                               \
+                .timer_increment = 0.0f,                                                        \
+                .steps_per_revolution = 0.0f,                                                   \
+                .last_time_generated = 0.0f,                                                    \
+                .last_position_generated = 0.0f,                                                \
+            },                                                                                  \
+        .buffers = {{0}},                                                                       \
+        .current_buffer = 0,                                                                    \
+        .last_calculation_ret = 0,                                                              \
+        .e_stop_triggered = {.__val = 0},                                                       \
+        .homing = NOT_HOMING,                                                                   \
+        .motion_done = true,                                                                    \
+        .motion_calculation_done = true,                                                        \
+        .calculation_work =                                                                     \
+            {                                                                                   \
+                .work =                                                                         \
+                    {                                                                           \
+                        .node = {.next = NULL},                                                 \
+                        .handler = NULL,                                                        \
+                        .queue = NULL,                                                          \
+                        .flags = 0,                                                             \
+                    },                                                                          \
+                .timeout = {.node = {{.head = NULL}, {.tail = NULL}}, .fn = NULL, .dticks = 0}, \
+                .queue = NULL,                                                                  \
+            },                                                                                  \
+        .check_driver_work =                                                                    \
+            {                                                                                   \
+                .work =                                                                         \
+                    {                                                                           \
+                        .node = {.next = NULL},                                                 \
+                        .handler = NULL,                                                        \
+                        .queue = NULL,                                                          \
+                        .flags = 0,                                                             \
+                    },                                                                          \
+                .timeout = {.node = {{.head = NULL}, {.tail = NULL}}, .fn = NULL, .dticks = 0}, \
+                .queue = NULL,                                                                  \
+            },                                                                                  \
+        .stepper_cb =                                                                           \
+            {                                                                                   \
+                .func = stepper_motor_event_callback,                                           \
+                .user_data = NULL,                                                              \
+                .node = {.next = NULL},                                                         \
+            },                                                                                  \
+        .motor_max_velocity = STEPPER_DEFAULT_MAX_VELOCITY,                                     \
+        .motor_max_acceleration = STEPPER_DEFAULT_MAX_ACCELERATION,                             \
+        .motor_steps_per_revolution = STEPPER_DEFAULT_STEPS_PER_REVOLUTION,                     \
+        .timer_increment = (DT_PROP(DT_PARENT(id), st_prescaler) + 1.0f) / 170e6f,              \
+        .min_step = STEPPER_DEFAULT_MIN_STEP,                                                   \
+    },
 
 struct stepper_work_context stepper_contexts[] = {DT_FOREACH_STATUS_OKAY(ll_stepper, DEV_DEFINE_STEPPER_CONTEXT)};
 struct servo_work_context servo_contexts[] = {DT_FOREACH_STATUS_OKAY(ll_servo, DEV_DEFINE_SERVO_CONTEXT)};
@@ -262,8 +274,6 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
                         break;
                     case NOT_HOMING: /* FALLTHROUGH */
                     default:
-                        // Hit limit switch during ordinary motion, stop immediately and await further instruction.
-                        stepper_set_position_to_zero(dev);
                         break;
                 }
             } else {
@@ -358,8 +368,8 @@ static void servo_work_calculation_handler(struct k_work *work) {
 #define slow_pulses_ms 100.0f
 size_t stepper_generate_at_slow_velocity(const struct stepper_work_context *context, uint32_t *buf) {
     // Generate up to slow_pulses_ms of "slow" pulses at 1/4 of the max velocity
-    const float seconds_per_pulse = 4.0f / context->context.motion_profile.v_max /
-                                    context->context.steps_per_revolution * context->context.min_step;
+    const float seconds_per_pulse =
+        4.0f / context->motor_max_velocity / context->motor_steps_per_revolution * context->min_step;
 
     size_t n_pulses = (size_t)floorf(slow_pulses_ms / 1000.0f / seconds_per_pulse);
 
@@ -368,7 +378,7 @@ size_t stepper_generate_at_slow_velocity(const struct stepper_work_context *cont
     }
 
     for (size_t i = 0; i < n_pulses; i++) {
-        buf[i] = lroundf(seconds_per_pulse / context->context.timer_increment);
+        buf[i] = lroundf(seconds_per_pulse / context->timer_increment);
     }
 
     return n_pulses;
@@ -384,6 +394,7 @@ static void stepper_work_calculation_handler(struct k_work *work) {
                                                                            STEPPER_BUFFER_SIZE, &context->context);
             context->last_calculation_ret = ret;
             if (ret < 0) {
+                context->motion_calculation_done = true;
                 LOG_ERR("Error generating stepper table.");
                 return;
             }
@@ -396,8 +407,12 @@ static void stepper_work_calculation_handler(struct k_work *work) {
 
             // Add the buffer onto the stepper driver queue
             LOG_DBG("Q buf %d [%p]", context->current_buffer, (void *)context->buffers[context->current_buffer]);
-            ll_queue_stepper_positions(context->dev, context->buffers[context->current_buffer],
-                                       context->last_calculation_ret * sizeof(uint32_t), K_FOREVER);
+            if (ret > 0) {
+                // Sending a buffer of length 0 here causes the event callbacks
+                // to function a little weirdly.
+                ll_queue_stepper_positions(context->dev, context->buffers[context->current_buffer],
+                                           context->last_calculation_ret * sizeof(uint32_t), K_FOREVER);
+            }
 
             // Increment the buffer pointer
             context->current_buffer = (context->current_buffer + 1) % BUFS_PER_MOTOR;
@@ -478,7 +493,7 @@ static int motor_workq_init_and_start(void) {
         const ll_motor_cfg_t *motor_data = motor_dev->config;
         const struct device *stepper_driver_dev = motor_data->stepper_driver_device;
         if (stepper_driver_dev != NULL) {
-            adi_tmc2209_set_microstep(stepper_driver_dev, (uint32_t)(1.0f / context->context.min_step));
+            adi_tmc2209_set_microstep(stepper_driver_dev, (uint32_t)(1.0f / context->min_step));
         }
     }
 
@@ -602,27 +617,40 @@ int stepper_set_parameters(const struct device *dev, const float max_velocity, c
     }
 
     if (max_velocity > 0.0f) {
-        context->context.motion_profile.v_max = max_velocity;
+        context->motor_max_velocity = max_velocity;
     }
 
     if (max_acceleration > 0.0f) {
-        context->context.motion_profile.a_max = max_acceleration;
+        context->motor_max_acceleration = max_acceleration;
     }
 
     if (min_step > 0.0f) {
-        context->context.min_step = min_step;
+        const ll_motor_cfg_t *stepper_config = dev->config;
+        const int ret =
+            adi_tmc2209_set_microstep(stepper_config->stepper_driver_device, (uint32_t)roundf(1.0f / min_step));
+        if (ret == 0) {
+            context->min_step = min_step;
+        }
     }
 
     if (steps_per_revolution > 0.0f) {
-        context->context.steps_per_revolution = steps_per_revolution;
+        context->motor_steps_per_revolution = steps_per_revolution;
     }
 
     settings_save();
     return 0;
 }
 
-int stepper_move_to_position(const struct device *dev, const float target_position) {
+int stepper_move_to_position(const struct device *dev, const float target_position, const float max_velocity,
+                             const float max_acceleration) {
     struct stepper_work_context *context = find_stepper_context_from_device(dev);
+    if (max_acceleration <= 0.0f || max_velocity <= 0.0f || isnan(max_acceleration) || isnan(max_velocity) ||
+        isinf(max_acceleration) || isinf(max_velocity) || isnan(target_position) || isinf(target_position)) {
+        LOG_ERR("Invalid paramaters: max_a: %f, max_v: %f, target: %f", (double)max_acceleration, (double)max_velocity,
+                (double)target_position);
+        return -EINVAL;
+    }
+
     if (context == NULL) {
         LOG_ERR("Stepper context not found for device");
         return -ENODEV;
@@ -639,7 +667,7 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
     }
     atomic_flag_clear(&context->e_stop_triggered);
 
-    if (fabsf(target_position - context->context.last_position_generated) < context->context.min_step) {
+    if (fabsf(target_position - context->context.last_position_generated) < context->min_step) {
         LOG_WRN("Target position is the same as current position.");
         return 0;
     }
@@ -650,10 +678,19 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
         ll_stepper_set_direction(dev, LL_STEPPER_DIR_FORWARD);
     }
 
+    if (max_acceleration > context->motor_max_acceleration) {
+        LOG_WRN("Max acceleration greater than that of the motor, using lower value.");
+    }
+
+    if (max_velocity > context->motor_max_velocity) {
+        LOG_WRN("Max velocity greater than that of the motor, using lower value.");
+    }
+
+    const float movement_max_a = MIN(context->motor_max_acceleration, max_acceleration);
+    const float movement_max_v = MIN(context->motor_max_velocity, max_velocity);
     const int ret = motor_motion_stepper_init_context_struct(
-        context->context.last_position_generated, target_position, context->context.motion_profile.v_max,
-        context->context.motion_profile.a_max, context->context.min_step, context->context.timer_increment,
-        &context->context);
+        context->context.last_position_generated, target_position, movement_max_v, movement_max_a, context->min_step,
+        context->timer_increment, context->motor_steps_per_revolution, &context->context);
 
     if (ret != 0) {
         LOG_ERR("Failed to initialize context struct: %d", ret);
@@ -680,7 +717,10 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
 
         // Submit the buffer to the driver to start the motor motion
         LOG_WRN("INIT:Q buf %d [%p]", context->current_buffer, (void *)context->buffers[context->current_buffer]);
-        ll_queue_stepper_positions(dev, context->buffers[i], gen_table_ret * sizeof(uint32_t), K_FOREVER);
+
+        if (gen_table_ret > 0) {
+            ll_queue_stepper_positions(dev, context->buffers[i], gen_table_ret * sizeof(uint32_t), K_FOREVER);
+        }
 
         // If the buffer wasn't full, then this is done and the next buffer isn't needed
         if (gen_table_ret < STEPPER_BUFFER_SIZE) {
@@ -695,10 +735,12 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
     return 0;
 }
 
-int stepper_move_relative(const struct device *dev, const float delta_position) {
+int stepper_move_relative(const struct device *dev, const float delta_position, const float max_velocity,
+                          const float max_acceleration) {
     struct stepper_work_context *context = find_stepper_context_from_device(dev);
     return context == NULL ? -ENODEV
-                           : stepper_move_to_position(dev, context->context.last_position_generated + delta_position);
+                           : stepper_move_to_position(dev, context->context.last_position_generated + delta_position,
+                                                      max_velocity, max_acceleration);
 }
 
 int stepper_go_home_slowly(const struct device *dev, bool forward) {
@@ -745,7 +787,7 @@ int motor_motion_stepper_get_min_step(const struct device *dev, float *min_step)
         return -ENODEV;
     }
 
-    *min_step = context->context.min_step;
+    *min_step = context->min_step;
     return 0;
 }
 
@@ -755,7 +797,7 @@ int motor_motion_stepper_get_steps_per_revolution(const struct device *dev, floa
         return -ENODEV;
     }
 
-    *steps_per_revolution = context->context.steps_per_revolution;
+    *steps_per_revolution = context->motor_steps_per_revolution;
     return 0;
 }
 

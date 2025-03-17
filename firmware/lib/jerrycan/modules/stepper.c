@@ -60,17 +60,17 @@ static void stepper_handler(jerrycan_msg_t *msg) {
         return;
     }
 
-    stepper_set_parameters(dev, msg->stepper_move.max_velocity, msg->stepper_move.max_acceleration, 0.0f, 0.0f);
-
     switch (msg->stepper_move.abs_or_rel) {
         case JERRYCAN_MOVE_ABSOLUTE:
             // Move the stepper to the absolute position
-            stepper_move_to_position(dev, msg->stepper_move.position);
+            stepper_move_to_position(dev, msg->stepper_move.position, msg->stepper_move.max_velocity,
+                                     msg->stepper_move.max_acceleration);
             break;
 
         case JERRYCAN_MOVE_RELATIVE:
             // Move the stepper to the relative position
-            stepper_move_relative(dev, msg->stepper_move.position);
+            stepper_move_relative(dev, msg->stepper_move.position, msg->stepper_move.max_velocity,
+                                  msg->stepper_move.max_acceleration);
             break;
 
         default:
@@ -99,8 +99,9 @@ static void stepper_cfg_write_handler(jerrycan_msg_t *msg) {
         return;
     }
 
-    stepper_set_parameters(dev, 0.0f, 0.0f, 1.0f / msg->cfg_write.stepper.min_step_inverse,
-                           msg->cfg_write.stepper.steps_per_revolution);
+    stepper_set_parameters(dev, msg->cfg_write.stepper.motor_max_velocity,
+                           msg->cfg_write.stepper.motor_max_acceleration,
+                           1.0f / msg->cfg_write.stepper.min_step_inverse, msg->cfg_write.stepper.steps_per_revolution);
 }
 
 static jerrycan_rx_callback_t stepper_cfg_write_callback = {

@@ -103,7 +103,8 @@ int motor_motion_servo_init_context_struct(const float start, const float end, c
 
 int motor_motion_stepper_init_context_struct(const float start, const float end, const float max_velocity,
                                              const float max_acceleration, const float min_step,
-                                             const float timer_increment, stepper_motor_context_t *context) {
+                                             const float timer_increment, const float steps_per_revolution,
+                                             stepper_motor_context_t *context) {
     if (motor_motion_init_context_struct(start, end, max_velocity, max_acceleration, &context->motion_profile) != 0) {
         return -EINVAL;
     }
@@ -118,6 +119,7 @@ int motor_motion_stepper_init_context_struct(const float start, const float end,
     context->last_time_generated = 0.0f;
     context->min_step = min_step;
     context->timer_increment = timer_increment;
+    context->steps_per_revolution = steps_per_revolution;
     return 0;
 }
 

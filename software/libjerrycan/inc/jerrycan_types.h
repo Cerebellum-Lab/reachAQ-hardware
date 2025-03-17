@@ -133,6 +133,8 @@ typedef struct __attribute__((packed)) {
     uint16_t min_step_inverse;  // Power of 2 representing microstepping. Thus 2 represents 1/2 steps, 4 represents 1/4
                                 // steps, etc.
     float steps_per_revolution;
+    float motor_max_velocity;
+    float motor_max_acceleration;
 } jerrycan_stepper_cfg_t;
 
 typedef struct __attribute__((packed)) {

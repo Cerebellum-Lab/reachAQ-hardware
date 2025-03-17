@@ -101,13 +101,15 @@ int motor_motion_servo_init_context_struct(float start, float end, float max_vel
  * @param max_acceleration maximum acceleration of the motor. See note in the struct definition for units.
  * @param min_step step size that the motor turns for every rising edge on the DIR pin. With microstepping,
  * this usually ends up being 0.5, 0.25, etc.
+ * @param steps_per_revolution the number of steps for an entire revolution of the motor.
  * @param timer_increment is the inverse of the frequency of the timer peripheral used for the stepper.
  *
  * @retval 0 on success
  * @retval -errno on error
  */
 int motor_motion_stepper_init_context_struct(float start, float end, float max_velocity, float max_acceleration,
-                                             float min_step, float timer_increment, stepper_motor_context_t *context);
+                                             float min_step, float timer_increment, float steps_per_revolution,
+                                             stepper_motor_context_t *context);
 
 /**
  * Generates a table of servo displacements for a sinusoidal motion profile uses a fixed increment of 0.02 seconds
