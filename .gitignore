@@ -36,3 +36,6 @@ build/
 **/cmake-build-debug/
 
 .idea
+
+firmware/*/VERSION
+software/whiskerwire/whiskerwire/__about__.py

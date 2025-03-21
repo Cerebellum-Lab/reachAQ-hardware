@@ -17,8 +17,7 @@ typedef struct {
 #define TIMER(idx) DT_INST_PARENT(idx)
 #define TIM(idx) ((TIM_TypeDef *)DT_REG_ADDR(TIMER(idx)))
 
-#define DT_INST_CLK(index, inst) \
-    { .bus = DT_CLOCKS_CELL(TIMER(index), bus), .enr = DT_CLOCKS_CELL(TIMER(index), bits) }
+#define DT_INST_CLK(index, inst) {.bus = DT_CLOCKS_CELL(TIMER(index), bus), .enr = DT_CLOCKS_CELL(TIMER(index), bits)}
 
 static const uint32_t channel_to_ll_map[] = {LL_TIM_CHANNEL_CH1, LL_TIM_CHANNEL_CH2, LL_TIM_CHANNEL_CH3,
                                              LL_TIM_CHANNEL_CH4, LL_TIM_CHANNEL_CH5, LL_TIM_CHANNEL_CH6};

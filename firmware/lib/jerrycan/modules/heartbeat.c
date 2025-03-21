@@ -25,30 +25,36 @@
  * turn off after CONFIG_LIB_JERRYCAN_HEARTBEAT_LED_DURATION_MS ms, using a timer to control the blink duration.
  */
 
+#include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
 
-#include "generic_gpios.h"
 #include "jerrycan.h"
 
 LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
-static const struct device *generic_gpios = DEVICE_DT_GET_ANY(ll_generic_gpios);
-static int heartbeat_led_idx = 0;
+#define LED0_NODE DT_ALIAS(led0)
 
-static void heartbeat_led_off(struct k_timer *timer) { ll_generic_gpio_write_pin(generic_gpios, heartbeat_led_idx, 0); }
+static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+
+static void heartbeat_led_off(struct k_timer *) { gpio_pin_set_dt(&led, 0); }
 
 K_TIMER_DEFINE(heartbeat_led_timer, heartbeat_led_off, NULL);
 
 static void heartbeat_led_start() {
     // Turn on the LED and then start a timer that will turn
     // it off in CONFIG_LIB_JERRYCAN_HEARTBEAT_LED_DURATION_MS ms
-    ll_generic_gpio_write_pin(generic_gpios, heartbeat_led_idx, 1);
+    gpio_pin_set_dt(&led, 1);
     k_timer_start(&heartbeat_led_timer, K_MSEC(CONFIG_LIB_JERRYCAN_HEARTBEAT_LED_DURATION_MS), K_NO_WAIT);
 }
 
 static void heartbeat_handler(jerrycan_msg_t *msg) {
     // If we receive a heartbeat message, we should blink the LED
     heartbeat_led_start();
+
+    jerrycan_msg_t response = {.type = JERRYCAN_CMD_HEARTBEAT, .heartbeat = {.rsvd = 0xFF}};
+
+    /* Transmit message */
+    jerrycan_tx(&response, K_NO_WAIT);
 }
 
 static jerrycan_rx_callback_t heartbeat_callback = {
@@ -57,19 +63,13 @@ static jerrycan_rx_callback_t heartbeat_callback = {
 };
 
 static int jerrycan_heartbeat_init() {
-    // Use pin index instead of pin name so we don't
-    // iterate through all pins everytime we write
-    // to the heartbeat LED
-    const char *pin_name = ll_generic_gpio_lookup_writable_pin_name(generic_gpios, heartbeat_led_idx);
-    while (pin_name != NULL && strcmp(pin_name, "HEARTBEAT") != 0) {
-        heartbeat_led_idx++;
-        pin_name = ll_generic_gpio_lookup_writable_pin_name(generic_gpios, heartbeat_led_idx);
-    }
-
-    if (pin_name == NULL) {
-        LOG_ERR("Error initializing JerryCAN Heartbeat module: Failed to determine index of heartbeat LED");
+    if (gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE) != 0) {
         return -1;
     }
+
+    heartbeat_led_start();
+
+    LOG_INF("Heartbeat LED Enabled");
 
     // Register an handler for HEARTBEAT messages
     return jerrycan_register_rx_callback(&heartbeat_callback);

@@ -38,6 +38,7 @@ LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 void jerrycan_status_tx() {
     // Send a status message
     // FIXME: TODO: Actually read the status of the motors and sensors and populate this message
+#if 0
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_STATUS,
         .status =
@@ -57,6 +58,7 @@ void jerrycan_status_tx() {
     };
 
     jerrycan_tx(&msg, K_NO_WAIT);
+#endif
 }
 
 K_TIMER_DEFINE(jerrycan_status_timer, jerrycan_status_tx, NULL);

@@ -23,6 +23,7 @@
 		status_led: led_1 {
 			gpios = <&gpioa 5 GPIO_ACTIVE_HIGH>;
 			label = "STATUS_LED";
+			status = "okay";
 		};
 	};
 
@@ -37,7 +38,7 @@
 
 		door_sensor_1: door_sensor_1 {
 			label = "Door Closed 1";
-			gpios = <&gpioc 13 (GPIO_ACTIVE_HIGH)>;
+			gpios = <&gpioc 13 (GPIO_PULL_DOWN | GPIO_ACTIVE_HIGH)>;
 			zephyr,code = <INPUT_KEY_5>;
 			status = "okay";
 		};
@@ -72,14 +73,12 @@
 		output-gpios = <&gpiob 11 GPIO_ACTIVE_HIGH>, // STIM0
 					   <&gpiob 12 GPIO_ACTIVE_HIGH>, // STIM1
 					   <&gpiob 13 GPIO_ACTIVE_HIGH>, // STIM2
-					   <&gpiob 14 GPIO_ACTIVE_HIGH>, // STIM3
-					   <&gpioa 5 GPIO_ACTIVE_HIGH>;  // HEARTBEAT
+					   <&gpiob 14 GPIO_ACTIVE_HIGH>; // STIM3
 		output-gpio-names = "STIM0",
 						    "STIM1",
 						    "STIM2",
-						    "STIM3",
-							"HEARTBEAT";
-		output-gpio-interrupt-enable = "BOTH", "BOTH", "DISABLE", "DISABLE", "DISABLE";
+						    "STIM3";
+		output-gpio-interrupt-enable = "DISABLE", "DISABLE", "DISABLE", "DISABLE";
 	};
 
 	tone_generator {

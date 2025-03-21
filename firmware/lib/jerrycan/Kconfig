@@ -22,43 +22,43 @@ menuconfig LIB_JERRYCAN_HEARTBEAT_LED_DURATION_MS
     The duration for which the heartbeat LED remains on after the reception of a heartbeat message
 
 menuconfig LIB_JERRYCAN_STATUS_TX_PERIOD_MS
-    int "Status TX Period"
-    default 100
+    int "Status TX Period (effectively unused)"
+    default 1000
     depends on LIB_JERRYCAN
     help
       The period at which the status message is transmitted in milliseconds.
 
 menuconfig LIB_JERRYCAN_TEMPERATURE_TX_PERIOD_MS
     int "Temperature TX Period"
-    default 1000
+    default 100
     depends on LIB_JERRYCAN_TEMPERATURE_SENSOR
     help
       The period at which the temperature message is transmitted in milliseconds.
 
 menuconfig LIB_JERRYCAN_PRESSURE_TX_PERIOD_MS
     int "Pressure TX Period"
-    default 10
+    default 100
     depends on LIB_JERRYCAN
     help
       The period at which the pressure message is transmitted in milliseconds.
 
 menuconfig LIB_JERRYCAN_GPIO_TX_PERIOD_MS
     int "GPIO TX Period"
-    default 1000
+    default 100
     depends on LIB_JERRYCAN
     help
       The period at which the GPIO message is transmitted in milliseconds.
 
 menuconfig LIB_JERRYCAN_TONE_TX_PERIOD_MS
     int "Tone Generator TX Period"
-    default 1000
+    default 100
     depends on LIB_JERRYCAN
     help
       The period at which the tone generator message is transmitted in milliseconds.
 
 menuconfig LIB_JERRYCAN_ANALOG_OUT_TX_PERIOD_MS
     int "Analog Out TX Period"
-    default 100
+    default 1000
     depends on LIB_JERRYCAN
     help
       The period at which the analog output message is transmitted in milliseconds.
@@ -72,14 +72,14 @@ menuconfig LIB_JERRYCAN_LOAD_CELL_TX_PERIOD_MS
 
 menuconfig LIB_JERRYCAN_DOOR_SENSOR_TX_PERIOD_MS
     int "Door Sensor TX Period"
-    default 1000
+    default 100
     depends on LIB_JERRYCAN
     help
       The period at which the door sensor message is transmitted in milliseconds.
 
 menuconfig LIB_JERRYCAN_RGB_LED_STATUS_PERIOD_MS
     int "RGB LED TX Period"
-    default 1000
+    default 100
     depends on LIB_JERRYCAN
     help
       The period at which the RGB LED message is transmitted in milliseconds.
@@ -113,7 +113,7 @@ menuconfig LIB_JERRYCAN_RGB_LED
 
 menuconfig LIB_JERRYCAN_STEPPER_STATUS_TX_PERIOD_MS
     int "Stepper Status TX Period"
-    default 1000
+    default 20
     depends on LIB_JERRYCAN
     depends on DT_HAS_LL_STEPPER_ENABLED
     help
@@ -121,7 +121,7 @@ menuconfig LIB_JERRYCAN_STEPPER_STATUS_TX_PERIOD_MS
 
 menuconfig LIB_JERRYCAN_SERVO_STATUS_TX_PERIOD_MS
     int "Servo Status TX Period"
-    default 1000
+    default 20
     depends on LIB_JERRYCAN
     depends on DT_HAS_LL_SERVO_ENABLED
     help

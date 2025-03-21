@@ -1,6 +1,6 @@
 zephyr_library()
 
-zephyr_include_directories(.)
+zephyr_include_directories(. ../../../software/libjerrycan/inc)
 
 zephyr_library_sources(
 	       jerrycan.c
