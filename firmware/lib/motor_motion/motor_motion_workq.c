@@ -676,10 +676,10 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
 
     if (target_position < context->context.last_position_generated) {
         ll_stepper_set_direction(dev,
-                                 context->flip_limit_orientation ? LL_STEPPER_DIR_BACKWARD : LL_STEPPER_DIR_FORWARD);
+                                 context->flip_limit_orientation ? LL_STEPPER_DIR_FORWARD : LL_STEPPER_DIR_BACKWARD);
     } else {
         ll_stepper_set_direction(dev,
-                                 context->flip_limit_orientation ? LL_STEPPER_DIR_FORWARD : LL_STEPPER_DIR_BACKWARD);
+                                 context->flip_limit_orientation ? LL_STEPPER_DIR_BACKWARD : LL_STEPPER_DIR_FORWARD);
     }
 
     if (max_acceleration > context->motor_max_acceleration) {
@@ -769,7 +769,7 @@ int stepper_go_home_slowly(const struct device *dev) {
     atomic_flag_clear(&work_context->e_stop_triggered);
     work_context->homing = HOMING_TOWARDS_LIMIT_SWITCH;
     work_context->homing_direction =
-        work_context->flip_limit_orientation ? LL_STEPPER_DIR_BACKWARD : LL_STEPPER_DIR_FORWARD;
+        work_context->flip_limit_orientation ? LL_STEPPER_DIR_FORWARD : LL_STEPPER_DIR_BACKWARD;
     work_context->motion_calculation_done = false;
 
     ll_stepper_set_direction(dev, work_context->homing_direction);
