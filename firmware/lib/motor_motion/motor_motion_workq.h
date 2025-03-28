@@ -35,6 +35,12 @@ struct servo_work_context {
     ll_servo_cb_t servo_cb;
 };
 
+typedef enum homing_status {
+    NOT_HOMING,
+    HOMING_TOWARDS_LIMIT_SWITCH,
+    MOVING_FROM_LIMIT_SWITCH,
+} homing_status_t;
+
 struct stepper_work_context {
     const struct device *dev;  // Motor device to use
 
@@ -46,11 +52,7 @@ struct stepper_work_context {
 
     // Parameters about overall movement state
     atomic_flag e_stop_triggered;
-    _Atomic enum {
-        NOT_HOMING,
-        HOMING_TOWARDS_LIMIT_SWITCH,
-        MOVING_FROM_LIMIT_SWITCH,
-    } homing;
+    _Atomic homing_status_t homing;
     _Atomic ll_stepper_dir_t homing_direction;
     bool motion_done;
     bool motion_calculation_done;
@@ -67,6 +69,7 @@ struct stepper_work_context {
 
     // Motion parameters to use for future movements
     float min_step;
+    bool flip_limit_orientation;
 };
 
 /**
@@ -104,7 +107,7 @@ int servo_move_relative(const struct device *dev, float delta_position);
  * @retval -ENODEV if the device is not found among the static context structs.
  */
 int stepper_set_parameters(const struct device *dev, float motor_max_velocity, float motor_max_acceleration,
-                           float motor_min_step, float motor_steps_per_revolution);
+                           float motor_min_step, float motor_steps_per_revolution, bool flip_limit_orientation);
 
 /**
  * Move to the position specified, using the motion profiles in `motor_math.*`.
@@ -121,13 +124,7 @@ int stepper_move_to_position(const struct device *dev, float target_position, fl
 int stepper_move_relative(const struct device *dev, float delta_position, float movement_max_veloocity,
                           float movements_max_acceleration);
 
-/*
- * Choose some "impossible position" which is very large and approach it
- * or its negative, depending on `forward` up to a very slow velocity. We will
- * never approach the other end of this curve, so will approach this velocity
- * and stay there until we hit the limit switch.
- */
-int stepper_go_home_slowly(const struct device *dev, bool forward);
+int stepper_go_home_slowly(const struct device *dev);
 
 /*
  * Cancel all work on the motor.
@@ -214,3 +211,9 @@ int motor_motion_servo_get_max_angle(const struct device *dev, float *max_angle)
  * unless the homing procedure is followed.
  */
 void set_all_e_stop_flags(void);
+
+/**
+ * @param dev stepper device
+ * @return The current homing status of the motor
+ */
+homing_status_t stepper_homing_status(const struct device *dev);

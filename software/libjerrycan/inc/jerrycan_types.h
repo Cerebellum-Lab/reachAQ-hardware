@@ -99,7 +99,7 @@ BUILD_ASSERT(sizeof(jerrycan_cmd_stepper_move_t) == 13, "jerrycan_cmd_stepper_mo
 
 typedef struct __attribute__((packed)) {
     uint8_t motor_id : 7;
-    uint8_t forward : 1;
+    uint8_t rsvd : 1;
 } jerrycan_cmd_stepper_home_t;
 
 BUILD_ASSERT(sizeof(jerrycan_cmd_stepper_home_t) == 1, "jerrycan_cmd_stepper_home_t should be 1 bytes");
@@ -128,7 +128,8 @@ typedef struct __attribute__((packed)) {
     struct __attribute__((packed)) {
         uint8_t motor_id : 2;
         uint8_t error : 1;
-        uint8_t rsvd0 : 5;
+        bool flip_limit_orientation : 1;
+        uint8_t rsvd0 : 4;
     };
     uint16_t min_step_inverse;  // Power of 2 representing microstepping. Thus 2 represents 1/2 steps, 4 represents 1/4
                                 // steps, etc.

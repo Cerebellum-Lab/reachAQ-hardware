@@ -185,7 +185,7 @@ static int cmd_servo_stop(const struct shell *shell, size_t argc, char **argv) {
 }
 
 static int cmd_stepper_set_steps(const struct shell *shell, size_t argc, char **argv) {
-    if (argc != 4) {
+    if (argc != 5) {
         shell_print(shell, "Invalid number of arguments");
         return -EINVAL;
     }
@@ -215,7 +215,13 @@ static int cmd_stepper_set_steps(const struct shell *shell, size_t argc, char **
         return -EINVAL;
     }
 
-    const int ret = stepper_set_parameters(stepper_dev, 0.0f, 0.0f, min_step, steps_per_revolution);
+    const int flip_limit_orientation = strtol(argv[4], &endptr, 10);
+    if (*endptr != '\0') {
+        shell_print(shell, "Couldn't parse flip_limit_orientation");
+    }
+
+    const int ret =
+        stepper_set_parameters(stepper_dev, 0.0f, 0.0f, min_step, steps_per_revolution, flip_limit_orientation);
 
     if (ret != 0) {
         shell_print(shell, "Failed to set stepper parameters: %d", ret);
@@ -225,7 +231,7 @@ static int cmd_stepper_set_steps(const struct shell *shell, size_t argc, char **
 }
 
 static int cmd_stepper_set_physical_parameters(const struct shell *shell, size_t argc, char **argv) {
-    if (argc != 4) {
+    if (argc != 5) {
         shell_print(shell, "Invalid number of arguments");
         return -EINVAL;
     }
@@ -254,7 +260,12 @@ static int cmd_stepper_set_physical_parameters(const struct shell *shell, size_t
         return -EINVAL;
     }
 
-    const int ret = stepper_set_parameters(stepper_dev, max_velocity, max_acceleration, -1, -1);
+    const int flip_limit_orientation = strtol(argv[4], &endptr, 10);
+    if (*endptr != '\0') {
+        shell_print(shell, "Couldn't parse flip_limit_orientation");
+    }
+
+    const int ret = stepper_set_parameters(stepper_dev, max_velocity, max_acceleration, -1, -1, flip_limit_orientation);
     if (ret != 0) {
         shell_print(shell, "Failed to set stepper parameters: %d", ret);
         return -EINVAL;
@@ -331,7 +342,7 @@ static int cmd_stepper_stop(const struct shell *shell, size_t argc, char **argv)
 }
 
 static int cmd_stepper_home(const struct shell *shell, size_t argc, char **argv) {
-    if (argc != 3) {
+    if (argc != 2) {
         shell_print(shell, "Invalid number of arguments");
         return -EINVAL;
     }
@@ -349,17 +360,7 @@ static int cmd_stepper_home(const struct shell *shell, size_t argc, char **argv)
         return -EINVAL;
     }
 
-    const int forward = strtol(argv[2], &endptr, 10);
-    if (*endptr != '\0') {
-        shell_print(shell, "Couldn't parse forward");
-        return -EINVAL;
-    }
-
-    if (forward != 0 && forward != 1) {
-        shell_print(shell, "Invalid forward (must be 0 or 1)");
-    }
-
-    const int ret = stepper_go_home_slowly(dev, forward);
+    const int ret = stepper_go_home_slowly(dev);
     if (ret != 0) {
         shell_print(shell, "Failed to home slowly");
         return -EIO;
@@ -389,19 +390,17 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_CMD_ARG(
         stepper_set_steps, NULL,
         "Set the steps per revolution and minimum step for a stepper motor.\nUsage: stepper_set_steps <stepper> "
-        "<min_step> <steps_per_revolution>",
-        cmd_stepper_set_steps, 4, 0),
+        "<min_step> <steps_per_revolution> <flip_limit_orientation>",
+        cmd_stepper_set_steps, 5, 0),
     SHELL_CMD_ARG(stepper_set_physical, NULL,
                   "Set the Physical parameters (max velocity and acceleration) for a stepper motor.\nUsage: "
-                  "stepper_set_physical <stepper> <max_velocity> <max_acceleration>",
-                  cmd_stepper_set_physical_parameters, 4, 0),
+                  "stepper_set_physical <stepper> <max_velocity> <max_acceleration> <flip_limit_orientation>",
+                  cmd_stepper_set_physical_parameters, 5, 0),
     SHELL_CMD_ARG(stepper_move, NULL,
                   "Move a stepper motor to the specified position sinusoidally.\nUsage: stepper_move <stepper> "
                   "<position> <movement_max_velocity> <movement_max_acceleration>",
                   cmd_stepper_move, 5, 0),
     SHELL_CMD_ARG(stepper_stop, NULL, "Stop a stepper motor\nUsage: stepper_stop <stepper>", cmd_stepper_stop, 2, 0),
-    SHELL_CMD_ARG(stepper_home, NULL,
-                  "Home a stepper\nUsage: stepper_home <stepper> <forward>\nwhere <forward> is either 0 or 1",
-                  cmd_stepper_home, 3, 0),
+    SHELL_CMD_ARG(stepper_home, NULL, "Home a stepper\nUsage: stepper_home <stepper>", cmd_stepper_home, 2, 0),
     SHELL_SUBCMD_SET_END);
 SHELL_CMD_REGISTER(motor_math, &sub_motor_math, "Motor math motion commands", NULL);

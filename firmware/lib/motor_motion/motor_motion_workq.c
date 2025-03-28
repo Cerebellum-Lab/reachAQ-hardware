@@ -610,7 +610,7 @@ int servo_move_relative(const struct device *dev, const float delta_position) {
 }
 
 int stepper_set_parameters(const struct device *dev, const float max_velocity, const float max_acceleration,
-                           const float min_step, const float steps_per_revolution) {
+                           const float min_step, const float steps_per_revolution, const bool flip_limit_orientation) {
     struct stepper_work_context *const context = find_stepper_context_from_device(dev);
     if (context == NULL) {
         return -ENODEV;
@@ -636,6 +636,8 @@ int stepper_set_parameters(const struct device *dev, const float max_velocity, c
     if (steps_per_revolution > 0.0f) {
         context->motor_steps_per_revolution = steps_per_revolution;
     }
+
+    context->flip_limit_orientation = flip_limit_orientation;
 
     settings_save();
     return 0;
@@ -673,9 +675,11 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
     }
 
     if (target_position < context->context.last_position_generated) {
-        ll_stepper_set_direction(dev, LL_STEPPER_DIR_BACKWARD);
+        ll_stepper_set_direction(dev,
+                                 context->flip_limit_orientation ? LL_STEPPER_DIR_BACKWARD : LL_STEPPER_DIR_FORWARD);
     } else {
-        ll_stepper_set_direction(dev, LL_STEPPER_DIR_FORWARD);
+        ll_stepper_set_direction(dev,
+                                 context->flip_limit_orientation ? LL_STEPPER_DIR_FORWARD : LL_STEPPER_DIR_BACKWARD);
     }
 
     if (max_acceleration > context->motor_max_acceleration) {
@@ -743,7 +747,7 @@ int stepper_move_relative(const struct device *dev, const float delta_position, 
                                                       max_velocity, max_acceleration);
 }
 
-int stepper_go_home_slowly(const struct device *dev, bool forward) {
+int stepper_go_home_slowly(const struct device *dev) {
     struct stepper_work_context *work_context = find_stepper_context_from_device(dev);
     stepper_motor_context_t *context = &work_context->context;
     if (context == NULL) {
@@ -764,7 +768,8 @@ int stepper_go_home_slowly(const struct device *dev, bool forward) {
 
     atomic_flag_clear(&work_context->e_stop_triggered);
     work_context->homing = HOMING_TOWARDS_LIMIT_SWITCH;
-    work_context->homing_direction = forward ? LL_STEPPER_DIR_FORWARD : LL_STEPPER_DIR_BACKWARD;
+    work_context->homing_direction =
+        work_context->flip_limit_orientation ? LL_STEPPER_DIR_BACKWARD : LL_STEPPER_DIR_FORWARD;
     work_context->motion_calculation_done = false;
 
     ll_stepper_set_direction(dev, work_context->homing_direction);
@@ -848,5 +853,14 @@ void set_all_e_stop_flags(void) {
 
     for (size_t i = 0; i < ARRAY_SIZE(servo_contexts); i++) {
         atomic_flag_test_and_set(&stepper_contexts[i].e_stop_triggered);
+    }
+}
+
+homing_status_t stepper_homing_status(const struct device *dev) {
+    struct stepper_work_context *context = find_stepper_context_from_device(dev);
+    if (context == NULL) {
+        return NOT_HOMING;
+    } else {
+        return context->homing;
     }
 }

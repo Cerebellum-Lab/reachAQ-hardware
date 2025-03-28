@@ -101,7 +101,8 @@ static void stepper_cfg_write_handler(jerrycan_msg_t *msg) {
 
     stepper_set_parameters(dev, msg->cfg_write.stepper.motor_max_velocity,
                            msg->cfg_write.stepper.motor_max_acceleration,
-                           1.0f / msg->cfg_write.stepper.min_step_inverse, msg->cfg_write.stepper.steps_per_revolution);
+                           1.0f / msg->cfg_write.stepper.min_step_inverse, msg->cfg_write.stepper.steps_per_revolution,
+                           msg->cfg_write.stepper.flip_limit_orientation);
 }
 
 static jerrycan_rx_callback_t stepper_cfg_write_callback = {
@@ -161,7 +162,7 @@ static void stepper_home_handler(jerrycan_msg_t *msg) {
         return;
     }
 
-    int ret = stepper_go_home_slowly(dev, msg->stepper_home.forward);
+    int ret = stepper_go_home_slowly(dev);
     if (ret < 0) {
         LOG_ERR("Failed to home stepper motor: %d", ret);
     }
@@ -181,8 +182,8 @@ static void jerrycan_stepper_status_tx(const struct device *stepper) {
     jerrycan_msg_t msg = {.type = JERRYCAN_CMD_STEPPER_STATUS,
                           .stepper_status = {
                               .motor_id = motor_id,
-                              .status = 0,  // ll_motor_get_status(stepper), FIXME: Needs to be implemented or removed
-                              .homing_status = 0,  // FIXME: Needs to be implemented or removed
+                              .status = 0,  // TODO: Do something with this?
+                              .homing_status = stepper_homing_status(stepper),
                               .position = position,
                               .limit_switch = ll_stepper_get_limit_switch_state(stepper),
                           }};
@@ -207,32 +208,6 @@ static void jerrycan_bulk_stepper_status_tx() {
     }
 }
 
-static void jerrycan_limit_switch_handler(const struct device *dev, ll_motor_events_t event, void *arg,
-                                          void *user_data) {
-    // Send a status message if the limit switch is tripped
-    if (event == LL_MOTOR_EVENT_LIMIT_SWITCH) {
-        jerrycan_stepper_status_tx(dev);
-    }
-}
-
-#define STEPPER_LIMIT_SWITCH_CB(_)             \
-    {                                          \
-        .func = jerrycan_limit_switch_handler, \
-        .user_data = NULL,                     \
-        .node = {0},                           \
-    }
-
-#define STEPPER_LIMIT_SWITCH_CB_COMMA(idx) STEPPER_LIMIT_SWITCH_CB(idx),
-
-static ll_stepper_cb_t stepper_limit_switch_callbacks[STEPPER_COUNT] = {
-    DT_FOREACH_STATUS_OKAY(ll_stepper, STEPPER_LIMIT_SWITCH_CB_COMMA)};
-
-#define INSTALL_STEPPER_LIMIT_SWITCH_CB(idx)                                         \
-    do {                                                                             \
-        const struct device *stepper = stepper_motor_by_id(idx);                     \
-        ll_stepper_register_callback(stepper, &stepper_limit_switch_callbacks[idx]); \
-    } while (0)
-
 K_TIMER_DEFINE(jerrycan_stepper_status_tx_timer, jerrycan_bulk_stepper_status_tx, NULL);
 
 static int jerrycan_stepper_init() {
@@ -255,11 +230,6 @@ static int jerrycan_stepper_init() {
     ret = jerrycan_register_rx_callback(&stepper_home_callback);
     if (ret < 0) {
         LOG_WRN("Failed to register stepper home callback: %d", ret);
-    }
-
-    // Install limit switch callback for each stepper motor
-    for (int motor_id = 0; motor_id < STEPPER_COUNT; motor_id++) {
-        INSTALL_STEPPER_LIMIT_SWITCH_CB(motor_id);
     }
 
     /* Start timer to send the stepper status messages periodically */

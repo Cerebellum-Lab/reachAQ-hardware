@@ -113,7 +113,7 @@ menuconfig LIB_JERRYCAN_RGB_LED
 
 menuconfig LIB_JERRYCAN_STEPPER_STATUS_TX_PERIOD_MS
     int "Stepper Status TX Period"
-    default 20
+    default 100
     depends on LIB_JERRYCAN
     depends on DT_HAS_LL_STEPPER_ENABLED
     help
@@ -121,7 +121,7 @@ menuconfig LIB_JERRYCAN_STEPPER_STATUS_TX_PERIOD_MS
 
 menuconfig LIB_JERRYCAN_SERVO_STATUS_TX_PERIOD_MS
     int "Servo Status TX Period"
-    default 20
+    default 100
     depends on LIB_JERRYCAN
     depends on DT_HAS_LL_SERVO_ENABLED
     help

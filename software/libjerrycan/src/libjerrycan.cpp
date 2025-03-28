@@ -261,7 +261,6 @@ int JerryCAN::StepperHome(uint8_t dst_id, uint8_t motor_id, bool forward) {
         .stepper_home =
             {
                 .motor_id = motor_id,
-                .forward = forward,
             },
     };
 
@@ -289,10 +288,11 @@ int JerryCAN::CfgRead(uint8_t dst_id, jerrycan_cmd_cfg_t &cfg) {
 }
 
 int JerryCAN::StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t min_step_inverse, float steps_per_revolution,
-                              float motor_max_velocity, float motor_max_acceleration) {
+                              float motor_max_velocity, float motor_max_acceleration, bool flip_limit_orientation) {
     jerrycan_cmd_cfg_t cfg_write = {.type = JERRYCAN_CFG_STEPPER,
                                     .stepper = {
                                         .motor_id = motor_id,
+                                        .flip_limit_orientation = flip_limit_orientation,
                                         .min_step_inverse = min_step_inverse,
                                         .steps_per_revolution = steps_per_revolution,
                                         .motor_max_velocity = motor_max_velocity,

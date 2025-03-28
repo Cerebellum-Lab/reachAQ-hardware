@@ -23,7 +23,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def("ServoMove", &JerryCAN::ServoMove, py::arg("dst_id"), py::arg("motor_id"), py::arg("position"), py::arg("max_velocity"), py::arg("max_acceleration"), py::arg("abs_or_rel"))
         .def("StepperHome", &JerryCAN::StepperHome, py::arg("dst_id"), py::arg("motor_id"), py::arg("forward"))
         .def("CfgWrite", &JerryCAN::CfgWrite, py::arg("dst_id"), py::arg("cfg"))
-        .def("StepperCfgWrite", &JerryCAN::StepperCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("min_step_inverse"), py::arg("steps_per_revolution"), py::arg("motor_max_velocity"), py::arg("motor_max_acceleration"))
+        .def("StepperCfgWrite", &JerryCAN::StepperCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("min_step_inverse"), py::arg("steps_per_revolution"), py::arg("motor_max_velocity"), py::arg("motor_max_acceleration"), py::arg("flip_limit_orientation"))
         .def("ServoCfgWrite", &JerryCAN::ServoCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("min_position"), py::arg("max_position"), py::arg("min_pwm_duration_us"), py::arg("max_pwm_duration_us"))
         .def("StepperCfgRead", &JerryCAN::StepperCfgRead, py::arg("dst_id"), py::arg("motor_id"))
         .def("ServoCfgRead", &JerryCAN::ServoCfgRead, py::arg("dst_id"), py::arg("motor_id"))
@@ -140,9 +140,11 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_property("motor_id",
             [](const jerrycan_stepper_cfg_t &a) { return a.motor_id; },
             [](jerrycan_stepper_cfg_t &a, uint8_t v) { a.motor_id = v; })
+        .def_property("flip_limit_orientation",
+        [](const jerrycan_stepper_cfg_t &a) { return a.flip_limit_orientation; },
+        [](jerrycan_stepper_cfg_t &a, const uint8_t flip_limit_orientation) { a.flip_limit_orientation = flip_limit_orientation; })
         .def_readwrite("min_step_inverse", &jerrycan_stepper_cfg_t::min_step_inverse)
-        .def_readwrite("steps_per_revolution", &jerrycan_stepper_cfg_t::steps_per_revolution)
-    ;
+        .def_readwrite("steps_per_revolution", &jerrycan_stepper_cfg_t::steps_per_revolution);
 
     py::class_<jerrycan_cmd_pressure_read_t>(m, "PressureRead")
         .def(py::init<>())
@@ -210,11 +212,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def(py::init<>())
         .def_property("motor_id",
             [](const jerrycan_cmd_stepper_home_t &a) { return a.motor_id; },
-            [](jerrycan_cmd_stepper_home_t &a, uint8_t v) { a.motor_id = v; })
-        .def_property("forward",
-            [](const jerrycan_cmd_stepper_home_t &a) { return a.forward; },
-            [](jerrycan_cmd_stepper_home_t &a, bool v) { a.forward = v; })
-    ;
+            [](jerrycan_cmd_stepper_home_t &a, uint8_t v) { a.motor_id = v; });
 
     py::class_<jerrycan_cmd_stepper_status_t>(m, "StepperStatus")
         .def(py::init<>())
