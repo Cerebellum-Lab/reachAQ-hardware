@@ -21,7 +21,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def("EStop", &JerryCAN::EStop)
         .def("StepperMove", &JerryCAN::StepperMove, py::arg("dst_id"), py::arg("motor_id"), py::arg("position"), py::arg("max_velocity"), py::arg("max_acceleration"), py::arg("abs_or_rel"))
         .def("ServoMove", &JerryCAN::ServoMove, py::arg("dst_id"), py::arg("motor_id"), py::arg("position"), py::arg("max_velocity"), py::arg("max_acceleration"), py::arg("abs_or_rel"))
-        .def("StepperHome", &JerryCAN::StepperHome, py::arg("dst_id"), py::arg("motor_id"), py::arg("forward"))
+        .def("StepperHome", &JerryCAN::StepperHome, py::arg("dst_id"), py::arg("motor_id"))
         .def("CfgWrite", &JerryCAN::CfgWrite, py::arg("dst_id"), py::arg("cfg"))
         .def("StepperCfgWrite", &JerryCAN::StepperCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("min_step_inverse"), py::arg("steps_per_revolution"), py::arg("motor_max_velocity"), py::arg("motor_max_acceleration"), py::arg("flip_limit_orientation"))
         .def("ServoCfgWrite", &JerryCAN::ServoCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("min_position"), py::arg("max_position"), py::arg("min_pwm_duration_us"), py::arg("max_pwm_duration_us"))
@@ -144,7 +144,9 @@ PYBIND11_MODULE(pyjerrycan, m) {
         [](const jerrycan_stepper_cfg_t &a) { return a.flip_limit_orientation; },
         [](jerrycan_stepper_cfg_t &a, const uint8_t flip_limit_orientation) { a.flip_limit_orientation = flip_limit_orientation; })
         .def_readwrite("min_step_inverse", &jerrycan_stepper_cfg_t::min_step_inverse)
-        .def_readwrite("steps_per_revolution", &jerrycan_stepper_cfg_t::steps_per_revolution);
+        .def_readwrite("steps_per_revolution", &jerrycan_stepper_cfg_t::steps_per_revolution)
+        .def_readwrite("motor_max_velocity", &jerrycan_stepper_cfg_t::motor_max_velocity)
+        .def_readwrite("motor_max_acceleration", &jerrycan_stepper_cfg_t::motor_max_acceleration);
 
     py::class_<jerrycan_cmd_pressure_read_t>(m, "PressureRead")
         .def(py::init<>())

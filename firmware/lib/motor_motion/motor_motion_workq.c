@@ -864,3 +864,18 @@ homing_status_t stepper_homing_status(const struct device *dev) {
         return context->homing;
     }
 }
+
+int stepper_read_config(const struct device *dev, struct stepper_config *config) {
+    struct stepper_work_context *context = find_stepper_context_from_device(dev);
+    if (context == NULL) {
+        return -ENODEV;
+    }
+
+    config->flip_limit_orientation = context->flip_limit_orientation;
+    config->steps_per_revolution = context->motor_steps_per_revolution;
+    config->min_step = context->min_step;
+    config->motor_max_velocity = context->motor_max_velocity;
+    config->motor_max_acceleration = context->motor_max_acceleration;
+
+    return 0;
+}

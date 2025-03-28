@@ -122,29 +122,25 @@ static void stepper_cfg_read_handler(jerrycan_msg_t *msg) {
     rsp.cfg_response.stepper.motor_id = msg->cfg_write.stepper.motor_id;
     rsp.cfg_response.stepper.error = false;
 
-    int ret;
-    float min_step;
-    float steps_per_revolution;
-    const struct device *dev = stepper_motor_by_id(msg->cfg_write.stepper.motor_id);
-    if (dev == NULL) {
-        LOG_ERR("Invalid stepper device number: %d", msg->cfg_write.stepper.motor_id);
-        rsp.cfg_response.stepper.error = true;
+    const struct device *motor = stepper_motor_by_id(msg->cfg_write.stepper.motor_id);
+
+    if (motor == NULL) {
+        LOG_ERR("Invalid motor id: %d", msg->cfg_write.stepper.motor_id);
+    }
+
+    stepper_config_t cfg;
+    const int ret = stepper_read_config(motor, &cfg);
+    if (ret < 0) {
+        LOG_ERR("Failed to read motor config: %d", ret);
         goto send_response;
     }
 
-    ret = motor_motion_stepper_get_min_step(dev, &min_step);
-    if (ret < 0) {
-        LOG_ERR("Failed to get min step: %d", ret);
-        rsp.cfg_response.stepper.error = true;
-    }
-    rsp.cfg_response.stepper.min_step_inverse = (1.0f / min_step);
+    rsp.cfg_response.stepper.flip_limit_orientation = cfg.flip_limit_orientation;
+    rsp.cfg_response.stepper.steps_per_revolution = cfg.steps_per_revolution;
 
-    ret = motor_motion_stepper_get_steps_per_revolution(dev, &steps_per_revolution);
-    if (ret < 0) {
-        LOG_ERR("Failed to get steps per revolution: %d", ret);
-        rsp.cfg_response.stepper.error = true;
-    }
-    rsp.cfg_response.stepper.steps_per_revolution = steps_per_revolution;
+    rsp.cfg_response.stepper.motor_max_velocity = cfg.motor_max_velocity;
+    rsp.cfg_response.stepper.motor_max_acceleration = cfg.motor_max_acceleration;
+    rsp.cfg_response.stepper.min_step_inverse = (uint16_t)(1.0f / cfg.min_step);
 
 send_response:
     jerrycan_tx(&rsp, K_NO_WAIT);

@@ -154,30 +154,6 @@ struct servo_work_context *find_servo_context_from_device(const struct device *d
  */
 struct stepper_work_context *find_stepper_context_from_device(const struct device *dev);
 
-/*
- * Set the per-device radii and update the current position based on the new radius.
- */
-void motor_motion_stepper_set_radius(const struct device *dev, float new_radius);
-
-/*
- * Set the per-device radii and update the current position based on the new radius.
- */
-void motor_motion_servo_set_radius(const struct device *dev, float new_radius);
-
-/**
- * Get the minimum step size for the stepper motor.
- *
- * @returns 0 on success, -ENODEV if the device is not found.
- */
-int motor_motion_stepper_get_min_step(const struct device *dev, float *min_step);
-
-/**
- * Get the number of steps per revolution for the stepper motor.
- *
- * @returns 0 on success, -ENODEV if the device is not found.
- */
-int motor_motion_stepper_get_steps_per_revolution(const struct device *dev, float *steps_per_revolution);
-
 /**
  * Get the minimum PWM duration for the minimum angle of the servo motor.
  *
@@ -217,3 +193,13 @@ void set_all_e_stop_flags(void);
  * @return The current homing status of the motor
  */
 homing_status_t stepper_homing_status(const struct device *dev);
+
+typedef struct stepper_config {
+    bool flip_limit_orientation;
+    float steps_per_revolution;
+    float motor_max_velocity;
+    float motor_max_acceleration;
+    float min_step;
+} stepper_config_t;
+
+int stepper_read_config(const struct device *dev, struct stepper_config *config);

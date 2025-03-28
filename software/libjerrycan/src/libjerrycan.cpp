@@ -254,7 +254,7 @@ int JerryCAN::ServoMove(uint8_t dst_id, uint8_t motor_id, float position, float 
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::StepperHome(uint8_t dst_id, uint8_t motor_id, bool forward) {
+int JerryCAN::StepperHome(uint8_t dst_id, uint8_t motor_id) {
     // Send a stepper home message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_STEPPER_HOME,

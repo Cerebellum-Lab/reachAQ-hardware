@@ -22,7 +22,7 @@ class JerryCAN {
     int ServoMove(uint8_t dst_id, uint8_t motor_id, float position, float max_velocity, float max_acceleration,
                   abs_or_rel_t abs_or_rel);
 
-    int StepperHome(uint8_t dst_id, uint8_t motor_id, bool forward);
+    int StepperHome(uint8_t dst_id, uint8_t motor_id);
 
     int CfgWrite(uint8_t dst_id, jerrycan_cmd_cfg_t &cfg);
 
