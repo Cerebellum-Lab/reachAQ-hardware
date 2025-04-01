@@ -122,6 +122,8 @@ typedef struct __attribute__((packed)) {
     float max_position;
     float min_pwm_duration_us;
     float max_pwm_duration_us;
+    float motor_max_velocity;
+    float motor_max_acceleration;
 } jerrycan_servo_cfg_t;
 
 typedef struct __attribute__((packed)) {
@@ -131,8 +133,7 @@ typedef struct __attribute__((packed)) {
         bool flip_limit_orientation : 1;
         uint8_t rsvd0 : 4;
     };
-    uint16_t min_step_inverse;  // Power of 2 representing microstepping. Thus 2 represents 1/2 steps, 4 represents 1/4
-                                // steps, etc.
+    uint16_t microsteps;  // Power of 2; number of micro steps in a step
     float steps_per_revolution;
     float motor_max_velocity;
     float motor_max_acceleration;
@@ -146,7 +147,7 @@ typedef struct __attribute__((packed)) {
     };
 } jerrycan_cmd_cfg_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_cfg_t) == 18, "jerrycan_cmd_cfg_t should be 18 bytes");
+BUILD_ASSERT(sizeof(jerrycan_cmd_cfg_t) == 26, "jerrycan_cmd_cfg_t should be 26 bytes");
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
@@ -297,12 +298,12 @@ typedef struct __attribute__((packed)) {
 } jerrycan_cmd_bootloader_command_t;
 
 typedef struct __attribute__((packed)) {
-        uint8_t running_version_major;
-        uint8_t running_version_minor;
-        uint8_t running_version_patch;
-        uint8_t slot1_version_major;
-        uint8_t slot1_version_minor;
-        uint8_t slot1_version_patch;
+    uint8_t running_version_major;
+    uint8_t running_version_minor;
+    uint8_t running_version_patch;
+    uint8_t slot1_version_major;
+    uint8_t slot1_version_minor;
+    uint8_t slot1_version_patch;
 } jerrycan_cmd_bootloader_version_t;
 
 BUILD_ASSERT(sizeof(jerrycan_cmd_bootloader_version_t) == 6, "jerrycan_cmd_bootloader_version_t should be 6 bytes");

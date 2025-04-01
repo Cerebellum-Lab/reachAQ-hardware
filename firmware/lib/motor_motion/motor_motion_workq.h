@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdatomic.h>
-#include <stdint.h>
 #include <zephyr/device.h>
 
 #include "motor_callbacks.h"
@@ -33,6 +32,8 @@ struct servo_work_context {
     struct k_work_delayable calculation_work;
     struct k_work_delayable submission_work;
     ll_servo_cb_t servo_cb;
+    float motor_max_velocity;
+    float motor_max_acceleration;
 };
 
 typedef enum homing_status {
@@ -66,9 +67,7 @@ struct stepper_work_context {
     float motor_max_acceleration;
     float motor_steps_per_revolution;
     float timer_increment;  // Time (in seconds) between successive pulses of the timer.
-
-    // Motion parameters to use for future movements
-    float min_step;
+    uint16_t microsteps;    // micro steps per step; should be a power of 2.
     bool flip_limit_orientation;
 };
 
@@ -92,12 +91,12 @@ int servo_set_angle_parameters(const struct device *dev, const float min_angle, 
  * @retval -ENODEV if the device is not found in the list.
  * @retval -EBUSY if another motion profile is already running.
  */
-int servo_move_to_position(const struct device *dev, float target_position);
+int servo_move_to_position(const struct device *dev, float target_position, float max_velocity, float max_acceleration);
 
 /*
  * Move relative to the current position. Wrapper around `servo_move_to_position`.
  */
-int servo_move_relative(const struct device *dev, float delta_position);
+int servo_move_relative(const struct device *dev, float delta_position, float max_velocity, float max_acceleration);
 
 /**
  * These parameters are usually constant across movements of the motor, so we abstract them to a
@@ -107,7 +106,7 @@ int servo_move_relative(const struct device *dev, float delta_position);
  * @retval -ENODEV if the device is not found among the static context structs.
  */
 int stepper_set_parameters(const struct device *dev, float motor_max_velocity, float motor_max_acceleration,
-                           float motor_min_step, float motor_steps_per_revolution, bool flip_limit_orientation);
+                           uint16_t microsteps, float motor_steps_per_revolution, bool flip_limit_orientation);
 
 /**
  * Move to the position specified, using the motion profiles in `motor_math.*`.
@@ -155,32 +154,21 @@ struct servo_work_context *find_servo_context_from_device(const struct device *d
 struct stepper_work_context *find_stepper_context_from_device(const struct device *dev);
 
 /**
- * Get the minimum PWM duration for the minimum angle of the servo motor.
- *
- * @returns 0 on success, -ENODEV if the device is not found.
- */
-int motor_motion_servo_get_min_angle_pwm(const struct device *dev, float *min_angle_pwm);
-
-/**
- * Get the maximum PWM duration for the maximum angle of the servo motor.
- *
- * @returns 0 on success, -ENODEV if the device is not found.
- */
-int motor_motion_servo_get_max_angle_pwm(const struct device *dev, float *max_angle_pwm);
-
-/**
  * Get the minimum angle of the servo motor.
  *
  * @returns 0 on success, -ENODEV if the device is not found.
  */
-int motor_motion_servo_get_min_angle(const struct device *dev, float *min_angle);
 
-/**
- * Get the maximum angle of the servo motor.
- *
- * @returns 0 on success, -ENODEV if the device is not found.
- */
-int motor_motion_servo_get_max_angle(const struct device *dev, float *max_angle);
+typedef struct {
+    float min_position;
+    float max_position;
+    float min_pwm_duration_us;
+    float max_pwm_duration_us;
+    float motor_max_velocity;
+    float motor_max_acceleration;
+} servo_config_t;
+
+int servo_read_config(const struct device *dev, servo_config_t *config);
 
 /**
  * Internally invoked by the library during an e-stop so that no motion happens
@@ -199,7 +187,7 @@ typedef struct stepper_config {
     float steps_per_revolution;
     float motor_max_velocity;
     float motor_max_acceleration;
-    float min_step;
+    uint16_t microsteps;
 } stepper_config_t;
 
 int stepper_read_config(const struct device *dev, struct stepper_config *config);

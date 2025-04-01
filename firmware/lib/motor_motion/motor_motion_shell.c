@@ -150,7 +150,7 @@ static int cmd_servo_move(const struct shell *shell, size_t argc, char **argv) {
         return -EINVAL;
     }
 
-    const int ret = servo_move_to_position(servo_dev, position);
+    const int ret = servo_move_to_position(servo_dev, position, 200, 100);
 
     if (ret != 0) {
         shell_print(shell, "Failed to move servo to position: %d", ret);

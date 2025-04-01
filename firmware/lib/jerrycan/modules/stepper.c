@@ -89,9 +89,12 @@ static void stepper_cfg_write_handler(jerrycan_msg_t *msg) {
         return;
     }
 
-    LOG_INF("Received stepper config write message: motor_id=%d, min_step_inverse=%f, steps_per_revolution=%f",
-            msg->cfg_write.stepper.motor_id, (double)msg->cfg_write.stepper.min_step_inverse,
-            (double)msg->cfg_write.stepper.steps_per_revolution);
+    LOG_INF(
+        "Received stepper config write message: motor_id=%d, microsteps=%d, steps_per_revolution=%f,"
+        "max vel=%f, max accel=%f, flip limit=%d",
+        msg->cfg_write.stepper.motor_id, msg->cfg_write.stepper.microsteps,
+        (double)msg->cfg_write.stepper.steps_per_revolution, (double)msg->cfg_write.stepper.motor_max_velocity,
+        (double)msg->cfg_write.stepper.motor_max_acceleration, msg->cfg_write.stepper.flip_limit_orientation);
 
     const struct device *dev = stepper_motor_by_id(msg->cfg_write.stepper.motor_id);
     if (dev == NULL) {
@@ -100,9 +103,8 @@ static void stepper_cfg_write_handler(jerrycan_msg_t *msg) {
     }
 
     stepper_set_parameters(dev, msg->cfg_write.stepper.motor_max_velocity,
-                           msg->cfg_write.stepper.motor_max_acceleration,
-                           1.0f / msg->cfg_write.stepper.min_step_inverse, msg->cfg_write.stepper.steps_per_revolution,
-                           msg->cfg_write.stepper.flip_limit_orientation);
+                           msg->cfg_write.stepper.motor_max_acceleration, msg->cfg_write.stepper.microsteps,
+                           msg->cfg_write.stepper.steps_per_revolution, msg->cfg_write.stepper.flip_limit_orientation);
 }
 
 static jerrycan_rx_callback_t stepper_cfg_write_callback = {
@@ -132,17 +134,14 @@ static void stepper_cfg_read_handler(jerrycan_msg_t *msg) {
     const int ret = stepper_read_config(motor, &cfg);
     if (ret < 0) {
         LOG_ERR("Failed to read motor config: %d", ret);
-        goto send_response;
+    } else {
+        rsp.cfg_response.stepper.flip_limit_orientation = cfg.flip_limit_orientation;
+        rsp.cfg_response.stepper.steps_per_revolution = cfg.steps_per_revolution;
+        rsp.cfg_response.stepper.motor_max_velocity = cfg.motor_max_velocity;
+        rsp.cfg_response.stepper.motor_max_acceleration = cfg.motor_max_acceleration;
+        rsp.cfg_response.stepper.microsteps = cfg.microsteps;
     }
 
-    rsp.cfg_response.stepper.flip_limit_orientation = cfg.flip_limit_orientation;
-    rsp.cfg_response.stepper.steps_per_revolution = cfg.steps_per_revolution;
-
-    rsp.cfg_response.stepper.motor_max_velocity = cfg.motor_max_velocity;
-    rsp.cfg_response.stepper.motor_max_acceleration = cfg.motor_max_acceleration;
-    rsp.cfg_response.stepper.min_step_inverse = (uint16_t)(1.0f / cfg.min_step);
-
-send_response:
     jerrycan_tx(&rsp, K_NO_WAIT);
 }
 

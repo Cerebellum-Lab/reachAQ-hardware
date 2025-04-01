@@ -67,7 +67,7 @@ typedef struct stepper_motor_context {
     motor_motion_profile_t motion_profile;
     // Stepper-specific parameters
     // STEP pin parameters
-    float min_step;              // Usually 1, 0.5, 0.25, 0.125, etc., includes microstepping
+    float min_step;              // 1 / microstep; Usually 1, 0.5, 0.25, 0.125, etc.
     float timer_increment;       // inverse of the frequency of the timer peripheral used for the stepper
     float steps_per_revolution;  // Number of steps per 360 degree/2pi radian revolution of the stepper motor
 
@@ -99,8 +99,7 @@ int motor_motion_servo_init_context_struct(float start, float end, float max_vel
  * @param end end position of the motor. See note in the struct definition for units.
  * @param max_velocity maximum velocity of the motor. See note in the struct definition for units.
  * @param max_acceleration maximum acceleration of the motor. See note in the struct definition for units.
- * @param min_step step size that the motor turns for every rising edge on the DIR pin. With microstepping,
- * this usually ends up being 0.5, 0.25, etc.
+ * @param microsteps Number of micro steps per step
  * @param steps_per_revolution the number of steps for an entire revolution of the motor.
  * @param timer_increment is the inverse of the frequency of the timer peripheral used for the stepper.
  *
@@ -108,7 +107,7 @@ int motor_motion_servo_init_context_struct(float start, float end, float max_vel
  * @retval -errno on error
  */
 int motor_motion_stepper_init_context_struct(float start, float end, float max_velocity, float max_acceleration,
-                                             float min_step, float timer_increment, float steps_per_revolution,
+                                             uint16_t microsteps, float timer_increment, float steps_per_revolution,
                                              stepper_motor_context_t *context);
 
 /**

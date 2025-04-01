@@ -287,13 +287,13 @@ int JerryCAN::CfgRead(uint8_t dst_id, jerrycan_cmd_cfg_t &cfg) {
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t min_step_inverse, float steps_per_revolution,
+int JerryCAN::StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t microsteps, float steps_per_revolution,
                               float motor_max_velocity, float motor_max_acceleration, bool flip_limit_orientation) {
     jerrycan_cmd_cfg_t cfg_write = {.type = JERRYCAN_CFG_STEPPER,
                                     .stepper = {
                                         .motor_id = motor_id,
                                         .flip_limit_orientation = flip_limit_orientation,
-                                        .min_step_inverse = min_step_inverse,
+                                        .microsteps = microsteps,
                                         .steps_per_revolution = steps_per_revolution,
                                         .motor_max_velocity = motor_max_velocity,
                                         .motor_max_acceleration = motor_max_acceleration,
@@ -303,7 +303,8 @@ int JerryCAN::StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t min_ste
 }
 
 int JerryCAN::ServoCfgWrite(uint8_t dst_id, uint8_t motor_id, float min_position, float max_position,
-                            float min_pwm_duration_us, float max_pwm_duration_us) {
+                            float min_pwm_duration_us, float max_pwm_duration_us, float motor_max_velocity,
+                            float motor_max_acceleration) {
     jerrycan_cmd_cfg_t cfg_write = {.type = JERRYCAN_CFG_SERVO,
                                     .servo = {
                                         .motor_id = motor_id,
@@ -311,6 +312,8 @@ int JerryCAN::ServoCfgWrite(uint8_t dst_id, uint8_t motor_id, float min_position
                                         .max_position = max_position,
                                         .min_pwm_duration_us = min_pwm_duration_us,
                                         .max_pwm_duration_us = max_pwm_duration_us,
+                                        .motor_max_velocity = motor_max_velocity,
+                                        .motor_max_acceleration = motor_max_acceleration,
                                     }};
 
     return CfgWrite(dst_id, cfg_write);

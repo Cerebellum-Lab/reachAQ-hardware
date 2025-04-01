@@ -32,17 +32,23 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
 #define SERVO_DEFAULT_MAX_ANGLE 180.0f
 // Default angular adjustment of servo
 #define SERVO_DEFAULT_ANGLE_ADJUSTMENT SERVO_DEFAULT_MIN_ANGLE
+// Default 'max_velocity' of servo
+#define SERVO_DEFAULT_MAX_VELOCITY 200
+// Default 'max_acceleration' of servo
+#define SERVO_DEFAULT_MAX_ACCELERATION 100
 
 // Period between successive status checks of the stepper drivers
 #define STEPPER_DRIVER_CHECK_PERIOD 100U
 // Default 'min_step' of stepper (number of steps, incl. microstepping, done per pulse)
-#define STEPPER_DEFAULT_MIN_STEP 1.0f
-// Default 'steps_per_revolution' of stepper
 #define STEPPER_DEFAULT_STEPS_PER_REVOLUTION 48.0f
 // Default 'max_velocity' of stepper
 #define STEPPER_DEFAULT_MAX_VELOCITY 20.0f
 // Default 'max_acceleration' of stepper
 #define STEPPER_DEFAULT_MAX_ACCELERATION 100.0f
+// Default 'flip_limit_orientation' of stepper
+#define STEPPER_DEFAULT_FLIP_LIMIT_ORIENTATION false
+// Default 'micro_steps' of stepper
+#define STEPPER_DEFAULT_MICRO_STEPS 1
 
 #define DEV_DEFINE_SERVO_CONTEXT(id)                                                         \
     {.dev = DEVICE_DT_GET(id),                                                               \
@@ -123,7 +129,7 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
                         .t_s = 0,                                                               \
                         .t_t = 0,                                                               \
                     },                                                                          \
-                .min_step = 0.0f,                                                               \
+                .min_step = 1.0f / STEPPER_DEFAULT_MICRO_STEPS,                                 \
                 .timer_increment = 0.0f,                                                        \
                 .steps_per_revolution = 0.0f,                                                   \
                 .last_time_generated = 0.0f,                                                    \
@@ -170,7 +176,8 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
         .motor_max_acceleration = STEPPER_DEFAULT_MAX_ACCELERATION,                             \
         .motor_steps_per_revolution = STEPPER_DEFAULT_STEPS_PER_REVOLUTION,                     \
         .timer_increment = (DT_PROP(DT_PARENT(id), st_prescaler) + 1.0f) / 170e6f,              \
-        .min_step = STEPPER_DEFAULT_MIN_STEP,                                                   \
+        .flip_limit_orientation = STEPPER_DEFAULT_FLIP_LIMIT_ORIENTATION,                       \
+        .microsteps = STEPPER_DEFAULT_MICRO_STEPS,                                              \
     },
 
 struct stepper_work_context stepper_contexts[] = {DT_FOREACH_STATUS_OKAY(ll_stepper, DEV_DEFINE_STEPPER_CONTEXT)};
@@ -369,7 +376,7 @@ static void servo_work_calculation_handler(struct k_work *work) {
 size_t stepper_generate_at_slow_velocity(const struct stepper_work_context *context, uint32_t *buf) {
     // Generate up to slow_pulses_ms of "slow" pulses at 1/4 of the max velocity
     const float seconds_per_pulse =
-        4.0f / context->motor_max_velocity / context->motor_steps_per_revolution * context->min_step;
+        4.0f / context->motor_max_velocity / context->motor_steps_per_revolution * context->context.min_step;
 
     size_t n_pulses = (size_t)floorf(slow_pulses_ms / 1000.0f / seconds_per_pulse);
 
@@ -493,7 +500,7 @@ static int motor_workq_init_and_start(void) {
         const ll_motor_cfg_t *motor_data = motor_dev->config;
         const struct device *stepper_driver_dev = motor_data->stepper_driver_device;
         if (stepper_driver_dev != NULL) {
-            adi_tmc2209_set_microstep(stepper_driver_dev, (uint32_t)(1.0f / context->min_step));
+            adi_tmc2209_set_microstep(stepper_driver_dev, context->microsteps);
         }
     }
 
@@ -514,11 +521,11 @@ int servo_set_parameters(const struct device *dev, const float max_velocity, con
     }
 
     if (max_velocity > 0.0f) {
-        context->context.motion_profile.v_max = max_velocity;
+        context->motor_max_velocity = max_velocity;
     }
 
     if (max_acceleration > 0.0f) {
-        context->context.motion_profile.a_max = max_acceleration;
+        context->motor_max_acceleration = max_acceleration;
     }
 
     if (min_angle_pwm > 0.0f) {
@@ -545,7 +552,8 @@ int servo_set_angle_parameters(const struct device *dev, const float min_angle, 
     return 0;
 }
 
-int servo_move_to_position(const struct device *dev, const float target_position) {
+int servo_move_to_position(const struct device *dev, const float target_position, const float max_velocity,
+                           const float max_acceleration) {
     struct servo_work_context *context = find_servo_context_from_device(dev);
     /*
      * The library is currently not set up to allow servos to have limit switches
@@ -563,10 +571,20 @@ int servo_move_to_position(const struct device *dev, const float target_position
         return -EBUSY;
     }
 
+    if (max_acceleration > context->motor_max_acceleration) {
+        LOG_WRN("Max acceleration greater than that of the motor, using lower value.");
+    }
+
+    if (max_velocity > context->motor_max_velocity) {
+        LOG_WRN("Max velocity greater than that of the motor, using lower value.");
+    }
+
+    const float movement_max_a = MIN(context->motor_max_acceleration, max_acceleration);
+    const float movement_max_v = MIN(context->motor_max_velocity, max_velocity);
+
     const int ret = motor_motion_servo_init_context_struct(
-        context->context.last_position_generated, target_position, context->context.motion_profile.v_max,
-        context->context.motion_profile.a_max, context->context.min_angle_pwm, context->context.max_angle_pwm,
-        &context->context);
+        context->context.last_position_generated, target_position, movement_max_v, movement_max_a,
+        context->context.min_angle_pwm, context->context.max_angle_pwm, &context->context);
 
     if (ret != 0) {
         LOG_ERR("Failed to initialize context struct: %d", ret);
@@ -603,14 +621,17 @@ int servo_move_to_position(const struct device *dev, const float target_position
     return 0;
 }
 
-int servo_move_relative(const struct device *dev, const float delta_position) {
+int servo_move_relative(const struct device *dev, const float delta_position, const float max_velocity,
+                        const float max_acceleration) {
     struct servo_work_context *context = find_servo_context_from_device(dev);
     return context == NULL ? -ENODEV
-                           : servo_move_to_position(dev, context->context.last_position_generated + delta_position);
+                           : servo_move_to_position(dev, context->context.last_position_generated + delta_position,
+                                                    max_velocity, max_acceleration);
 }
 
 int stepper_set_parameters(const struct device *dev, const float max_velocity, const float max_acceleration,
-                           const float min_step, const float steps_per_revolution, const bool flip_limit_orientation) {
+                           const uint16_t microsteps, const float steps_per_revolution,
+                           const bool flip_limit_orientation) {
     struct stepper_work_context *const context = find_stepper_context_from_device(dev);
     if (context == NULL) {
         return -ENODEV;
@@ -624,20 +645,17 @@ int stepper_set_parameters(const struct device *dev, const float max_velocity, c
         context->motor_max_acceleration = max_acceleration;
     }
 
-    if (min_step > 0.0f) {
+    if (microsteps > 0) {
+        context->microsteps = microsteps;
         const ll_motor_cfg_t *stepper_config = dev->config;
-        const int ret =
-            adi_tmc2209_set_microstep(stepper_config->stepper_driver_device, (uint32_t)roundf(1.0f / min_step));
-        if (ret == 0) {
-            context->min_step = min_step;
-        }
+        adi_tmc2209_set_microstep(stepper_config->stepper_driver_device, microsteps);
     }
 
     if (steps_per_revolution > 0.0f) {
         context->motor_steps_per_revolution = steps_per_revolution;
     }
 
-    context->flip_limit_orientation = flip_limit_orientation;
+    context->flip_limit_orientation = flip_limit_orientation != 0;  // ensure 0/1 result
 
     settings_save();
     return 0;
@@ -669,7 +687,7 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
     }
     atomic_flag_clear(&context->e_stop_triggered);
 
-    if (fabsf(target_position - context->context.last_position_generated) < context->min_step) {
+    if (fabsf(target_position - context->context.last_position_generated) < 1.0f / context->microsteps) {
         LOG_WRN("Target position is the same as current position.");
         return 0;
     }
@@ -693,7 +711,7 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
     const float movement_max_a = MIN(context->motor_max_acceleration, max_acceleration);
     const float movement_max_v = MIN(context->motor_max_velocity, max_velocity);
     const int ret = motor_motion_stepper_init_context_struct(
-        context->context.last_position_generated, target_position, movement_max_v, movement_max_a, context->min_step,
+        context->context.last_position_generated, target_position, movement_max_v, movement_max_a, context->microsteps,
         context->timer_increment, context->motor_steps_per_revolution, &context->context);
 
     if (ret != 0) {
@@ -761,12 +779,20 @@ int stepper_go_home_slowly(const struct device *dev) {
         return -ENOTSUP;
     }
 
+    if (ll_stepper_get_limit_switch_state(dev) == 1) {
+        LOG_INF("Already touching limit switch");
+        stepper_set_position_to_zero(dev);
+        return 0;
+    }
+
     if (work_context->motion_done == false) {
         LOG_ERR("Attempted to move motor while already in motion.");
         return -EBUSY;
     }
 
     atomic_flag_clear(&work_context->e_stop_triggered);
+
+    context->min_step = 1.0f / work_context->microsteps;
     work_context->homing = HOMING_TOWARDS_LIMIT_SWITCH;
     work_context->homing_direction =
         work_context->flip_limit_orientation ? LL_STEPPER_DIR_FORWARD : LL_STEPPER_DIR_BACKWARD;
@@ -785,64 +811,19 @@ int stepper_go_home_slowly(const struct device *dev) {
     return 0;
 }
 
-/* ***** Getters ***** */
-int motor_motion_stepper_get_min_step(const struct device *dev, float *min_step) {
-    struct stepper_work_context *context = find_stepper_context_from_device(dev);
+int servo_read_config(const struct device *dev, servo_config_t *config) {
+    const struct servo_work_context *context = find_servo_context_from_device(dev);
     if (context == NULL) {
         return -ENODEV;
     }
 
-    *min_step = context->min_step;
-    return 0;
-}
+    config->min_position = context->context.min_angle;
+    config->max_position = context->context.max_angle;
+    config->max_pwm_duration_us = context->context.max_angle_pwm;
+    config->min_pwm_duration_us = context->context.min_angle_pwm;
+    config->motor_max_acceleration = context->motor_max_acceleration;
+    config->motor_max_velocity = context->motor_max_velocity;
 
-int motor_motion_stepper_get_steps_per_revolution(const struct device *dev, float *steps_per_revolution) {
-    struct stepper_work_context *context = find_stepper_context_from_device(dev);
-    if (context == NULL) {
-        return -ENODEV;
-    }
-
-    *steps_per_revolution = context->motor_steps_per_revolution;
-    return 0;
-}
-
-int motor_motion_servo_get_min_angle_pwm(const struct device *dev, float *min_angle_pwm) {
-    struct servo_work_context *context = find_servo_context_from_device(dev);
-    if (context == NULL) {
-        return -ENODEV;
-    }
-
-    *min_angle_pwm = context->context.min_angle_pwm;
-    return 0;
-}
-
-int motor_motion_servo_get_max_angle_pwm(const struct device *dev, float *max_angle_pwm) {
-    struct servo_work_context *context = find_servo_context_from_device(dev);
-    if (context == NULL) {
-        return -ENODEV;
-    }
-
-    *max_angle_pwm = context->context.max_angle_pwm;
-    return 0;
-}
-
-int motor_motion_servo_get_min_angle(const struct device *dev, float *min_angle) {
-    struct servo_work_context *context = find_servo_context_from_device(dev);
-    if (context == NULL) {
-        return -ENODEV;
-    }
-
-    *min_angle = context->context.min_angle;
-    return 0;
-}
-
-int motor_motion_servo_get_max_angle(const struct device *dev, float *max_angle) {
-    struct servo_work_context *context = find_servo_context_from_device(dev);
-    if (context == NULL) {
-        return -ENODEV;
-    }
-
-    *max_angle = context->context.max_angle;
     return 0;
 }
 
@@ -866,14 +847,14 @@ homing_status_t stepper_homing_status(const struct device *dev) {
 }
 
 int stepper_read_config(const struct device *dev, struct stepper_config *config) {
-    struct stepper_work_context *context = find_stepper_context_from_device(dev);
+    const struct stepper_work_context *context = find_stepper_context_from_device(dev);
     if (context == NULL) {
         return -ENODEV;
     }
 
     config->flip_limit_orientation = context->flip_limit_orientation;
     config->steps_per_revolution = context->motor_steps_per_revolution;
-    config->min_step = context->min_step;
+    config->microsteps = context->microsteps;
     config->motor_max_velocity = context->motor_max_velocity;
     config->motor_max_acceleration = context->motor_max_acceleration;
 
