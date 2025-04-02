@@ -80,6 +80,7 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
              .pwm_timer_increment = (DT_PROP(DT_PARENT(id), st_prescaler) + 1.0f) / 170.0f,  \
              .last_time_generated = 0.0f,                                                    \
              .last_position_generated = 0.0f,                                                \
+             .known_position = 0.0f,                                                         \
          },                                                                                  \
      .buffers = {{0}},                                                                       \
      .current_buffer = 0,                                                                    \
@@ -272,9 +273,6 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
                     case HOMING_TOWARDS_LIMIT_SWITCH:
                         stepper_set_position_to_zero(dev);
                         context->homing = MOVING_FROM_LIMIT_SWITCH;
-                        ll_stepper_set_direction(dev, context->homing_direction == LL_STEPPER_DIR_FORWARD
-                                                          ? LL_STEPPER_DIR_BACKWARD
-                                                          : LL_STEPPER_DIR_FORWARD);
                         break;
                     case MOVING_FROM_LIMIT_SWITCH:
                         // extraneous event because we are still touching the switch.
@@ -289,7 +287,7 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
                 stepper_set_position_to_zero(dev);
             }
             const ll_motor_cfg_t *cfg = dev->config;
-            LOG_ERR("Limit switch event for stepper %d", cfg->motor_id);
+            LOG_DBG("Limit switch event for stepper %d", cfg->motor_id);
             break;
         default:
             LOG_WRN("Unknown stepper motor event: %d", event);
@@ -315,6 +313,7 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
             LOG_WRN("MOTION_DONE");
             if (context != NULL) {
                 context->motion_done = true;
+                context->context.known_position = context->context.last_position_generated;
             }
             break;
         }
@@ -344,6 +343,7 @@ void servo_cancel_all_work(const struct device *dev) {
     k_work_cancel_delayable(&context->calculation_work);
     context->motion_done = true;
     context->motion_calculation_done = true;
+    context->context.known_position = context->context.last_position_generated;
 }
 
 static void servo_work_calculation_handler(struct k_work *work) {
@@ -578,6 +578,8 @@ int servo_move_to_position(const struct device *dev, const float target_position
     if (max_velocity > context->motor_max_velocity) {
         LOG_WRN("Max velocity greater than that of the motor, using lower value.");
     }
+
+    context->context.known_position = -1;
 
     const float movement_max_a = MIN(context->motor_max_acceleration, max_acceleration);
     const float movement_max_v = MIN(context->motor_max_velocity, max_velocity);

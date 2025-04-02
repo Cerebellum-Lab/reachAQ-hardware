@@ -61,6 +61,7 @@ typedef struct servo_motor_context {
     // Servo-specific internal state
     float last_time_generated;      // In seconds
     float last_position_generated;  // In degrees
+    float known_position;
 } servo_motor_context_t;
 
 typedef struct stepper_motor_context {

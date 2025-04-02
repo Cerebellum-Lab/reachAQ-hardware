@@ -162,13 +162,12 @@ static void jerrycan_servo_status_tx() {
             continue;
         }
         struct servo_work_context *context = find_servo_context_from_device(servo);
-        float position = context->context.last_position_generated;
         jerrycan_msg_t msg = {
             .type = JERRYCAN_CMD_SERVO_STATUS,
             .servo_status = {
                 .motor_id = motor_id,
                 .status = 0,  // ll_motor_get_status(servo),  // FIXME: Needs to be implemented or removed
-                .position = position,
+                .position = context->context.known_position,
             }};
 
         /* Transmit message */

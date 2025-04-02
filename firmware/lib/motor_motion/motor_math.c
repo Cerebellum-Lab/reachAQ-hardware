@@ -53,8 +53,8 @@ static int motor_motion_init_context_struct(const float start, const float end, 
     context->start_pos = start;
     context->end_pos = end;
 
-    context->a_max = max_acceleration;
-    context->v_max = max_velocity;
+    context->a_max = max_acceleration == 0 ? 1 : max_acceleration;
+    context->v_max = max_velocity == 0 ? 1 : max_velocity;
 
     context->sgn = displacement < 0.0f ? -1.0f : 1.0f;
     context->y_f = fabsf(displacement);
@@ -66,6 +66,7 @@ static int motor_motion_init_context_struct(const float start, const float end, 
 
     context->t_o = context->v_w / max_acceleration;
     context->t_a = 2.0f * context->t_o;
+    context->t_a = (context->t_a == 0) ? 1 : context->t_a;
 
     context->omega = 2.0f * M_PI / context->t_a;
 
