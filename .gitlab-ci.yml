@@ -1,3 +1,37 @@
+# TODO -
+# There's a reasonably high dependence on the artifacts and the docker images that generate them.
+# in the future, we may run into a problem where the jetson is upgraded and we need to change
+# this file. The future approach would be:
+# 1. Generate a pair of docker images for the python wheels and upgrade images. One for arm and one for x86.
+# 2. Use variables to help define the build environment and to tag the correct docker image. For example:
+# x86_64: &x86_64
+#  image: registry.gitlab.leaflabs.com/cuanschutz/autotrainer/pybind11-${BASE_IMAGE_SUFFIX}
+#
+# .arm64: &arm64
+#  image: registry.gitlab.leaflabs.com/cuanschutz/autotrainer/pyjerrycan-arm-${BASE_IMAGE_SUFFIX}
+#  tags:
+#    - arm64
+#
+#.py3_8: &py3_8
+#  variables:
+#    PY_VERSION: "3.8"
+#    BASE_IMAGE_SUFFIX: "py38"
+#
+#.py3_12: &py3_12
+#  variables:
+#    PY_VERSION: "3.12"
+#    BASE_IMAGE_SUFFIX: "py312"
+#
+#build_pyjerrycan_arm_py3_8:
+#  <<: *build_libjerrycan
+#  <<: *arm64
+#  <<: *py3_8
+#
+#build_pyjerrycan_x86_64_py3_12:
+#  <<: *build_libjerrycan
+#  <<: *x86_64
+#  <<: *py3_12
+
 stages:
   - check
   - build
@@ -91,6 +125,7 @@ build_pyjerrycan_x86_64:
 
 build_pyjerrycan_arm64:
   <<: *build_libjerrycan
+  image: registry.gitlab.leaflabs.com/cuanschutz/autotrainer/pyjerrycan-arm
   tags:
     - arm64
 
