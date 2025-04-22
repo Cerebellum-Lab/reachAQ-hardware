@@ -153,7 +153,12 @@ static float motor_sin(const float phi, const motor_motion_profile_t *context) {
 }
 
 static float acceleration_region_displacement_hat(const float time, const motor_motion_profile_t *context) {
-    return context->a_max / 4.0f * time * time + context->k_s * (motor_cos(context->omega * time, context) - 1);
+    const float accel_displacement_hat =
+        context->a_max / 4.0f * time * time + context->k_s * (motor_cos(context->omega * time, context) - 1);
+
+    // we check for a negative acceleration displacement hat that causes the motor
+    // to move in the reverse direction on startup
+    return accel_displacement_hat < 0.0f ? 0.0f : accel_displacement_hat;
 }
 
 static float acceleration_region_velocity_hat(const float time, const motor_motion_profile_t *context) {
@@ -254,7 +259,7 @@ static float time_at_displacement_hat(const float displacement_hat, const float 
         return 0.0f;
     } else if (displacement_hat <= context->y_a) {
         const float ret = acceleration_region_halleys_method(displacement_hat, min_step, context);
-        if (ret == NAN) {
+        if (isnan(ret)) {
             LOG_ERR("Halley's method returned NAN");
             /* Apparently invalid. Try the next region. N.B.--This should never happen. */
             return (displacement_hat - context->y_s) / context->v_w + context->t_s;
@@ -282,40 +287,93 @@ static float time_at_position(const float position, const float min_step, const 
  *
  * Convert (actual) degrees to the PWM count.
  */
-static uint32_t degrees_to_pwm_count(const servo_motor_context_t *context, const float degree) {
+static uint32_t degrees_to_pwm_count(const servo_motor_context_t *context, const float degree,
+                                     const bool calculate_scale) {
+    // Compute the scaling factor to reduce compounding errors, and only when needed.
+    static float scale_factor = 0;
+
+    if (calculate_scale) {
+        scale_factor = (context->max_angle_pwm - context->min_angle_pwm) / (context->max_angle - context->min_angle);
+    }
+
     const float nominal_degrees = degree - context->angle_adjustment;
-    return (uint32_t)roundf(
-        (((nominal_degrees - context->min_angle) * (context->max_angle_pwm - context->min_angle_pwm)) /
-             (context->max_angle - context->min_angle) +
-         context->min_angle_pwm) /
-        context->pwm_timer_increment);
+    const float scaled_position = (nominal_degrees - context->min_angle) * scale_factor;
+    const float pwm = (scaled_position + context->min_angle_pwm) / context->pwm_timer_increment;
+
+    return roundf(pwm);
 }
 
 ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, const size_t table_size,
                                                        servo_motor_context_t *context) {
-    const float servo_time_step = 0.02f;
-    const float servo_entries_per_second = 50.0f;
-    BUILD_ASSERT(servo_time_step == 1.0f / servo_entries_per_second,
-                 "Servo time step must be 1 / servo_entries_per_second");
-    size_t n_entries =
-        (size_t)((context->motion_profile.t_t - context->last_time_generated) * servo_entries_per_second);
-    if (n_entries > table_size) {
-        n_entries = table_size;
+    const float SERVO_TIME_STEP = 0.02f;
+
+    size_t max_entries = (size_t)((context->motion_profile.t_t - context->last_time_generated) / SERVO_TIME_STEP);
+    if (max_entries > table_size) {
+        max_entries = table_size;
     }
 
-    float time = context->last_time_generated;
-    float displacement_now = displacement(time, &context->motion_profile);
+    const float start_position = context->motion_profile.start_pos;
+    const float end_position = context->motion_profile.end_pos;
 
-    for (size_t i = 0; i < n_entries; i++) {
-        time = servo_time_step * (float)(i + 1) + context->last_time_generated;
-        displacement_now = displacement(time, &context->motion_profile) + context->motion_profile.start_pos;
-        table[i] = degrees_to_pwm_count(context, displacement_now);
+    // Have initial values for time and displacement_now in case loop is not entered
+    float time = context->last_time_generated;
+    float displacement_now = displacement(time, &context->motion_profile) + start_position;
+
+    uint32_t last_pwm = degrees_to_pwm_count(context, context->last_position_generated, true);
+
+    uint32_t table_index = 0;
+    float pwm_change_zero_count = 0;
+
+    uint32_t accumulate = 0;
+
+    for (float time_step = 1.0f; table_index < max_entries; ++time_step) {
+        const float POSITION_THRESHOLD = 0.001f;  // (degrees)
+        const uint32_t DEAD_BAND_THRESHOLD = 4;   // Minimum PWM change required to overcome static friction
+        const int32_t MAX_PWM_CHANGE_ZERO_COUNT = 20;
+
+        time = SERVO_TIME_STEP * time_step + context->last_time_generated;
+
+        displacement_now = displacement(time, &context->motion_profile) + start_position;
+
+        // at desired location?
+        if (fabsf(end_position - displacement_now) < POSITION_THRESHOLD) {
+            LOG_INF("At Desired Location: start: %1.3f  end: %1.3f  displace: %1.3f", (double)start_position,
+                    (double)end_position, (double)displacement_now);
+            table[table_index++] = last_pwm;
+            break;
+        }
+
+        // Calculate the change in PWM strength
+        const uint32_t pwm = degrees_to_pwm_count(context, displacement_now, false);
+        const int32_t delta_pwm = pwm - last_pwm;
+
+        if (delta_pwm == 0) {
+            // ignore if no change, but look for 'end of travel' condition
+            if (++pwm_change_zero_count > MAX_PWM_CHANGE_ZERO_COUNT) {
+                LOG_WRN("Early Endpoint due to all Zeros");
+                table[table_index++] = last_pwm;
+                break;
+            }
+        } else if (fabs(delta_pwm) >= DEAD_BAND_THRESHOLD) {
+            last_pwm = pwm + accumulate;
+            table[table_index++] = last_pwm;
+
+            pwm_change_zero_count = 0;
+            accumulate = 0;
+        } else {
+            accumulate += delta_pwm;
+            pwm_change_zero_count = 0;
+        }
+    }
+
+    if (table_index < max_entries - 1) {
+        table[table_index++] = last_pwm;
     }
 
     context->last_time_generated = time;
     context->last_position_generated = displacement_now;
 
-    return (ssize_t)n_entries;
+    return table_index;
 }
 
 static float revolutions_to_steps(const stepper_motor_context_t *context, const float revolutions) {

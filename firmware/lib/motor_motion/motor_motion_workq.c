@@ -310,7 +310,7 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
             }
             break;
         case LL_MOTOR_EVENT_DMA_QUEUE_EMPTY: {
-            LOG_WRN("MOTION_DONE");
+            LOG_WRN("MOTION DONE");
             if (context != NULL) {
                 context->motion_done = true;
                 context->context.known_position = context->context.last_position_generated;
@@ -602,9 +602,9 @@ int servo_move_to_position(const struct device *dev, const float target_position
         const ssize_t gen_table_ret = motor_motion_servo_generate_displacement_table(
             context->buffers[context->current_buffer], SERVO_BUFFER_SIZE, &context->context);
         context->last_calculation_ret = gen_table_ret;
-        if (ret < 0) {
-            LOG_ERR("Error generating servo table: %d", gen_table_ret);
-            return gen_table_ret;
+        if (gen_table_ret <= 0) {
+            LOG_ERR("Failed to generate servo table of size: %d", gen_table_ret);
+            return -EDOM;
         }
 
         // Queue the buffer to the driver to start the motor motion
