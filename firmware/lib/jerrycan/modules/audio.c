@@ -67,7 +67,7 @@ static void audio_populate_complex_vector(const uint32_t* rawData, float* fftBuf
  * size) on the CAN bus.
  *
  * @param payload - Can NOT be NULL
- * @param length - Length of payload to transfer. Must be <= JERRYCAN_MAX_PAYLOAD_SIZE.
+ * @param length - Length of payload to transfer. Must be <= sizeof(jerrycan_cmd_audio_data_t).
  */
 static void audio_transmit_data(const void* payload, size_t length);
 
@@ -174,7 +174,7 @@ static void audio_populate_complex_vector(const uint32_t* rawData, float* fftBuf
 /* -------------------------------------------------------------------------- */
 
 static void audio_report_data(uint64_t packetNumber, const float* magnitude, size_t length) {
-    const int ELEMENTS_PER_MESSAGE = JERRYCAN_MAX_PAYLOAD_SIZE / sizeof(float);
+    const int ELEMENTS_PER_MESSAGE = sizeof(jerrycan_cmd_audio_data_t) / sizeof(float);
 
     ++packetNumber;
 

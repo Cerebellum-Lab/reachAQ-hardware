@@ -280,12 +280,12 @@ PYBIND11_MODULE(pyjerrycan, m) {
     py::class_<jerrycan_cmd_audio_data_t>(m, "AudioData")
         .def(py::init<>())
         .def_property("magnitudes",
-            [](const jerrycan_cmd_audio_data_t &a) { return std::vector<float>(a.magnitudes, a.magnitudes + JERRYCAN_MAX_PAYLOAD_SIZE/sizeof(float)); },
+            [](const jerrycan_cmd_audio_data_t &a) { return std::vector<float>(a.magnitudes, a.magnitudes + sizeof(jerrycan_cmd_audio_data_t)/sizeof(float)); },
             [](jerrycan_cmd_audio_data_t &a, const std::vector<float> &v) { 
-                if (v.size() != JERRYCAN_MAX_PAYLOAD_SIZE/sizeof(float)) {
-                    throw std::runtime_error("Size mismatch: Expected array of size " + std::to_string(JERRYCAN_MAX_PAYLOAD_SIZE/sizeof(float)));
+                if (v.size() != sizeof(jerrycan_cmd_audio_data_t)/sizeof(float)) {
+                    throw std::runtime_error("Size mismatch: Expected array of size " + std::to_string(sizeof(jerrycan_cmd_audio_data_t)/sizeof(float)));
                 }
-                std::memcpy(a.magnitudes, v.data(), JERRYCAN_MAX_PAYLOAD_SIZE); })
+                std::memcpy(a.magnitudes, v.data(), sizeof(jerrycan_cmd_audio_data_t)); })
     ;
 
     py::class_<jerrycan_cmd_bootloader_command_t> bootloader_command(m, "JerryCANBootloaderCmd");
@@ -325,7 +325,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def(py::init<>())
         .def_property("data",
             [](const jerrycan_cmd_bootloader_data_t &a) { return a.data; },
-            [](jerrycan_cmd_bootloader_data_t &a, uint8_t v[JERRYCAN_MAX_PAYLOAD_SIZE]) { std::memcpy(a.data, v, JERRYCAN_MAX_PAYLOAD_SIZE); })
+            [](jerrycan_cmd_bootloader_data_t &a, uint8_t v[sizeof(jerrycan_cmd_bootloader_data_t)]) { std::memcpy(a.data, v, sizeof(jerrycan_cmd_bootloader_data_t)); })
     ;
 
     py::class_<jerrycan_cmd_fixed_xyz>(m, "FixedXyzCommand")
