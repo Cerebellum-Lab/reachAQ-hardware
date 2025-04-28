@@ -100,7 +100,7 @@ static int jerrycan_bootloader_flash_end() {
     return ret;
 }
 
-static void jerrycan_bootloader_rx_command_handler(jerrycan_msg_t *msg) {
+static int jerrycan_bootloader_rx_command_handler(const jerrycan_msg_t *msg) {
     int ret = -EINVAL;
     jerrycan_msg_t resp;
     resp.type = JERRYCAN_CMD_BOOTLOADER_RESPONSE;
@@ -108,7 +108,8 @@ static void jerrycan_bootloader_rx_command_handler(jerrycan_msg_t *msg) {
     switch (msg->bootloader_command.type) {
         case JERRYCAN_BOOTLOADER_SUBCMD_VERSION:
             jerrycan_bootloader_send_version();
-            return;  // The version command crafts a more specific response, so no need to send a generic (N)ACK
+            return SEND_NO_ACKNOWLEDGEMENT;  // The version command crafts a more specific response, so no need to send
+                                             // a generic (N)ACK
         case JERRYCAN_BOOTLOADER_SUBCMD_START:
             ret = jerrycan_bootloader_flash_img_init();
             break;
@@ -140,9 +141,11 @@ static void jerrycan_bootloader_rx_command_handler(jerrycan_msg_t *msg) {
     resp.bootloader_response.status.active = bootloader_ctx.bootloader_active;
     resp.bootloader_response.status.bytes_written = flash_img_bytes_written(&bootloader_ctx.flash_img_ctx);
     jerrycan_tx(&resp, K_NO_WAIT);
+
+    return SEND_NO_ACKNOWLEDGEMENT;
 }
 
-static void jerrycan_bootloader_rx_data_handler(jerrycan_msg_t *msg) {
+static int jerrycan_bootloader_rx_data_handler(const jerrycan_msg_t *msg) {
     jerrycan_msg_t resp;
     resp.type = JERRYCAN_CMD_BOOTLOADER_RESPONSE;
 
@@ -151,22 +154,24 @@ static void jerrycan_bootloader_rx_data_handler(jerrycan_msg_t *msg) {
         LOG_WRN("Received data before START command");
         resp.bootloader_response.type = JERRYCAN_BOOTLOADER_SUBCMD_NACK;
         jerrycan_tx(&resp, K_NO_WAIT);
-        return;
+        return SEND_NO_ACKNOWLEDGEMENT;
     }
 
     // Write the data to the flash image
     int ret = flash_img_buffered_write(&bootloader_ctx.flash_img_ctx, msg->bootloader_data.data,
-                                       JERRYCAN_MAX_PAYLOAD_SIZE, false);
+                                       sizeof(msg->bootloader_data.data), false);
     if (ret) {
         LOG_ERR("Failed to write image data: %d", ret);
         resp.bootloader_response.type = JERRYCAN_BOOTLOADER_SUBCMD_NACK;
         jerrycan_tx(&resp, K_NO_WAIT);
-        return;
+        return SEND_NO_ACKNOWLEDGEMENT;
     }
 
     // Send an ACK response to indicate that the data was written successfully
     resp.bootloader_response.type = JERRYCAN_BOOTLOADER_SUBCMD_ACK;
     jerrycan_tx(&resp, K_NO_WAIT);
+
+    return SEND_NO_ACKNOWLEDGEMENT;
 }
 
 static jerrycan_rx_callback_t bootloader_rx_command_callback = {

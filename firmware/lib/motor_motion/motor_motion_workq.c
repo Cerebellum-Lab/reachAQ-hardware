@@ -7,6 +7,7 @@
 #include <zephyr/settings/settings.h>
 
 #include "adi_tmc2209.h"
+#include "jerrycan.h"
 #include "motor_common.h"
 #include "motor_motion.h"
 #include "servo.h"
@@ -86,7 +87,7 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
      .current_buffer = 0,                                                                    \
      .last_calculation_ret = 0,                                                              \
      .e_stop_triggered = {.__val = 0},                                                       \
-     .motion_done = true,                                                                    \
+     .motion_mode = MOTION_IDLE,                                                             \
      .motion_calculation_done = true,                                                        \
      .calculation_work =                                                                     \
          {                                                                                   \
@@ -141,7 +142,7 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
         .last_calculation_ret = 0,                                                              \
         .e_stop_triggered = {.__val = 0},                                                       \
         .homing = NOT_HOMING,                                                                   \
-        .motion_done = true,                                                                    \
+        .motion_mode = MOTION_IDLE,                                                             \
         .motion_calculation_done = true,                                                        \
         .calculation_work =                                                                     \
             {                                                                                   \
@@ -176,9 +177,10 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
         .motor_max_velocity = STEPPER_DEFAULT_MAX_VELOCITY,                                     \
         .motor_max_acceleration = STEPPER_DEFAULT_MAX_ACCELERATION,                             \
         .motor_steps_per_revolution = STEPPER_DEFAULT_STEPS_PER_REVOLUTION,                     \
-        .timer_increment = (DT_PROP(DT_PARENT(id), st_prescaler) + 1.0f) / 170e6f,              \
-        .flip_limit_orientation = STEPPER_DEFAULT_FLIP_LIMIT_ORIENTATION,                       \
         .microsteps = STEPPER_DEFAULT_MICRO_STEPS,                                              \
+        .flip_limit_orientation = STEPPER_DEFAULT_FLIP_LIMIT_ORIENTATION,                       \
+        .timer_increment = (DT_PROP(DT_PARENT(id), st_prescaler) + 1.0f) / 170e6f,              \
+        .uuid = 0,                                                                              \
     },
 
 struct stepper_work_context stepper_contexts[] = {DT_FOREACH_STATUS_OKAY(ll_stepper, DEV_DEFINE_STEPPER_CONTEXT)};
@@ -190,20 +192,28 @@ static K_THREAD_STACK_DEFINE(motor_workq_stack, 1024);
 /* ***** Helper Functions ***** */
 
 struct servo_work_context *find_servo_context_from_device(const struct device *dev) {
-    for (size_t i = 0; i < ARRAY_SIZE(servo_contexts); i++) {
-        if (servo_contexts[i].dev == dev) {
-            return &servo_contexts[i];
+    if (dev) {
+        for (size_t i = 0; i < ARRAY_SIZE(servo_contexts); i++) {
+            if (servo_contexts[i].dev == dev) {
+                return &servo_contexts[i];
+            }
         }
+    } else {
+        LOG_WRN("NULL Device passed to get servo context");
     }
 
     return NULL;
 }
 
 struct stepper_work_context *find_stepper_context_from_device(const struct device *dev) {
-    for (size_t i = 0; i < ARRAY_SIZE(stepper_contexts); i++) {
-        if (stepper_contexts[i].dev == dev) {
-            return &stepper_contexts[i];
+    if (dev) {
+        for (size_t i = 0; i < ARRAY_SIZE(stepper_contexts); i++) {
+            if (stepper_contexts[i].dev == dev) {
+                return &stepper_contexts[i];
+            }
         }
+    } else {
+        LOG_WRN("NULL Device passed to get servo context");
     }
 
     return NULL;
@@ -217,7 +227,7 @@ void stepper_set_position_to_zero(const struct device *dev) {
     }
 
     motor_motion_stepper_set_current_position(&context->context, 0.0f);
-    context->motion_done = true;
+    context->motion_mode = MOTION_DONE;
 }
 
 void servo_set_position_to_zero(const struct device *dev) {
@@ -253,7 +263,9 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
                 switch (context->homing) {
                     case NOT_HOMING:
                         // When the driver runs out of data to send, the motion is done
-                        context->motion_done = true;
+                        if (context->motion_mode == MOTION_IN_PROGESS) {
+                            context->motion_mode = MOTION_DONE;
+                        }
                         break;
 
                     case MOVING_FROM_LIMIT_SWITCH: /* FALLTHROUGH */
@@ -286,8 +298,8 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
                 // but better safe than sorry.
                 stepper_set_position_to_zero(dev);
             }
-            const ll_motor_cfg_t *cfg = dev->config;
-            LOG_DBG("Limit switch event for stepper %d", cfg->motor_id);
+
+            LOG_DBG("Limit switch event for stepper");
             break;
         default:
             LOG_WRN("Unknown stepper motor event: %d", event);
@@ -312,7 +324,7 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
         case LL_MOTOR_EVENT_DMA_QUEUE_EMPTY: {
             LOG_WRN("MOTION DONE");
             if (context != NULL) {
-                context->motion_done = true;
+                context->motion_mode = MOTION_DONE;
                 context->context.known_position = context->context.last_position_generated;
             }
             break;
@@ -335,13 +347,16 @@ void stepper_cancel_all_work(const struct device *dev) {
     struct stepper_work_context *context = find_stepper_context_from_device(dev);
     k_work_cancel_delayable(&context->calculation_work);
     k_work_cancel_delayable(&context->check_driver_work);
-    context->motion_done = true;
+
+    if (context->motion_mode == MOTION_IN_PROGESS) {
+        context->motion_mode = MOTION_DONE;
+    }
 }
 
 void servo_cancel_all_work(const struct device *dev) {
     struct servo_work_context *context = find_servo_context_from_device(dev);
     k_work_cancel_delayable(&context->calculation_work);
-    context->motion_done = true;
+    context->motion_mode = MOTION_DONE;
     context->motion_calculation_done = true;
     context->context.known_position = context->context.last_position_generated;
 }
@@ -427,7 +442,9 @@ static void stepper_work_calculation_handler(struct k_work *work) {
 
         case MOVING_FROM_LIMIT_SWITCH: {
             context->motion_calculation_done = true;
-            context->motion_done = true;
+            if (context->motion_mode == MOTION_IN_PROGESS) {
+                context->motion_mode = MOTION_DONE;
+            }
             context->homing = NOT_HOMING;
             break;
         }
@@ -566,7 +583,7 @@ int servo_move_to_position(const struct device *dev, const float target_position
         return -ENODEV;
     }
 
-    if (context->motion_done == false) {
+    if (context->motion_mode == MOTION_IN_PROGESS) {
         LOG_ERR("Attempted to move motor while already in motion.");
         return -EBUSY;
     }
@@ -593,7 +610,7 @@ int servo_move_to_position(const struct device *dev, const float target_position
         return -EDOM;
     }
 
-    context->motion_done = false;
+    context->motion_mode = MOTION_IN_PROGESS;
     context->motion_calculation_done = false;
 
     // Start calculating the motion profile and load as many blocks as possible
@@ -663,6 +680,14 @@ int stepper_set_parameters(const struct device *dev, const float max_velocity, c
     return 0;
 }
 
+int stepper_save_fixed_location(struct stepper_work_context *context, const int motor_id, const float position) {
+    context->fixed_position = position;
+
+    settings_save();
+
+    return 0;
+}
+
 int stepper_move_to_position(const struct device *dev, const float target_position, const float max_velocity,
                              const float max_acceleration) {
     struct stepper_work_context *context = find_stepper_context_from_device(dev);
@@ -678,7 +703,7 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
         return -ENODEV;
     }
 
-    if (!context->motion_done) {
+    if (context->motion_mode == MOTION_IN_PROGESS) {
         LOG_ERR("Attempted to move while move is active");
         return -EBUSY;
     }
@@ -691,7 +716,7 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
 
     if (fabsf(target_position - context->context.last_position_generated) < 1.0f / context->microsteps) {
         LOG_WRN("Target position is the same as current position.");
-        return 0;
+        return -EAGAIN;
     }
 
     if (target_position < context->context.last_position_generated) {
@@ -721,7 +746,7 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
         return -EDOM;
     }
 
-    context->motion_done = false;
+    context->motion_mode = MOTION_IN_PROGESS;
     context->motion_calculation_done = false;
 
     ll_stepper_enable(dev);
@@ -740,8 +765,6 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
         }
 
         // Submit the buffer to the driver to start the motor motion
-        LOG_WRN("INIT:Q buf %d [%p]", context->current_buffer, (void *)context->buffers[context->current_buffer]);
-
         if (gen_table_ret > 0) {
             ll_queue_stepper_positions(dev, context->buffers[i], gen_table_ret * sizeof(uint32_t), K_FOREVER);
         }
@@ -761,7 +784,7 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
 
 int stepper_move_relative(const struct device *dev, const float delta_position, const float max_velocity,
                           const float max_acceleration) {
-    struct stepper_work_context *context = find_stepper_context_from_device(dev);
+    const struct stepper_work_context *context = find_stepper_context_from_device(dev);
     return context == NULL ? -ENODEV
                            : stepper_move_to_position(dev, context->context.last_position_generated + delta_position,
                                                       max_velocity, max_acceleration);
@@ -787,7 +810,7 @@ int stepper_go_home_slowly(const struct device *dev) {
         return 0;
     }
 
-    if (work_context->motion_done == false) {
+    if (work_context->motion_mode == MOTION_IN_PROGESS) {
         LOG_ERR("Attempted to move motor while already in motion.");
         return -EBUSY;
     }
@@ -840,12 +863,9 @@ void set_all_e_stop_flags(void) {
 }
 
 homing_status_t stepper_homing_status(const struct device *dev) {
-    struct stepper_work_context *context = find_stepper_context_from_device(dev);
-    if (context == NULL) {
-        return NOT_HOMING;
-    } else {
-        return context->homing;
-    }
+    const struct stepper_work_context *context = find_stepper_context_from_device(dev);
+
+    return !context ? NOT_HOMING : context->homing;
 }
 
 int stepper_read_config(const struct device *dev, struct stepper_config *config) {

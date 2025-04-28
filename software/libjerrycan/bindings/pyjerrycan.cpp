@@ -19,28 +19,30 @@ PYBIND11_MODULE(pyjerrycan, m) {
         })
         .def("Heartbeat", &JerryCAN::Heartbeat)
         .def("EStop", &JerryCAN::EStop)
-        .def("StepperMove", &JerryCAN::StepperMove, py::arg("dst_id"), py::arg("motor_id"), py::arg("position"), py::arg("max_velocity"), py::arg("max_acceleration"), py::arg("abs_or_rel"))
-        .def("ServoMove", &JerryCAN::ServoMove, py::arg("dst_id"), py::arg("motor_id"), py::arg("position"), py::arg("max_velocity"), py::arg("max_acceleration"), py::arg("abs_or_rel"))
-        .def("StepperHome", &JerryCAN::StepperHome, py::arg("dst_id"), py::arg("motor_id"))
-        .def("CfgWrite", &JerryCAN::CfgWrite, py::arg("dst_id"), py::arg("cfg"))
-        .def("StepperCfgWrite", &JerryCAN::StepperCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("microsteps"), py::arg("steps_per_revolution"), py::arg("motor_max_velocity"), py::arg("motor_max_acceleration"), py::arg("flip_limit_orientation"))
-        .def("ServoCfgWrite", &JerryCAN::ServoCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("min_position"), py::arg("max_position"), py::arg("min_pwm_duration_us"), py::arg("max_pwm_duration_us"), py::arg("motor_max_velocity"), py::arg("motor_max_acceleration"))
+        .def("StepperMove", &JerryCAN::StepperMove, py::arg("dst_id"), py::arg("motor_id"), py::arg("position"), py::arg("max_velocity"), py::arg("max_acceleration"), py::arg("abs_or_rel"), py::arg("save"), py::arg("uuid"))
+        .def("ServoMove", &JerryCAN::ServoMove, py::arg("dst_id"), py::arg("motor_id"), py::arg("position"), py::arg("max_velocity"), py::arg("max_acceleration"), py::arg("abs_or_rel"), py::arg("uuid"))
+        .def("StepperHome", &JerryCAN::StepperHome, py::arg("dst_id"), py::arg("motor_id"), py::arg("uuid"))
+        .def("StepperCfgWrite", &JerryCAN::StepperCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("microsteps"), py::arg("steps_per_revolution"), py::arg("motor_max_velocity"), py::arg("motor_max_acceleration"), py::arg("flip_limit_orientation"), py::arg("uuid"))
+        .def("ServoCfgWrite", &JerryCAN::ServoCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("min_position"), py::arg("max_position"), py::arg("min_pwm_duration_us"), py::arg("max_pwm_duration_us"), py::arg("motor_max_velocity"), py::arg("motor_max_acceleration"), py::arg("uuid"))
         .def("StepperCfgRead", &JerryCAN::StepperCfgRead, py::arg("dst_id"), py::arg("motor_id"))
         .def("ServoCfgRead", &JerryCAN::ServoCfgRead, py::arg("dst_id"), py::arg("motor_id"))
         .def("CfgRead", &JerryCAN::CfgRead, py::arg("dst_id"), py::arg("cfg"))
-        .def("GPIOWrite", &JerryCAN::GPIOWrite, py::arg("dst_id"), py::arg("instance"), py::arg("gpio_idx"), py::arg("state"))
-        .def("ToneWrite", &JerryCAN::ToneWrite, py::arg("dst_id"), py::arg("instance"), py::arg("frequency"), py::arg("duration"))
-        .def("AnalogOutWrite", &JerryCAN::AnalogOutWrite, py::arg("dst_id"), py::arg("instance"), py::arg("value_mv"))
-        .def("LoadCellTare", &JerryCAN::LoadCellTare, py::arg("dst_id"), py::arg("instance"))
-        .def("PressureSensorTare", &JerryCAN::PressureSensorTare, py::arg("dst_id"), py::arg("instance"))
-        .def("RGBLEDWrite", &JerryCAN::RGBLEDWrite, py::arg("dst_id"), py::arg("red"), py::arg("green"), py::arg("blue"))
+        .def("GPIOWrite", &JerryCAN::GPIOWrite, py::arg("dst_id"), py::arg("instance"), py::arg("gpio_idx"), py::arg("state"), py::arg("uuid"))
+        .def("ToneWrite", &JerryCAN::ToneWrite, py::arg("dst_id"), py::arg("instance"), py::arg("frequency"), py::arg("duration"), py::arg("uuid"))
+        .def("AnalogOutWrite", &JerryCAN::AnalogOutWrite, py::arg("dst_id"), py::arg("instance"), py::arg("value_mv"), py::arg("uuid"))
+        .def("LoadCellTare", &JerryCAN::LoadCellTare, py::arg("dst_id"), py::arg("instance"), py::arg("uuid"))
+        .def("PressureSensorTare", &JerryCAN::PressureSensorTare, py::arg("dst_id"), py::arg("instance"), py::arg("uuid"))
+        .def("RGBLEDWrite", &JerryCAN::RGBLEDWrite, py::arg("dst_id"), py::arg("red"), py::arg("green"), py::arg("blue"), py::arg("uuid"))
         .def("BootloaderCommand", &JerryCAN::BootloaderCommand, py::arg("dst_id"), py::arg("subcmd"))
+        .def("Delay", &JerryCAN::Delay, py::arg("dst_id"), py::arg("delay"), py::arg("uuid"))
+        .def("SendToFixedXYZ", &JerryCAN::SendToFixedXYZ, py::arg("dst_id"), py::arg("uuid"))
     ;
 
     py::class_<jerrycan_msg_t>(m, "JerryCANMsg")
         .def(py::init<>())
         .def_readwrite("type", &jerrycan_msg_t::type)
         .def_readwrite("dst_id", &jerrycan_msg_t::dst_id)
+        .def_readwrite("uuid", &jerrycan_msg_t::uuid)
         .def_readwrite("estop", &jerrycan_msg_t::estop)
         .def_readwrite("status", &jerrycan_msg_t::status)
         .def_readwrite("heartbeat", &jerrycan_msg_t::heartbeat)
@@ -68,6 +70,9 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("bootloader_command", &jerrycan_msg_t::bootloader_command)
         .def_readwrite("bootloader_response", &jerrycan_msg_t::bootloader_response)
         .def_readwrite("bootloader_data", &jerrycan_msg_t::bootloader_data)
+        .def_readwrite("delay", &jerrycan_msg_t::delay)
+        .def_readwrite("fixed_xyz", &jerrycan_msg_t::fixed_xyz)
+        .def_readwrite("ack", &jerrycan_msg_t::ack)
     ;
 
     py::class_<jerrycan_cmd_status_t>(m, "Status")
@@ -134,7 +139,9 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("min_pwm_duration_us", &jerrycan_servo_cfg_t::min_pwm_duration_us)
         .def_readwrite("max_pwm_duration_us", &jerrycan_servo_cfg_t::max_pwm_duration_us)
         .def_readwrite("motor_max_velocity", &jerrycan_servo_cfg_t::motor_max_velocity)
-        .def_readwrite("motor_max_acceleration", &jerrycan_servo_cfg_t::motor_max_acceleration);
+        .def_readwrite("motor_max_acceleration", &jerrycan_servo_cfg_t::motor_max_acceleration)
+    ;
+
 
     py::class_<jerrycan_stepper_cfg_t>(cmd_cfg, "StepperCfg")
         .def(py::init<>())
@@ -147,7 +154,8 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("microsteps", &jerrycan_stepper_cfg_t::microsteps)
         .def_readwrite("steps_per_revolution", &jerrycan_stepper_cfg_t::steps_per_revolution)
         .def_readwrite("motor_max_velocity", &jerrycan_stepper_cfg_t::motor_max_velocity)
-        .def_readwrite("motor_max_acceleration", &jerrycan_stepper_cfg_t::motor_max_acceleration);
+        .def_readwrite("motor_max_acceleration", &jerrycan_stepper_cfg_t::motor_max_acceleration)
+    ;
 
     py::class_<jerrycan_cmd_pressure_read_t>(m, "PressureRead")
         .def(py::init<>())
@@ -215,7 +223,8 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def(py::init<>())
         .def_property("motor_id",
             [](const jerrycan_cmd_stepper_home_t &a) { return a.motor_id; },
-            [](jerrycan_cmd_stepper_home_t &a, uint8_t v) { a.motor_id = v; });
+            [](jerrycan_cmd_stepper_home_t &a, uint8_t v) { a.motor_id = v; })
+    ;
 
     py::class_<jerrycan_cmd_stepper_status_t>(m, "StepperStatus")
         .def(py::init<>())
@@ -319,6 +328,20 @@ PYBIND11_MODULE(pyjerrycan, m) {
             [](jerrycan_cmd_bootloader_data_t &a, uint8_t v[JERRYCAN_MAX_PAYLOAD_SIZE]) { std::memcpy(a.data, v, JERRYCAN_MAX_PAYLOAD_SIZE); })
     ;
 
+    py::class_<jerrycan_cmd_fixed_xyz>(m, "FixedXyzCommand")
+        .def(py::init<>())
+    ;
+
+    py::class_<jerrycan_cmd_delay_t>(m, "DelayCommand")
+        .def(py::init<>())
+        .def_readwrite("delay", &jerrycan_cmd_delay_t::delay)
+    ;
+
+    py::class_<jerrycan_rsp_ack_t>(m, "Acknowledge")
+        .def(py::init<>())
+        .def_readwrite("error", &jerrycan_rsp_ack_t::error)
+    ;
+
 
     py::enum_<jerrycan_cmd_type_t>(m, "JerryCANCmdType")
         .value("ESTOP", JERRYCAN_CMD_ESTOP)
@@ -349,6 +372,10 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .value("BOOTLOADER_COMMAND", JERRYCAN_CMD_BOOTLOADER_COMMAND)
         .value("BOOTLOADER_RESPONSE", JERRYCAN_CMD_BOOTLOADER_RESPONSE)
         .value("BOOTLOADER_DATA", JERRYCAN_CMD_BOOTLOADER_DATA)
+        .value("DELAY", JERRYCAN_CMD_DELAY)
+        .value("FIXED_XYZ", JERRYCAN_CMD_FIXED_XYZ)
+        .value("ACKNOWLEDGE", JERRYCAN_RSP_ACK)
+
         .export_values()
     ;
 }

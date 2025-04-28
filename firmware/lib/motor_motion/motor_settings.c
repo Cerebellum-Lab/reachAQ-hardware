@@ -1,5 +1,6 @@
 #include "motor_settings.h"
 
+#include <math.h>
 #include <string.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/settings/settings.h>
@@ -28,6 +29,7 @@ LOG_MODULE_REGISTER(motor_settings);
 #define MICRO_STEP_KEY "s_mstep"
 #define STEPS_PER_REVOLUTION_KEY "s_rev"
 #define FLIP_LIMIT_ORIENTATION_KEY "s_flo"
+#define FIXED_POSITION_KEY "s_fix"
 
 #if CONFIG_DT_HAS_LL_SERVO_ENABLED
 /* ***** Settings Handler ***** */
@@ -113,13 +115,7 @@ static int servo_settings_set(const char *key, size_t len, settings_read_cb read
     return 0;
 }
 
-static char itoa(const size_t value) {
-    if (value > 9) {
-        return '\0';
-    } else {
-        return value + '0';
-    }
-}
+static char itoa(const size_t value) { return (value > 9) ? '\0' : value + '0'; }
 
 #define GENERATE_SERVO_TEMPLATE(name) SETTINGS_MODULE_NAME "/" SETTINGS_SERVO_MODULE_NAME "/0/" name
 
@@ -145,7 +141,7 @@ int servo_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write max_velocity to settings: %d", ret);
         return ret;
     }
-    LOG_INF("Saved max_velocity: %f", (double)context->motor_max_velocity);
+    LOG_DBG("Saved max_velocity: %f", (double)context->motor_max_velocity);
 
     static char max_acceleration_key[] = GENERATE_SERVO_TEMPLATE(MAX_ACCELERATION_KEY);
     max_acceleration_key[id_number_index] = itoa(dt_id);
@@ -154,7 +150,7 @@ int servo_settings_export(const struct device *dev, const size_t dt_id,
         LOG_ERR("Failed to write max_acceleration to settings: %d", ret);
         return ret;
     }
-    LOG_INF("Saved max_acceleration: %f", (double)context->motor_max_acceleration);
+    LOG_DBG("Saved max_acceleration: %f", (double)context->motor_max_acceleration);
 
     static char min_angle_key[] = GENERATE_SERVO_TEMPLATE(MIN_ANGLE_KEY);
     min_angle_key[id_number_index] = itoa(dt_id);
@@ -228,64 +224,110 @@ DT_FOREACH_OKAY_INST_ll_servo(DEFINE_SERVO_DEVICE_SETTINGS_EXPORT_FUNCTION);
 DT_FOREACH_OKAY_INST_ll_servo(DEFINE_SERVO_DEVICE_SETTINGS_HANDLERS);
 #endif
 
+static float read_float(const char *name, const settings_read_cb read_cb, void *cb_arg, const bool validate,
+                        float dflt) {
+    float value;
+
+    const int ret = read_cb(cb_arg, &value, sizeof(value));
+
+    if (ret < 0) {
+        LOG_ERR("Failed to read %s from settings: %d", name, ret);
+        value = dflt;
+    } else {
+        LOG_DBG("restored %s: %f", name, (double)value);
+    }
+
+    return validate && (value <= 0.0f) ? dflt : value;
+}
+
+static uint16_t read_uint16(const char *name, const settings_read_cb read_cb, void *cb_arg, uint16_t dflt) {
+    uint16_t value;
+
+    const int ret = read_cb(cb_arg, &value, sizeof(value));
+
+    if (ret < 0) {
+        LOG_ERR("Failed to read %s from settings: %d", name, ret);
+        value = dflt;
+    } else {
+        LOG_DBG("restored %s: %d", name, value);
+    }
+
+    return value;
+}
+
+static bool read_bool(const char *name, const settings_read_cb read_cb, void *cb_arg, bool dflt) {
+    bool value;
+
+    const int ret = read_cb(cb_arg, &value, sizeof(value));
+
+    if (ret < 0) {
+        LOG_ERR("Failed to read %s from settings: %d", name, ret);
+        value = dflt;
+    } else {
+        LOG_DBG("restored %s: %d", name, value);
+    }
+
+    return value;
+}
+
+static int write_float(char *key, const char numeric, float value,
+                       int (*storage_func)(const char *name, const void *value, size_t val_len)) {
+    static const size_t id_number_index = sizeof(SETTINGS_MODULE_NAME "/" SETTINGS_STEPPER_MODULE_NAME "/") - 1;
+
+    key[id_number_index] = numeric;
+    const int ret = storage_func(key, &value, sizeof(value));
+    if (ret < 0) {
+        LOG_ERR("Failed to save %s: %d", key, ret);
+    } else {
+        LOG_DBG("Saved %s: %f", key, (double)value);
+    }
+
+    return ret;
+}
+
+static int write_uint16(char *key, const char numeric, const uint16_t value,
+                        int (*storage_func)(const char *name, const void *value, size_t val_len)) {
+    static const size_t id_number_index = sizeof(SETTINGS_MODULE_NAME "/" SETTINGS_STEPPER_MODULE_NAME "/") - 1;
+
+    key[id_number_index] = numeric;
+    const int ret = storage_func(key, &value, sizeof(value));
+    if (ret < 0) {
+        LOG_ERR("Failed to save %s: %d", key, ret);
+    } else {
+        LOG_DBG("Saved %s: %d", key, value);
+    }
+    return ret;
+}
+
+static int write_bool(char *key, const char numeric, const bool value,
+                      int (*storage_func)(const char *name, const void *value, size_t val_len)) {
+    static const size_t id_number_index = sizeof(SETTINGS_MODULE_NAME "/" SETTINGS_STEPPER_MODULE_NAME "/") - 1;
+
+    key[id_number_index] = numeric;
+    const int ret = storage_func(key, &value, sizeof(value));
+    if (ret < 0) {
+        LOG_ERR("Failed to save %s: %d", key, ret);
+    } else {
+        LOG_DBG("Saved %s: %d", key, value);
+    }
+    return ret;
+}
+
 #if CONFIG_DT_HAS_LL_STEPPER_ENABLED
 static int stepper_settings_set(const char *key, size_t len, settings_read_cb read_cb, void *cb_arg,
                                 struct stepper_work_context *context) {
     if (strncmp(key, MAX_VELOCITY_KEY, sizeof(MAX_VELOCITY_KEY) - 1) == 0) {
-        float max_velocity;
-        const int ret = read_cb(cb_arg, &max_velocity, sizeof(max_velocity));
-        if (ret < 0) {
-            LOG_ERR("Failed to read max_velocity from settings: %d", ret);
-            return -EINVAL;
-        }
-        LOG_DBG("restored max_velocity: %f", (double)max_velocity);
-        if (max_velocity > 0.0f) {
-            context->motor_max_velocity = max_velocity;
-        }
+        context->motor_max_velocity = read_float("max_velocity", read_cb, cb_arg, true, 48);
     } else if (strncmp(key, MAX_ACCELERATION_KEY, sizeof(MAX_ACCELERATION_KEY) - 1) == 0) {
-        float max_acceleration;
-        const int ret = read_cb(cb_arg, &max_acceleration, sizeof(max_acceleration));
-        if (ret < 0) {
-            LOG_ERR("Failed to read max_acceleration from settings: %d", ret);
-            return -EINVAL;
-        }
-        LOG_DBG("restored max_acceleration: %f", (double)max_acceleration);
-        if (max_acceleration > 0.0f) {
-            context->motor_max_acceleration = max_acceleration;
-        }
+        context->motor_max_acceleration = read_float("max_acceleration", read_cb, cb_arg, true, 2400);
     } else if (strncmp(key, MICRO_STEP_KEY, sizeof(MICRO_STEP_KEY) - 1) == 0) {
-        uint16_t microstep;
-        const int ret = read_cb(cb_arg, &microstep, sizeof(microstep));
-        if (ret < 0) {
-            LOG_ERR("Failed to read min_step from settings: %d", ret);
-            return -EINVAL;
-        }
-        LOG_DBG("restored min_step: %d", microstep);
-        if (microstep > 0.0f) {
-            context->microsteps = microstep;
-        }
+        context->microsteps = read_uint16("min_step", read_cb, cb_arg, 8);
     } else if (strncmp(key, STEPS_PER_REVOLUTION_KEY, sizeof(STEPS_PER_REVOLUTION_KEY) - 1) == 0) {
-        float steps_per_revolution;
-        const int ret = read_cb(cb_arg, &steps_per_revolution, sizeof(steps_per_revolution));
-        if (ret < 0) {
-            LOG_ERR("Failed to read steps_per_revolution from settings: %d", ret);
-            return -EINVAL;
-        }
-        LOG_DBG("restored steps_per_revolution: %f", (double)steps_per_revolution);
-        if (steps_per_revolution > 0.0f) {
-            context->motor_steps_per_revolution = steps_per_revolution;
-        }
+        context->motor_steps_per_revolution = read_float("steps_per_revolution", read_cb, cb_arg, true, 48);
     } else if (strncmp(key, FLIP_LIMIT_ORIENTATION_KEY, sizeof(FLIP_LIMIT_ORIENTATION_KEY) - 1) == 0) {
-        bool flip_limit_orientation;
-        const int ret = read_cb(cb_arg, &flip_limit_orientation, sizeof(flip_limit_orientation));
-        if (ret < 0) {
-            LOG_ERR("Failed to read flip_limit_orientation from settings: %d", ret);
-            return -EINVAL;
-        }
-        LOG_INF("restored flip_limit_orientation: %d", flip_limit_orientation);
-        if (flip_limit_orientation == 0 || flip_limit_orientation == 1) {
-            context->flip_limit_orientation = flip_limit_orientation;
-        }
+        context->flip_limit_orientation = read_bool("flip_limit_orientation", read_cb, cb_arg, false);
+    } else if (strncmp(key, FIXED_POSITION_KEY, sizeof(FIXED_POSITION_KEY) - 1) == 0) {
+        context->fixed_position = read_float("fixed", read_cb, cb_arg, true, 0);
     } else {
         LOG_WRN("Unknown key: %s", key);
         return -EINVAL;
@@ -297,67 +339,47 @@ static int stepper_settings_set(const char *key, size_t len, settings_read_cb re
 
 static int stepper_settings_export(const struct device *dev, const size_t dt_id,
                                    int (*storage_func)(const char *name, const void *value, size_t val_len)) {
-    int ret = 0;
-    struct stepper_work_context *context = find_stepper_context_from_device(dev);
-    static const size_t id_number_index = sizeof(SETTINGS_MODULE_NAME "/" SETTINGS_STEPPER_MODULE_NAME "/") - 1;
+    int rc = 0;
+    const struct stepper_work_context *context = find_stepper_context_from_device(dev);
 
     if (context == NULL) {
         LOG_ERR("No context found for the stepper device.");
-        return -ENODEV;
+        rc = -ENODEV;
     }
 
-    if (dt_id > 9) {
-        LOG_ERR("Invalid device tree id: %zu", dt_id);
-        return -EINVAL;
+    const char numeric = itoa(dt_id);
+
+    if (rc == 0) {
+        static char key[] = GENERATE_STEPPER_TEMPLATE(MAX_VELOCITY_KEY);
+        rc = write_float(key, numeric, context->motor_max_velocity, storage_func);
     }
 
-    static char max_velocity_key[] = GENERATE_STEPPER_TEMPLATE(MAX_VELOCITY_KEY);
-    max_velocity_key[id_number_index] = itoa(dt_id);
-    ret = storage_func(max_velocity_key, &context->motor_max_velocity, sizeof(context->motor_max_velocity));
-    if (ret < 0) {
-        LOG_ERR("Failed to write max_velocity to settings: %d", ret);
-        return ret;
+    if (rc == 0) {
+        static char key[] = GENERATE_STEPPER_TEMPLATE(MAX_ACCELERATION_KEY);
+        rc = write_float(key, numeric, context->motor_max_acceleration, storage_func);
     }
-    LOG_DBG("Saved max_velocity: %f", (double)context->motor_max_velocity);
 
-    static char max_acceleration_key[] = GENERATE_STEPPER_TEMPLATE(MAX_ACCELERATION_KEY);
-    max_acceleration_key[id_number_index] = itoa(dt_id);
-    ret = storage_func(max_acceleration_key, &context->motor_max_acceleration, sizeof(context->motor_max_acceleration));
-    if (ret < 0) {
-        LOG_ERR("Failed to write max_acceleration to settings: %d", ret);
-        return ret;
+    if (rc == 0) {
+        static char key[] = GENERATE_STEPPER_TEMPLATE(MICRO_STEP_KEY);
+        rc = write_uint16(key, numeric, context->microsteps, storage_func);
     }
-    LOG_DBG("Saved max_acceleration: %f", (double)context->motor_max_acceleration);
 
-    static char microstep_key[] = GENERATE_STEPPER_TEMPLATE(MICRO_STEP_KEY);
-    microstep_key[id_number_index] = itoa(dt_id);
-    ret = storage_func(microstep_key, &context->microsteps, sizeof(context->microsteps));
-    if (ret < 0) {
-        LOG_ERR("Failed to write microsteps to settings: %d", ret);
-        return ret;
+    if (rc == 0) {
+        static char key[] = GENERATE_STEPPER_TEMPLATE(STEPS_PER_REVOLUTION_KEY);
+        rc = write_float(key, numeric, context->motor_steps_per_revolution, storage_func);
     }
-    LOG_DBG("Saved microstep: %d", context->microsteps);
 
-    static char steps_per_revolution_key[] = GENERATE_STEPPER_TEMPLATE(STEPS_PER_REVOLUTION_KEY);
-    steps_per_revolution_key[id_number_index] = itoa(dt_id);
-    ret = storage_func(steps_per_revolution_key, &context->motor_steps_per_revolution,
-                       sizeof(context->motor_steps_per_revolution));
-    if (ret < 0) {
-        LOG_ERR("Failed to write steps_per_revolution to settings: %d", ret);
-        return ret;
+    if (rc == 0) {
+        static char key[] = GENERATE_STEPPER_TEMPLATE(FLIP_LIMIT_ORIENTATION_KEY);
+        rc = write_bool(key, numeric, context->flip_limit_orientation, storage_func);
     }
-    LOG_DBG("Saved steps_per_revolution: %f", (double)context->motor_steps_per_revolution);
 
-    static char flip_orientation_key[] = GENERATE_STEPPER_TEMPLATE(FLIP_LIMIT_ORIENTATION_KEY);
-    flip_orientation_key[id_number_index] = itoa(dt_id);
-    ret = storage_func(flip_orientation_key, &context->flip_limit_orientation, sizeof(context->flip_limit_orientation));
-    if (ret < 0) {
-        LOG_ERR("Failed to write flip_limit_orientation key to settings: %d", ret);
-        return ret;
+    if (rc == 0) {
+        static char key[] = GENERATE_STEPPER_TEMPLATE(FIXED_POSITION_KEY);
+        rc = write_float(key, numeric, context->fixed_position, storage_func);
     }
-    LOG_DBG("Saved flip_limit_orientation: %d", context->flip_limit_orientation);
 
-    return 0;
+    return rc;
 }
 
 #define DEFINE_STEPPER_DEVICE_SETTINGS_FUNCTION(id)                                                            \

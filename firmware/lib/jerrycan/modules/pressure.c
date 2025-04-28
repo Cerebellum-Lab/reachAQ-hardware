@@ -84,22 +84,26 @@ static void jerrycan_pressure_sensor_tx() {
     }
 }
 
-static void jerrycan_pressure_sensor_tare_handler(jerrycan_msg_t *msg) {
+static int jerrycan_pressure_sensor_tare_handler(jerrycan_msg_t *msg) {
+    int rc = -ENOENT;
+
     for (int i = 0; i < PRESSURE_SENSOR_COUNT; i++) {
         const jerrycan_pressure_sensor_context_t *context = &contexts[i];
         const struct device *pressure_sensor = context->pressure_sensor;
         uint16_t instance_number = context->instance_number;
 
         if (msg->pressure_sensor_tare.instance == instance_number) {
-            int ret = ll_pressure_sensor_tare(pressure_sensor);
-            if (ret < 0) {
-                LOG_ERR("Failed to perform the requested pressure sensor tare operation: %d", ret);
+            rc = ll_pressure_sensor_tare(pressure_sensor);
+            if (rc < 0) {
+                LOG_ERR("Failed to perform the requested pressure sensor tare operation: %d", rc);
             } else {
                 LOG_INF("Successfully tared pressure_sensor%d", instance_number);
             }
-            return;
+            break;
         }
     }
+
+    return rc;
 }
 
 static jerrycan_rx_callback_t pressure_sensor_tare_callback = {

@@ -63,7 +63,32 @@ void jerrycan_status_tx() {
 
 K_TIMER_DEFINE(jerrycan_status_timer, jerrycan_status_tx, NULL);
 
+static struct _delay {
+    uint8_t uuid;
+} delay_data;
+
+static void status_delay_expired() { jerrycan_send_ack(delay_data.uuid, 0); }
+
+K_TIMER_DEFINE(delay_timer, status_delay_expired, NULL);
+
+static int status_delay(const jerrycan_msg_t *msg) {
+    delay_data.uuid = msg->uuid;
+    k_timer_start(&delay_timer, K_MSEC(msg->delay.delay), K_MSEC(0));
+
+    return COMMAND_NOT_COMPLETE;
+}
+
+static jerrycan_rx_callback_t delay_callback = {
+    .filter_msg_type = JERRYCAN_CMD_DELAY,
+    .func = status_delay,
+};
+
 static int jerrycan_status_init() {
+    int ret = jerrycan_register_rx_callback(&delay_callback);
+    if (ret < 0) {
+        LOG_WRN("Failed to register delay message callback: %d", ret);
+    }
+
     // Start the timer that will send the status message periodically
     k_timer_start(&jerrycan_status_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_STATUS_TX_PERIOD_MS));
     return 0;

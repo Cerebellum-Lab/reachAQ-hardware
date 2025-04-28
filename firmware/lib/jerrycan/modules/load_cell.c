@@ -75,22 +75,27 @@ static void jerrycan_load_cell_tx() {
     }
 }
 
-static void jerrycan_load_cell_tare_handler(jerrycan_msg_t *msg) {
+static int jerrycan_load_cell_tare_handler(const jerrycan_msg_t *msg) {
+    int rc = -ENOENT;
+
     for (int i = 0; i < LOAD_CELL_COUNT; i++) {
         const jerrycan_load_cell_context_t *context = &contexts[i];
         const struct device *load_cell = context->load_cell;
         uint16_t instance_number = context->instance_number;
 
         if (msg->load_cell_tare.instance == instance_number) {
-            int ret = ll_load_cell_tare(load_cell);
-            if (ret < 0) {
-                LOG_ERR("Failed to perform the requested load cell tare operation: %d", ret);
+            rc = ll_load_cell_tare(load_cell);
+
+            if (rc < 0) {
+                LOG_ERR("Failed to perform the requested load cell tare operation: %d", rc);
             } else {
                 LOG_INF("Successfully tared load_cell%d", instance_number);
             }
-            return;
+            break;
         }
     }
+
+    return rc;
 }
 
 static jerrycan_rx_callback_t load_cell_tare_callback = {

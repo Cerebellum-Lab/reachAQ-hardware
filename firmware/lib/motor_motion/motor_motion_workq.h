@@ -16,6 +16,8 @@
 typedef uint32_t servo_buffer_set[BUFS_PER_MOTOR][SERVO_BUFFER_SIZE];
 typedef uint32_t stepper_buffer_set[BUFS_PER_MOTOR][STEPPER_BUFFER_SIZE];
 
+typedef enum { MOTION_IDLE, MOTION_IN_PROGESS, MOTION_DONE } motion_mode_t;
+
 struct servo_work_context {
     const struct device *dev;  // Motor device to use
 
@@ -27,13 +29,14 @@ struct servo_work_context {
 
     // Parameters about movement overall
     atomic_flag e_stop_triggered;
-    bool motion_done;
+    motion_mode_t motion_mode;
     bool motion_calculation_done;
     struct k_work_delayable calculation_work;
     struct k_work_delayable submission_work;
     ll_servo_cb_t servo_cb;
     float motor_max_velocity;
     float motor_max_acceleration;
+    uint8_t uuid;
 };
 
 typedef enum homing_status {
@@ -55,7 +58,7 @@ struct stepper_work_context {
     atomic_flag e_stop_triggered;
     _Atomic homing_status_t homing;
     _Atomic ll_stepper_dir_t homing_direction;
-    bool motion_done;
+    motion_mode_t motion_mode;
     bool motion_calculation_done;
     struct k_work_delayable calculation_work;
     struct k_work_delayable check_driver_work;
@@ -66,9 +69,13 @@ struct stepper_work_context {
     float motor_max_velocity;
     float motor_max_acceleration;
     float motor_steps_per_revolution;
-    float timer_increment;  // Time (in seconds) between successive pulses of the timer.
-    uint16_t microsteps;    // micro steps per step; should be a power of 2.
+    float fixed_position;
+    uint16_t microsteps;  // micro steps per step; should be a power of 2.
     bool flip_limit_orientation;
+
+    // Command-based information
+    float timer_increment;  // Time (in seconds) between successive pulses of the timer.
+    uint8_t uuid;
 };
 
 /**
@@ -109,19 +116,28 @@ int stepper_set_parameters(const struct device *dev, float motor_max_velocity, f
                            uint16_t microsteps, float motor_steps_per_revolution, bool flip_limit_orientation);
 
 /**
+ * Save an X, Y, or Z position as part of the 'send' capability.
+ *
+ * @param context - context
+ * @param motor_id - motor ID [0..2] where 0=X, 1=Y, 2=Z
+ * @param position
+ * @return 0 on success; <0 on failure
+ */
+int stepper_save_fixed_location(struct stepper_work_context *context, int motor_id, float position);
+
+/**
  * Move to the position specified, using the motion profiles in `motor_math.*`.
  *
  * @retval -ENODEV if the device is not found in the list.
  * @retval -EBUSY if another motion profile is already running.
  */
-int stepper_move_to_position(const struct device *dev, float target_position, float movement_max_velocity,
-                             float movement_max_acceleration);
+int stepper_move_to_position(const struct device *dev, float target_position, float max_velocity,
+                             float max_acceleration);
 
 /*
  * Move relative to the current position. Wrapper around `stepper_move_to_position`.
  */
-int stepper_move_relative(const struct device *dev, float delta_position, float movement_max_veloocity,
-                          float movements_max_acceleration);
+int stepper_move_relative(const struct device *dev, float delta_position, float max_velocity, float max_acceleration);
 
 int stepper_go_home_slowly(const struct device *dev);
 
@@ -152,6 +168,8 @@ struct servo_work_context *find_servo_context_from_device(const struct device *d
  * Find the work contexts, given the device.
  */
 struct stepper_work_context *find_stepper_context_from_device(const struct device *dev);
+
+struct stepper_work_context *stepper_work_context_from_motor_id(int motor_id);
 
 /**
  * Get the minimum angle of the servo motor.

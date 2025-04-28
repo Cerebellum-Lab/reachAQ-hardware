@@ -69,6 +69,9 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
         [JERRYCAN_CMD_BOOTLOADER_COMMAND] = sizeof(jerrycan_cmd_bootloader_command_t),
         [JERRYCAN_CMD_BOOTLOADER_RESPONSE] = sizeof(jerrycan_cmd_bootloader_response_t),
         [JERRYCAN_CMD_BOOTLOADER_DATA] = sizeof(jerrycan_cmd_bootloader_data_t),
+        [JERRYCAN_CMD_DELAY] = sizeof(jerrycan_cmd_delay_t),
+        [JERRYCAN_CMD_FIXED_XYZ] = sizeof(jerrycan_cmd_fixed_xyz),
+        [JERRYCAN_RSP_ACK] = sizeof(jerrycan_rsp_ack_t),
     };
 
     if (msg_type > JERRYCAN_CMD_MAX || msg_type < JERRYCAN_CMD_MIN) {
@@ -126,18 +129,26 @@ int jerrycan_run(k_timeout_t timeout) {
         while (k_msgq_get(&jerrycan_tx_msgq, &msg, K_NO_WAIT) == 0) {
             uint8_t payload_size = jerrycan_msg_get_payload_size(msg.type);
             frame.id = can_id(msg.type);
-            frame.dlc = can_bytes_to_dlc(payload_size);
 
             // Enable CAN FD frames and Bit Rate Switching
             frame.flags = CAN_FRAME_FDF | CAN_FRAME_BRS;
 
             // Copy the payload into the CAN frame
             memcpy(frame.data, msg.payload, payload_size);
+            if (payload_size < sizeof(msg.payload)) {
+                if (msg.type == JERRYCAN_RSP_ACK) {
+                    printf("ACK UUID=%d\n", +msg.uuid);
+                }
+                memcpy(frame.data + payload_size, &msg.uuid, sizeof(msg.uuid));
+                payload_size += sizeof(msg.uuid);
+            }
+
+            frame.dlc = can_bytes_to_dlc(payload_size);
 
             // For payload sizes > 8, DLC no longer maps 1:1 to the number of bytes in the payload
             // If the actual payload size is less than the number of bytes indicated by DLC, pad the rest with 0
-            uint8_t dlc_bytes = can_dlc_to_bytes(frame.dlc);
-            memset(&frame.data[payload_size], 0, dlc_bytes - payload_size);
+            // const uint8_t dlc_bytes = can_dlc_to_bytes(frame.dlc);
+            // memset(&frame.data[payload_size], 0, dlc_bytes - payload_size);
 
             ret = can_send(can_dev, &frame, K_FOREVER, NULL, NULL);
             if (ret != 0) {
@@ -152,12 +163,18 @@ int jerrycan_run(k_timeout_t timeout) {
             msg.type = frame.id >> 5;
             uint8_t msg_len = jerrycan_msg_get_payload_size(msg.type);
             memcpy(msg.payload, frame.data, msg_len);
+            if (msg_len < sizeof(msg.payload)) {
+                memcpy(&msg.uuid, frame.data + msg_len, sizeof(msg.uuid));
+            }
 
             sys_snode_t *snode;
             SYS_SLIST_FOR_EACH_NODE(&can_rx_callbacks_list, snode) {
                 jerrycan_rx_callback_t *callback = CONTAINER_OF(snode, jerrycan_rx_callback_t, node);
                 if (callback->filter_msg_type == msg.type) {
-                    callback->func(&msg);
+                    int error = callback->func(&msg);
+                    if ((error != COMMAND_NOT_COMPLETE) && (error != SEND_NO_ACKNOWLEDGEMENT)) {
+                        jerrycan_send_ack(msg.uuid, error);
+                    }
                 }
             }
         }
@@ -168,6 +185,19 @@ int jerrycan_run(k_timeout_t timeout) {
     events[1].state = K_POLL_STATE_NOT_READY;
 
     return ret;
+}
+
+void jerrycan_send_ack(const uint8_t uuid, const int error_code) {
+    jerrycan_msg_t msg = {
+        .type = JERRYCAN_RSP_ACK,
+        .ack =
+            {
+                .error = error_code,
+            },
+        .uuid = uuid,
+    };
+
+    jerrycan_tx(&msg, K_NO_WAIT);
 }
 
 int jerrycan_register_rx_callback(jerrycan_rx_callback_t *callback) {

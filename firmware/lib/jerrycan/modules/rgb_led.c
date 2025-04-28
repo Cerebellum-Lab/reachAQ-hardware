@@ -46,7 +46,7 @@ static void jerrycan_rgb_led_tx();
  *
  * @param msg - Guaranteed to be of type JERRYCAN_CMD_RGB_LED
  */
-static void jerrycan_rgb_led_msg_handler(jerrycan_msg_t* msg) {
+static int jerrycan_rgb_led_msg_handler(const jerrycan_msg_t* msg) {
     const struct device* device = RGB_LED;
 
     /* Update state for use by status message */
@@ -58,10 +58,9 @@ static void jerrycan_rgb_led_msg_handler(jerrycan_msg_t* msg) {
     led_set_brightness(device, 1, green);
     led_set_brightness(device, 2, blue);
 
-    /* Send message on update */
-    jerrycan_rgb_led_tx();
-
     LOG_INF("Updated RGB LED to (%d, %d, %d)", red, green, blue);
+
+    return 0;
 }
 
 /* -------------------------------------------------------------------------- */

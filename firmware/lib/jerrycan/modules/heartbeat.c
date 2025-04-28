@@ -47,14 +47,16 @@ static void heartbeat_led_start() {
     k_timer_start(&heartbeat_led_timer, K_MSEC(CONFIG_LIB_JERRYCAN_HEARTBEAT_LED_DURATION_MS), K_NO_WAIT);
 }
 
-static void heartbeat_handler(jerrycan_msg_t *msg) {
-    // If we receive a heartbeat message, we should blink the LED
+static int heartbeat_handler(const jerrycan_msg_t *msg) {
+    // On heartbeat message, blink the LED
     heartbeat_led_start();
 
     jerrycan_msg_t response = {.type = JERRYCAN_CMD_HEARTBEAT, .heartbeat = {.rsvd = 0xFF}};
 
-    /* Transmit message */
+    // Respond with same
     jerrycan_tx(&response, K_NO_WAIT);
+
+    return SEND_NO_ACKNOWLEDGEMENT;  // responded with a HEARTBEAT, instead
 }
 
 static jerrycan_rx_callback_t heartbeat_callback = {

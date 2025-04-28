@@ -7,12 +7,18 @@ extern "C" {
 #endif
 
 #if !defined(__ZEPHYR__)
+#include <linux/can.h>
+
 #include <cassert>
 #define BUILD_ASSERT(cond, msg) static_assert(cond, msg)
 typedef void* sys_snode_t;
+#define JERRYCAN_ACTUAL_PAYLOAD_SIZE (CANFD_MAX_DLEN)
+#else
+#include <zephyr/drivers/can.h>
+#define JERRYCAN_ACTUAL_PAYLOAD_SIZE (CAN_MAX_DLEN)
 #endif
 
-#define JERRYCAN_MAX_PAYLOAD_SIZE 64
+#define JERRYCAN_MAX_PAYLOAD_SIZE (JERRYCAN_ACTUAL_PAYLOAD_SIZE - sizeof(uint8_t))  // account for UUID
 
 typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_ESTOP = 0x00,
@@ -43,12 +49,15 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_BOOTLOADER_COMMAND = 0x18,
     JERRYCAN_CMD_BOOTLOADER_RESPONSE = 0x19,
     JERRYCAN_CMD_BOOTLOADER_DATA = 0x1A,
+    JERRYCAN_CMD_DELAY = 0x1B,
+    JERRYCAN_CMD_FIXED_XYZ = 0x1C,
+    JERRYCAN_RSP_ACK = 0x30,
     JERRYCAN_CMD_MIN = 0x00,
     JERRYCAN_CMD_MAX = 0x3F,
 } jerrycan_cmd_type_t;
 
 typedef struct __attribute__((packed)) {
-    uint8_t payload;
+    uint8_t rsvd;
 } jerrycan_cmd_estop_t;
 
 BUILD_ASSERT(sizeof(jerrycan_cmd_estop_t) == 1, "jerrycan_cmd_estop_t should be 1 bytes");
@@ -87,7 +96,8 @@ typedef enum __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
     struct {
         uint8_t motor_id : 2;
-        uint8_t rsvd0 : 5;
+        uint8_t save : 1;
+        uint8_t rsvd0 : 4;
         abs_or_rel_t abs_or_rel : 1;
     };
     float position;
@@ -118,6 +128,7 @@ typedef struct __attribute__((packed)) {
         uint8_t error : 1;
         uint8_t rsvd0 : 5;
     };
+    int16_t rsvd;
     float min_position;
     float max_position;
     float min_pwm_duration_us;
@@ -147,7 +158,7 @@ typedef struct __attribute__((packed)) {
     };
 } jerrycan_cmd_cfg_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_cfg_t) == 26, "jerrycan_cmd_cfg_t should be 26 bytes");
+BUILD_ASSERT(sizeof(jerrycan_cmd_cfg_t) == 28, "jerrycan_cmd_cfg_t should be 28 bytes");
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
@@ -251,13 +262,12 @@ BUILD_ASSERT(sizeof(jerrycan_cmd_audio_data_cmd_t) == 4, "jerrycan_cmd_audio_dat
 
 typedef struct __attribute__((packed)) {
     union {
-        uint8_t payload[JERRYCAN_MAX_PAYLOAD_SIZE];
-        float magnitudes[JERRYCAN_MAX_PAYLOAD_SIZE / sizeof(float)];
+        uint8_t payload[JERRYCAN_ACTUAL_PAYLOAD_SIZE];
+        float magnitudes[JERRYCAN_ACTUAL_PAYLOAD_SIZE / sizeof(float)];
     };
 } jerrycan_cmd_audio_data_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_audio_data_t) == JERRYCAN_MAX_PAYLOAD_SIZE,
-             "jerrycan_cmd_audio_data_t should be 64 bytes");
+BUILD_ASSERT(sizeof(jerrycan_cmd_audio_data_t) == 64, "jerrycan_cmd_audio_data_t should be 64 bytes");
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
@@ -327,51 +337,79 @@ typedef struct __attribute__((packed)) {
 BUILD_ASSERT(sizeof(jerrycan_cmd_bootloader_response_t) == 7, "jerrycan_cmd_bootloader_response_t should be 7 bytes");
 
 typedef struct {
-    uint8_t data[JERRYCAN_MAX_PAYLOAD_SIZE];
+    uint8_t data[JERRYCAN_ACTUAL_PAYLOAD_SIZE];
 } jerrycan_cmd_bootloader_data_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_bootloader_data_t) == JERRYCAN_MAX_PAYLOAD_SIZE,
-             "jerrycan_bootloader_data_t should be 64 bytes");
+BUILD_ASSERT(sizeof(jerrycan_cmd_bootloader_data_t) == 64, "jerrycan_bootloader_data_t should be 64 bytes");
+
+typedef struct __attribute__((packed)) {
+    uint16_t delay;
+} jerrycan_cmd_delay_t;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_delay_t) == 2, "jerrycan_cmd_delay_t should be 2 bytes");
+
+typedef struct __attribute__((packed)) {
+    uint8_t rsvd;
+} jerrycan_cmd_fixed_xyz;
+
+BUILD_ASSERT(sizeof(jerrycan_cmd_fixed_xyz) == 1, "jerrycan_cmd_fixed_xyz should be 1 bytes");
+
+typedef struct __attribute__((packed)) {
+    int32_t error;  // 0 is OK, negative is a system errno constant
+} jerrycan_rsp_ack_t;
+
+BUILD_ASSERT(sizeof(jerrycan_rsp_ack_t) == 4, "jerrycan_rsp_ack_t should be 4 bytes");
 
 typedef struct __attribute__((packed)) {
     jerrycan_cmd_type_t type;
     uint8_t dst_id;
     union {
-        jerrycan_cmd_estop_t estop;
-        jerrycan_cmd_heartbeat_t heartbeat;
-        jerrycan_cmd_status_t status;
-        jerrycan_cmd_stepper_move_t stepper_move;
-        jerrycan_cmd_servo_move_t servo_move;
-        jerrycan_cmd_stepper_home_t stepper_home;
-        jerrycan_cmd_cfg_t cfg_write;
-        jerrycan_cmd_cfg_t cfg_response;
-        jerrycan_cmd_cfg_t cfg_read;
-        jerrycan_cmd_stepper_status_t stepper_status;
-        jerrycan_cmd_servo_status_t servo_status;
-        jerrycan_cmd_pressure_read_t pressure_read;
-        jerrycan_cmd_temp_hum_read_t temp_hum_read;
-        jerrycan_cmd_gpio_read_t gpio_read;
-        jerrycan_cmd_gpio_write_t gpio_write;
-        jerrycan_cmd_tone_t tone;
-        jerrycan_cmd_analog_out_t analog_out;
-        jerrycan_cmd_load_cell_read_t load_cell_read;
-        jerrycan_cmd_door_closed_t doors;
-        jerrycan_cmd_audio_data_cmd_t audio_data_cmd;
-        jerrycan_cmd_audio_data_t audio_data;
-        jerrycan_cmd_rgb_led_t rgb_led;
-        jerrycan_cmd_load_cell_tare_t load_cell_tare;
-        jerrycan_cmd_pressure_sensor_tare_t pressure_sensor_tare;
-        jerrycan_cmd_bootloader_command_t bootloader_command;
-        jerrycan_cmd_bootloader_response_t bootloader_response;
+        struct {
+            union {
+                jerrycan_cmd_estop_t estop;
+                jerrycan_cmd_heartbeat_t heartbeat;
+                jerrycan_cmd_status_t status;
+                jerrycan_cmd_stepper_move_t stepper_move;
+                jerrycan_cmd_servo_move_t servo_move;
+                jerrycan_cmd_stepper_home_t stepper_home;
+                jerrycan_cmd_cfg_t cfg_write;
+                jerrycan_cmd_cfg_t cfg_response;
+                jerrycan_cmd_cfg_t cfg_read;
+                jerrycan_cmd_stepper_status_t stepper_status;
+                jerrycan_cmd_servo_status_t servo_status;
+                jerrycan_cmd_pressure_read_t pressure_read;
+                jerrycan_cmd_temp_hum_read_t temp_hum_read;
+                jerrycan_cmd_gpio_read_t gpio_read;
+                jerrycan_cmd_gpio_write_t gpio_write;
+                jerrycan_cmd_tone_t tone;
+                jerrycan_cmd_analog_out_t analog_out;
+                jerrycan_cmd_load_cell_read_t load_cell_read;
+                jerrycan_cmd_door_closed_t doors;
+                jerrycan_cmd_audio_data_cmd_t audio_data_cmd;
+                jerrycan_cmd_rgb_led_t rgb_led;
+                jerrycan_cmd_load_cell_tare_t load_cell_tare;
+                jerrycan_cmd_pressure_sensor_tare_t pressure_sensor_tare;
+                jerrycan_cmd_bootloader_command_t bootloader_command;
+                jerrycan_cmd_bootloader_response_t bootloader_response;
+                jerrycan_cmd_delay_t delay;
+                jerrycan_cmd_fixed_xyz fixed_xyz;
+                jerrycan_rsp_ack_t ack;
+            };
+            uint8_t uuid;
+        };
         jerrycan_cmd_bootloader_data_t bootloader_data;
-        uint8_t payload[JERRYCAN_MAX_PAYLOAD_SIZE];
+        jerrycan_cmd_audio_data_t audio_data;
+        uint8_t payload[JERRYCAN_ACTUAL_PAYLOAD_SIZE];
     };
 } jerrycan_msg_t;
 
-BUILD_ASSERT(sizeof(jerrycan_msg_t) == JERRYCAN_MAX_PAYLOAD_SIZE + sizeof(jerrycan_cmd_type_t) + sizeof(uint8_t),
+BUILD_ASSERT(sizeof(jerrycan_msg_t) == JERRYCAN_ACTUAL_PAYLOAD_SIZE + sizeof(jerrycan_cmd_type_t) + sizeof(uint8_t),
              "jerrycan_msg_t size should be max payload size + header fields size");
 
-typedef void (*jerrycan_rx_callback_fn_t)(jerrycan_msg_t* msg);
+#define COMMAND_NOT_COMPLETE INT32_MIN
+#define SEND_NO_ACKNOWLEDGEMENT INT32_MAX
+
+typedef int (*jerrycan_rx_callback_fn_t)(const jerrycan_msg_t* msg);
 
 typedef struct {
     jerrycan_rx_callback_fn_t func;

@@ -76,7 +76,7 @@ static void jerrycan_analog_out_tx() {
     }
 }
 
-static void jerrycan_analog_out_write_handler(jerrycan_msg_t *msg) {
+static int jerrycan_analog_out_write_handler(const jerrycan_msg_t *msg) {
     /* Pull parameters from jerrycan message */
     uint16_t instance = msg->analog_out.instance;
     uint16_t value_mv = msg->analog_out.value_mv;
@@ -90,7 +90,7 @@ static void jerrycan_analog_out_write_handler(jerrycan_msg_t *msg) {
 
     if (idx >= ANALOG_OUT_COUNT) {
         LOG_ERR("Failed to write analog output over CAN: Invalid instance - %d", instance);
-        return;
+        return -ENOENT;
     }
 
     /* Grab analog output instance */
@@ -101,6 +101,8 @@ static void jerrycan_analog_out_write_handler(jerrycan_msg_t *msg) {
     if (ret != ANALOG_OUT_NO_ERROR) {
         LOG_ERR("Failed to write analog output value over CAN: Error writing value - %s", analog_out_error_to_str[ret]);
     }
+
+    return 0;
 }
 
 static jerrycan_rx_callback_t analog_out_callback = {

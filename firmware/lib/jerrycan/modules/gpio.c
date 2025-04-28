@@ -87,10 +87,10 @@ static void jerrycan_generic_gpio_tx() {
     }
 }
 
-static void jerrycan_generic_gpio_write_handler(jerrycan_msg_t *msg) {
-    uint16_t instance = msg->gpio_write.instance;
-    uint16_t gpio_idx = msg->gpio_write.gpio_idx;
-    bool state = msg->gpio_write.state;
+static int jerrycan_generic_gpio_write_handler(const jerrycan_msg_t *msg) {
+    const uint16_t instance = msg->gpio_write.instance;
+    const uint16_t gpio_idx = msg->gpio_write.gpio_idx;
+    const bool state = msg->gpio_write.state;
 
     LOG_INF("Received GPIOWrite message: instance=%d, gpio_idx=%d, state=%d", instance, gpio_idx, state);
 
@@ -99,25 +99,28 @@ static void jerrycan_generic_gpio_write_handler(jerrycan_msg_t *msg) {
         idx++;
     }
 
+    int rc;
     if (idx >= GENERIC_GPIO_COUNT) {
         LOG_ERR("Failed to write GPIO over CAN: Invalid instance - %d", instance);
-        return;
+        rc = -ENOENT;
+    } else {
+        /* Grab generic gpio instance */
+        const struct device *generic_gpio = contexts[idx].generic_gpio;
+
+        /* Use readable pins so that index is offset by inputs */
+        const char *pin_name = ll_generic_gpio_lookup_readable_pin_name(generic_gpio, gpio_idx);
+        if (pin_name == NULL) {
+            LOG_ERR("Failed to write GPIO over CAN: Invalid gpio_idx: %d", gpio_idx);
+            rc = -ENOENT;
+        } else {
+            rc = ll_generic_gpio_write_pin_by_name(generic_gpio, pin_name, state);
+            if (rc != 0) {
+                LOG_ERR("Failed to write GPIO over CAN: Error writing pin '%s' - %d", pin_name, rc);
+            }
+        }
     }
 
-    /* Grab generic gpio instance */
-    const struct device *generic_gpio = contexts[idx].generic_gpio;
-
-    /* Use readable pins so that index is offset by inputs */
-    const char *pin_name = ll_generic_gpio_lookup_readable_pin_name(generic_gpio, gpio_idx);
-    if (pin_name == NULL) {
-        LOG_ERR("Failed to write GPIO over CAN: Invalid gpio_idx: %d", gpio_idx);
-        return;
-    }
-
-    int ret = ll_generic_gpio_write_pin_by_name(generic_gpio, pin_name, state);
-    if (ret != 0) {
-        LOG_ERR("Failed to write GPIO over CAN: Error writing pin '%s' - %d", pin_name, ret);
-    }
+    return rc;
 }
 
 static jerrycan_rx_callback_t gpio_callback = {
