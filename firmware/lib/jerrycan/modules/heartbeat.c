@@ -74,7 +74,9 @@ static int jerrycan_heartbeat_init() {
     LOG_INF("Heartbeat LED Enabled");
 
     // Register an handler for HEARTBEAT messages
-    return jerrycan_register_rx_callback(&heartbeat_callback);
+    jerrycan_register_rx_callback(&heartbeat_callback);
+
+    return 0;
 }
 
 SYS_INIT(jerrycan_heartbeat_init, APPLICATION, CONFIG_LIB_JERRYCAN_INIT_PRIORITY);

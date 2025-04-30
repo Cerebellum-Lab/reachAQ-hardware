@@ -18,7 +18,12 @@ typedef void* sys_snode_t;
 #define JERRYCAN_ACTUAL_PAYLOAD_SIZE (CAN_MAX_DLEN)
 #endif
 
-#define JERRYCAN_MAX_PAYLOAD_SIZE (JERRYCAN_ACTUAL_PAYLOAD_SIZE - sizeof(uint8_t))  // account for UUID
+typedef uint8_t uuid_t;
+
+#define JERRYCAN_MAX_PAYLOAD_SIZE (JERRYCAN_ACTUAL_PAYLOAD_SIZE - sizeof(uuid_t))  // account for UUID
+
+#define SIZE_CHECK(type, expected_size) \
+    BUILD_ASSERT(sizeof(type) == (expected_size), #type " should be " #expected_size " bytes")
 
 typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_ESTOP = 0x00,
@@ -60,13 +65,13 @@ typedef struct __attribute__((packed)) {
     uint8_t rsvd;
 } jerrycan_cmd_estop_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_estop_t) == 1, "jerrycan_cmd_estop_t should be 1 bytes");
+SIZE_CHECK(jerrycan_cmd_estop_t, 1);
 
 typedef struct __attribute__((packed)) {
     uint8_t rsvd;
 } jerrycan_cmd_heartbeat_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_heartbeat_t) == 1, "jerrycan_cmd_heartbeat_t should be 1 bytes");
+SIZE_CHECK(jerrycan_cmd_heartbeat_t, 1);
 
 typedef struct __attribute__((packed)) {
     struct {
@@ -86,7 +91,7 @@ typedef struct __attribute__((packed)) {
     uint8_t servo_status2;
 } jerrycan_cmd_status_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_status_t) == 8, "jerrycan_cmd_status_t should be 8 bytes");
+SIZE_CHECK(jerrycan_cmd_status_t, 8);
 
 typedef enum __attribute__((packed)) {
     JERRYCAN_MOVE_ABSOLUTE = 0,
@@ -105,14 +110,14 @@ typedef struct __attribute__((packed)) {
     float max_acceleration;
 } jerrycan_cmd_stepper_move_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_stepper_move_t) == 13, "jerrycan_cmd_stepper_move_t should be 13 bytes");
+SIZE_CHECK(jerrycan_cmd_stepper_move_t, 13);
 
 typedef struct __attribute__((packed)) {
     uint8_t motor_id : 7;
     uint8_t rsvd : 1;
 } jerrycan_cmd_stepper_home_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_stepper_home_t) == 1, "jerrycan_cmd_stepper_home_t should be 1 bytes");
+SIZE_CHECK(jerrycan_cmd_stepper_home_t, 1);
 
 // I think the payload for this message can be the same format as the stepper move message
 typedef jerrycan_cmd_stepper_move_t jerrycan_cmd_servo_move_t;
@@ -158,7 +163,7 @@ typedef struct __attribute__((packed)) {
     };
 } jerrycan_cmd_cfg_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_cfg_t) == 28, "jerrycan_cmd_cfg_t should be 28 bytes");
+SIZE_CHECK(jerrycan_cmd_cfg_t, 28);
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
@@ -166,13 +171,13 @@ typedef struct __attribute__((packed)) {
     uint32_t pressure_mv;
 } jerrycan_cmd_pressure_read_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_pressure_read_t) == 6, "jerrycan_cmd_pressure_read_t should be 6 bytes");
+SIZE_CHECK(jerrycan_cmd_pressure_read_t, 6);
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
 } jerrycan_cmd_pressure_sensor_tare_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_pressure_sensor_tare_t) == 1, "jerrycan_cmd_pressure_sensor_tare_t should be 1 bytes");
+SIZE_CHECK(jerrycan_cmd_pressure_sensor_tare_t, 1);
 
 /*
     Scale factor for temperature and humidity transmission
@@ -198,14 +203,14 @@ typedef struct __attribute__((packed)) {
     uint16_t humidity;
 } jerrycan_cmd_temp_hum_read_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_temp_hum_read_t) == 5, "jerrycan_cmd_temp_hum_read_t should be 5 bytes");
+SIZE_CHECK(jerrycan_cmd_temp_hum_read_t, 5);
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
     uint32_t state;
 } jerrycan_cmd_gpio_read_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_gpio_read_t) == 5, "jerrycan_cmd_gpio_read_t should be 5 bytes");
+SIZE_CHECK(jerrycan_cmd_gpio_read_t, 5);
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
@@ -214,7 +219,7 @@ typedef struct __attribute__((packed)) {
     uint8_t rsvd0 : 7;
 } jerrycan_cmd_gpio_write_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_gpio_write_t) == 4, "jerrycan_cmd_gpio_write_t should be 4 bytes");
+SIZE_CHECK(jerrycan_cmd_gpio_write_t, 4);
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
@@ -222,21 +227,21 @@ typedef struct __attribute__((packed)) {
     uint16_t duration_ms;
 } jerrycan_cmd_tone_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_tone_t) == 5, "jerrycan_cmd_tone_t should be 5 bytes");
+SIZE_CHECK(jerrycan_cmd_tone_t, 5);
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
     uint16_t value_mv;
 } jerrycan_cmd_analog_out_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_analog_out_t) == 3, "jerrycan_cmd_analog_out_t should be 3 bytes");
+SIZE_CHECK(jerrycan_cmd_analog_out_t, 3);
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
     float load_mv;
 } jerrycan_cmd_load_cell_read_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_load_cell_read_t) == 5, "jerrycan_cmd_load_cell_read_t should be 5 bytes");
+SIZE_CHECK(jerrycan_cmd_load_cell_read_t, 5);
 
 #define DOOR_SENSOR_COUNT 3
 
@@ -244,7 +249,7 @@ typedef struct __attribute__((packed)) {
     uint8_t opened : DOOR_SENSOR_COUNT;  // bit flags: opened(1), closed(0)
 } jerrycan_cmd_door_closed_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_door_closed_t) == 1, "jerrycan_cmd_door_closed_t should be 1 bytes");
+SIZE_CHECK(jerrycan_cmd_door_closed_t, 1);
 
 typedef struct __attribute__((packed)) {
     uint8_t red;    // (%)
@@ -252,28 +257,28 @@ typedef struct __attribute__((packed)) {
     uint8_t blue;   // (%)
 } jerrycan_cmd_rgb_led_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_rgb_led_t) == 3, "jerrycan_cmd_rgb_led_t should be 3 bytes");
+SIZE_CHECK(jerrycan_cmd_rgb_led_t, 3);
 
 typedef struct __attribute__((packed)) {
     uint32_t stream_id;
 } jerrycan_cmd_audio_data_cmd_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_audio_data_cmd_t) == 4, "jerrycan_cmd_audio_data_cmd_t should be 4 bytes");
+SIZE_CHECK(jerrycan_cmd_audio_data_cmd_t, 4);
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     union {
         uint8_t payload[JERRYCAN_ACTUAL_PAYLOAD_SIZE];
         float magnitudes[JERRYCAN_ACTUAL_PAYLOAD_SIZE / sizeof(float)];
     };
 } jerrycan_cmd_audio_data_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_audio_data_t) == 64, "jerrycan_cmd_audio_data_t should be 64 bytes");
+SIZE_CHECK(jerrycan_cmd_audio_data_t, 64);
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
 } jerrycan_cmd_load_cell_tare_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_load_cell_tare_t) == 1, "jerrycan_cmd_load_cell_tare_t should be 1 bytes");
+SIZE_CHECK(jerrycan_cmd_load_cell_tare_t, 1);
 
 typedef struct __attribute__((packed)) {
     uint8_t motor_id;
@@ -283,7 +288,7 @@ typedef struct __attribute__((packed)) {
     float position;
 } jerrycan_cmd_stepper_status_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_stepper_status_t) == 8, "jerrycan_cmd_stepper_status_t should be 8 bytes");
+SIZE_CHECK(jerrycan_cmd_stepper_status_t, 8);
 
 typedef struct __attribute__((packed)) {
     uint8_t motor_id;
@@ -291,7 +296,7 @@ typedef struct __attribute__((packed)) {
     float position;
 } jerrycan_cmd_servo_status_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_servo_status_t) == 6, "jerrycan_cmd_servo_status_t should be 6 bytes");
+SIZE_CHECK(jerrycan_cmd_servo_status_t, 6);
 
 typedef enum __attribute__((packed)) {
     JERRYCAN_BOOTLOADER_SUBCMD_VERSION,
@@ -316,7 +321,7 @@ typedef struct __attribute__((packed)) {
     uint8_t slot1_version_patch;
 } jerrycan_cmd_bootloader_version_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_bootloader_version_t) == 6, "jerrycan_cmd_bootloader_version_t should be 6 bytes");
+SIZE_CHECK(jerrycan_cmd_bootloader_version_t, 6);
 
 typedef struct __attribute__((packed)) {
     uint8_t active : 1;
@@ -324,7 +329,7 @@ typedef struct __attribute__((packed)) {
     uint32_t bytes_written;
 } jerrycan_cmd_bootloader_status_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_bootloader_status_t) == 5, "jerrycan_cmd_bootloader_status_t should be 5 bytes");
+SIZE_CHECK(jerrycan_cmd_bootloader_status_t, 5);
 
 typedef struct __attribute__((packed)) {
     jerrycan_bootloader_subcmd_t type;
@@ -334,31 +339,31 @@ typedef struct __attribute__((packed)) {
     };
 } jerrycan_cmd_bootloader_response_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_bootloader_response_t) == 7, "jerrycan_cmd_bootloader_response_t should be 7 bytes");
+SIZE_CHECK(jerrycan_cmd_bootloader_response_t, 7);
 
 typedef struct {
     uint8_t data[JERRYCAN_ACTUAL_PAYLOAD_SIZE];
 } jerrycan_cmd_bootloader_data_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_bootloader_data_t) == 64, "jerrycan_bootloader_data_t should be 64 bytes");
+SIZE_CHECK(jerrycan_cmd_bootloader_data_t, 64);
 
 typedef struct __attribute__((packed)) {
     uint16_t delay;
 } jerrycan_cmd_delay_t;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_delay_t) == 2, "jerrycan_cmd_delay_t should be 2 bytes");
+SIZE_CHECK(jerrycan_cmd_delay_t, 2);
 
 typedef struct __attribute__((packed)) {
     uint8_t rsvd;
 } jerrycan_cmd_fixed_xyz;
 
-BUILD_ASSERT(sizeof(jerrycan_cmd_fixed_xyz) == 1, "jerrycan_cmd_fixed_xyz should be 1 bytes");
+SIZE_CHECK(jerrycan_cmd_fixed_xyz, 1);
 
 typedef struct __attribute__((packed)) {
     int32_t error;  // 0 is OK, negative is a system errno constant
 } jerrycan_rsp_ack_t;
 
-BUILD_ASSERT(sizeof(jerrycan_rsp_ack_t) == 4, "jerrycan_rsp_ack_t should be 4 bytes");
+SIZE_CHECK(jerrycan_rsp_ack_t, 4);
 
 typedef struct __attribute__((packed)) {
     jerrycan_cmd_type_t type;
@@ -395,7 +400,7 @@ typedef struct __attribute__((packed)) {
                 jerrycan_cmd_fixed_xyz fixed_xyz;
                 jerrycan_rsp_ack_t ack;
             };
-            uint8_t uuid;
+            uuid_t uuid;
         };
         jerrycan_cmd_bootloader_data_t bootloader_data;
         jerrycan_cmd_audio_data_t audio_data;

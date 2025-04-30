@@ -12,9 +12,9 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def("Open", &JerryCAN::Open)
         .def("Close", &JerryCAN::Close)
         .def("SendMessage", &JerryCAN::SendMessage, py::arg("msg"), py::arg("dst_id"))
-        .def("ReceiveMessage", [](JerryCAN &j) {
+        .def("ReceiveMessage", [](const JerryCAN &j) {
             jerrycan_msg_t msg;
-            auto ret = j.ReceiveMessage(msg);
+            const auto ret = j.ReceiveMessage(msg);
             return ret < 0 ? std::nullopt : std::make_optional(msg);
         })
         .def("Heartbeat", &JerryCAN::Heartbeat)
@@ -79,37 +79,37 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def(py::init<>())
         .def_property("estop_active",
             [](const jerrycan_cmd_status_t &a) { return a.estop_active; },
-            [](jerrycan_cmd_status_t &a, uint8_t v) { a.estop_active = v; })
+            [](jerrycan_cmd_status_t &a, const uint8_t v) { a.estop_active = v; })
         .def_property("limit_switch0",
             [](const jerrycan_cmd_status_t &a) { return a.limit_switch0; },
-            [](jerrycan_cmd_status_t &a, uint8_t v) { a.limit_switch0 = v; })
+            [](jerrycan_cmd_status_t &a, const uint8_t v) { a.limit_switch0 = v; })
         .def_property("limit_switch1",
             [](const jerrycan_cmd_status_t &a) { return a.limit_switch1; },
-            [](jerrycan_cmd_status_t &a, uint8_t v) { a.limit_switch1 = v; })
+            [](jerrycan_cmd_status_t &a, const uint8_t v) { a.limit_switch1 = v; })
         .def_property("limit_switch2",
             [](const jerrycan_cmd_status_t &a) { return a.limit_switch2; },
-            [](jerrycan_cmd_status_t &a, uint8_t v) { a.limit_switch2 = v; })
+            [](jerrycan_cmd_status_t &a, const uint8_t v) { a.limit_switch2 = v; })
         .def_property("button0",
             [](const jerrycan_cmd_status_t &a) { return a.button0; },
-            [](jerrycan_cmd_status_t &a, uint8_t v) { a.button0 = v; })
+            [](jerrycan_cmd_status_t &a, const uint8_t v) { a.button0 = v; })
         .def_property("stepper_status0",
             [](const jerrycan_cmd_status_t &a) { return a.stepper_status0; },
-            [](jerrycan_cmd_status_t &a, uint8_t v) { a.stepper_status0 = v; })
+            [](jerrycan_cmd_status_t &a, const uint8_t v) { a.stepper_status0 = v; })
         .def_property("stepper_status1",
             [](const jerrycan_cmd_status_t &a) { return a.stepper_status1; },
-            [](jerrycan_cmd_status_t &a, uint8_t v) { a.stepper_status1 = v; })
+            [](jerrycan_cmd_status_t &a, const uint8_t v) { a.stepper_status1 = v; })
         .def_property("stepper_status2",
             [](const jerrycan_cmd_status_t &a) { return a.stepper_status2; },
-            [](jerrycan_cmd_status_t &a, uint8_t v) { a.stepper_status2 = v; })
+            [](jerrycan_cmd_status_t &a, const uint8_t v) { a.stepper_status2 = v; })
         .def_property("servo_status0",
             [](const jerrycan_cmd_status_t &a) { return a.servo_status0; },
-            [](jerrycan_cmd_status_t &a, uint8_t v) { a.servo_status0 = v; })
+            [](jerrycan_cmd_status_t &a, const uint8_t v) { a.servo_status0 = v; })
         .def_property("servo_status1",
             [](const jerrycan_cmd_status_t &a) { return a.servo_status1; },
-            [](jerrycan_cmd_status_t &a, uint8_t v) { a.servo_status1 = v; })
+            [](jerrycan_cmd_status_t &a, const uint8_t v) { a.servo_status1 = v; })
         .def_property("servo_status2",
             [](const jerrycan_cmd_status_t &a) { return a.servo_status2; },
-            [](jerrycan_cmd_status_t &a, uint8_t v) { a.servo_status2 = v; })
+            [](jerrycan_cmd_status_t &a, const uint8_t v) { a.servo_status2 = v; })
     ;
 
     py::class_<jerrycan_cmd_cfg_t> cmd_cfg(m, "JerryCANCfgMsg");
@@ -130,10 +130,10 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_property("motor_id",
             // This is a workaround for setting bitfields
             [](const jerrycan_servo_cfg_t &a) { return a.motor_id; },
-            [](jerrycan_servo_cfg_t &a, uint8_t v) { a.motor_id = v; })
+            [](jerrycan_servo_cfg_t &a, const uint8_t v) { a.motor_id = v; })
         .def_property("error",
             [](const jerrycan_servo_cfg_t &a) { return a.error; },
-            [](jerrycan_servo_cfg_t &a, uint8_t v) { a.error = v; })
+            [](jerrycan_servo_cfg_t &a, const uint8_t v) { a.error = v; })
         .def_readwrite("min_position", &jerrycan_servo_cfg_t::min_position)
         .def_readwrite("max_position", &jerrycan_servo_cfg_t::max_position)
         .def_readwrite("min_pwm_duration_us", &jerrycan_servo_cfg_t::min_pwm_duration_us)
@@ -147,7 +147,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def(py::init<>())
         .def_property("motor_id",
             [](const jerrycan_stepper_cfg_t &a) { return a.motor_id; },
-            [](jerrycan_stepper_cfg_t &a, uint8_t v) { a.motor_id = v; })
+            [](jerrycan_stepper_cfg_t &a, const uint8_t v) { a.motor_id = v; })
         .def_property("flip_limit_orientation",
             [](const jerrycan_stepper_cfg_t &a) { return a.flip_limit_orientation; },
             [](jerrycan_stepper_cfg_t &a, const uint8_t flip_limit_orientation) { a.flip_limit_orientation = flip_limit_orientation; })
@@ -161,10 +161,10 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def(py::init<>())
         .def_property("instance",
             [](const jerrycan_cmd_pressure_read_t &a) { return a.instance; },
-            [](jerrycan_cmd_pressure_read_t &a, uint8_t v) { a.instance = v; })
+            [](jerrycan_cmd_pressure_read_t &a, const uint8_t v) { a.instance = v; })
         .def_property("error",
             [](const jerrycan_cmd_pressure_read_t &a) { return a.error; },
-            [](jerrycan_cmd_pressure_read_t &a, uint8_t v) { a.error = v; })
+            [](jerrycan_cmd_pressure_read_t &a, const uint8_t v) { a.error = v; })
         .def_readwrite("pressure_mv", &jerrycan_cmd_pressure_read_t::pressure_mv)
     ;
 
@@ -172,7 +172,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def(py::init<>())
         .def_property("instance",
             [](const jerrycan_cmd_temp_hum_read_t &a) { return a.instance; },
-            [](jerrycan_cmd_temp_hum_read_t &a, uint8_t v) { a.instance = v; })
+            [](jerrycan_cmd_temp_hum_read_t &a, const uint8_t v) { a.instance = v; })
         .def_readwrite("temperature", &jerrycan_cmd_temp_hum_read_t::temperature)
         .def_readwrite("humidity", &jerrycan_cmd_temp_hum_read_t::humidity)
     ;
@@ -181,23 +181,23 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def(py::init<>())
         .def_property("instance",
             [](const jerrycan_cmd_gpio_read_t &a) { return a.instance; },
-            [](jerrycan_cmd_gpio_read_t &a, uint8_t v) { a.instance = v; })
+            [](jerrycan_cmd_gpio_read_t &a, const uint8_t v) { a.instance = v; })
         .def_property("state",
             [](const jerrycan_cmd_gpio_read_t &a) { return a.state; },
-            [](jerrycan_cmd_gpio_read_t &a, uint8_t v) { a.state = v; })
+            [](jerrycan_cmd_gpio_read_t &a, const uint8_t v) { a.state = v; })
     ;
 
     py::class_<jerrycan_cmd_gpio_write_t>(m, "GPIOWrite")
         .def(py::init<>())
         .def_property("instance",
             [](const jerrycan_cmd_gpio_write_t &a) { return a.instance; },
-            [](jerrycan_cmd_gpio_write_t &a, uint8_t v) { a.instance = v; })
+            [](jerrycan_cmd_gpio_write_t &a, const uint8_t v) { a.instance = v; })
         .def_property("gpio_idx",
             [](const jerrycan_cmd_gpio_write_t &a) { return a.gpio_idx; },
-            [](jerrycan_cmd_gpio_write_t &a, uint8_t v) { a.gpio_idx = v; })
+            [](jerrycan_cmd_gpio_write_t &a, const uint8_t v) { a.gpio_idx = v; })
         .def_property("state",
             [](const jerrycan_cmd_gpio_write_t &a) { return a.state; },
-            [](jerrycan_cmd_gpio_write_t &a, uint8_t v) { a.state = v; })
+            [](jerrycan_cmd_gpio_write_t &a, const uint8_t v) { a.state = v; })
     ;
 
     py::class_<jerrycan_cmd_tone_t>(m, "Tone")
@@ -223,7 +223,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def(py::init<>())
         .def_property("motor_id",
             [](const jerrycan_cmd_stepper_home_t &a) { return a.motor_id; },
-            [](jerrycan_cmd_stepper_home_t &a, uint8_t v) { a.motor_id = v; })
+            [](jerrycan_cmd_stepper_home_t &a, const uint8_t v) { a.motor_id = v; })
     ;
 
     py::class_<jerrycan_cmd_stepper_status_t>(m, "StepperStatus")
@@ -269,7 +269,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def(py::init<>())
         .def_property("opened",
             [](const jerrycan_cmd_door_closed_t &a) { return a.opened; },
-            [](jerrycan_cmd_door_closed_t &a, uint8_t v) { a.opened = v; })
+            [](jerrycan_cmd_door_closed_t &a, const uint8_t v) { a.opened = v; })
     ;
 
     py::class_<jerrycan_cmd_audio_data_cmd_t>(m, "AudioDataCmd")
@@ -325,7 +325,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def(py::init<>())
         .def_property("data",
             [](const jerrycan_cmd_bootloader_data_t &a) { return a.data; },
-            [](jerrycan_cmd_bootloader_data_t &a, uint8_t v[sizeof(jerrycan_cmd_bootloader_data_t)]) { std::memcpy(a.data, v, sizeof(jerrycan_cmd_bootloader_data_t)); })
+            [](jerrycan_cmd_bootloader_data_t &a, const uint8_t v[sizeof(jerrycan_cmd_bootloader_data_t)]) { std::memcpy(a.data, v, sizeof(jerrycan_cmd_bootloader_data_t)); })
     ;
 
     py::class_<jerrycan_cmd_fixed_xyz>(m, "FixedXyzCommand")

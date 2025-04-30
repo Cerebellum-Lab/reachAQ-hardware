@@ -106,15 +106,12 @@ static jerrycan_rx_callback_t load_cell_tare_callback = {
 K_TIMER_DEFINE(jerrycan_load_cell_tx_timer, jerrycan_load_cell_tx, NULL);
 
 static int jerrycan_load_cell_init() {
-    int ret = jerrycan_register_rx_callback(&load_cell_tare_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register load cell tare callback: %d", ret);
-    }
+    jerrycan_register_rx_callback(&load_cell_tare_callback);
 
     /* Start timer to send the status messages periodically */
     k_timer_start(&jerrycan_load_cell_tx_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_LOAD_CELL_TX_PERIOD_MS));
 
-    return ret;
+    return 0;
 }
 
 SYS_INIT(jerrycan_load_cell_init, APPLICATION, CONFIG_LIB_JERRYCAN_INIT_PRIORITY);

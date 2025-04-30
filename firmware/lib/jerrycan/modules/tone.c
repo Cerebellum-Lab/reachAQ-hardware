@@ -136,11 +136,7 @@ static jerrycan_rx_callback_t tone_callback = {
 K_TIMER_DEFINE(jerrycan_tone_generator_timer, jerrycan_tone_generator_bulk_tx, NULL);
 
 static int jerrycan_tone_init() {
-    int ret;
-    ret = jerrycan_register_rx_callback(&tone_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register tone generator callback: %d", ret);
-    }
+    jerrycan_register_rx_callback(&tone_callback);
 
     /* Start timer to send the status messages periodically */
     k_timer_start(&jerrycan_tone_generator_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_TONE_TX_PERIOD_MS));

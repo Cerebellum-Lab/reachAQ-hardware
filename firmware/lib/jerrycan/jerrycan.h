@@ -9,7 +9,7 @@
 int jerrycan_run(k_timeout_t timeout);
 
 // Register a callback to be called when a message of the specified type is received
-int jerrycan_register_rx_callback(jerrycan_rx_callback_t *callback);
+void jerrycan_register_rx_callback(jerrycan_rx_callback_t *callback);
 
 // Send a CAN message
 int jerrycan_tx(jerrycan_msg_t *msg, k_timeout_t timeout);

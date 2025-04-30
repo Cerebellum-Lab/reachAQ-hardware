@@ -368,30 +368,11 @@ static void jerrycan_bulk_stepper_status_tx() {
 K_TIMER_DEFINE(jerrycan_stepper_status_tx_timer, jerrycan_bulk_stepper_status_tx, NULL);
 
 static int jerrycan_stepper_init() {
-    int ret = jerrycan_register_rx_callback(&stepper_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register stepper callback: %d", ret);
-    }
-
-    ret = jerrycan_register_rx_callback(&stepper_cfg_write_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register stepper config callback: %d", ret);
-    }
-
-    ret = jerrycan_register_rx_callback(&stepper_cfg_read_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register stepper config read callback: %d", ret);
-    }
-
-    ret = jerrycan_register_rx_callback(&stepper_home_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register stepper home callback: %d", ret);
-    }
-
-    ret = jerrycan_register_rx_callback(&stepper_fixed_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register stepper fixed callback: %d", ret);
-    }
+    jerrycan_register_rx_callback(&stepper_callback);
+    jerrycan_register_rx_callback(&stepper_cfg_write_callback);
+    jerrycan_register_rx_callback(&stepper_cfg_read_callback);
+    jerrycan_register_rx_callback(&stepper_home_callback);
+    jerrycan_register_rx_callback(&stepper_fixed_callback);
 
     /* Start timer to send the stepper status messages periodically */
     k_timer_start(&jerrycan_stepper_status_tx_timer, K_MSEC(100),

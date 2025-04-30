@@ -30,8 +30,8 @@ int JerryCAN::Open() {
     tv.tv_usec = 1000;  // 1ms
     setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
-    int canfd_enabled = 1;
-    setsockopt(s, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &canfd_enabled, sizeof(canfd_enabled));
+    constexpr auto enable = 1U;
+    setsockopt(s, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &enable, sizeof(enable));
 
     // Find the CAN interface index
     ifreq ifr{};
@@ -43,8 +43,7 @@ int JerryCAN::Open() {
     addr.can_family = AF_CAN;
     addr.can_ifindex = ifr.ifr_ifindex;
 
-    int ret = bind(s, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr));
-    if (ret < 0) {
+    if (bind(s, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) < 0) {
         spdlog::error("Failed to bind CAN socket: {}", errno);
         return -EIO;
     }
@@ -56,10 +55,11 @@ int JerryCAN::Open() {
     return 0;
 }
 
+/* -------------------------------------------------------------------------- */
+
 int JerryCAN::Close() {
     // Close the CAN socket
-    int ret = close(_can_socket_handle);
-    if (ret < 0) {
+    if (close(_can_socket_handle) < 0) {
         spdlog::error("Failed to close CAN socket: {}", errno);
         return -errno;
     }
@@ -70,8 +70,10 @@ int JerryCAN::Close() {
     return 0;
 }
 
+/* -------------------------------------------------------------------------- */
+
 // Return the payload size for a given message type
-static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
+static uint8_t jerrycan_msg_get_payload_size(const jerrycan_cmd_type_t msg_type) {
     static const std::map<jerrycan_cmd_type_t, ssize_t> jerrycan_size_map = {
         {JERRYCAN_CMD_ESTOP, sizeof(jerrycan_cmd_estop_t)},
         {JERRYCAN_CMD_HEARTBEAT, sizeof(jerrycan_cmd_heartbeat_t)},
@@ -108,36 +110,14 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
 
     try {
         return jerrycan_size_map.at(msg_type);
-    } catch (std::out_of_range oor) {
+    } catch (std::out_of_range &) {
         return 0;
     }
 }
 
-// Convert from number of bytes to Data Length Code (DLC)
-static inline uint8_t can_bytes_to_dlc(uint8_t num_bytes) {
-    return num_bytes <= 8    ? num_bytes
-           : num_bytes <= 12 ? 9
-           : num_bytes <= 16 ? 10
-           : num_bytes <= 20 ? 11
-           : num_bytes <= 24 ? 12
-           : num_bytes <= 32 ? 13
-           : num_bytes <= 48 ? 14
-                             : 15;
-}
+/* -------------------------------------------------------------------------- */
 
-// Convert from Data Length Code (DLC) to the number of data bytes
-static inline uint8_t can_dlc_to_bytes(uint8_t dlc) {
-    static const uint8_t dlc_table[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64};
-    static constexpr uint8_t dlc_table_len = std::size(dlc_table) - 1;
-
-    if (dlc < dlc_table_len) {
-        return dlc_table[dlc];
-    } else {
-        return dlc_table[dlc_table_len];
-    }
-}
-
-int JerryCAN::SendMessage(const jerrycan_msg_t &msg, uint16_t dst_id) const {
+int JerryCAN::SendMessage(const jerrycan_msg_t &msg, const uint16_t dst_id) const {
     // Send the message
     canfd_frame frame = {0};
     uint8_t payload_size = jerrycan_msg_get_payload_size(msg.type);
@@ -156,8 +136,7 @@ int JerryCAN::SendMessage(const jerrycan_msg_t &msg, uint16_t dst_id) const {
     // const uint8_t dlc_bytes = can_dlc_to_bytes(can_bytes_to_dlc(payload_size));
     // memset(&frame.data[payload_size], 0, dlc_bytes - payload_size);
 
-    auto ret = write(_can_socket_handle, &frame, sizeof(frame));
-    if (ret < 0) {
+    if (write(_can_socket_handle, &frame, sizeof(frame)) < 0) {
         spdlog::error("Failed to send CAN message: {}", errno);
         return -errno;
     }
@@ -165,11 +144,12 @@ int JerryCAN::SendMessage(const jerrycan_msg_t &msg, uint16_t dst_id) const {
     return 0;
 }
 
+/* -------------------------------------------------------------------------- */
+
 int JerryCAN::ReceiveMessage(jerrycan_msg_t &msg) const {
     // Receive a message
-    struct canfd_frame frame = {0};
-    auto ret = read(_can_socket_handle, &frame, sizeof(frame));
-    if (ret <= 0) {
+    canfd_frame frame = {0};
+    if (read(_can_socket_handle, &frame, sizeof(frame)) <= 0) {
         if (errno != EAGAIN) {
             spdlog::error("Failed to receive CAN message: {}", errno);
         }
@@ -178,7 +158,7 @@ int JerryCAN::ReceiveMessage(jerrycan_msg_t &msg) const {
 
     msg.type = static_cast<jerrycan_cmd_type_t>((frame.can_id >> 5) & 0x3F);
     msg.dst_id = frame.can_id & 0x1F;
-    uint8_t msg_len = jerrycan_msg_get_payload_size(msg.type);
+    const uint8_t msg_len = jerrycan_msg_get_payload_size(msg.type);
     memcpy(msg.payload, frame.data, msg_len);
     if (msg_len < sizeof(msg.payload)) {
         memcpy(&msg.uuid, frame.data + msg_len, sizeof(msg.uuid));
@@ -187,9 +167,11 @@ int JerryCAN::ReceiveMessage(jerrycan_msg_t &msg) const {
     return 0;
 }
 
+/* -------------------------------------------------------------------------- */
+
 int JerryCAN::Heartbeat() const {
     // Send a heartbeat message
-    const jerrycan_msg_t msg = {
+    constexpr jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_HEARTBEAT,
         .heartbeat =
             {
@@ -199,6 +181,8 @@ int JerryCAN::Heartbeat() const {
 
     return SendMessage(msg, 0x1F);
 }
+
+/* -------------------------------------------------------------------------- */
 
 int JerryCAN::EStop(const bool enable) const {
     // Send an emergency stop message
@@ -215,8 +199,10 @@ int JerryCAN::EStop(const bool enable) const {
     return SendMessage(msg, 0x1F);
 }
 
+/* -------------------------------------------------------------------------- */
+
 int JerryCAN::StepperMove(uint8_t dst_id, uint8_t motor_id, float position, float max_velocity, float max_acceleration,
-                          abs_or_rel_t abs_or_rel, bool save, uint8_t uuid) const {
+                          abs_or_rel_t abs_or_rel, bool save, uuid_t uuid) const {
     // Send a stepper move message
     jerrycan_msg_t msg;
     msg.type = JERRYCAN_CMD_STEPPER_MOVE;
@@ -233,8 +219,10 @@ int JerryCAN::StepperMove(uint8_t dst_id, uint8_t motor_id, float position, floa
     return SendMessage(msg, dst_id);
 }
 
+/* -------------------------------------------------------------------------- */
+
 int JerryCAN::ServoMove(uint8_t dst_id, uint8_t motor_id, float position, float max_velocity, float max_acceleration,
-                        abs_or_rel_t abs_or_rel, uint8_t uuid) const {
+                        abs_or_rel_t abs_or_rel, uuid_t uuid) const {
     // Send a servo move message
     jerrycan_msg_t msg;
     msg.type = JERRYCAN_CMD_SERVO_MOVE;
@@ -250,7 +238,9 @@ int JerryCAN::ServoMove(uint8_t dst_id, uint8_t motor_id, float position, float 
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::StepperHome(const uint8_t dst_id, const uint8_t motor_id, const uint8_t uuid) const {
+/* -------------------------------------------------------------------------- */
+
+int JerryCAN::StepperHome(const uint8_t dst_id, const uint8_t motor_id, const uuid_t uuid) const {
     // Send a stepper home message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_STEPPER_HOME,
@@ -265,7 +255,9 @@ int JerryCAN::StepperHome(const uint8_t dst_id, const uint8_t motor_id, const ui
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::CfgWrite(uint8_t dst_id, const jerrycan_cmd_cfg_t &cfg, uint8_t uuid) const {
+/* -------------------------------------------------------------------------- */
+
+int JerryCAN::CfgWrite(uint8_t dst_id, const jerrycan_cmd_cfg_t &cfg, uuid_t uuid) const {
     // Send a Configuration Write Message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_CFG_WRITE,
@@ -276,6 +268,8 @@ int JerryCAN::CfgWrite(uint8_t dst_id, const jerrycan_cmd_cfg_t &cfg, uint8_t uu
 
     return SendMessage(msg, dst_id);
 }
+
+/* -------------------------------------------------------------------------- */
 
 int JerryCAN::CfgRead(uint8_t dst_id, const jerrycan_cmd_cfg_t &cfg) const {
     // Send a Configuration Read Message
@@ -289,9 +283,12 @@ int JerryCAN::CfgRead(uint8_t dst_id, const jerrycan_cmd_cfg_t &cfg) const {
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t microsteps, float steps_per_revolution,
-                              float motor_max_velocity, float motor_max_acceleration, bool flip_limit_orientation,
-                              uint8_t uuid) const {
+/* -------------------------------------------------------------------------- */
+
+int JerryCAN::StepperCfgWrite(const uint8_t dst_id, const uint8_t motor_id, const uint16_t microsteps,
+                              const float steps_per_revolution, const float motor_max_velocity,
+                              const float motor_max_acceleration, const bool flip_limit_orientation,
+                              const uuid_t uuid) const {
     jerrycan_cmd_cfg_t cfg_write;
     cfg_write.type = JERRYCAN_CFG_STEPPER;
 
@@ -305,25 +302,30 @@ int JerryCAN::StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t microst
     return CfgWrite(dst_id, cfg_write, uuid);
 }
 
-int JerryCAN::ServoCfgWrite(uint8_t dst_id, uint8_t motor_id, float min_position, float max_position,
-                            float min_pwm_duration_us, float max_pwm_duration_us, float motor_max_velocity,
-                            float motor_max_acceleration, uint8_t uuid) const {
-    jerrycan_cmd_cfg_t cfg_write = {.type = JERRYCAN_CFG_SERVO,
-                                    .servo = {
-                                        .motor_id = motor_id,
-                                        .min_position = min_position,
-                                        .max_position = max_position,
-                                        .min_pwm_duration_us = min_pwm_duration_us,
-                                        .max_pwm_duration_us = max_pwm_duration_us,
-                                        .motor_max_velocity = motor_max_velocity,
-                                        .motor_max_acceleration = motor_max_acceleration,
-                                    }};
+/* -------------------------------------------------------------------------- */
+
+int JerryCAN::ServoCfgWrite(const uint8_t dst_id, const uint8_t motor_id, const float min_position,
+                            const float max_position, const float min_pwm_duration_us, const float max_pwm_duration_us,
+                            const float motor_max_velocity, const float motor_max_acceleration,
+                            const uuid_t uuid) const {
+    const jerrycan_cmd_cfg_t cfg_write = {.type = JERRYCAN_CFG_SERVO,
+                                          .servo = {
+                                              .motor_id = motor_id,
+                                              .min_position = min_position,
+                                              .max_position = max_position,
+                                              .min_pwm_duration_us = min_pwm_duration_us,
+                                              .max_pwm_duration_us = max_pwm_duration_us,
+                                              .motor_max_velocity = motor_max_velocity,
+                                              .motor_max_acceleration = motor_max_acceleration,
+                                          }};
 
     return CfgWrite(dst_id, cfg_write, uuid);
 }
 
-int JerryCAN::StepperCfgRead(uint8_t dst_id, uint8_t motor_id) const {
-    jerrycan_cmd_cfg_t cfg_read = {
+/* -------------------------------------------------------------------------- */
+
+int JerryCAN::StepperCfgRead(const uint8_t dst_id, const uint8_t motor_id) const {
+    const jerrycan_cmd_cfg_t cfg_read = {
         .type = JERRYCAN_CFG_STEPPER,
         .stepper =
             {
@@ -334,8 +336,10 @@ int JerryCAN::StepperCfgRead(uint8_t dst_id, uint8_t motor_id) const {
     return CfgRead(dst_id, cfg_read);
 }
 
-int JerryCAN::ServoCfgRead(uint8_t dst_id, uint8_t motor_id) const {
-    jerrycan_cmd_cfg_t cfg_read = {
+/* -------------------------------------------------------------------------- */
+
+int JerryCAN::ServoCfgRead(const uint8_t dst_id, const uint8_t motor_id) const {
+    const jerrycan_cmd_cfg_t cfg_read = {
         .type = JERRYCAN_CFG_SERVO,
         .servo =
             {
@@ -346,7 +350,9 @@ int JerryCAN::ServoCfgRead(uint8_t dst_id, uint8_t motor_id) const {
     return CfgRead(dst_id, cfg_read);
 }
 
-int JerryCAN::GPIOWrite(uint8_t dst_id, uint8_t instance, uint16_t gpio_idx, bool state, uint8_t uuid) const {
+/* -------------------------------------------------------------------------- */
+
+int JerryCAN::GPIOWrite(uint8_t dst_id, uint8_t instance, uint16_t gpio_idx, bool state, uuid_t uuid) const {
     // Send a GPIO Write Message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_GPIO_WRITE,
@@ -363,7 +369,9 @@ int JerryCAN::GPIOWrite(uint8_t dst_id, uint8_t instance, uint16_t gpio_idx, boo
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::ToneWrite(uint8_t dst_id, uint8_t instance, uint16_t frequency, uint16_t duration, uint8_t uuid) const {
+/* -------------------------------------------------------------------------- */
+
+int JerryCAN::ToneWrite(uint8_t dst_id, uint8_t instance, uint16_t frequency, uint16_t duration, uuid_t uuid) const {
     // Send a GPIO Write Message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_TONE,
@@ -380,8 +388,10 @@ int JerryCAN::ToneWrite(uint8_t dst_id, uint8_t instance, uint16_t frequency, ui
     return SendMessage(msg, dst_id);
 }
 
+/* -------------------------------------------------------------------------- */
+
 int JerryCAN::AnalogOutWrite(const uint8_t dst_id, const uint8_t instance, const uint16_t value_mv,
-                             const uint8_t uuid) const {
+                             const uuid_t uuid) const {
     // Send an Analog Out Message
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_ANALOG_OUT,
@@ -397,7 +407,9 @@ int JerryCAN::AnalogOutWrite(const uint8_t dst_id, const uint8_t instance, const
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::LoadCellTare(uint8_t dst_id, uint8_t instance, uint8_t uuid) const {
+/* -------------------------------------------------------------------------- */
+
+int JerryCAN::LoadCellTare(uint8_t dst_id, uint8_t instance, uuid_t uuid) const {
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_LOAD_CELL_TARE,
         .load_cell_tare =
@@ -411,7 +423,9 @@ int JerryCAN::LoadCellTare(uint8_t dst_id, uint8_t instance, uint8_t uuid) const
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::PressureSensorTare(uint8_t dst_id, uint8_t instance, uint8_t uuid) const {
+/* -------------------------------------------------------------------------- */
+
+int JerryCAN::PressureSensorTare(uint8_t dst_id, uint8_t instance, uuid_t uuid) const {
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_PRESSURE_SENSOR_TARE,
         .pressure_sensor_tare =
@@ -425,7 +439,9 @@ int JerryCAN::PressureSensorTare(uint8_t dst_id, uint8_t instance, uint8_t uuid)
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::RGBLEDWrite(uint8_t dst_id, uint8_t red, uint8_t green, uint8_t blue, uint8_t uuid) const {
+/* -------------------------------------------------------------------------- */
+
+int JerryCAN::RGBLEDWrite(uint8_t dst_id, uint8_t red, uint8_t green, uint8_t blue, uuid_t uuid) const {
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_RGB_LED,
         .rgb_led =
@@ -441,6 +457,8 @@ int JerryCAN::RGBLEDWrite(uint8_t dst_id, uint8_t red, uint8_t green, uint8_t bl
     return SendMessage(msg, dst_id);
 }
 
+/* -------------------------------------------------------------------------- */
+
 int JerryCAN::BootloaderCommand(uint8_t dst_id, jerrycan_bootloader_subcmd_t subcmd) const {
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_BOOTLOADER_COMMAND,
@@ -455,6 +473,8 @@ int JerryCAN::BootloaderCommand(uint8_t dst_id, jerrycan_bootloader_subcmd_t sub
     return SendMessage(msg, dst_id);
 }
 
+/* -------------------------------------------------------------------------- */
+
 int JerryCAN::BootloaderData(uint8_t dst_id, jerrycan_cmd_bootloader_data_t &data) const {
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_BOOTLOADER_DATA,
@@ -466,7 +486,9 @@ int JerryCAN::BootloaderData(uint8_t dst_id, jerrycan_cmd_bootloader_data_t &dat
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::Delay(const uint8_t dst_id, const uint16_t delay, const uint8_t uuid) const {
+/* -------------------------------------------------------------------------- */
+
+int JerryCAN::Delay(const uint8_t dst_id, const uint16_t delay, const uuid_t uuid) const {
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_DELAY,
         .delay =
@@ -480,7 +502,9 @@ int JerryCAN::Delay(const uint8_t dst_id, const uint16_t delay, const uint8_t uu
     return SendMessage(msg, dst_id);
 }
 
-int JerryCAN::SendToFixedXYZ(const uint8_t dst_id, const uint8_t uuid) const {
+/* -------------------------------------------------------------------------- */
+
+int JerryCAN::SendToFixedXYZ(const uint8_t dst_id, const uuid_t uuid) const {
     const jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_FIXED_XYZ,
         .uuid = uuid,

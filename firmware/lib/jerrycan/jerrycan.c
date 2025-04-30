@@ -136,9 +136,6 @@ int jerrycan_run(k_timeout_t timeout) {
             // Copy the payload into the CAN frame
             memcpy(frame.data, msg.payload, payload_size);
             if (payload_size < sizeof(msg.payload)) {
-                if (msg.type == JERRYCAN_RSP_ACK) {
-                    printf("ACK UUID=%d\n", +msg.uuid);
-                }
                 memcpy(frame.data + payload_size, &msg.uuid, sizeof(msg.uuid));
                 payload_size += sizeof(msg.uuid);
             }
@@ -200,9 +197,8 @@ void jerrycan_send_ack(const uint8_t uuid, const int error_code) {
     jerrycan_tx(&msg, K_NO_WAIT);
 }
 
-int jerrycan_register_rx_callback(jerrycan_rx_callback_t *callback) {
+void jerrycan_register_rx_callback(jerrycan_rx_callback_t *callback) {
     sys_slist_append(&can_rx_callbacks_list, &callback->node);
-    return 0;
 }
 
 static int jerrycan_init() {

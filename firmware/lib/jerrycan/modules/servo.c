@@ -207,21 +207,9 @@ static void jerrycan_servo_status_tx() {
 K_TIMER_DEFINE(jerrycan_servo_status_tx_timer, jerrycan_servo_status_tx, NULL);
 
 static int jerrycan_servo_init() {
-    int ret;
-    ret = jerrycan_register_rx_callback(&servo_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register servo callback: %d", ret);
-    }
-
-    ret = jerrycan_register_rx_callback(&servo_cfg_write_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register servo config callback: %d", ret);
-    }
-
-    ret = jerrycan_register_rx_callback(&servo_cfg_read_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register servo config read callback: %d", ret);
-    }
+    jerrycan_register_rx_callback(&servo_callback);
+    jerrycan_register_rx_callback(&servo_cfg_write_callback);
+    jerrycan_register_rx_callback(&servo_cfg_read_callback);
 
     /* Start timer to send the servo status messages periodically */
     k_timer_start(&jerrycan_servo_status_tx_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_SERVO_STATUS_TX_PERIOD_MS));

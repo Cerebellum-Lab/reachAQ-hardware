@@ -84,7 +84,7 @@ static void jerrycan_pressure_sensor_tx() {
     }
 }
 
-static int jerrycan_pressure_sensor_tare_handler(jerrycan_msg_t *msg) {
+static int jerrycan_pressure_sensor_tare_handler(const jerrycan_msg_t *msg) {
     int rc = -ENOENT;
 
     for (int i = 0; i < PRESSURE_SENSOR_COUNT; i++) {
@@ -114,15 +114,12 @@ static jerrycan_rx_callback_t pressure_sensor_tare_callback = {
 K_TIMER_DEFINE(jerrycan_pressure_sensor_timer, jerrycan_pressure_sensor_tx, NULL);
 
 static int jerrycan_pressure_sensor_init() {
-    int ret = jerrycan_register_rx_callback(&pressure_sensor_tare_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register pressure sensor tare callback: %d", ret);
-    }
+    jerrycan_register_rx_callback(&pressure_sensor_tare_callback);
 
     /* Start timer to send the status messages periodically */
     k_timer_start(&jerrycan_pressure_sensor_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_PRESSURE_TX_PERIOD_MS));
 
-    return ret;
+    return 0;
 }
 
 SYS_INIT(jerrycan_pressure_sensor_init, APPLICATION, CONFIG_LIB_JERRYCAN_INIT_PRIORITY);

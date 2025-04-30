@@ -84,10 +84,7 @@ static jerrycan_rx_callback_t delay_callback = {
 };
 
 static int jerrycan_status_init() {
-    int ret = jerrycan_register_rx_callback(&delay_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register delay message callback: %d", ret);
-    }
+    jerrycan_register_rx_callback(&delay_callback);
 
     // Start the timer that will send the status message periodically
     k_timer_start(&jerrycan_status_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_STATUS_TX_PERIOD_MS));

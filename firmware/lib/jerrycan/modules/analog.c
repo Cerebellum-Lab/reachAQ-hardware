@@ -11,11 +11,11 @@
  * - Controls the periodic transmission rate of analog output messages.
  *
  * Key Functions:
- * - `jerrycan_analog_out_tx()`: Transmits the current voltage value for each
+ * - `transmit_status()`: Transmits the current voltage value for each
  *    analog output instance.
- * - `jerrycan_analog_out_write_handler()`: Processes CAN messages to update analog
+ * - `set_channel()`: Processes CAN messages to update analog
  *    status values based on received commands.
- * - `jerrycan_analog_out_init()`: Initializes the analog output module, registers
+ * - `initialize()`: Initializes the analog output module, registers
  *    the CAN message callback, and starts the periodic timer for transmission.
  *
  * Dependencies:
@@ -48,27 +48,27 @@ LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 typedef struct {
     uint16_t instance_number;
     const struct device *analog_out;
-} jerrycan_analog_out_context_t;
+} context_t;
 
 #define ANALOG_OUT_CONTEXT(id) \
-    (jerrycan_analog_out_context_t) { .instance_number = id, .analog_out = DEVICE_DT_INST_GET(id), }
+    (context_t) { .instance_number = id, .analog_out = DEVICE_DT_INST_GET(id), }
 
 #define ANALOG_OUT_CONTEXT_COMMA(id) ANALOG_OUT_CONTEXT(id),
 
 /* Array of analog output contexts for all enabled analog output devices */
-static const jerrycan_analog_out_context_t contexts[ANALOG_OUT_COUNT] = {
-    DT_INST_FOREACH_STATUS_OKAY(ANALOG_OUT_CONTEXT_COMMA)};
+static const context_t contexts[ANALOG_OUT_COUNT] = {DT_INST_FOREACH_STATUS_OKAY(ANALOG_OUT_CONTEXT_COMMA)};
 
-static void jerrycan_analog_out_tx() {
+/* -------------------------------------------------------------------------- */
+
+static void transmit_status() {
     /* For each analog output, construct and send an analog output message*/
     for (int i = 0; i < ANALOG_OUT_COUNT; i++) {
-        const jerrycan_analog_out_context_t *context = &contexts[i];
+        const context_t *context = &contexts[i];
         const struct device *analog_out = context->analog_out;
-        uint16_t instance_number = context->instance_number;
 
         jerrycan_msg_t msg = {.type = JERRYCAN_CMD_ANALOG_OUT,
                               .analog_out = {
-                                  .instance = instance_number,
+                                  .instance = context->instance_number,
                                   .value_mv = ll_analog_out_get_value_mv(analog_out),
                               }};
 
@@ -76,10 +76,11 @@ static void jerrycan_analog_out_tx() {
     }
 }
 
-static int jerrycan_analog_out_write_handler(const jerrycan_msg_t *msg) {
-    /* Pull parameters from jerrycan message */
-    uint16_t instance = msg->analog_out.instance;
-    uint16_t value_mv = msg->analog_out.value_mv;
+/* -------------------------------------------------------------------------- */
+
+static int set_channel(const jerrycan_msg_t *msg) {
+    const uint16_t instance = msg->analog_out.instance;
+    const uint16_t value_mv = msg->analog_out.value_mv;
 
     LOG_DBG("Recieved analog output write value message: instance=%d, value_mv=%d", instance, value_mv);
 
@@ -97,31 +98,29 @@ static int jerrycan_analog_out_write_handler(const jerrycan_msg_t *msg) {
     const struct device *analog_out = contexts[idx].analog_out;
 
     /* Write value to analog output, printing error on failure */
-    int ret = ll_analog_out_write_value_mv(analog_out, value_mv);
+    const int ret = ll_analog_out_write_value_mv(analog_out, value_mv);
     if (ret != ANALOG_OUT_NO_ERROR) {
         LOG_ERR("Failed to write analog output value over CAN: Error writing value - %s", analog_out_error_to_str[ret]);
     }
 
+    return -ret;
+}
+
+/* -------------------------------------------------------------------------- */
+
+static K_TIMER_DEFINE(status_timer, transmit_status, NULL);
+
+static int initialize() {
+    static jerrycan_rx_callback_t set_channel_callback = {
+        .filter_msg_type = JERRYCAN_CMD_ANALOG_OUT,
+        .func = set_channel,
+    };
+
+    jerrycan_register_rx_callback(&set_channel_callback);
+
+    k_timer_start(&status_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_ANALOG_OUT_TX_PERIOD_MS));
+
     return 0;
 }
 
-static jerrycan_rx_callback_t analog_out_callback = {
-    .filter_msg_type = JERRYCAN_CMD_ANALOG_OUT,
-    .func = jerrycan_analog_out_write_handler,
-};
-
-K_TIMER_DEFINE(jerrycan_analog_out_timer, jerrycan_analog_out_tx, NULL);
-
-static int jerrycan_analog_out_init() {
-    int ret = jerrycan_register_rx_callback(&analog_out_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register analog output callback: %d", ret);
-    }
-
-    /* Start timer to send the status messages periodically */
-    k_timer_start(&jerrycan_analog_out_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_ANALOG_OUT_TX_PERIOD_MS));
-
-    return 0;
-}
-
-SYS_INIT(jerrycan_analog_out_init, APPLICATION, CONFIG_LIB_JERRYCAN_INIT_PRIORITY);
+SYS_INIT(initialize, APPLICATION, CONFIG_LIB_JERRYCAN_INIT_PRIORITY);

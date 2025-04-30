@@ -137,10 +137,7 @@ static int jerrycan_generic_gpio_init() {
     }
 
     /* Register gpio Rx callback */
-    int ret = jerrycan_register_rx_callback(&gpio_callback);
-    if (ret < 0) {
-        LOG_WRN("Failed to register gpio callback: %d", ret);
-    }
+    jerrycan_register_rx_callback(&gpio_callback);
 
     /* Start timer to send the gpio messages periodically */
     k_timer_start(&jerrycan_generic_gpio_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_GPIO_TX_PERIOD_MS));
