@@ -317,8 +317,11 @@ static void servo_motor_event_callback(const struct device *const dev, ll_motor_
         case LL_MOTOR_EVENT_DMA_BLOCK_COMPLETE:
             // When a block has been completed, the buffer is free to use for the next calculation, if needed
             LOG_WRN("DMA block complete");
-            if (context != NULL && !context->motion_calculation_done) {
-                k_work_schedule_for_queue(&motor_workq, &context->calculation_work, K_NO_WAIT);
+            if (context != NULL) {
+                context->context.known_position = context->context.last_position_generated;
+                if (!context->motion_calculation_done) {
+                    k_work_schedule_for_queue(&motor_workq, &context->calculation_work, K_NO_WAIT);
+                }
             }
             break;
         case LL_MOTOR_EVENT_DMA_QUEUE_EMPTY: {
@@ -391,7 +394,7 @@ static void servo_work_calculation_handler(struct k_work *work) {
 size_t stepper_generate_at_slow_velocity(const struct stepper_work_context *context, uint32_t *buf) {
     // Generate up to slow_pulses_ms of "slow" pulses at 1/4 of the max velocity
     const float seconds_per_pulse =
-        4.0f / context->motor_max_velocity / context->motor_steps_per_revolution * context->context.min_step;
+        1.5f / context->motor_max_velocity / context->motor_steps_per_revolution * context->context.min_step;
 
     size_t n_pulses = (size_t)floorf(slow_pulses_ms / 1000.0f / seconds_per_pulse);
 
@@ -569,7 +572,7 @@ int servo_set_angle_parameters(const struct device *dev, const float min_angle, 
     return 0;
 }
 
-int servo_move_to_position(const struct device *dev, const float target_position, const float max_velocity,
+int servo_move_to_position(const struct device *dev, float target_position, const float max_velocity,
                            const float max_acceleration) {
     struct servo_work_context *context = find_servo_context_from_device(dev);
     /*
@@ -596,10 +599,15 @@ int servo_move_to_position(const struct device *dev, const float target_position
         LOG_WRN("Max velocity greater than that of the motor, using lower value.");
     }
 
-    context->context.known_position = -1;
-
     const float movement_max_a = MIN(context->motor_max_acceleration, max_acceleration);
     const float movement_max_v = MIN(context->motor_max_velocity, max_velocity);
+
+    // Limit position to within the desired angles
+    if (target_position < context->context.min_angle) {
+        target_position = context->context.min_angle;
+    } else if (target_position > context->context.max_angle) {
+        target_position = context->context.max_angle;
+    }
 
     const int ret = motor_motion_servo_init_context_struct(
         context->context.last_position_generated, target_position, movement_max_v, movement_max_a,

@@ -17,6 +17,8 @@ LOG_MODULE_DECLARE(motor_motion, CONFIG_LIB_MOTOR_MOTION_LOG_LEVEL);
 
 #define FE_ALL_BUT_INEXACT (FE_ALL_EXCEPT & ~FE_INEXACT)
 
+#define FULL_RANGE_IN_DEGREES 120  // per data sheet, physical movement to within 0..120 degrees.
+
 static void print_fp_error(const int errs) {
     if (errs & FE_DIVBYZERO) {
         LOG_ERR("Floating point error encountered: Division by zero");
@@ -158,6 +160,7 @@ static float acceleration_region_displacement_hat(const float time, const motor_
 
     // we check for a negative acceleration displacement hat that causes the motor
     // to move in the reverse direction on startup
+    // Clamp negative displacement to zero to prevent backward movement on startup
     return accel_displacement_hat < 0.0f ? 0.0f : accel_displacement_hat;
 }
 
@@ -293,7 +296,8 @@ static uint32_t degrees_to_pwm_count(const servo_motor_context_t *context, const
     static float scale_factor = 0;
 
     if (calculate_scale) {
-        scale_factor = (context->max_angle_pwm - context->min_angle_pwm) / (context->max_angle - context->min_angle);
+        // Scale factor calculated on full potential range.
+        scale_factor = (context->max_angle_pwm - context->min_angle_pwm) / FULL_RANGE_IN_DEGREES;
     }
 
     const float nominal_degrees = degree - context->angle_adjustment;
@@ -331,10 +335,6 @@ ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, const si
         const uint32_t DEAD_BAND_THRESHOLD = 4;   // Minimum PWM change required to overcome static friction
         const int32_t MAX_PWM_CHANGE_ZERO_COUNT = 20;
 
-        time = SERVO_TIME_STEP * time_step + context->last_time_generated;
-
-        displacement_now = displacement(time, &context->motion_profile) + start_position;
-
         // at desired location?
         if (fabsf(end_position - displacement_now) < POSITION_THRESHOLD) {
             LOG_INF("At Desired Location: start: %1.3f  end: %1.3f  displace: %1.3f", (double)start_position,
@@ -342,6 +342,9 @@ ssize_t motor_motion_servo_generate_displacement_table(uint32_t *table, const si
             table[table_index++] = last_pwm;
             break;
         }
+
+        time = SERVO_TIME_STEP * time_step + context->last_time_generated;
+        displacement_now = displacement(time, &context->motion_profile) + start_position;
 
         // Calculate the change in PWM strength
         const uint32_t pwm = degrees_to_pwm_count(context, displacement_now, false);
