@@ -222,7 +222,6 @@ static void stepper_handle_fixed_sequence() {
 static int stepper_fixed_move(const jerrycan_msg_t *msg) {
     set_uuid_for_xyz_context(msg->uuid);
     moving_state = MOVE_X;
-    stepper_handle_fixed_sequence();
 
     return COMMAND_NOT_COMPLETE;
 }
