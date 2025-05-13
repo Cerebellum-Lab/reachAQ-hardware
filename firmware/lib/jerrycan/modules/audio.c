@@ -26,6 +26,7 @@
  * order transmissions, but that there could be dropped packets.
  */
 
+#include <math.h>
 #include <sys/param.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/kernel.h>
@@ -36,9 +37,14 @@
 #include "jerrycan.h"
 #include "microphone.h"
 
-#define AUDIO_FFT_SIZE DT_PROP(DT_N_NODELABEL_microphone, block_size)
-#define AUDIO_UPDATE_RATE 10                            // (Hz)
-#define AUDIO_UPDATE_PERIOD (1000 / AUDIO_UPDATE_RATE)  // msec
+#ifndef M_PI
+#define M_PI 3.14159265358979323846f
+#endif
+
+#define FFT_INPUT_SAMPLE_COUNT DT_PROP(DT_N_NODELABEL_microphone, block_size)
+#define FFT_OUTPUT_FREQ_COUNT (FFT_INPUT_SAMPLE_COUNT / 2 + 1)  // DC, Freq, and Nyquest
+#define AUDIO_UPDATE_RATE 10                                    // (Hz)
+#define AUDIO_UPDATE_PERIOD (1000 / AUDIO_UPDATE_RATE)          // msec
 #define AUDIO_PRIORITY 10
 
 LOG_MODULE_REGISTER(audio_in, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
@@ -50,7 +56,17 @@ LOG_MODULE_REGISTER(audio_in, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
  * @param packetNumber
  * @param rawData - Can NOT be NULL.
  */
-static void audio_process_data(uint64_t packetNumber, const uint32_t* rawData);
+static bool audio_process_data(uint64_t packetNumber, const int32_t* rawData);
+
+/**
+ * Determine if the data is good. The DMA/I2S transmissions are prone to dropping
+ * words. This method checks to see if the incoming data is valid or if there
+ * were dropped words in the formation of the data set.
+ *
+ * @param data Raw data from PCM1822
+ * @param length Number of data points in data
+ */
+static bool validate_data(const int32_t* data, const size_t length);
 
 /**
  * Translate the raw data (32-bit integers) to a complex data set, where the
@@ -60,7 +76,14 @@ static void audio_process_data(uint64_t packetNumber, const uint32_t* rawData);
  * @param[out] fftBuffer - This buffer must be 2x larger than the rawData buffer. Can NOT be NULL
  * @param length - Number of elements in rawData buffer
  */
-static void audio_populate_complex_vector(const uint32_t* rawData, float* fftBuffer, size_t length);
+static void audio_populate_complex_vector(const int32_t* rawData, float* fftBuffer, size_t length);
+
+/**
+ * Convert from magnitude unitless to magnitude dB
+ * @param mag Vector of magnitude data
+ * @param length Length of mag vector
+ */
+static void convert_to_db(float* mag, int length);
 
 /**
  * Transmit the given payload (N bytes; where N is defined by the CAN payload
@@ -92,9 +115,22 @@ static void audio_thread(void*, void*, void*);
 
 /* -------------------------------------------------------------------------- */
 
+float g_windowing_map[FFT_INPUT_SAMPLE_COUNT];
+
+static void populate_windowing_map() {
+    for (int i = 0; i < FFT_INPUT_SAMPLE_COUNT; ++i) {
+        // Hann window: 0.5 * (1 - cos(2π*i/(N-1)))
+        g_windowing_map[i] = 0.5f * (1.0f - cosf(2.0f * M_PI * i / (FFT_INPUT_SAMPLE_COUNT - 1)));
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
 static void audio_thread(void*, void*, void*) {
     struct k_timer timer;
     const struct device* microphone = DEVICE_DT_GET_ANY(ll_microphone);
+
+    populate_windowing_map();
 
     if (!microphone) {
         LOG_ERR("Microphone not defined in the DTS");
@@ -109,20 +145,22 @@ static void audio_thread(void*, void*, void*) {
 
     if (ll_microphone_enable_reads(microphone, true)) {
         uint64_t packetNumber = 0;
+        bool failed_last = false;
 
         while (true) {
             void* rawData;
-            uint32_t length;
+            uint32_t sample_count;  // total samples across all channels
 
-            const int rc = ll_microphone_read(microphone, &rawData, &length);
+            const int rc = ll_microphone_read(microphone, &rawData, &sample_count);
 
-            if ((0 == rc) && (length >= AUDIO_FFT_SIZE)) {
+            if (!rc) {
                 // status_get returns the # of times timer expired since last call
-                if (k_timer_status_get(&timer) > 0) {
-                    audio_process_data(++packetNumber, rawData);
+                if (k_timer_status_get(&timer) > 0 || failed_last) {
+                    failed_last = !audio_process_data(++packetNumber, rawData);
                 }
 
-                ll_microphone_release_buffer(microphone, (void*)rawData);
+                ll_microphone_release_buffer(microphone, rawData);
+
             } else if (rc != -EAGAIN) {
                 LOG_ERR("Microphone Read Failed. Bailing");
                 break;
@@ -140,34 +178,90 @@ K_THREAD_DEFINE(gThread, 1024, audio_thread, NULL, NULL, NULL, AUDIO_PRIORITY, 0
 
 /* -------------------------------------------------------------------------- */
 
-static void audio_process_data(const uint64_t packetNumber, const uint32_t* rawData) {
+static bool audio_process_data(const uint64_t packetNumber, const int32_t* rawData) {
     Fft fft;
 
-    if (fft_initialize(&fft, AUDIO_FFT_SIZE)) {
-        static float fftBuffer[AUDIO_FFT_SIZE * 2];  // Complex data set
-        static float magnitude[AUDIO_FFT_SIZE];
+    if (validate_data(rawData, FFT_INPUT_SAMPLE_COUNT) && fft_initialize(&fft, FFT_INPUT_SAMPLE_COUNT)) {
+        static float fftBuffer[FFT_INPUT_SAMPLE_COUNT * 2];  // Complex data set
+        static float magnitude[FFT_OUTPUT_FREQ_COUNT];
 
-        audio_populate_complex_vector(rawData, fftBuffer, AUDIO_FFT_SIZE);
+        audio_populate_complex_vector(rawData, fftBuffer, FFT_INPUT_SAMPLE_COUNT);
         fft_calculate_frequency(&fft, fftBuffer);
         fft_calculate_magnitude(&fft, fftBuffer, magnitude);
+        convert_to_db(magnitude, FFT_OUTPUT_FREQ_COUNT);
+        audio_report_data(packetNumber, magnitude, FFT_OUTPUT_FREQ_COUNT);
 
-        audio_report_data(packetNumber, magnitude, AUDIO_FFT_SIZE);
+        return true;
+    }
+
+    return false;
+}
+
+/* -------------------------------------------------------------------------- */
+
+bool validate_data(const int32_t* data, const size_t length) {
+    // Calculate mean
+    float mean1 = 0.0f;
+    float mean2 = 0.0f;
+
+    for (size_t i = 0; i < length; i++) {
+        mean1 += (float)data[i * 2];
+        mean2 += (float)data[i * 2 + 1];
+    }
+
+    mean1 = mean1 / length;
+    mean2 = mean2 / length;
+
+    // Calculate standard deviation
+    float vsum1 = 0.0f;
+    float vsum2 = 0.0f;
+
+    for (size_t i = 0; i < length; i++) {
+        float diff;
+
+        // Accumulate squared differences from mean for variance
+        diff = (float)data[i * 2] - mean1;
+        vsum1 += diff * diff;
+        diff = (float)data[i * 2 + 1] - mean2;
+        vsum2 += diff * diff;
+    }
+
+    const float stddev1 = sqrtf(vsum1 / length);
+    const float stddev2 = sqrtf(vsum2 / length);
+
+    return (fabs(mean1) < 1e5 || fabs(mean2) < 1e5) && (fabs(stddev1) < 1e5 || fabs(stddev2) < 1e5);
+}
+
+/* -------------------------------------------------------------------------- */
+
+static void audio_populate_complex_vector(const int32_t* rawData, float* fftBuffer, const size_t length) {
+    const struct device* microphone = DEVICE_DT_GET_ANY(ll_microphone);
+    const int channel_count = ll_microphone_channel_count(microphone);
+
+    for (size_t i = 0; i < length; i++) {
+        int32_t raw = rawData[i * channel_count];
+
+        // The DMA engine on the STM32 transfers 2 16-bit values from the I2S data
+        // register. Frequently the two values are word-swapped or dropped.
+        // Sometimes the first/second channels are also swapped.
+        // Since there is an AC-bias on the floating channel #2 inputs, we can add with
+        // impunity.
+        raw += rawData[i * channel_count + 1];
+
+        // Apply windowing to remove cross-frequecy bleed
+        fftBuffer[i * 2] = (float)raw * g_windowing_map[i];
+
+        // Complex portion is 0
+        fftBuffer[i * 2 + 1] = 0.0f;
     }
 }
 
 /* -------------------------------------------------------------------------- */
 
-static void audio_populate_complex_vector(const uint32_t* rawData, float* fftBuffer, const size_t length) {
-    const struct device* microphone = DEVICE_DT_GET_ANY(ll_microphone);
-    const int channel_count = ll_microphone_channel_count(microphone);
-
-    if (microphone) {
-        for (size_t i = 0; i < length; i++) {
-            *fftBuffer++ = (float)*rawData;
-            *fftBuffer++ = 0.0f;  // Complex portion is 0
-
-            rawData += channel_count;
-        }
+static void convert_to_db(float* mag, int length) {
+    for (int i = 0; i < length; ++i, ++mag) {
+        const float epsilon = 1e-10f;  // Adding small epsilon (1e-10) to avoid log(0)
+        *mag = 20 * log10f(*mag + epsilon);
     }
 }
 
@@ -187,10 +281,8 @@ static void audio_report_data(uint64_t packetNumber, const float* magnitude, siz
         jerrycan_tx(&msg, K_NO_WAIT);  // dont' wait; OK if a data sets drops
     }
 
-    // Only the 1st half of the FFT results are needed; 2nd half mirrors the first.
-    length = length / 2;
-
-    for (int k = 0; k < length; k += ELEMENTS_PER_MESSAGE) {
+    // Skip over DC (assumption, for the moment)
+    for (int k = 1; k < length; k += ELEMENTS_PER_MESSAGE) {
         audio_transmit_data(magnitude, MIN(length - ELEMENTS_PER_MESSAGE, ELEMENTS_PER_MESSAGE) * sizeof(float));
         magnitude += ELEMENTS_PER_MESSAGE;
     }

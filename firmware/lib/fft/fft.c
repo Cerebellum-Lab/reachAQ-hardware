@@ -66,5 +66,6 @@ LOG_MODULE_REGISTER(fft);
 void fft_calculate_frequency(const Fft* fft, float* fftBuffer) { arm_cfft_f32(&(fft->fft), fftBuffer, 0, 1); }
 
 void fft_calculate_magnitude(const Fft* fft, const float* fftBuffer, float* fftMagnitude) {
-    arm_cmplx_mag_f32(fftBuffer, fftMagnitude, fft->length);
+    // As the FFT results are mirrored, calculate only DC [0], freq[1..N/2), and Nyquest [N/2]
+    arm_cmplx_mag_f32(fftBuffer, fftMagnitude, fft->length / 2 + 1);
 }

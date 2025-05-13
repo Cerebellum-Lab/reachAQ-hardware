@@ -29,7 +29,7 @@
  *
  * @param device - Microphone device; Can not be NULL
  * @param[out] mem_block - Non-NULL pointer, will contain pointer to read data
- * @param[out] block_size - Non-NULL pointer, will contain the number of bytes read
+ * @param[out] block_size - Non-NULL pointer, will contain the number of samples read across all channels
  *
  * @retval 0 - OK
  * @retval EAGAIN - No data available

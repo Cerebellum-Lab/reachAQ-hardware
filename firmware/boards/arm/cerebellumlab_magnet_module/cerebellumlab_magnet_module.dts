@@ -78,7 +78,7 @@
 			reg = <0>;
 			sampling-frequency = <192000>;
 			channel-count = <2>;
-			block-size = <64>;
+			block-size = <128>;
 		};
 	};
 

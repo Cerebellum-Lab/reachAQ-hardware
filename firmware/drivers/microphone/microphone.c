@@ -17,9 +17,10 @@ LOG_MODULE_REGISTER(microphone, CONFIG_LIB_MIC_LOG_LEVEL);
 #define BYTES_PER_SAMPLE sizeof(INTEGRAL_TYPE)
 #define SAMPLE_BIT_WIDTH (BYTES_PER_SAMPLE * CHAR_BIT)
 
-#define MIC_NUMBER_OF_CHANNELS(idx) DT_INST_PROP(idx, channel_count)
+#define CHANNEL_COUNT(idx) DT_INST_PROP(idx, channel_count)
 
-#define BLOCK_SIZE(idx) (BYTES_PER_SAMPLE * DT_INST_PROP(idx, block_size) * MIC_NUMBER_OF_CHANNELS(idx))
+// Block size is the number of total samples over all channels
+#define BLOCK_SIZE(idx) (BYTES_PER_SAMPLE * DT_INST_PROP(idx, block_size) * CHANNEL_COUNT(idx))
 #define BLOCK_COUNT 4  // one active, one processing, two on-deck
 
 /**
@@ -85,7 +86,7 @@ bool ll_microphone_enable_reads(const struct device* device, const bool enable) 
         return false;
     }
 
-    const int ret = i2s_trigger(mic->i2sDevice, I2S_DIR_RX, enable ? I2S_TRIGGER_START : I2S_TRIGGER_DROP);
+    const int ret = i2s_trigger(mic->i2sDevice, I2S_DIR_RX, enable ? I2S_TRIGGER_START : I2S_TRIGGER_STOP);
 
     if (ret < 0) {
         LOG_ERR("Failed to %sable streaming: %d\n", enable ? "en" : "dis", ret);
@@ -128,7 +129,14 @@ int ll_microphone_read(const struct device* device, void** mem_block, uint32_t* 
         return -EIO;
     }
 
-    return i2s_read(mic->i2sDevice, mem_block, block_size);
+    const int rc = i2s_read(mic->i2sDevice, mem_block, block_size);
+    if (!rc) {
+        *block_size = *block_size / BYTES_PER_SAMPLE;
+    } else {
+        *block_size = 0;
+    }
+
+    return rc;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -149,24 +157,24 @@ int ll_microphone_channel_count(const struct device* device) {
 
 /* -------------------------------------------------------------------------- */
 
-#define INSTANCE_GENERATOR(idx)                                                                         \
-                                                                                                        \
-    K_MEM_SLAB_DEFINE_STATIC(mem_slab##idx, BLOCK_SIZE(idx), BLOCK_COUNT, BYTES_PER_SAMPLE);            \
-                                                                                                        \
-    static const microphone_cfg_t config##idx = {                                                       \
-        .i2s_cfg = {.word_size = SAMPLE_BIT_WIDTH,                                                      \
-                    .channels = MIC_NUMBER_OF_CHANNELS(idx),                                            \
-                    .format = I2S_FMT_DATA_FORMAT_I2S,                                                  \
-                    .options = I2S_OPT_BIT_CLK_MASTER | I2S_OPT_FRAME_CLK_MASTER,                       \
-                    .frame_clk_freq = DT_INST_PROP(idx, sampling_frequency),                            \
-                    .mem_slab = &mem_slab##idx,                                                         \
-                    .block_size = BLOCK_SIZE(idx),                                                      \
-                    .timeout = K_TICKS_FOREVER},                                                        \
-    };                                                                                                  \
-                                                                                                        \
-    static microphone_data_t data##idx = {                                                              \
-        .initialized = false, .streamEnabled = false, .i2sDevice = DEVICE_DT_GET(DT_INST_PARENT(idx))}; \
-                                                                                                        \
+#define INSTANCE_GENERATOR(idx)                                                                                   \
+                                                                                                                  \
+    K_MEM_SLAB_DEFINE_STATIC(mem_slab##idx, BLOCK_SIZE(idx) * CHANNEL_COUNT(idx), BLOCK_COUNT, BYTES_PER_SAMPLE); \
+                                                                                                                  \
+    static const microphone_cfg_t config##idx = {                                                                 \
+        .i2s_cfg = {.word_size = SAMPLE_BIT_WIDTH,                                                                \
+                    .channels = CHANNEL_COUNT(idx),                                                               \
+                    .format = I2S_FMT_DATA_FORMAT_I2S,                                                            \
+                    .options = I2S_OPT_BIT_CLK_MASTER | I2S_OPT_FRAME_CLK_MASTER,                                 \
+                    .frame_clk_freq = DT_INST_PROP(idx, sampling_frequency),                                      \
+                    .mem_slab = &mem_slab##idx,                                                                   \
+                    .block_size = BLOCK_SIZE(idx),                                                                \
+                    .timeout = K_TICKS_FOREVER},                                                                  \
+    };                                                                                                            \
+                                                                                                                  \
+    static microphone_data_t data##idx = {                                                                        \
+        .initialized = false, .streamEnabled = false, .i2sDevice = DEVICE_DT_GET(DT_INST_PARENT(idx))};           \
+                                                                                                                  \
     DEVICE_DT_INST_DEFINE(idx, &ll_microphone_initialize, NULL, &data##idx, &config##idx, POST_KERNEL, 99, NULL);
 
 DT_INST_FOREACH_STATUS_OKAY(INSTANCE_GENERATOR)
