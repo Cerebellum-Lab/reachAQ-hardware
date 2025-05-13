@@ -108,6 +108,9 @@ int jerrycan_run(k_timeout_t timeout) {
     static struct can_frame frame;
     int ret;
 
+    void confirm_image();
+    confirm_image();
+
     static struct k_poll_event events[2] = {
         K_POLL_EVENT_STATIC_INITIALIZER(K_POLL_TYPE_MSGQ_DATA_AVAILABLE, K_POLL_MODE_NOTIFY_ONLY, &jerrycan_tx_msgq, 1),
         K_POLL_EVENT_STATIC_INITIALIZER(K_POLL_TYPE_MSGQ_DATA_AVAILABLE, K_POLL_MODE_NOTIFY_ONLY, &jerrycan_rx_msgq,

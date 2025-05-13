@@ -34,7 +34,21 @@ LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 static struct {
     struct flash_img_context flash_img_ctx;
     bool bootloader_active;
+    size_t offset;
 } bootloader_ctx;
+
+static K_TIMER_DEFINE(confirm_timer, NULL, NULL);
+
+void confirm_image() {
+    static bool timer_expired = false;
+
+    if (!timer_expired && !boot_is_img_confirmed()) {
+        if (k_timer_status_get(&confirm_timer) > 0) {
+            LOG_INF("Ensuring Confirmation");
+            boot_write_img_confirmed();
+        }
+    }
+}
 
 // Send a JERRYCAN_CMD_BOOTLOADER_RESPONSE message with the currently running firmware version and the version in Slot 1
 static void jerrycan_bootloader_send_version() {
@@ -68,6 +82,26 @@ static void jerrycan_bootloader_send_version() {
     jerrycan_tx(&response, K_NO_WAIT);
 }
 
+int erase_page(size_t offset) {
+    const struct device *device = DEVICE_DT_GET(DT_NODELABEL(flash1));
+    struct flash_pages_info pi;
+
+    // Get page info at offset 0 to determine page size
+    int rc = flash_get_page_info_by_offs(device, offset, &pi);
+    if (rc != 0) {
+        LOG_ERR("Failed to get flash page info at offset 0x%x: %d", offset, rc);
+    } else if (offset % pi.size == 0) {
+        LOG_INF("Erasing Flash Page #%d at offset 0x%lx (size: %u)", pi.index, pi.start_offset, pi.size);
+
+        rc = flash_erase(device, pi.start_offset, pi.size);
+        if (rc != 0) {
+            LOG_ERR("Flash erase failed at offset 0x%lx: %d", pi.start_offset, rc);
+        }
+    }
+
+    return rc;
+}
+
 static int jerrycan_bootloader_flash_img_init() {
     LOG_INF("Flash Image Update Start");
 
@@ -76,11 +110,14 @@ static int jerrycan_bootloader_flash_img_init() {
     if (ret) {
         // If the flash image setup fails for any reason, send a NACK response and return
         LOG_ERR("Failed to initialize flash image context: %d", ret);
-        return ret;
+        bootloader_ctx.bootloader_active = false;
+    } else {
+        k_timer_stop(&confirm_timer);
+        bootloader_ctx.bootloader_active = true;
+        bootloader_ctx.offset = 0;
     }
 
-    bootloader_ctx.bootloader_active = true;
-    return 0;
+    return ret;
 }
 
 static int jerrycan_bootloader_flash_end() {
@@ -157,18 +194,22 @@ static int jerrycan_bootloader_rx_data_handler(const jerrycan_msg_t *msg) {
         return SEND_NO_ACKNOWLEDGEMENT;
     }
 
+    int ret = erase_page(bootloader_ctx.offset);
+    if (ret) {
+        return ret;
+    }
+
     // Write the data to the flash image
-    int ret = flash_img_buffered_write(&bootloader_ctx.flash_img_ctx, msg->bootloader_data.data,
-                                       sizeof(msg->bootloader_data.data), false);
+    ret = flash_img_buffered_write(&bootloader_ctx.flash_img_ctx, msg->bootloader_data.data,
+                                   sizeof(msg->bootloader_data.data), true);
     if (ret) {
         LOG_ERR("Failed to write image data: %d", ret);
-        resp.bootloader_response.type = JERRYCAN_BOOTLOADER_SUBCMD_NACK;
-        jerrycan_tx(&resp, K_NO_WAIT);
-        return SEND_NO_ACKNOWLEDGEMENT;
+    } else {
+        bootloader_ctx.offset += sizeof(msg->bootloader_data.data);
     }
 
     // Send an ACK response to indicate that the data was written successfully
-    resp.bootloader_response.type = JERRYCAN_BOOTLOADER_SUBCMD_ACK;
+    resp.bootloader_response.type = ret == 0 ? JERRYCAN_BOOTLOADER_SUBCMD_ACK : JERRYCAN_BOOTLOADER_SUBCMD_NACK;
     jerrycan_tx(&resp, K_NO_WAIT);
 
     return SEND_NO_ACKNOWLEDGEMENT;
@@ -188,6 +229,12 @@ static int jerrycan_bootloader_init() {
     // Register the bootloader message handlers
     jerrycan_register_rx_callback(&bootloader_rx_command_callback);
     jerrycan_register_rx_callback(&bootloader_rx_data_callback);
+
+    // Start a timer to confirm the image after the new image has been
+    // running for awhile. In most cases, the bootloader
+    // app will command the confirmation, but this is a good stop-gap
+    // in case the message was dropped.
+    k_timer_start(&confirm_timer, K_SECONDS(30), K_NO_WAIT);
 
     // Initialize the bootloader context
     bootloader_ctx.bootloader_active = false;
