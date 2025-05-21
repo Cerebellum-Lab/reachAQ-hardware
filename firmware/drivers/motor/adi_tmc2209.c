@@ -335,7 +335,8 @@ static int adi_tmc2209_set_otp(const struct device *dev, const struct OTP_READ_d
  * @param OTP_READ_data_fields MASK for the OTP_READ register
  * @return value from adi_tmc2209_set_otp
  */
-static int adi_tmc2209_set_otp_or(const struct device *dev, struct OTP_READ_data_fields otp_data_mask) {
+__attribute__((unused)) static int adi_tmc2209_set_otp_or(const struct device *dev,
+                                                          struct OTP_READ_data_fields otp_data_mask) {
     const adi_tmc2209_config_t *config = dev->config;
     const adi_tmc2209_reg_t reg_mask = {.otp_read = otp_data_mask};
     adi_tmc2209_reg_t current_otp = {0};

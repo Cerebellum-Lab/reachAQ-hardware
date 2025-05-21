@@ -16,10 +16,15 @@
 LOG_MODULE_DECLARE(motor_motion, CONFIG_LIB_MOTOR_MOTION_LOG_LEVEL);
 
 /* ***** Forward Declaration of Callbacks ***** */
+#ifdef CONFIG_DT_HAS_LL_SERVO_ENABLED
 static void servo_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
                                        void *user_data);
+#endif
+
+#ifdef CONFIG_DT_HAS_LL_STEPPER_ENABLED
 static void stepper_motor_event_callback(const struct device *const dev, ll_motor_events_t event, void *arg,
                                          void *user_data);
+#endif
 
 /* ***** Static Context Structs Used Throughout ***** */
 

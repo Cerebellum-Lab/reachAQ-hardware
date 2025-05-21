@@ -34,8 +34,11 @@ __pycache__
 .venv/
 build/
 **/cmake-build-debug/
+**/*signed.*bin
+**/wheels
 
 .idea
 
 firmware/*/VERSION
 software/whiskerwire/whiskerwire/__about__.py
+software/libjerrycan/_version.py
