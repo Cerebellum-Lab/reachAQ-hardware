@@ -22,7 +22,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def("StepperMove", &JerryCAN::StepperMove, py::arg("dst_id"), py::arg("motor_id"), py::arg("position"), py::arg("max_velocity"), py::arg("max_acceleration"), py::arg("abs_or_rel"), py::arg("save"), py::arg("uuid"))
         .def("ServoMove", &JerryCAN::ServoMove, py::arg("dst_id"), py::arg("motor_id"), py::arg("position"), py::arg("max_velocity"), py::arg("max_acceleration"), py::arg("abs_or_rel"), py::arg("uuid"))
         .def("StepperHome", &JerryCAN::StepperHome, py::arg("dst_id"), py::arg("motor_id"), py::arg("uuid"))
-        .def("StepperCfgWrite", &JerryCAN::StepperCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("microsteps"), py::arg("steps_per_revolution"), py::arg("motor_max_velocity"), py::arg("motor_max_acceleration"), py::arg("flip_limit_orientation"), py::arg("uuid"))
+        .def("StepperCfgWrite", &JerryCAN::StepperCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("microsteps"), py::arg("steps_per_revolution"), py::arg("motor_max_velocity"), py::arg("motor_max_acceleration"), py::arg("homing_velocity"), py::arg("flip_limit_orientation"), py::arg("uuid"))
         .def("ServoCfgWrite", &JerryCAN::ServoCfgWrite, py::arg("dst_id"), py::arg("motor_id"), py::arg("min_position"), py::arg("max_position"), py::arg("min_pwm_duration_us"), py::arg("max_pwm_duration_us"), py::arg("motor_max_velocity"), py::arg("motor_max_acceleration"), py::arg("uuid"))
         .def("StepperCfgRead", &JerryCAN::StepperCfgRead, py::arg("dst_id"), py::arg("motor_id"))
         .def("ServoCfgRead", &JerryCAN::ServoCfgRead, py::arg("dst_id"), py::arg("motor_id"))
@@ -155,6 +155,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("steps_per_revolution", &jerrycan_stepper_cfg_t::steps_per_revolution)
         .def_readwrite("motor_max_velocity", &jerrycan_stepper_cfg_t::motor_max_velocity)
         .def_readwrite("motor_max_acceleration", &jerrycan_stepper_cfg_t::motor_max_acceleration)
+        .def_readwrite("homing_velocity", &jerrycan_stepper_cfg_t::homing_velocity)
     ;
 
     py::class_<jerrycan_cmd_pressure_read_t>(m, "PressureRead")

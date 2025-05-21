@@ -141,7 +141,7 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
         .current_buffer = 0,                                                                    \
         .last_calculation_ret = 0,                                                              \
         .e_stop_triggered = {.__val = 0},                                                       \
-        .homing = NOT_HOMING,                                                                   \
+        .move_control = MOVING_POSITION,                                                        \
         .motion_mode = MOTION_IDLE,                                                             \
         .motion_calculation_done = true,                                                        \
         .calculation_work =                                                                     \
@@ -176,6 +176,7 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
             },                                                                                  \
         .motor_max_velocity = STEPPER_DEFAULT_MAX_VELOCITY,                                     \
         .motor_max_acceleration = STEPPER_DEFAULT_MAX_ACCELERATION,                             \
+        .homing_velocity = STEPPER_DEFAULT_MAX_VELOCITY,                                        \
         .motor_steps_per_revolution = STEPPER_DEFAULT_STEPS_PER_REVOLUTION,                     \
         .microsteps = STEPPER_DEFAULT_MICRO_STEPS,                                              \
         .flip_limit_orientation = STEPPER_DEFAULT_FLIP_LIMIT_ORIENTATION,                       \
@@ -260,16 +261,16 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
         case LL_MOTOR_EVENT_DMA_QUEUE_EMPTY:
             LOG_DBG("MOTION_DONE");
             if (context != NULL) {
-                switch (context->homing) {
-                    case NOT_HOMING:
+                switch (context->move_control) {
+                    default:
+                    case MOVING_POSITION:
                         // When the driver runs out of data to send, the motion is done
                         if (context->motion_mode == MOTION_IN_PROGESS) {
                             context->motion_mode = MOTION_DONE;
                         }
                         break;
 
-                    case MOVING_FROM_LIMIT_SWITCH: /* FALLTHROUGH */
-                    case HOMING_TOWARDS_LIMIT_SWITCH:
+                    case MOVING_HOME:
                         if (!context->motion_calculation_done) {
                             k_work_schedule_for_queue(&motor_workq, &context->calculation_work, K_NO_WAIT);
                         }
@@ -280,27 +281,28 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
         case LL_MOTOR_EVENT_LIMIT_SWITCH:
             // Context is NULL during this event because of limitations of the GPIO driver
             context = find_stepper_context_from_device(dev);
-            if (context != NULL) {
-                switch (context->homing) {
-                    case HOMING_TOWARDS_LIMIT_SWITCH:
+            if (context) {
+                switch (context->move_control) {
+                    case MOVING_HOME:
+                        LOG_WRN("Found Limit Switch. Stopping Motor.");
+                        stepper_motor_stop(dev);
                         stepper_set_position_to_zero(dev);
-                        context->homing = MOVING_FROM_LIMIT_SWITCH;
                         break;
-                    case MOVING_FROM_LIMIT_SWITCH:
-                        // extraneous event because we are still touching the switch.
-                        break;
-                    case NOT_HOMING: /* FALLTHROUGH */
+
                     default:
+                    case MOVING_POSITION:
+                        if ((context->motor_direction == LL_STEPPER_DIR_BACKWARD && !context->flip_limit_orientation) ||
+                            (context->motor_direction == LL_STEPPER_DIR_FORWARD && context->flip_limit_orientation)) {
+                            LOG_WRN("Found Limit Switch. Stopping Motor.");
+                            stepper_motor_stop(dev);
+                        } else {
+                            LOG_WRN("Found Limit Switch.");
+                        }
                         break;
                 }
-            } else {
-                // Cannot ascertain if stepper is homing. This should _never_ happen with the way the code is written,
-                // but better safe than sorry.
-                stepper_set_position_to_zero(dev);
             }
-
-            LOG_DBG("Limit switch event for stepper");
             break;
+
         default:
             LOG_WRN("Unknown stepper motor event: %d", event);
             break;
@@ -390,11 +392,11 @@ static void servo_work_calculation_handler(struct k_work *work) {
     context->current_buffer = (context->current_buffer + 1) % BUFS_PER_MOTOR;
 }
 
-#define slow_pulses_ms 100.0f
-size_t stepper_generate_at_slow_velocity(const struct stepper_work_context *context, uint32_t *buf) {
-    // Generate up to slow_pulses_ms of "slow" pulses at 1/4 of the max velocity
+size_t stepper_generate_table_for_homing(const struct stepper_work_context *context, uint32_t *buf) {
+    const float slow_pulses_ms = 100.0f;
+
     const float seconds_per_pulse =
-        1.5f / context->motor_max_velocity / context->motor_steps_per_revolution * context->context.min_step;
+        1 / context->homing_velocity / context->motor_steps_per_revolution * context->context.min_step;
 
     size_t n_pulses = (size_t)floorf(slow_pulses_ms / 1000.0f / seconds_per_pulse);
 
@@ -413,8 +415,9 @@ static void stepper_work_calculation_handler(struct k_work *work) {
     struct k_work_delayable *dwork = k_work_delayable_from_work(work);
     struct stepper_work_context *context = CONTAINER_OF(dwork, struct stepper_work_context, calculation_work);
 
-    switch (context->homing) {
-        case NOT_HOMING: {
+    switch (context->move_control) {
+        default:
+        case MOVING_POSITION: {
             const ssize_t ret = motor_motion_stepper_generate_timing_table(context->buffers[context->current_buffer],
                                                                            STEPPER_BUFFER_SIZE, &context->context);
             context->last_calculation_ret = ret;
@@ -443,16 +446,8 @@ static void stepper_work_calculation_handler(struct k_work *work) {
             context->current_buffer = (context->current_buffer + 1) % BUFS_PER_MOTOR;
         } break;
 
-        case MOVING_FROM_LIMIT_SWITCH: {
-            context->motion_calculation_done = true;
-            if (context->motion_mode == MOTION_IN_PROGESS) {
-                context->motion_mode = MOTION_DONE;
-            }
-            context->homing = NOT_HOMING;
-            break;
-        }
-        case HOMING_TOWARDS_LIMIT_SWITCH: {
-            const size_t ret = stepper_generate_at_slow_velocity(context, context->buffers[context->current_buffer]);
+        case MOVING_HOME: {
+            const size_t ret = stepper_generate_table_for_homing(context, context->buffers[context->current_buffer]);
             context->last_calculation_ret = ret;
 
             LOG_DBG("Q buf %d [%p]", context->current_buffer, (void *)context->buffers[context->current_buffer]);
@@ -657,7 +652,7 @@ int servo_move_relative(const struct device *dev, const float delta_position, co
 }
 
 int stepper_set_parameters(const struct device *dev, const float max_velocity, const float max_acceleration,
-                           const uint16_t microsteps, const float steps_per_revolution,
+                           const float homing_velocity, const uint16_t microsteps, const float steps_per_revolution,
                            const bool flip_limit_orientation) {
     struct stepper_work_context *const context = find_stepper_context_from_device(dev);
     if (context == NULL) {
@@ -670,6 +665,10 @@ int stepper_set_parameters(const struct device *dev, const float max_velocity, c
 
     if (max_acceleration > 0.0f) {
         context->motor_max_acceleration = max_acceleration;
+    }
+
+    if (homing_velocity > 0.0f) {
+        context->homing_velocity = homing_velocity;
     }
 
     if (microsteps > 0) {
@@ -728,12 +727,12 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
     }
 
     if (target_position < context->context.last_position_generated) {
-        ll_stepper_set_direction(dev,
-                                 context->flip_limit_orientation ? LL_STEPPER_DIR_FORWARD : LL_STEPPER_DIR_BACKWARD);
+        context->motor_direction = context->flip_limit_orientation ? LL_STEPPER_DIR_FORWARD : LL_STEPPER_DIR_BACKWARD;
     } else {
-        ll_stepper_set_direction(dev,
-                                 context->flip_limit_orientation ? LL_STEPPER_DIR_BACKWARD : LL_STEPPER_DIR_FORWARD);
+        context->motor_direction = context->flip_limit_orientation ? LL_STEPPER_DIR_BACKWARD : LL_STEPPER_DIR_FORWARD;
     }
+
+    ll_stepper_set_direction(dev, context->motor_direction);
 
     if (max_acceleration > context->motor_max_acceleration) {
         LOG_WRN("Max acceleration greater than that of the motor, using lower value.");
@@ -755,6 +754,7 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
     }
 
     context->motion_mode = MOTION_IN_PROGESS;
+    context->move_control = MOVING_POSITION;
     context->motion_calculation_done = false;
 
     ll_stepper_enable(dev);
@@ -798,7 +798,7 @@ int stepper_move_relative(const struct device *dev, const float delta_position, 
                                                       max_velocity, max_acceleration);
 }
 
-int stepper_go_home_slowly(const struct device *dev) {
+int stepper_home(const struct device *dev) {
     struct stepper_work_context *work_context = find_stepper_context_from_device(dev);
     stepper_motor_context_t *context = &work_context->context;
     if (context == NULL) {
@@ -826,14 +826,16 @@ int stepper_go_home_slowly(const struct device *dev) {
     atomic_flag_clear(&work_context->e_stop_triggered);
 
     context->min_step = 1.0f / work_context->microsteps;
-    work_context->homing = HOMING_TOWARDS_LIMIT_SWITCH;
-    work_context->homing_direction =
+    work_context->move_control = MOVING_HOME;
+    work_context->motor_direction =
         work_context->flip_limit_orientation ? LL_STEPPER_DIR_FORWARD : LL_STEPPER_DIR_BACKWARD;
     work_context->motion_calculation_done = false;
 
-    ll_stepper_set_direction(dev, work_context->homing_direction);
+    ll_stepper_set_direction(dev, work_context->motor_direction);
 
-    const size_t ret = stepper_generate_at_slow_velocity(work_context, work_context->buffers[0]);
+    ll_stepper_enable(dev);
+
+    const size_t ret = stepper_generate_table_for_homing(work_context, work_context->buffers[0]);
     work_context->last_calculation_ret = (ssize_t)ret;
 
     LOG_DBG("Q buf %d [%p]", work_context->current_buffer, (void *)work_context->buffers[0]);
@@ -870,10 +872,10 @@ void set_all_e_stop_flags(void) {
     }
 }
 
-homing_status_t stepper_homing_status(const struct device *dev) {
+movement_control_t stepper_homing_status(const struct device *dev) {
     const struct stepper_work_context *context = find_stepper_context_from_device(dev);
 
-    return !context ? NOT_HOMING : context->homing;
+    return !context ? MOVING_POSITION : context->move_control;
 }
 
 int stepper_read_config(const struct device *dev, struct stepper_config *config) {
@@ -887,6 +889,7 @@ int stepper_read_config(const struct device *dev, struct stepper_config *config)
     config->microsteps = context->microsteps;
     config->motor_max_velocity = context->motor_max_velocity;
     config->motor_max_acceleration = context->motor_max_acceleration;
+    config->homing_velocity = context->homing_velocity;
 
     return 0;
 }

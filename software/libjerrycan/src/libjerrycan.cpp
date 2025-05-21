@@ -287,8 +287,8 @@ int JerryCAN::CfgRead(uint8_t dst_id, const jerrycan_cmd_cfg_t &cfg) const {
 
 int JerryCAN::StepperCfgWrite(const uint8_t dst_id, const uint8_t motor_id, const uint16_t microsteps,
                               const float steps_per_revolution, const float motor_max_velocity,
-                              const float motor_max_acceleration, const bool flip_limit_orientation,
-                              const uuid_t uuid) const {
+                              const float motor_max_acceleration, const float homing_velocity,
+                              const bool flip_limit_orientation, const uuid_t uuid) const {
     jerrycan_cmd_cfg_t cfg_write;
     cfg_write.type = JERRYCAN_CFG_STEPPER;
 
@@ -298,6 +298,7 @@ int JerryCAN::StepperCfgWrite(const uint8_t dst_id, const uint8_t motor_id, cons
     cfg_write.stepper.steps_per_revolution = steps_per_revolution;
     cfg_write.stepper.motor_max_velocity = motor_max_velocity;
     cfg_write.stepper.motor_max_acceleration = motor_max_acceleration;
+    cfg_write.stepper.homing_velocity = homing_velocity;
 
     return CfgWrite(dst_id, cfg_write, uuid);
 }

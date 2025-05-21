@@ -221,7 +221,7 @@ static int cmd_stepper_set_steps(const struct shell *shell, size_t argc, char **
     }
 
     const int ret =
-        stepper_set_parameters(stepper_dev, 0.0f, 0.0f, min_step, steps_per_revolution, flip_limit_orientation);
+        stepper_set_parameters(stepper_dev, 0.0f, 0.0f, 0.0f, min_step, steps_per_revolution, flip_limit_orientation);
 
     if (ret != 0) {
         shell_print(shell, "Failed to set stepper parameters: %d", ret);
@@ -265,7 +265,8 @@ static int cmd_stepper_set_physical_parameters(const struct shell *shell, size_t
         shell_print(shell, "Couldn't parse flip_limit_orientation");
     }
 
-    const int ret = stepper_set_parameters(stepper_dev, max_velocity, max_acceleration, -1, -1, flip_limit_orientation);
+    const int ret =
+        stepper_set_parameters(stepper_dev, max_velocity, max_acceleration, 0.0f, 0, 0.0f, flip_limit_orientation);
     if (ret != 0) {
         shell_print(shell, "Failed to set stepper parameters: %d", ret);
         return -EINVAL;
@@ -360,7 +361,7 @@ static int cmd_stepper_home(const struct shell *shell, size_t argc, char **argv)
         return -EINVAL;
     }
 
-    const int ret = stepper_go_home_slowly(dev);
+    const int ret = stepper_home(dev);
     if (ret != 0) {
         shell_print(shell, "Failed to home slowly");
         return -EIO;

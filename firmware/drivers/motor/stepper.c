@@ -85,6 +85,8 @@ static int ll_stepper_init(const struct device *dev) {
 
 int ll_stepper_disable(const struct device *dev) {
     const ll_motor_cfg_t *cfg = dev->config;
+    ll_stepper_dma_stop(dev);
+
     LL_TIM_CC_DisableChannel(cfg->timer, cfg->channel);
 
     return 0;

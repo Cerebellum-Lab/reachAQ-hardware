@@ -19,7 +19,12 @@ void motor_motion_servo_set_current_position(servo_motor_context_t *context, con
     context->angle_adjustment = context->motion_profile.start_pos - position;
 }
 
-void stepper_motor_stop(const struct device *dev) { ll_stepper_disable(dev); }
+void stepper_motor_stop(const struct device *dev) {
+    struct stepper_work_context *context = find_stepper_context_from_device(dev);
+    context->motion_mode = MOTION_DONE;
+
+    ll_stepper_disable(dev);
+}
 
 void servo_motor_stop(const struct device *dev) { ll_servo_enable(dev, false); }
 

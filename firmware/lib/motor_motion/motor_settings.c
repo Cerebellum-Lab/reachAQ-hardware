@@ -30,6 +30,7 @@ LOG_MODULE_REGISTER(motor_settings);
 #define STEPS_PER_REVOLUTION_KEY "s_rev"
 #define FLIP_LIMIT_ORIENTATION_KEY "s_flo"
 #define FIXED_POSITION_KEY "s_fix"
+#define HOME_VELOCITY_KEY "s_home"
 
 #if CONFIG_DT_HAS_LL_SERVO_ENABLED
 /* ***** Settings Handler ***** */
@@ -320,6 +321,8 @@ static int stepper_settings_set(const char *key, size_t len, settings_read_cb re
         context->motor_max_velocity = read_float("max_velocity", read_cb, cb_arg, true, 48);
     } else if (strncmp(key, MAX_ACCELERATION_KEY, sizeof(MAX_ACCELERATION_KEY) - 1) == 0) {
         context->motor_max_acceleration = read_float("max_acceleration", read_cb, cb_arg, true, 2400);
+    } else if (strncmp(key, HOME_VELOCITY_KEY, sizeof(HOME_VELOCITY_KEY) - 1) == 0) {
+        context->homing_velocity = read_float("homing_velocity", read_cb, cb_arg, true, 20);
     } else if (strncmp(key, MICRO_STEP_KEY, sizeof(MICRO_STEP_KEY) - 1) == 0) {
         context->microsteps = read_uint16("min_step", read_cb, cb_arg, 8);
     } else if (strncmp(key, STEPS_PER_REVOLUTION_KEY, sizeof(STEPS_PER_REVOLUTION_KEY) - 1) == 0) {
@@ -357,6 +360,11 @@ static int stepper_settings_export(const struct device *dev, const size_t dt_id,
     if (rc == 0) {
         static char key[] = GENERATE_STEPPER_TEMPLATE(MAX_ACCELERATION_KEY);
         rc = write_float(key, numeric, context->motor_max_acceleration, storage_func);
+    }
+
+    if (rc == 0) {
+        static char key[] = GENERATE_STEPPER_TEMPLATE(HOME_VELOCITY_KEY);
+        rc = write_float(key, numeric, context->homing_velocity, storage_func);
     }
 
     if (rc == 0) {

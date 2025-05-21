@@ -153,6 +153,7 @@ typedef struct __attribute__((packed)) {
     float steps_per_revolution;
     float motor_max_velocity;
     float motor_max_acceleration;
+    float homing_velocity;
 } jerrycan_stepper_cfg_t;
 
 typedef struct __attribute__((packed)) {

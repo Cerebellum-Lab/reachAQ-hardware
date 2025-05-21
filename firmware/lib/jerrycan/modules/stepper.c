@@ -250,10 +250,10 @@ static int stepper_cfg_write_handler(const jerrycan_msg_t *msg) {
         LOG_ERR("Invalid stepper device number: %d", msg->cfg_write.stepper.motor_id);
         rc = -ENODEV;
     } else {
-        rc = stepper_set_parameters(dev, msg->cfg_write.stepper.motor_max_velocity,
-                                    msg->cfg_write.stepper.motor_max_acceleration, msg->cfg_write.stepper.microsteps,
-                                    msg->cfg_write.stepper.steps_per_revolution,
-                                    msg->cfg_write.stepper.flip_limit_orientation);
+        rc = stepper_set_parameters(
+            dev, msg->cfg_write.stepper.motor_max_velocity, msg->cfg_write.stepper.motor_max_acceleration,
+            msg->cfg_write.stepper.homing_velocity, msg->cfg_write.stepper.microsteps,
+            msg->cfg_write.stepper.steps_per_revolution, msg->cfg_write.stepper.flip_limit_orientation);
     }
 
     return rc;
@@ -291,6 +291,7 @@ static int stepper_cfg_read_handler(const jerrycan_msg_t *msg) {
             rsp.cfg_response.stepper.flip_limit_orientation = cfg.flip_limit_orientation;
             rsp.cfg_response.stepper.steps_per_revolution = cfg.steps_per_revolution;
             rsp.cfg_response.stepper.motor_max_velocity = cfg.motor_max_velocity;
+            rsp.cfg_response.stepper.homing_velocity = cfg.homing_velocity;
             rsp.cfg_response.stepper.motor_max_acceleration = cfg.motor_max_acceleration;
             rsp.cfg_response.stepper.microsteps = cfg.microsteps;
         }
@@ -319,7 +320,7 @@ static int stepper_home_handler(const jerrycan_msg_t *msg) {
 
         context->uuid = msg->uuid;
 
-        rc = stepper_go_home_slowly(dev);
+        rc = stepper_home(dev);
     }
 
     return rc == 0 ? COMMAND_NOT_COMPLETE : rc;

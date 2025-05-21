@@ -29,7 +29,7 @@ class JerryCAN {
     [[nodiscard]] int CfgRead(uint8_t dst_id, const jerrycan_cmd_cfg_t &cfg) const;
 
     [[nodiscard]] int StepperCfgWrite(uint8_t dst_id, uint8_t motor_id, uint16_t microsteps, float steps_per_revolution,
-                                      float motor_max_velocity, float motor_max_acceleration,
+                                      float motor_max_velocity, float motor_max_acceleration, float homing_velocity,
                                       bool flip_limit_orientation, uuid_t uuid) const;
 
     [[nodiscard]] int ServoCfgWrite(uint8_t dst_id, uint8_t motor_id, float min_position, float max_position,

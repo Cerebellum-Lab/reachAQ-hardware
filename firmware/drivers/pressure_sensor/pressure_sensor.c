@@ -176,6 +176,7 @@ int ll_pressure_sensor_tare(const struct device *dev) {
         .initialized = false,                                                                                          \
         .enabled = false,                                                                                              \
         .adc_action = ADC_ACTION_FINISH,                                                                               \
+        .raw_data = 0,                                                                                                 \
         .offset = 0,                                                                                                   \
     };                                                                                                                 \
     static const struct adc_sequence_options pressure_sensor_sequence_opts_##idx = {                                   \

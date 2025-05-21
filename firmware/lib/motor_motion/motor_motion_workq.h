@@ -39,11 +39,7 @@ struct servo_work_context {
     uint8_t uuid;
 };
 
-typedef enum homing_status {
-    NOT_HOMING,
-    HOMING_TOWARDS_LIMIT_SWITCH,
-    MOVING_FROM_LIMIT_SWITCH,
-} homing_status_t;
+typedef enum { MOVING_HOME, MOVING_POSITION } movement_control_t;
 
 struct stepper_work_context {
     const struct device *dev;  // Motor device to use
@@ -56,8 +52,8 @@ struct stepper_work_context {
 
     // Parameters about overall movement state
     atomic_flag e_stop_triggered;
-    _Atomic homing_status_t homing;
-    _Atomic ll_stepper_dir_t homing_direction;
+    _Atomic movement_control_t move_control;
+    _Atomic ll_stepper_dir_t motor_direction;
     motion_mode_t motion_mode;
     bool motion_calculation_done;
     struct k_work_delayable calculation_work;
@@ -68,6 +64,7 @@ struct stepper_work_context {
     // (Load these from the settings, they are rarely changed.)
     float motor_max_velocity;
     float motor_max_acceleration;
+    float homing_velocity;
     float motor_steps_per_revolution;
     float fixed_position;
     uint16_t microsteps;  // micro steps per step; should be a power of 2.
@@ -113,7 +110,8 @@ int servo_move_relative(const struct device *dev, float delta_position, float ma
  * @retval -ENODEV if the device is not found among the static context structs.
  */
 int stepper_set_parameters(const struct device *dev, float motor_max_velocity, float motor_max_acceleration,
-                           uint16_t microsteps, float motor_steps_per_revolution, bool flip_limit_orientation);
+                           float homing_velocity, uint16_t microsteps, float motor_steps_per_revolution,
+                           bool flip_limit_orientation);
 
 /**
  * Save an X, Y, or Z position as part of the 'send' capability.
@@ -139,7 +137,7 @@ int stepper_move_to_position(const struct device *dev, float target_position, fl
  */
 int stepper_move_relative(const struct device *dev, float delta_position, float max_velocity, float max_acceleration);
 
-int stepper_go_home_slowly(const struct device *dev);
+int stepper_home(const struct device *dev);
 
 /*
  * Cancel all work on the motor.
@@ -198,13 +196,14 @@ void set_all_e_stop_flags(void);
  * @param dev stepper device
  * @return The current homing status of the motor
  */
-homing_status_t stepper_homing_status(const struct device *dev);
+movement_control_t stepper_homing_status(const struct device *dev);
 
 typedef struct stepper_config {
     bool flip_limit_orientation;
     float steps_per_revolution;
     float motor_max_velocity;
     float motor_max_acceleration;
+    float homing_velocity;
     uint16_t microsteps;
 } stepper_config_t;
 
