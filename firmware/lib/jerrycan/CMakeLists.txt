@@ -47,7 +47,7 @@ zephyr_library_sources_ifdef(CONFIG_DT_HAS_LL_ANALOG_OUT_ENABLED
 )
 
 # If this board has doors
-zephyr_library_sources(
+zephyr_library_sources_ifdef(CONFIG_DT_HAS_GPIO_KEYS_ENABLED
 	       modules/door_sensor.c
 )
 

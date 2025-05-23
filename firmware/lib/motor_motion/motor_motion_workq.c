@@ -286,7 +286,7 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
         case LL_MOTOR_EVENT_LIMIT_SWITCH:
             // Context is NULL during this event because of limitations of the GPIO driver
             context = find_stepper_context_from_device(dev);
-            if (context) {
+            if (context && context->motion_mode == MOTION_IN_PROGESS) {
                 switch (context->move_control) {
                     case MOVING_HOME:
                         LOG_WRN("Found Limit Switch. Stopping Motor.");
@@ -300,8 +300,6 @@ static void stepper_motor_event_callback(const struct device *const dev, ll_moto
                             (context->motor_direction == LL_STEPPER_DIR_FORWARD && context->flip_limit_orientation)) {
                             LOG_WRN("Found Limit Switch. Stopping Motor.");
                             stepper_motor_stop(dev);
-                        } else {
-                            LOG_WRN("Found Limit Switch.");
                         }
                         break;
                 }
@@ -832,6 +830,7 @@ int stepper_home(const struct device *dev) {
 
     context->min_step = 1.0f / work_context->microsteps;
     work_context->move_control = MOVING_HOME;
+    work_context->motion_mode = MOTION_IN_PROGESS;
     work_context->motor_direction =
         work_context->flip_limit_orientation ? LL_STEPPER_DIR_FORWARD : LL_STEPPER_DIR_BACKWARD;
     work_context->motion_calculation_done = false;

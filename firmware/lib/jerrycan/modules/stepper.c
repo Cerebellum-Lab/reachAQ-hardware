@@ -316,6 +316,7 @@ static int stepper_home_handler(const jerrycan_msg_t *msg) {
         LOG_ERR("Failed to home stepper motor: Invalid stepper device number - %d", msg->stepper_home.motor_id);
         rc = -ENODEV;
     } else {
+        LOG_INF("Homing motor %d with UUID=%d", msg->stepper_home.motor_id, msg->uuid);
         moving_state = MOVING_SINGLE;
 
         context->uuid = msg->uuid;

@@ -30,8 +30,8 @@
 	gpio_keys {
 		compatible = "gpio-keys";
 
-		user_button0: button0 {
-			label = "User0";
+		ext_button_1: ext_button_1 {
+			label = "Ext Button 1";
 			gpios = <&gpioa 0 GPIO_ACTIVE_LOW>;
 			zephyr,code = <INPUT_KEY_0>;
 		};

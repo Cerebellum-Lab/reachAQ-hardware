@@ -27,10 +27,6 @@
 		};
 	};
 
-	gpio_keys {
-		compatible = "gpio-keys";
-	};
-
 	generic-gpios {
 		status = "okay";
 		compatible = "ll,generic-gpios";

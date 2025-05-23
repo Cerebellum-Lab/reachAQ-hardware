@@ -244,10 +244,11 @@ typedef struct __attribute__((packed)) {
 
 SIZE_CHECK(jerrycan_cmd_load_cell_read_t, 5);
 
-#define DOOR_SENSOR_COUNT 3
-
 typedef struct __attribute__((packed)) {
-    uint8_t opened : DOOR_SENSOR_COUNT;  // bit flags: opened(1), closed(0)
+    uint8_t door1 : 1;  // bit flags: opened(1), closed(0)
+    uint8_t door2 : 1;
+    uint8_t door3 : 1;
+    uint8_t external_button : 1;
 } jerrycan_cmd_door_closed_t;
 
 SIZE_CHECK(jerrycan_cmd_door_closed_t, 1);

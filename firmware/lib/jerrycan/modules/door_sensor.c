@@ -15,12 +15,14 @@ LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 #define DOOR_2 DEVICE_DT_GET(DOOR_2_NODE_ID)
 #define DOOR_3_NODE_ID DT_NODELABEL(door_sensor_3)
 #define DOOR_3 DEVICE_DT_GET(DOOR_3_NODE_ID)
+#define EXT_BUTTON_1_NODE_ID DT_NODELABEL(ext_button_1)
+#define EXT_BUTTON_1 DEVICE_DT_GET(EXT_BUTTON_1_NODE_ID)
 
-#if DT_NODE_EXISTS(DOOR_1_NODE_ID)  // a reasonable check to see if the doors are defined
 enum {
-    DOOR_IDX_1 = 0,
-    DOOR_IDX_2 = 1,
-    DOOR_IDX_3 = 2,
+    DOOR_1_IDX = 0,
+    DOOR_2_IDX = 1,
+    DOOR_3_IDX = 2,
+    EXT_BUTTON_1_IDX = 3,
 };
 
 typedef struct {
@@ -28,23 +30,23 @@ typedef struct {
     bool value;                      // current value
 } door_data_t;
 
-static door_data_t gDoors[DOOR_SENSOR_COUNT] = {{.spec = GPIO_DT_SPEC_GET_OR(DOOR_1_NODE_ID, gpios, {0}), .value = 0},
-                                                {.spec = GPIO_DT_SPEC_GET_OR(DOOR_2_NODE_ID, gpios, {0}), .value = 0},
-                                                {.spec = GPIO_DT_SPEC_GET_OR(DOOR_3_NODE_ID, gpios, {0}), .value = 0}};
+static door_data_t gKeys[] = {{.spec = GPIO_DT_SPEC_GET_OR(DOOR_1_NODE_ID, gpios, {0}), .value = 0},
+                              {.spec = GPIO_DT_SPEC_GET_OR(DOOR_2_NODE_ID, gpios, {0}), .value = 0},
+                              {.spec = GPIO_DT_SPEC_GET_OR(DOOR_3_NODE_ID, gpios, {0}), .value = 0},
+                              {.spec = GPIO_DT_SPEC_GET_OR(EXT_BUTTON_1_NODE_ID, gpios, {0}), .value = 0}};
 
 /**
  * Transmit message on CAN for the door status data
  */
-static void door_sensor_transmit_msg() {
+static void door_sensor_transmit_msg(struct k_timer *) {
     jerrycan_msg_t msg;
 
     msg.type = JERRYCAN_CMD_DOOR_SENSOR;
 
-    uint8_t opened = 0;
-    for (int i = 0; i < DOOR_SENSOR_COUNT; ++i) {
-        opened |= (gDoors[i].value & 0x1) << i;
-    }
-    msg.doors.opened = opened;
+    msg.doors.door1 = gKeys[DOOR_1_IDX].value;
+    msg.doors.door2 = gKeys[DOOR_2_IDX].value;
+    msg.doors.door3 = gKeys[DOOR_3_IDX].value;
+    msg.doors.external_button = !gKeys[EXT_BUTTON_1_IDX].value;
 
     jerrycan_tx(&msg, K_NO_WAIT);
 }
@@ -57,37 +59,32 @@ static void door_sensor_transmit_msg() {
  */
 static void door_sensor_handler(struct input_event *event) {
     switch (event->code) {
+        case INPUT_KEY_0:
+            gKeys[EXT_BUTTON_1_IDX].value = event->value ? 0 : 1;
+            break;
+
         case INPUT_KEY_5:
-            gDoors[DOOR_IDX_1].value = event->value;
+            gKeys[DOOR_1_IDX].value = event->value ? 0 : 1;
             break;
 
         case INPUT_KEY_6:
-            gDoors[DOOR_IDX_2].value = event->value;
+            gKeys[DOOR_2_IDX].value = event->value ? 0 : 1;
             break;
 
         case INPUT_KEY_7:
-            gDoors[DOOR_IDX_3].value = event->value;
+            gKeys[DOOR_3_IDX].value = event->value ? 0 : 1;
             break;
 
         default:
             break;
     }
 
-    LOG_DBG("Got Door Sensor: #%d -> %d\n", event->code, event->value);
-
-    door_sensor_transmit_msg();
+    LOG_INF("Got Door Sensor: #%d -> %d", event->code, event->value);
 }
 
 INPUT_CALLBACK_DEFINE(NULL, door_sensor_handler);
 
-/**
- * Timer callback to transmit the current state of the doors (opened/closed).
- *
- * @param (timer)
- */
-static void door_sensor_timer_expired(struct k_timer *) { door_sensor_transmit_msg(); }
-
-K_TIMER_DEFINE(gPeriodicTimer, door_sensor_timer_expired, NULL);
+K_TIMER_DEFINE(gPeriodicTimer, door_sensor_transmit_msg, NULL);
 
 /**
  * Initialize the door sensor module. Intialization occurs automatically on
@@ -101,12 +98,9 @@ K_TIMER_DEFINE(gPeriodicTimer, door_sensor_timer_expired, NULL);
 static int door_init() {
     k_timer_start(&gPeriodicTimer, K_MSEC(1000), K_MSEC(CONFIG_LIB_JERRYCAN_DOOR_SENSOR_TX_PERIOD_MS));
 
-    gDoors[DOOR_IDX_1].value = gpio_pin_get_dt(&gDoors[DOOR_IDX_1].spec);
-    gDoors[DOOR_IDX_2].value = gpio_pin_get_dt(&gDoors[DOOR_IDX_2].spec);
-    gDoors[DOOR_IDX_3].value = gpio_pin_get_dt(&gDoors[DOOR_IDX_3].spec);
-
-    for (int i = 0; i < DOOR_SENSOR_COUNT; ++i) {
-        LOG_INF("Inital Door #%d Sensor: %d", i, gDoors[i].value);
+    for (int i = 0; i < sizeof(gKeys) / sizeof(gKeys[0]); ++i) {
+        gKeys[i].value = !gpio_pin_get_dt(&gKeys[i].spec);
+        LOG_INF("Inital Door #%d Sensor: %d", i, gKeys[i].value);
     }
 
     LOG_INF("Door Sensor Initialized!");
@@ -115,5 +109,3 @@ static int door_init() {
 }
 
 SYS_INIT(door_init, APPLICATION, CONFIG_LIB_JERRYCAN_INIT_PRIORITY);
-
-#endif

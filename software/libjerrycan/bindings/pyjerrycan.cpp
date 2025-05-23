@@ -268,9 +268,18 @@ PYBIND11_MODULE(pyjerrycan, m) {
     
     py::class_<jerrycan_cmd_door_closed_t>(m, "Doors")
         .def(py::init<>())
-        .def_property("opened",
-            [](const jerrycan_cmd_door_closed_t &a) { return a.opened; },
-            [](jerrycan_cmd_door_closed_t &a, const uint8_t v) { a.opened = v; })
+        .def_property("door1",
+            [](const jerrycan_cmd_door_closed_t &a) { return a.door1; },
+            [](jerrycan_cmd_door_closed_t &a, const uint8_t v) { a.door1 = v; })
+    		.def_property("door2",
+            [](const jerrycan_cmd_door_closed_t &a) { return a.door2; },
+            [](jerrycan_cmd_door_closed_t &a, const uint8_t v) { a.door2 = v; })
+    		.def_property("door3",
+            [](const jerrycan_cmd_door_closed_t &a) { return a.door3; },
+            [](jerrycan_cmd_door_closed_t &a, const uint8_t v) { a.door3 = v; })
+    		.def_property("ext_button",
+            [](const jerrycan_cmd_door_closed_t &a) { return a.external_button; },
+            [](jerrycan_cmd_door_closed_t &a, const uint8_t v) { a.external_button = v; })
     ;
 
     py::class_<jerrycan_cmd_audio_data_cmd_t>(m, "AudioDataCmd")
