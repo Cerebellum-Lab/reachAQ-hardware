@@ -3,7 +3,6 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/i2c.h>
-#include <zephyr/dt-bindings/gpio/gpio.h>
 #include <zephyr/logging/log.h>
 
 #include "nau7802.h"
@@ -15,7 +14,8 @@ LOG_MODULE_REGISTER(ll_load_cell, CONFIG_LL_LOAD_CELL_LOG_LEVEL);
 typedef struct {
     nau7802_chs_t adc_channel;
     nau7802_vldo_t ldo_voltage;
-    nau7802_gains_t gain;
+    nau7802_gains_t gain_index;
+    int gain;
     nau7802_crs_t conversion_rate;
     struct gpio_dt_spec drdy_pin;
 } ll_load_cell_cfg_t;
@@ -24,8 +24,11 @@ typedef struct {
     const struct i2c_dt_spec i2c;
     struct k_work read_i2c_work;
     struct k_work tare_i2c_work;
+    struct k_work drdy_failed_work;
     struct gpio_callback drdy_cb;
+    struct k_timer *drdy_failed_timer;
     int32_t load;
+    nau7802_crs_t conversion_rate;
 } ll_load_cell_data_t;
 
 static inline int k_work_error_handler(int error) {
@@ -62,21 +65,33 @@ static inline int k_work_error_handler(int error) {
 static void ll_load_cell_drdy_isr(const struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins) {
     ll_load_cell_data_t *data = CONTAINER_OF(cb, ll_load_cell_data_t, drdy_cb);
 
+    k_timer_start(data->drdy_failed_timer, K_SECONDS(1), K_NO_WAIT);
+
     /* Submit I2C work item to the system workqueue */
     int ret = k_work_submit(&data->read_i2c_work);
     k_work_error_handler(ret);
+}
+
+static void ll_load_cell_drdy_expired(struct k_timer *timer) {
+    LOG_WRN("DRDY Stopped generating data ready.");
+
+    const struct device *dev = k_timer_user_data_get(timer);
+    ll_load_cell_data_t *data = dev->data;
+
+    k_work_submit(&data->drdy_failed_work);
 }
 
 /* I2C work item handler function for performing conversion result read transaction */
 static void ll_load_cell_read_i2c_work_handler(struct k_work *work) {
     ll_load_cell_data_t *data = CONTAINER_OF(work, ll_load_cell_data_t, read_i2c_work);
 
-    /* On DRDY, perform read */
-    int ret = nau7802_read_conversion_result(&data->i2c, &data->load);
-    if (ret != 0) {
-        LOG_ERR("Error reading conversion result: %d", ret);
-        return;
+    int32_t sample;
+    if (nau7802_read_conversion_result(&data->i2c, &sample) != 0) {
+        LOG_ERR("Error reading conversion result");
+        sample = INT24_MIN;
     }
+
+    data->load = sample;
 }
 
 static void ll_load_cell_tare_i2c_work_handler(struct k_work *work) {
@@ -97,12 +112,32 @@ static void ll_load_cell_tare_i2c_work_handler(struct k_work *work) {
     }
 }
 
+/* I2C work item handler function for performing conversion result read transaction */
+static void ll_load_cell_drdy_failed_work_handler(struct k_work *work) {
+    ll_load_cell_data_t *data = CONTAINER_OF(work, ll_load_cell_data_t, drdy_failed_work);
+    const struct i2c_dt_spec *i2c = &data->i2c;
+
+    // Sometimes the calibration sequence causses the NAU7802 to go into a non-functional
+    // state. But power-cycling the on-chip electronics and re-starting the ADC conversions,
+    // the chip becomes functional again. This is always done to ensure the chip is in working
+    // order after the calibration.
+    nau7802_power_sequence(i2c);
+
+    nau7802_set_conversion_rate(i2c, data->conversion_rate);
+
+    nau7802_start_adc(i2c, false);
+    k_sleep(K_MSEC(10));
+    nau7802_start_adc(i2c, true);
+
+    k_timer_start(data->drdy_failed_timer, K_SECONDS(1), K_NO_WAIT);
+}
+
 /* Returns the last read load value in millivolts as an int */
 int16_t ll_load_cell_get_load_mv(const struct device *dev) {
     const ll_load_cell_cfg_t *cfg = dev->config;
     ll_load_cell_data_t *data = dev->data;
 
-    return (int16_t)NAU7802_COUNTS_TO_MV(data->load, cfg->ldo_voltage, cfg->gain);
+    return (int16_t)nau7802_counts_to_mv(data->load, cfg->ldo_voltage, cfg->gain);
 }
 
 /* Returns the last read load value in millivolts as a float */
@@ -110,7 +145,7 @@ float ll_load_cell_get_load_mv_float(const struct device *dev) {
     const ll_load_cell_cfg_t *cfg = dev->config;
     ll_load_cell_data_t *data = dev->data;
 
-    return NAU7802_COUNTS_TO_MV(data->load, cfg->ldo_voltage, cfg->gain);
+    return nau7802_counts_to_mv(data->load, cfg->ldo_voltage, cfg->gain);
 }
 
 /* Tares the load cell */
@@ -118,7 +153,7 @@ int ll_load_cell_tare(const struct device *dev) {
     ll_load_cell_data_t *data = dev->data;
 
     /* Submit I2C work item to the system workqueue */
-    int ret = k_work_submit(&data->tare_i2c_work);
+    const int ret = k_work_submit(&data->tare_i2c_work);
     return k_work_error_handler(ret);
 }
 
@@ -151,7 +186,7 @@ static int ll_load_cell_nau7802_init(const struct device *dev) {
     }
 
     /* Configure NUA7802 Gain */
-    ret = nau7802_set_gain(i2c, cfg->gain);
+    ret = nau7802_set_gain(i2c, cfg->gain_index);
     if (ret != 0) {
         LOG_ERR("Failed to initialize NUA7802: Error setting NUA7802 Gain - %d", ret);
         return ret;
@@ -213,7 +248,7 @@ static int ll_load_cell_nau7802_init(const struct device *dev) {
     }
 
     /* Start NUA7802 ADC Conversion */
-    ret = nau7802_start_adc(i2c);
+    ret = nau7802_start_adc(i2c, true);
     if (ret != 0) {
         LOG_ERR("Failed to initialize NUA7802: Error starting NUA7802 ADC conversion - %d", ret);
         return ret;
@@ -259,6 +294,7 @@ static int ll_load_cell_init(const struct device *dev) {
 
     k_work_init(&data->read_i2c_work, ll_load_cell_read_i2c_work_handler);
     k_work_init(&data->tare_i2c_work, ll_load_cell_tare_i2c_work_handler);
+    k_work_init(&data->drdy_failed_work, ll_load_cell_drdy_failed_work_handler);
 
     /* Initialize NAU7802 */
     ret = ll_load_cell_nau7802_init(dev);
@@ -266,6 +302,9 @@ static int ll_load_cell_init(const struct device *dev) {
         LOG_ERR("Failed to initialize Load Cell: Error initializing NAU7802 - %d", ret);
         return ret;
     }
+
+    k_timer_user_data_set(data->drdy_failed_timer, (void *)dev);
+    k_timer_start(data->drdy_failed_timer, K_SECONDS(1), K_NO_WAIT);
 
     LOG_INF("Load cell driver initialized successfully");
 
@@ -284,12 +323,14 @@ static int ll_load_cell_init(const struct device *dev) {
 /* clang-format on */
 
 #define LOAD_CELL_INST(idx)                                                                                       \
+    K_TIMER_DEFINE(drdy_timer_##idx, ll_load_cell_drdy_expired, NULL);                                            \
     BUILD_ASSERT(DT_REG_ADDR(DT_INST_PARENT(idx)) != NAU7802_I2CADDR,                                             \
                  "`reg` property does not match NAU7802 I2C Address (0x2A)");                                     \
     static const ll_load_cell_cfg_t load_cell_cfg_##idx = {                                                       \
         .adc_channel = (nau7802_chs_t)DT_INST_ENUM_IDX(idx, adc_channel),                                         \
         .ldo_voltage = (nau7802_vldo_t)DT_INST_ENUM_IDX(idx, ldo_voltage),                                        \
-        .gain = (nau7802_gains_t)DT_INST_PROP(idx, gain), /* Do NOT change to DT_INST_ENUM_IDX */                 \
+        .gain_index = (nau7802_gains_t)DT_INST_ENUM_IDX(idx, gain),                                               \
+        .gain = DT_INST_PROP(idx, gain),                                                                          \
         .conversion_rate = CONVERSION_RATE_FROM_ENUM_IDX(DT_INST_ENUM_IDX(idx, conversion_rate)),                 \
         .drdy_pin = GPIO_DT_SPEC_INST_GET(idx, drdy_gpios),                                                       \
     };                                                                                                            \
@@ -300,7 +341,11 @@ static int ll_load_cell_init(const struct device *dev) {
                 .handler = ll_load_cell_drdy_isr,                                                                 \
                 .pin_mask = 1 << DT_INST_GPIO_PIN(idx, drdy_gpios),                                               \
             },                                                                                                    \
+        .drdy_failed_timer = &drdy_timer_##idx,                                                                   \
+        .load = 0.0,                                                                                              \
+        .conversion_rate = CONVERSION_RATE_FROM_ENUM_IDX(DT_INST_ENUM_IDX(idx, conversion_rate)),                 \
     };                                                                                                            \
+                                                                                                                  \
     DEVICE_DT_INST_DEFINE(idx, ll_load_cell_init, NULL, &load_cell_data_##idx, &load_cell_cfg_##idx, POST_KERNEL, \
                           LL_LOAD_CELL_INIT_PRIORITY, NULL);
 

@@ -37,7 +37,7 @@ menuconfig LIB_JERRYCAN_TEMPERATURE_TX_PERIOD_MS
 
 menuconfig LIB_JERRYCAN_PRESSURE_TX_PERIOD_MS
     int "Pressure TX Period"
-    default 100
+    default 12
     depends on LIB_JERRYCAN
     help
       The period at which the pressure message is transmitted in milliseconds.
@@ -65,7 +65,7 @@ menuconfig LIB_JERRYCAN_ANALOG_OUT_TX_PERIOD_MS
 
 menuconfig LIB_JERRYCAN_LOAD_CELL_TX_PERIOD_MS
     int "Load Cell TX Period"
-    default 10
+    default 12
     depends on LIB_JERRYCAN
     help
       The period at which the load cell message is transmitted in milliseconds.

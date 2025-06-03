@@ -63,12 +63,13 @@ static void jerrycan_load_cell_tx() {
     for (int i = 0; i < LOAD_CELL_COUNT; i++) {
         const jerrycan_load_cell_context_t *context = &contexts[i];
         const struct device *load_cell = context->load_cell;
-        uint16_t instance_number = context->instance_number;
+        const uint16_t instance_number = context->instance_number;
+        const float sample = ll_load_cell_get_load_mv_float(load_cell);
 
         jerrycan_msg_t msg = {.type = JERRYCAN_CMD_LOAD_CELL_READ,
                               .load_cell_read = {
                                   .instance = instance_number,
-                                  .load_mv = ll_load_cell_get_load_mv_float(load_cell),
+                                  .load_mv = sample,
                               }};
 
         jerrycan_tx(&msg, K_NO_WAIT);

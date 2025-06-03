@@ -48,7 +48,7 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_END = 0x12,
     JERRYCAN_CMD_RGB_LED = 0x13,
     JERRYCAN_CMD_LOAD_CELL_TARE = 0x14,
-    JERRYCAN_CMD_PRESSURE_SENSOR_TARE = 0x15,
+    JERRYCAN_RSVD1 = 0x15,
     JERRYCAN_CMD_STEPPER_STATUS = 0x16,
     JERRYCAN_CMD_SERVO_STATUS = 0x17,
     JERRYCAN_CMD_BOOTLOADER_COMMAND = 0x18,
@@ -168,17 +168,10 @@ SIZE_CHECK(jerrycan_cmd_cfg_t, 28);
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
-    uint8_t error;
-    uint32_t pressure_mv;
+    uint32_t pressure;
 } jerrycan_cmd_pressure_read_t;
 
-SIZE_CHECK(jerrycan_cmd_pressure_read_t, 6);
-
-typedef struct __attribute__((packed)) {
-    uint8_t instance;
-} jerrycan_cmd_pressure_sensor_tare_t;
-
-SIZE_CHECK(jerrycan_cmd_pressure_sensor_tare_t, 1);
+SIZE_CHECK(jerrycan_cmd_pressure_read_t, 5);
 
 /*
     Scale factor for temperature and humidity transmission
@@ -395,7 +388,6 @@ typedef struct __attribute__((packed)) {
                 jerrycan_cmd_audio_data_cmd_t audio_data_cmd;
                 jerrycan_cmd_rgb_led_t rgb_led;
                 jerrycan_cmd_load_cell_tare_t load_cell_tare;
-                jerrycan_cmd_pressure_sensor_tare_t pressure_sensor_tare;
                 jerrycan_cmd_bootloader_command_t bootloader_command;
                 jerrycan_cmd_bootloader_response_t bootloader_response;
                 jerrycan_cmd_delay_t delay;

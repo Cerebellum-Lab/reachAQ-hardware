@@ -49,8 +49,6 @@ class JerryCAN {
 
     [[nodiscard]] int LoadCellTare(uint8_t dst_id, uint8_t instance, uuid_t uuid) const;
 
-    [[nodiscard]] int PressureSensorTare(uint8_t dst_id, uint8_t instance, uuid_t uuid) const;
-
     [[nodiscard]] int RGBLEDWrite(uint8_t dst_id, uint8_t red, uint8_t green, uint8_t blue, uuid_t uuid) const;
 
     [[nodiscard]] int BootloaderCommand(uint8_t dst_id, jerrycan_bootloader_subcmd_t subcmd) const;

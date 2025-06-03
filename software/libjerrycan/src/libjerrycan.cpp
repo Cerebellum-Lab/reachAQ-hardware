@@ -97,7 +97,6 @@ static uint8_t jerrycan_msg_get_payload_size(const jerrycan_cmd_type_t msg_type)
         {JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_CONT, sizeof(jerrycan_cmd_audio_data_t)},
         {JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_END, sizeof(jerrycan_cmd_audio_data_cmd_t)},
         {JERRYCAN_CMD_LOAD_CELL_TARE, sizeof(jerrycan_cmd_load_cell_tare_t)},
-        {JERRYCAN_CMD_PRESSURE_SENSOR_TARE, sizeof(jerrycan_cmd_pressure_sensor_tare_t)},
         {JERRYCAN_CMD_RGB_LED, sizeof(jerrycan_cmd_rgb_led_t)},
         {JERRYCAN_CMD_DOOR_SENSOR, sizeof(jerrycan_cmd_door_closed_t)},
         {JERRYCAN_CMD_BOOTLOADER_COMMAND, sizeof(jerrycan_cmd_bootloader_command_t)},
@@ -414,22 +413,6 @@ int JerryCAN::LoadCellTare(uint8_t dst_id, uint8_t instance, uuid_t uuid) const 
     jerrycan_msg_t msg = {
         .type = JERRYCAN_CMD_LOAD_CELL_TARE,
         .load_cell_tare =
-            {
-                .instance = instance,
-            },
-    };
-
-    msg.uuid = uuid;
-
-    return SendMessage(msg, dst_id);
-}
-
-/* -------------------------------------------------------------------------- */
-
-int JerryCAN::PressureSensorTare(uint8_t dst_id, uint8_t instance, uuid_t uuid) const {
-    jerrycan_msg_t msg = {
-        .type = JERRYCAN_CMD_PRESSURE_SENSOR_TARE,
-        .pressure_sensor_tare =
             {
                 .instance = instance,
             },

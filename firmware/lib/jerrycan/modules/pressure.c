@@ -64,60 +64,25 @@ static void jerrycan_pressure_sensor_tx() {
     /* For each pressure sensor, construct and send a pressure message*/
     for (int i = 0; i < PRESSURE_SENSOR_COUNT; i++) {
         const jerrycan_pressure_sensor_context_t *context = &contexts[i];
-        const struct device *pressure_sensor = context->pressure_sensor;
-        uint16_t instance_number = context->instance_number;
 
-        /* Local variable for storing pressure value */
-        uint16_t pressure_mv = 0;
-        jerrycan_msg_t msg = {.type = JERRYCAN_CMD_PRESSURE_READ,
-                              .pressure_read = {
-                                  .instance = instance_number,
-                                  .error = ll_pressure_sensor_get_pressure(pressure_sensor, &pressure_mv),
-                                  .pressure_mv = pressure_mv,
-                              }};
+        jerrycan_msg_t msg = {
+            .type = JERRYCAN_CMD_PRESSURE_READ,
+            .pressure_read =
+                {
+                    .instance = context->instance_number,
+                    .pressure = ll_pressure_sensor_get_pressure(context->pressure_sensor),
+                },
+        };
 
-        /* Transmit message */
-        int ret = jerrycan_tx(&msg, K_NO_WAIT);
-        if (ret != 0) {
-            LOG_ERR("Error sending CAN message for pressure_sensor%d: %d", context->instance_number, ret);
-        }
+        jerrycan_tx(&msg, K_NO_WAIT);
     }
 }
-
-static int jerrycan_pressure_sensor_tare_handler(const jerrycan_msg_t *msg) {
-    int rc = -ENOENT;
-
-    for (int i = 0; i < PRESSURE_SENSOR_COUNT; i++) {
-        const jerrycan_pressure_sensor_context_t *context = &contexts[i];
-        const struct device *pressure_sensor = context->pressure_sensor;
-        uint16_t instance_number = context->instance_number;
-
-        if (msg->pressure_sensor_tare.instance == instance_number) {
-            rc = ll_pressure_sensor_tare(pressure_sensor);
-            if (rc < 0) {
-                LOG_ERR("Failed to perform the requested pressure sensor tare operation: %d", rc);
-            } else {
-                LOG_INF("Successfully tared pressure_sensor%d", instance_number);
-            }
-            break;
-        }
-    }
-
-    return rc;
-}
-
-static jerrycan_rx_callback_t pressure_sensor_tare_callback = {
-    .filter_msg_type = JERRYCAN_CMD_PRESSURE_SENSOR_TARE,
-    .func = jerrycan_pressure_sensor_tare_handler,
-};
-
-K_TIMER_DEFINE(jerrycan_pressure_sensor_timer, jerrycan_pressure_sensor_tx, NULL);
 
 static int jerrycan_pressure_sensor_init() {
-    jerrycan_register_rx_callback(&pressure_sensor_tare_callback);
+    static K_TIMER_DEFINE(timer, jerrycan_pressure_sensor_tx, NULL);
 
     /* Start timer to send the status messages periodically */
-    k_timer_start(&jerrycan_pressure_sensor_timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_PRESSURE_TX_PERIOD_MS));
+    k_timer_start(&timer, K_MSEC(100), K_MSEC(CONFIG_LIB_JERRYCAN_PRESSURE_TX_PERIOD_MS));
 
     return 0;
 }

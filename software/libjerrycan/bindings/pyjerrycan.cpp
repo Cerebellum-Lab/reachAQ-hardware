@@ -31,7 +31,6 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def("ToneWrite", &JerryCAN::ToneWrite, py::arg("dst_id"), py::arg("instance"), py::arg("frequency"), py::arg("duration"), py::arg("uuid"))
         .def("AnalogOutWrite", &JerryCAN::AnalogOutWrite, py::arg("dst_id"), py::arg("instance"), py::arg("value_mv"), py::arg("uuid"))
         .def("LoadCellTare", &JerryCAN::LoadCellTare, py::arg("dst_id"), py::arg("instance"), py::arg("uuid"))
-        .def("PressureSensorTare", &JerryCAN::PressureSensorTare, py::arg("dst_id"), py::arg("instance"), py::arg("uuid"))
         .def("RGBLEDWrite", &JerryCAN::RGBLEDWrite, py::arg("dst_id"), py::arg("red"), py::arg("green"), py::arg("blue"), py::arg("uuid"))
         .def("BootloaderCommand", &JerryCAN::BootloaderCommand, py::arg("dst_id"), py::arg("subcmd"))
         .def("Delay", &JerryCAN::Delay, py::arg("dst_id"), py::arg("delay"), py::arg("uuid"))
@@ -62,7 +61,6 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("analog_out", &jerrycan_msg_t::analog_out)
         .def_readwrite("load_cell_read", &jerrycan_msg_t::load_cell_read)
         .def_readwrite("load_cell_tare", &jerrycan_msg_t::load_cell_tare)
-        .def_readwrite("pressure_sensor_tare", &jerrycan_msg_t::pressure_sensor_tare)
         .def_readwrite("rgb_led", &jerrycan_msg_t::rgb_led)
         .def_readwrite("doors", &jerrycan_msg_t::doors)
         .def_readwrite("audio_data_cmd", &jerrycan_msg_t::audio_data_cmd)
@@ -163,10 +161,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_property("instance",
             [](const jerrycan_cmd_pressure_read_t &a) { return a.instance; },
             [](jerrycan_cmd_pressure_read_t &a, const uint8_t v) { a.instance = v; })
-        .def_property("error",
-            [](const jerrycan_cmd_pressure_read_t &a) { return a.error; },
-            [](jerrycan_cmd_pressure_read_t &a, const uint8_t v) { a.error = v; })
-        .def_readwrite("pressure_mv", &jerrycan_cmd_pressure_read_t::pressure_mv)
+        .def_readwrite("pressure", &jerrycan_cmd_pressure_read_t::pressure)
     ;
 
     py::class_<jerrycan_cmd_temp_hum_read_t>(m, "TempHumRead")
@@ -246,11 +241,6 @@ PYBIND11_MODULE(pyjerrycan, m) {
     py::class_<jerrycan_cmd_load_cell_tare_t>(m, "LoadCellTare")
         .def(py::init<>())
         .def_readwrite("instance", &jerrycan_cmd_load_cell_tare_t::instance)
-    ;
-
-    py::class_<jerrycan_cmd_pressure_sensor_tare_t>(m, "PressureSensorTare")
-        .def(py::init<>())
-        .def_readwrite("instance", &jerrycan_cmd_pressure_sensor_tare_t::instance)
     ;
 
     py::enum_<abs_or_rel_t>(m, "AbsOrRel")
@@ -373,7 +363,6 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .value("ANALOG_OUT", JERRYCAN_CMD_ANALOG_OUT)
         .value("LOAD_CELL_READ", JERRYCAN_CMD_LOAD_CELL_READ)
         .value("LOAD_CELL_TARE", JERRYCAN_CMD_LOAD_CELL_TARE)
-        .value("PRESSURE_SENSOR_TARE", JERRYCAN_CMD_PRESSURE_SENSOR_TARE)
         .value("RGB_LED", JERRYCAN_CMD_RGB_LED)
         .value("DOOR_SENSOR", JERRYCAN_CMD_DOOR_SENSOR)
         .value("AUDIO_MAGNITUDE_DATA_BEGIN", JERRYCAN_CMD_AUDIO_MAGNITUDE_DATA_BEGIN)

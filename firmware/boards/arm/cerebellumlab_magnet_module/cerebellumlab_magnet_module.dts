@@ -49,7 +49,7 @@
 		compatible = "ll,pressure-sensor";
 		status = "okay";
 		io-channels = <&adc1 15>;
-		sample-rate = <1000>;
+		sample-rate = <80>;
 	};
 
 	i2s3: i2s@40003c00 {		// Address per datasheet, pg 86
@@ -202,8 +202,8 @@
 		reg = <0x2a>;
 		adc-channel = <1>;
 		ldo-voltage = "3V0";
-		gain = <16>;
-		conversion-rate = <10>;
+		gain = <64>;
+		conversion-rate = <80>;
 		drdy-gpios = <&gpioc 5 GPIO_ACTIVE_HIGH>;
 		status = "okay";
 	};

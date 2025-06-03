@@ -10,6 +10,8 @@
 
 LOG_MODULE_REGISTER(ll_pressure_sensor, CONFIG_LL_PRESSURE_SENSOR_LOG_LEVEL);
 
+#define ADC_RESOLUTION 12
+
 /* Pressure Sensor configuration structure */
 typedef struct {
     const struct device *adc_dev;
@@ -19,34 +21,23 @@ typedef struct {
 
 /* Pressure Sensor data structure */
 typedef struct {
-    bool initialized;
-    bool enabled;
-    enum adc_action adc_action;
-    uint32_t raw_data;
-    uint16_t offset;
+    uint16_t raw_data;
 } ll_pressure_sensor_data_t;
 
+static int ll_pressure_sensor_enable(const struct device *dev);
+
 /* ADC callback */
-static enum adc_action adc_cb(const struct device *dev, const struct adc_sequence *sequence, uint16_t sampling_index) {
-    return *((enum adc_action *)sequence->options->user_data);
+static enum adc_action adc_cb(const struct device *dev, const struct adc_sequence *, uint16_t) {
+    return ADC_ACTION_REPEAT;
 }
 
-/* Initialize ADC */
 static int ll_pressure_sensor_adc_init(const struct device *dev) {
     const ll_pressure_sensor_cfg_t *cfg = dev->config;
 
-    int ret;
-
-    if (!cfg->adc_dev) {
-        LOG_ERR("ADC device not found");
-        return -ENODEV;
-    }
-
     /* Setup ADC channel */
-    ret = adc_channel_setup(cfg->adc_dev, &cfg->adc_channel_cfg);
+    const int ret = adc_channel_setup(cfg->adc_dev, &cfg->adc_channel_cfg);
     if (ret != 0) {
         LOG_ERR("Failed to configure ADC channel: %d", ret);
-        return ret;
     }
 
     return ret;
@@ -54,115 +45,33 @@ static int ll_pressure_sensor_adc_init(const struct device *dev) {
 
 /* Initialize Pressure Sensor */
 static int ll_pressure_sensor_init(const struct device *dev) {
-    ll_pressure_sensor_data_t *data = dev->data;
     LOG_INF("Initializing Pressure Sensor...");
 
     /* Initialize the ADC peripheral */
     int ret = ll_pressure_sensor_adc_init(dev);
     if (ret != 0) {
         LOG_ERR("Failed to initialize ADC: %d", ret);
-        return PRESSURE_SENSOR_ADC_ERROR;
+        return ret;
     }
-
-    data->initialized = true;
 
     return ll_pressure_sensor_enable(dev);
 }
 
 /* Returns the last recorded pressure */
-ll_pressure_sensor_error_t ll_pressure_sensor_get_pressure(const struct device *dev, uint16_t *value) {
-    ll_pressure_sensor_data_t *data = dev->data;
-    if (!data->initialized) {
-        return PRESSURE_SENSOR_NOT_INITIALIZED;
-    }
+uint16_t ll_pressure_sensor_get_pressure(const struct device *dev) {
+    const ll_pressure_sensor_data_t *data = dev->data;
 
-    if (!data->enabled) {
-        return PRESSURE_SENSOR_NOT_ENABLED;
-    }
-
-    *value = ADC_COUNTS_TO_MV(data->raw_data) - data->offset;
-
-    return PRESSURE_SENSOR_NO_ERROR;
+    return data->raw_data;
 }
 
 /* Enables the given pressure sensor */
-ll_pressure_sensor_error_t ll_pressure_sensor_enable(const struct device *dev) {
+static int ll_pressure_sensor_enable(const struct device *dev) {
     const ll_pressure_sensor_cfg_t *cfg = dev->config;
-    ll_pressure_sensor_data_t *data = dev->data;
-
-    LOG_INF("Enabling pressure sensor...");
-
-    if (!data->initialized) {
-        LOG_ERR("Pressure sensor must be initialized to enable");
-        return PRESSURE_SENSOR_NOT_INITIALIZED;
-    }
-
-    if (data->enabled) {
-        LOG_ERR("Pressure sensor already enabled");
-        return PRESSURE_SENSOR_ALREADY_ENABLED;
-    }
-
-    /* Set ADC action to repeat (continuous sampling) */
-    data->adc_action = ADC_ACTION_REPEAT;
 
     /* Trigger asynchronous ADC sampling */
     int ret = adc_read_async(cfg->adc_dev, &cfg->sequence, NULL);
     if (ret != 0) {
         LOG_ERR("Failed to start ADC continuous conversion with DMA (err %d)", ret);
-        return PRESSURE_SENSOR_ADC_ERROR;
-    }
-
-    data->enabled = true;
-
-    LOG_INF("Pressure sensor enabled!");
-
-    return PRESSURE_SENSOR_NO_ERROR;
-}
-
-/* Disables the given pressure sensor */
-ll_pressure_sensor_error_t ll_pressure_sensor_disable(const struct device *dev) {
-    ll_pressure_sensor_data_t *data = dev->data;
-    LOG_INF("Disabling pressure sensor...");
-
-    if (!data->initialized) {
-        LOG_ERR("Pressure sensor must be initialized to disable");
-        return PRESSURE_SENSOR_NOT_INITIALIZED;
-    }
-
-    if (!data->enabled) {
-        LOG_ERR("Pressure sensor already disabled");
-        return PRESSURE_SENSOR_ALREADY_DISABLED;
-    }
-
-    /* Set ADC action to finish (stop sampling) */
-    data->adc_action = ADC_ACTION_FINISH;
-    data->enabled = false;
-
-    LOG_INF("Pressure sensor disabled!");
-
-    return PRESSURE_SENSOR_NO_ERROR;
-}
-
-bool ll_pressure_sensor_is_initialized(const struct device *dev) {
-    ll_pressure_sensor_data_t *data = dev->data;
-
-    return data->initialized;
-}
-
-bool ll_pressure_sensor_is_enabled(const struct device *dev) {
-    ll_pressure_sensor_data_t *data = dev->data;
-
-    return data->enabled;
-}
-
-int ll_pressure_sensor_tare(const struct device *dev) {
-    ll_pressure_sensor_data_t *data = dev->data;
-    uint16_t current_pressure;
-    ll_pressure_sensor_error_t ret = ll_pressure_sensor_get_pressure(dev, &current_pressure);
-    if (ret != PRESSURE_SENSOR_NO_ERROR) {
-        LOG_ERR("Failed to tare pressure_sensor: %s", pressure_sensor_error_to_str[ret]);
-    } else {
-        data->offset = current_pressure + data->offset;
     }
 
     return ret;
@@ -173,16 +82,12 @@ int ll_pressure_sensor_tare(const struct device *dev) {
 
 #define PRESSURE_SENSOR_INST(idx)                                                                                      \
     static ll_pressure_sensor_data_t pressure_sensor_data_##idx = {                                                    \
-        .initialized = false,                                                                                          \
-        .enabled = false,                                                                                              \
-        .adc_action = ADC_ACTION_FINISH,                                                                               \
         .raw_data = 0,                                                                                                 \
-        .offset = 0,                                                                                                   \
     };                                                                                                                 \
     static const struct adc_sequence_options pressure_sensor_sequence_opts_##idx = {                                   \
         .extra_samplings = 0,                                                                                          \
         .callback = adc_cb,                                                                                            \
-        .user_data = &((pressure_sensor_data_##idx).adc_action),                                                       \
+        .user_data = NULL,                                                                                             \
         .interval_us = FREQ_HZ_TO_PER_US(DT_INST_PROP(idx, sample_rate)),                                              \
     };                                                                                                                 \
     static const ll_pressure_sensor_cfg_t pressure_sensor_cfg_##idx = {                                                \

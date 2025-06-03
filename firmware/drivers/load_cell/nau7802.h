@@ -7,7 +7,8 @@
 #define NAU7802_I2CADDR 0x2A
 
 /* Maximum signed 24-bit value */
-#define INT24_MAX 0x7FFFFF
+#define INT24_MAX 0x007FFFFF
+#define INT24_MIN 0xFF800000
 
 /* Enumeration of valid gain selection values */
 typedef enum {
@@ -36,13 +37,6 @@ typedef enum {
     NAU7802_VLDO_2V4 = 0b111,
 } __attribute__((__packed__)) nau7802_vldo_t;
 
-/* Mapping of nau7802_vldo_t to associated voltage in millivolts as a float */
-static const float nau7802_vldo_to_mv_float[] = {
-    [NAU7802_VLDO_4V5] = 4500.0f, [NAU7802_VLDO_4V2] = 4200.0f, [NAU7802_VLDO_3V9] = 3900.0f,
-    [NAU7802_VLDO_3V6] = 3600.0f, [NAU7802_VLDO_3V3] = 3300.0f, [NAU7802_VLDO_3V0] = 3000.0f,
-    [NAU7802_VLDO_2V7] = 2700.0f, [NAU7802_VLDO_2V4] = 2400.0f,
-};
-
 /* Enumeration of valid calibration mode selection values */
 typedef enum {
     OFFSET_CALIBRATION_INTERNAL = 0b00,
@@ -70,11 +64,6 @@ typedef enum {
     NAU7802_OSCS_INTERNAL = 0b0,
     NAU7802_OSCS_EXTERNAL = 0b1,
 } __attribute__((__packed__)) nau7802_oscs_t;
-
-/* Convert from signed 24-bit ADC counts to millivolts as a float */
-#define NAU7802_COUNTS_TO_MV(__counts__, __vldo__, __gains__)     \
-    (((float)(__counts__ * nau7802_vldo_to_mv_float[__vldo__])) / \
-     ((float)(INT24_MAX * NAU7802_GAINS_TO_SCALAR(__gains__))))
 
 /*************/
 /* Registers */
@@ -144,15 +133,7 @@ typedef union {
 
 /* ADC_OUT[2:0]: ADC Conversion Result Structure (All three conversion result registers) */
 typedef union {
-    /* ADC_OUT[2:0] Registers Bytes */
-    struct {
-        uint8_t adco_b0;  // ADC_OUT_B0: ADC Conversion Result [07:00]
-        uint8_t adco_b1;  // ADC_OUT_B1: ADC Conversion Result [15:08]
-        uint8_t adco_b2;  // ADC_OUT_B2: ADC Conversion Result [23:16]
-    };
     uint8_t bytes[3];
-    /* ADC_OUT[2:0] Registers Consolidated Result */
-    uint32_t result : 24;
 } __attribute__((packed)) nau7802_adc_out_reg_t;
 
 /* ADC_REG: ADC Register Structure */
@@ -210,7 +191,11 @@ typedef enum {
     NAU7802_PGA_REG = 0x1B,   // PGA_REG: Pre-Gain Amplifier Control Register Address
 } nau7802_reg_address_t;
 
+float nau7802_counts_to_mv(int32_t const raw_counts, const uint32_t vldo_index, const int32_t gain);
+
 int nau7802_power_up(const struct i2c_dt_spec *i2c);
+
+int nau7802_power_sequence(const struct i2c_dt_spec *i2c);
 
 int nau7802_set_adc_channel(const struct i2c_dt_spec *i2c, nau7802_chs_t channel);
 
@@ -228,7 +213,7 @@ int nau7802_set_conversion_rate(const struct i2c_dt_spec *i2c, nau7802_crs_t con
 
 int nau7802_disable_weak_pullup(const struct i2c_dt_spec *i2c);
 
-int nau7802_start_adc(const struct i2c_dt_spec *i2c);
+int nau7802_start_adc(const struct i2c_dt_spec *i2c, bool enable);
 
 int nau7802_read_conversion_result(const struct i2c_dt_spec *i2c, int32_t *result);
 
