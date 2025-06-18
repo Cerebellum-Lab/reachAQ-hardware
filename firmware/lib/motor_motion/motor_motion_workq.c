@@ -10,6 +10,7 @@
 #include "jerrycan.h"
 #include "motor_common.h"
 #include "motor_motion.h"
+#include "motor_settings.h"
 #include "servo.h"
 #include "stepper.h"
 
@@ -193,7 +194,7 @@ struct stepper_work_context stepper_contexts[] = {DT_FOREACH_STATUS_OKAY(ll_step
 struct servo_work_context servo_contexts[] = {DT_FOREACH_STATUS_OKAY(ll_servo, DEV_DEFINE_SERVO_CONTEXT)};
 
 static struct k_work_q motor_workq;
-static K_THREAD_STACK_DEFINE(motor_workq_stack, 1024);
+static K_THREAD_STACK_DEFINE(motor_workq_stack, CONFIG_LIB_MOTOR_MOTION_WORK_QUEUE_STACK_SIZE);
 
 /* ***** Helper Functions ***** */
 
@@ -502,15 +503,7 @@ static int motor_workq_init_and_start(void) {
         k_work_init_delayable(&servo_contexts[i].calculation_work, servo_work_calculation_handler);
     }
 
-    int ret = settings_subsys_init();
-    if (ret < 0) {
-        LOG_ERR("error: settings_subsys_init: %d", ret);
-    } else {
-        ret = settings_load();
-        if (ret < 0) {
-            LOG_ERR("error: settings_load: %d", ret);
-        }
-    }
+    motor_settings_init();
 
     for (size_t i = 0; i < ARRAY_SIZE(stepper_contexts); i++) {
         struct stepper_work_context *context = &stepper_contexts[i];
@@ -522,7 +515,8 @@ static int motor_workq_init_and_start(void) {
         }
     }
 
-    k_work_queue_start(&motor_workq, motor_workq_stack, K_THREAD_STACK_SIZEOF(motor_workq_stack), K_PRIO_COOP(7), NULL);
+    k_work_queue_start(&motor_workq, motor_workq_stack, K_THREAD_STACK_SIZEOF(motor_workq_stack),
+                       CONFIG_LIB_MOTOR_MOTION_WORK_QUEUE_PRIORITY, NULL);
     return 0;
 }
 
@@ -554,7 +548,7 @@ int servo_set_parameters(const struct device *dev, const float max_velocity, con
         context->context.max_angle_pwm = max_angle_pwm;
     }
 
-    settings_save();
+    motor_settings_save();
 
     return 0;
 }
@@ -686,14 +680,14 @@ int stepper_set_parameters(const struct device *dev, const float max_velocity, c
 
     context->flip_limit_orientation = flip_limit_orientation != 0;  // ensure 0/1 result
 
-    settings_save();
+    motor_settings_save();
     return 0;
 }
 
 int stepper_save_fixed_location(struct stepper_work_context *context, const int motor_id, const float position) {
     context->fixed_position = position;
 
-    settings_save();
+    motor_settings_save();
 
     return 0;
 }

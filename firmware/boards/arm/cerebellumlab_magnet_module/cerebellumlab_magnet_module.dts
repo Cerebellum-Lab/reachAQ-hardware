@@ -246,6 +246,13 @@
 				label = "scratch";
 				reg = <0x00080000 DT_SIZE_K(512)>;
 			};
+
+			/* Create 64Kb of storage for settings */
+
+			storage_partition: partition@100000 {
+				label = "storage";
+				reg = <0x00100000 DT_SIZE_K(64)>;
+			};
 		};
 	};
 };
@@ -264,12 +271,6 @@
 		slot0_partition: partition@10000 {
 			label = "image-0";
 			reg = <0x00010000 DT_SIZE_K(444)>;
-		};
-
-		/* Set 4Kb of storage at the end of the 512Kb of flash */
-		storage_partition: partition@7f000 {
-			label = "storage";
-			reg = <0x0007f000 DT_SIZE_K(4)>;
 		};
 	};
 };

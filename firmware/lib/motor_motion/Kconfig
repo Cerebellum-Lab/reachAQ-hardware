@@ -5,6 +5,10 @@ menuconfig LIB_MOTOR_MOTION
     select SETTINGS
     select LL_SERVO if DT_HAS_LL_SERVO_ENABLED
     select LL_STEPPER if DT_HAS_LL_STEPPER_ENABLED
+    depends on LIB_MOTOR_MOTION_WORK_QUEUE_PRIORITY < 0
+    depends on LIB_MOTOR_MOTOIN_SETTINGS_WORK_QUEUE_PRIORITY > 90
+    depends on LIB_MOTOR_MOTION_WORK_QUEUE_STACK_SIZE > 0
+    depends on LIB_MOTOR_MOTION_SETTINGS_WORK_QUEUE_STACK_SIZE > 0
     help
       Enable the library that calculates motor motion based on sinusoidal motion profiles.
 
@@ -21,3 +25,21 @@ menuconfig LIB_MOTOR_MOTION_SHELL
     depends on LIB_MOTOR_MOTION
     help
       Enable the shell for the motor motion math library
+
+config LIB_MOTOR_MOTION_WORK_QUEUE_PRIORITY
+  int "Thread priority for the motor motion work queue"
+  default 0
+  range -16 0
+
+config LIB_MOTOR_MOTION_SETTINGS_WORK_QUEUE_PRIORITY
+  int "Thread priority for background settings saves"
+  default 89
+  range 89 99
+
+config LIB_MOTOR_MOTION_WORK_QUEUE_STACK_SIZE
+  int "Work queue thread stack size"
+  default 0
+
+config LIB_MOTOR_MOTION_SETTINGS_WORK_QUEUE_STACK_SIZE
+  int "Settings work queue thread stack size"
+  default 0

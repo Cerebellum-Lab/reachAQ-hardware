@@ -32,8 +32,44 @@ LOG_MODULE_REGISTER(motor_settings);
 #define FIXED_POSITION_KEY "s_fix"
 #define HOME_VELOCITY_KEY "s_home"
 
-static float read_float(const char *name, const settings_read_cb read_cb, void *cb_arg, const bool validate,
-                        float dflt) {
+K_THREAD_STACK_DEFINE(motor_settings_stack, CONFIG_LIB_MOTOR_MOTION_SETTINGS_WORK_QUEUE_STACK_SIZE);
+
+static struct k_work_q motor_settings_work_q;
+static struct k_work motor_settings_work;
+
+void _motor_settings_save() { settings_save(); }
+
+void motor_settings_save() { k_work_submit_to_queue(&motor_settings_work_q, &motor_settings_work); }
+
+int motor_settings_init() {
+    // A work queue thread is used to save settings in a low-priority context to
+    // allow the rest of the system to function while the slow operation of
+    // writing to flash can be performed in the background. The kernel work priority
+    // is -1, and cannot be changed. to ensure background writes, a specific
+    // queue is needed.
+    k_work_queue_start(&motor_settings_work_q, motor_settings_stack, K_THREAD_STACK_SIZEOF(motor_settings_stack),
+                       CONFIG_LIB_MOTOR_MOTION_SETTINGS_WORK_QUEUE_PRIORITY, NULL);
+
+    k_work_init(&motor_settings_work, _motor_settings_save);
+
+    LOG_INF("Initializing Settings.");
+    int rc = settings_subsys_init();
+    if (rc < 0) {
+        LOG_ERR("settings_subsys_init: %d", rc);
+    } else {
+        rc = settings_load();
+        if (rc < 0) {
+            LOG_ERR("settings_load: %d", rc);
+        } else {
+            LOG_INF("Settings Loaded");
+        }
+    }
+
+    return rc;
+}
+
+static __used float read_float(const char *name, const settings_read_cb read_cb, void *cb_arg, const bool validate,
+                               float dflt) {
     float value;
 
     const int ret = read_cb(cb_arg, &value, sizeof(value));
@@ -50,7 +86,7 @@ static float read_float(const char *name, const settings_read_cb read_cb, void *
 
 /* -------------------------------------------------------------------------- */
 
-static uint16_t read_uint16(const char *name, const settings_read_cb read_cb, void *cb_arg, uint16_t dflt) {
+static __used uint16_t read_uint16(const char *name, const settings_read_cb read_cb, void *cb_arg, uint16_t dflt) {
     uint16_t value;
 
     const int ret = read_cb(cb_arg, &value, sizeof(value));
@@ -67,7 +103,7 @@ static uint16_t read_uint16(const char *name, const settings_read_cb read_cb, vo
 
 /* -------------------------------------------------------------------------- */
 
-static bool read_bool(const char *name, const settings_read_cb read_cb, void *cb_arg, bool dflt) {
+static __used bool read_bool(const char *name, const settings_read_cb read_cb, void *cb_arg, bool dflt) {
     bool value;
 
     const int ret = read_cb(cb_arg, &value, sizeof(value));
@@ -84,8 +120,8 @@ static bool read_bool(const char *name, const settings_read_cb read_cb, void *cb
 
 /* -------------------------------------------------------------------------- */
 
-static int write_float(char *key, const char numeric, float value, const int index,
-                       int (*storage_func)(const char *name, const void *value, size_t val_len)) {
+static __used int write_float(char *key, const char numeric, float value, const int index,
+                              int (*storage_func)(const char *name, const void *value, size_t val_len)) {
     key[index] = numeric;
     const int ret = storage_func(key, &value, sizeof(value));
     if (ret < 0) {
@@ -99,8 +135,8 @@ static int write_float(char *key, const char numeric, float value, const int ind
 
 /* -------------------------------------------------------------------------- */
 
-static int write_uint16(char *key, const char numeric, const uint16_t value, const int index,
-                        int (*storage_func)(const char *name, const void *value, size_t val_len)) {
+static __used int write_uint16(char *key, const char numeric, const uint16_t value, const int index,
+                               int (*storage_func)(const char *name, const void *value, size_t val_len)) {
     key[index] = numeric;
     const int ret = storage_func(key, &value, sizeof(value));
     if (ret < 0) {
@@ -113,8 +149,8 @@ static int write_uint16(char *key, const char numeric, const uint16_t value, con
 
 /* -------------------------------------------------------------------------- */
 
-static int write_bool(char *key, const char numeric, const bool value, const int index,
-                      int (*storage_func)(const char *name, const void *value, size_t val_len)) {
+static __used int write_bool(char *key, const char numeric, const bool value, const int index,
+                             int (*storage_func)(const char *name, const void *value, size_t val_len)) {
     key[index] = numeric;
     const int ret = storage_func(key, &value, sizeof(value));
     if (ret < 0) {

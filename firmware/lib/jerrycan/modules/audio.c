@@ -45,7 +45,6 @@
 #define FFT_OUTPUT_FREQ_COUNT (FFT_INPUT_SAMPLE_COUNT / 2 + 1)  // DC, Freq, and Nyquest
 #define AUDIO_UPDATE_RATE 10                                    // (Hz)
 #define AUDIO_UPDATE_PERIOD (1000 / AUDIO_UPDATE_RATE)          // msec
-#define AUDIO_PRIORITY 10
 
 LOG_MODULE_REGISTER(audio_in, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
@@ -174,7 +173,8 @@ static void audio_thread(void*, void*, void*) {
     (void)ll_microphone_enable_reads(microphone, false);
 }
 
-K_THREAD_DEFINE(gThread, 1024, audio_thread, NULL, NULL, NULL, AUDIO_PRIORITY, 0, 1000);
+K_THREAD_DEFINE(gThread, CONFIG_LIB_JERRYCAN_AUDIO_STACK_SIZE, audio_thread, NULL, NULL, NULL,
+                CONFIG_LIB_JERRYCAN_AUDIO_PRIORITY, 0, 1000);
 
 /* -------------------------------------------------------------------------- */
 

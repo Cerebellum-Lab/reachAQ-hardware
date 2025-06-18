@@ -78,27 +78,28 @@ static int stepper_move_handler(const jerrycan_msg_t *msg) {
 
     if (move->save) {
         stepper_save_fixed_location(context, move->motor_id, move->position);
+        return 0;
+    } else {
+        moving_state = MOVING_SINGLE;
+
+        int rc = -1;
+        switch (msg->stepper_move.abs_or_rel) {
+            case JERRYCAN_MOVE_ABSOLUTE:
+                // Move the stepper to the absolute position
+                rc = stepper_move_to_position(dev, move->position, move->max_velocity, move->max_acceleration);
+                break;
+
+            case JERRYCAN_MOVE_RELATIVE:
+                // Move the stepper to the relative position
+                rc = stepper_move_relative(dev, move->position, move->max_velocity, move->max_acceleration);
+                break;
+
+            default:
+                LOG_ERR("Invalid move type: %d", msg->stepper_move.abs_or_rel);
+        }
+
+        return (rc == 0) ? COMMAND_NOT_COMPLETE : rc;
     }
-
-    moving_state = MOVING_SINGLE;
-
-    int rc = -1;
-    switch (msg->stepper_move.abs_or_rel) {
-        case JERRYCAN_MOVE_ABSOLUTE:
-            // Move the stepper to the absolute position
-            rc = stepper_move_to_position(dev, move->position, move->max_velocity, move->max_acceleration);
-            break;
-
-        case JERRYCAN_MOVE_RELATIVE:
-            // Move the stepper to the relative position
-            rc = stepper_move_relative(dev, move->position, move->max_velocity, move->max_acceleration);
-            break;
-
-        default:
-            LOG_ERR("Invalid move type: %d", msg->stepper_move.abs_or_rel);
-    }
-
-    return (rc == 0) ? COMMAND_NOT_COMPLETE : rc;
 }
 
 static jerrycan_rx_callback_t stepper_callback = {

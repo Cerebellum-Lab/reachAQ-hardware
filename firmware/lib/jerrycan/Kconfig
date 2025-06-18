@@ -5,6 +5,8 @@ menuconfig LIB_JERRYCAN
     select CAN
     select CAN_FD_MODE
     select CAN_STM32_FDCAN
+    depends on LIB_JERRYCAN_AUDIO_PRIORITY < 0
+    depends on LIB_JERRYCAN_AUDIO_STACK_SIZE > 0
     help
       Enable the library that handles CAN communication for the the MouseGym system.
 
@@ -142,3 +144,16 @@ menuconfig LIB_JERRYCAN_INIT_PRIORITY
     depends on LIB_JERRYCAN
     help
       The initialization priority of the JerryCAN library.
+
+config LIB_JERRYCAN_AUDIO_PRIORITY
+   int "Initialization Priority for CANbus modules"
+    default -1 if !CONFIG_DT_HAS_LL_MICROPHONE_ENABLED
+    default 0
+    range -16 0
+    help
+      The initialization priority of the JerryCAN library.
+
+config LIB_JERRYCAN_AUDIO_STACK_SIZE
+  int "Audio thread stack size"
+  default 1 if !CONFIG_DT_HAS_LL_MICROPHONE_ENABLED
+  default -1
