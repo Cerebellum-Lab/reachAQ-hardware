@@ -13,13 +13,13 @@ namespace po = boost::program_options;
 
 static const std::chrono::duration<int, std::milli> kTimeout(1000);
 
-static int wait_for_bootloader_response(JerryCAN &jc, uint8_t node_id, jerrycan_bootloader_subcmd_t subcmd,
+static int wait_for_bootloader_response(JerryCAN &jc, const uint8_t node_id, const jerrycan_bootloader_subcmd_t subcmd,
                                         jerrycan_msg_t &msg) {
     // Wait for the response to come back
     const auto start = std::chrono::steady_clock::now();
     while (true) {
         if (std::chrono::steady_clock::now() - start > kTimeout) {
-            spdlog::debug("Timeout waiting for {} response", (int)subcmd);
+            spdlog::debug("Timeout waiting for {} response", static_cast<int>(subcmd));
             return -EAGAIN;
         }
 
@@ -32,30 +32,32 @@ static int wait_for_bootloader_response(JerryCAN &jc, uint8_t node_id, jerrycan_
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
-
-    return -EINVAL;
 }
 
-static int wait_for_bootloader_response(JerryCAN &jc, uint8_t node_id, jerrycan_bootloader_subcmd_t subcmd) {
+static int wait_for_bootloader_response(JerryCAN &jc, uint8_t node_id, const jerrycan_bootloader_subcmd_t subcmd) {
     jerrycan_msg_t msg;
     return wait_for_bootloader_response(jc, node_id, subcmd, msg);
 }
 
 static int fetch_firmware_version(JerryCAN &jc, uint8_t node_id) {
     // Fetch Version information from the device
-    jc.BootloaderCommand(node_id, JERRYCAN_BOOTLOADER_SUBCMD_VERSION);
+    if (int rc; (rc = jc.BootloaderCommand(node_id, JERRYCAN_BOOTLOADER_SUBCMD_VERSION)) == -1) {
+      return rc;
+    }
 
     // Wait for the response to come back
     jerrycan_msg_t msg;
-    auto ret = wait_for_bootloader_response(jc, node_id, JERRYCAN_BOOTLOADER_SUBCMD_VERSION, msg);
-    if (ret == 0) {
+    if (wait_for_bootloader_response(jc, node_id, JERRYCAN_BOOTLOADER_SUBCMD_VERSION, msg) == 0) {
         spdlog::info("Module {} Firmware Version: ", node_id);
-        spdlog::info("\tRunning: {}.{}.{}", msg.bootloader_response.version.running_version_major,
-                     msg.bootloader_response.version.running_version_minor,
-                     msg.bootloader_response.version.running_version_patch);
-        spdlog::info("\t  Slot1: {}.{}.{}", msg.bootloader_response.version.slot1_version_major,
-                     msg.bootloader_response.version.slot1_version_minor,
-                     msg.bootloader_response.version.slot1_version_patch);
+        auto running_major = msg.bootloader_response.version.running_version_major;
+        auto running_minor = msg.bootloader_response.version.running_version_minor;
+        auto running_patch = msg.bootloader_response.version.running_version_patch;
+        auto slot1_major = msg.bootloader_response.version.slot1_version_major;
+        auto slot1_minor = msg.bootloader_response.version.slot1_version_minor;
+        auto slot1_patch = msg.bootloader_response.version.slot1_version_patch;
+
+        spdlog::info("\tRunning: {}.{}.{}", running_major, running_minor, running_patch);
+        spdlog::info("\t  Slot1: {}.{}.{}", slot1_major, slot1_minor, slot1_patch);
     } else {
         return 1;
     }
@@ -70,7 +72,7 @@ int main(int argc, char **argv) {
         ("help,h", "produce help message")
         ("version,V", "print version string")
         ("verbose,v", "enable verbose output")
-        ("module,m", po::value<int>(), "Moduel address to update")
+        ("module,m", po::value<int>(), "Module address to update")
         ("file,f", po::value<std::string>(), "File to update with")
         ;
     // clang-format on
@@ -123,7 +125,9 @@ int main(int argc, char **argv) {
 
         // Initialize the flash image update
         spdlog::debug("Initializing flash image update");
-        jc.BootloaderCommand(node_id, JERRYCAN_BOOTLOADER_SUBCMD_START);
+        if (jc.BootloaderCommand(node_id, JERRYCAN_BOOTLOADER_SUBCMD_START) != 0) {
+          return 1;
+        }
 
         // Wait for an ACK
         spdlog::debug("Waiting for bootloader start ACK");
@@ -140,9 +144,12 @@ int main(int argc, char **argv) {
             static jerrycan_cmd_bootloader_data_t data;
 
             // Read in bytes from the firmware file and send them to the module
-            firmware_binary.read((char *)data.data, sizeof(data.data));
+            firmware_binary.read(reinterpret_cast<char*>(data.data), sizeof(data.data));
 
-            jc.BootloaderData(node_id, data);
+            if (jc.BootloaderData(node_id, data) != 0) {
+              return 1;
+            }
+
             ret = wait_for_bootloader_response(jc, node_id, JERRYCAN_BOOTLOADER_SUBCMD_ACK);
             if (ret != 0) {
                 spdlog::error("Failed to send data to module");
@@ -152,7 +159,10 @@ int main(int argc, char **argv) {
 
         // End the flash image update
         spdlog::info("Ending flash image update");
-        jc.BootloaderCommand(node_id, JERRYCAN_BOOTLOADER_SUBCMD_END);
+        if (jc.BootloaderCommand(node_id, JERRYCAN_BOOTLOADER_SUBCMD_END) != 0) {
+          return 1;
+        }
+
         ret = wait_for_bootloader_response(jc, node_id, JERRYCAN_BOOTLOADER_SUBCMD_ACK);
         if (ret != 0) {
             spdlog::error("Failed to end bootloader update");
@@ -160,12 +170,14 @@ int main(int argc, char **argv) {
         }
 
         spdlog::info("Rebooting module");
-        jc.BootloaderCommand(node_id, JERRYCAN_BOOTLOADER_SUBCMD_REBOOT);
+        if (jc.BootloaderCommand(node_id, JERRYCAN_BOOTLOADER_SUBCMD_REBOOT) != 0) {
+          return 1;
+        }
 
         // Wait a few seconds for the module to reboot and then attempt to read the version information again
         std::this_thread::sleep_for(std::chrono::seconds(10));
 
-        for (int i = 10; i >= 0; i--) {
+        for (auto i = 10; i >= 0; i--) {
             spdlog::debug("Waiting for module to reboot: {}", i);
             std::this_thread::sleep_for(std::chrono::seconds(1));
             ret = fetch_firmware_version(jc, node_id);
@@ -176,7 +188,10 @@ int main(int argc, char **argv) {
 
         // Finalize the update if the version information was successfully fetched - that indicates that the firmware
         // booted and the CAN interface at least is still functional
-        jc.BootloaderCommand(node_id, JERRYCAN_BOOTLOADER_SUBCMD_FINALIZE);
+        if (jc.BootloaderCommand(node_id, JERRYCAN_BOOTLOADER_SUBCMD_FINALIZE) != 0) {
+          return 1;
+        }
+
         ret = wait_for_bootloader_response(jc, node_id, JERRYCAN_BOOTLOADER_SUBCMD_ACK);
         if (ret != 0) {
             spdlog::error("Failed to finalize bootloader update");

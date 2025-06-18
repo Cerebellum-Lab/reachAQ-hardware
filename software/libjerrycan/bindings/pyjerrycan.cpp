@@ -313,12 +313,24 @@ PYBIND11_MODULE(pyjerrycan, m) {
 
     py::class_<jerrycan_cmd_bootloader_version_t>(m, "BootloaderVersion")
         .def(py::init<>())
-        .def_readwrite("running_major", &jerrycan_cmd_bootloader_version_t::running_version_major)
-        .def_readwrite("running_minor", &jerrycan_cmd_bootloader_version_t::running_version_minor)
-        .def_readwrite("running_patch", &jerrycan_cmd_bootloader_version_t::running_version_patch)
-        .def_readwrite("slot1_major", &jerrycan_cmd_bootloader_version_t::slot1_version_major)
-        .def_readwrite("slot1_minor", &jerrycan_cmd_bootloader_version_t::slot1_version_minor)
-        .def_readwrite("slot1_patch", &jerrycan_cmd_bootloader_version_t::slot1_version_patch)
+        .def_property("running_version_major",
+            [](const jerrycan_cmd_bootloader_version_t &a) { return a.running_version_major; },
+            [](jerrycan_cmd_bootloader_version_t &a, const uint8_t v) { a.running_version_major = v; })
+        .def_property("running_version_minor",
+            [](const jerrycan_cmd_bootloader_version_t &a) { return a.running_version_minor; },
+            [](jerrycan_cmd_bootloader_version_t &a, const uint8_t v) { a.running_version_minor = v; })
+        .def_property("running_version_patch",
+            [](const jerrycan_cmd_bootloader_version_t &a) { return a.running_version_patch; },
+            [](jerrycan_cmd_bootloader_version_t &a, const uint8_t v) { a.running_version_patch = v; })
+       .def_property("slot1_version_major",
+            [](const jerrycan_cmd_bootloader_version_t &a) { return a.slot1_version_major; },
+            [](jerrycan_cmd_bootloader_version_t &a, const uint8_t v) { a.slot1_version_major = v; })
+       .def_property("slot1_version_minor",
+            [](const jerrycan_cmd_bootloader_version_t &a) { return a.slot1_version_minor; },
+            [](jerrycan_cmd_bootloader_version_t &a, const uint8_t v) { a.slot1_version_minor = v; })
+       .def_property("slot1_version_patch",
+            [](const jerrycan_cmd_bootloader_version_t &a) { return a.slot1_version_patch; },
+            [](jerrycan_cmd_bootloader_version_t &a, const uint8_t v) { a.slot1_version_patch = v; })
     ;
 
     py::class_<jerrycan_cmd_bootloader_data_t>(m, "BootloaderData")
