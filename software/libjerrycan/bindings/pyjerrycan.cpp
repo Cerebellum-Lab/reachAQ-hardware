@@ -4,14 +4,80 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h> // For binding specific STL containers if needed
-
+#include <pybind11/chrono.h>
+#include <tuple>
 #include <libjerrycan.h>
 
 namespace py = pybind11;
 
+
+// #define DEBUG
+
+#ifdef DEBUG
+std::tuple<long long, long long> foobar(long max_diff) {
+    unsigned int loop_idx = 0;
+    while (true) {
+        auto t1 = std::chrono::high_resolution_clock::now();
+        auto t2 = std::chrono::high_resolution_clock::now();
+        auto t1_ep = t1.time_since_epoch();
+        auto t2_ep = t2.time_since_epoch();
+        // Cast the duration to microseconds
+        auto t11 = std::chrono::duration_cast<std::chrono::nanoseconds>(t1_ep).count();
+        auto t21 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_ep).count();
+        // Convert the time point to a duration since the epoch (usually January 1, 1970)
+        //auto duration_since_epoch = t1.time_since_epoch();
+        // Cast the duration to microseconds
+        auto ns_diff = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+        if (ns_diff < max_diff) {
+            return std::make_tuple(t11, t21);
+        }
+        loop_idx += 1;
+        if (loop_idx % 10000) {
+            // Check for signals periodically
+            if (PyErr_CheckSignals() != 0) {
+                PyErr_Clear();
+                return std::make_tuple(t11, t21);
+            }
+        }
+    }
+}
+
+
+std::tuple<long long, long long> foobar_steady(int max_diff) {
+    unsigned int loop_idx = 0;
+    while (true) {
+        auto t1 = std::chrono::steady_clock::now();
+        auto t2 = std::chrono::steady_clock::now();
+        auto t1_ep = t1.time_since_epoch();
+        auto t2_ep = t2.time_since_epoch();
+        auto t11 = std::chrono::duration_cast<std::chrono::nanoseconds>(t1_ep).count();
+        auto t21 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_ep).count();
+        auto ns_diff = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+        if (ns_diff < max_diff) {
+            return std::make_tuple(t11, t21);
+        }
+        loop_idx += 1;
+        if (loop_idx % 10000) {
+            // Check for signals periodically
+            if (PyErr_CheckSignals() != 0) {
+                PyErr_Clear();
+                return std::make_tuple(t11, t21);
+            }
+        }
+    }
+}
+#endif
+
+
 /* clang-format off */
 PYBIND11_MODULE(pyjerrycan, m) {
     m.doc() = "JerryCAN Host Interface";
+
+#ifdef DEBUG
+    m.def("foobar", &foobar, py::arg("max_diff"));
+    m.def("foobar_steady", &foobar, py::arg("max_diff"));
+#endif
+
     py::class_<JerryCAN>(m, "JerryCAN")
         .def(py::init<>())
         .def("Open", &JerryCAN::Open, py::call_guard<py::gil_scoped_release>())
@@ -54,6 +120,8 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def(py::init<>())
         .def_readwrite("type", &jerrycan_msg_t::type)
         .def_readwrite("dst_id", &jerrycan_msg_t::dst_id)
+        .def_readwrite("timestamp_ns", &jerrycan_msg_t::timestamp_ns)
+        .def_readwrite("index", &jerrycan_msg_t::index)
         .def_readwrite("uuid", &jerrycan_msg_t::uuid)
         .def_readwrite("estop", &jerrycan_msg_t::estop)
         .def_readwrite("status", &jerrycan_msg_t::status)

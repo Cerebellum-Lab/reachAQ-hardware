@@ -6,6 +6,7 @@
 #include "jerrycan_types.h"
 
 class JerryCAN {
+
    public:
     JerryCAN() = default;
 
@@ -68,7 +69,7 @@ class JerryCAN {
 
     [[nodiscard]] int SendToFixedXYZ(uint8_t dst_id, uuid_t uuid) const;
 
-   private:
+private:
     int _can_socket_handle;
 
     [[nodiscard]] int CfgWrite(uint8_t dst_id, const jerrycan_cmd_cfg_t &cfg, uuid_t uuid) const;
