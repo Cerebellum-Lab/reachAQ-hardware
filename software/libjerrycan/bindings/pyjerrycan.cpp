@@ -14,14 +14,14 @@ namespace py = pybind11;
 // #define DEBUG
 
 #ifdef DEBUG
-std::tuple<long long, long long> foobar(long max_diff) {
+std::tuple<long long, long long> measure_high_res_time(long max_diff) {
     unsigned int loop_idx = 0;
     while (true) {
         auto t1 = std::chrono::high_resolution_clock::now();
         auto t2 = std::chrono::high_resolution_clock::now();
         auto t1_ep = t1.time_since_epoch();
         auto t2_ep = t2.time_since_epoch();
-        // Cast the duration to microseconds
+        // Cast the duration to nanos
         auto t11 = std::chrono::duration_cast<std::chrono::nanoseconds>(t1_ep).count();
         auto t21 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_ep).count();
         // Convert the time point to a duration since the epoch (usually January 1, 1970)
@@ -43,7 +43,7 @@ std::tuple<long long, long long> foobar(long max_diff) {
 }
 
 
-std::tuple<long long, long long> foobar_steady(int max_diff) {
+std::tuple<long long, long long> measure_steady_time(int max_diff) {
     unsigned int loop_idx = 0;
     while (true) {
         auto t1 = std::chrono::steady_clock::now();
@@ -74,8 +74,8 @@ PYBIND11_MODULE(pyjerrycan, m) {
     m.doc() = "JerryCAN Host Interface";
 
 #ifdef DEBUG
-    m.def("foobar", &foobar, py::arg("max_diff"));
-    m.def("foobar_steady", &foobar, py::arg("max_diff"));
+    m.def("measure_high_res_time", &measure_high_res_time, py::arg("max_diff"));
+    m.def("measure_steady_time", &measure_high_res_time, py::arg("max_diff"));
 #endif
 
     py::class_<JerryCAN>(m, "JerryCAN")
