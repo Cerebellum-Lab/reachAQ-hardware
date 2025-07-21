@@ -5,28 +5,28 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h> // For binding specific STL containers if needed
 #include <pybind11/chrono.h>
+#include <pybind11/functional.h>  // to allow binding to templated function
 #include <tuple>
 #include <libjerrycan.h>
 
 namespace py = pybind11;
 
 
-// #define DEBUG
+#define _EXPOSE_MEASURE_CLOCKS
 
-#ifdef DEBUG
-std::tuple<long long, long long> measure_high_res_time(long max_diff) {
+#ifdef _EXPOSE_MEASURE_CLOCKS
+template <typename desired_clock> std::tuple<long long, long long> measure_clock_time(long max_diff) {
     unsigned int loop_idx = 0;
     while (true) {
-        auto t1 = std::chrono::high_resolution_clock::now();
-        auto t2 = std::chrono::high_resolution_clock::now();
+        auto t1 = desired_clock::now();
+        auto t2 = desired_clock::now();
+        // Convert the time point to a duration since the epoch (usually January 1, 1970)
         auto t1_ep = t1.time_since_epoch();
         auto t2_ep = t2.time_since_epoch();
         // Cast the duration to nanos
         auto t11 = std::chrono::duration_cast<std::chrono::nanoseconds>(t1_ep).count();
         auto t21 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_ep).count();
-        // Convert the time point to a duration since the epoch (usually January 1, 1970)
-        //auto duration_since_epoch = t1.time_since_epoch();
-        // Cast the duration to microseconds
+
         auto ns_diff = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
         if (ns_diff < max_diff) {
             return std::make_tuple(t11, t21);
@@ -42,30 +42,6 @@ std::tuple<long long, long long> measure_high_res_time(long max_diff) {
     }
 }
 
-
-std::tuple<long long, long long> measure_steady_time(int max_diff) {
-    unsigned int loop_idx = 0;
-    while (true) {
-        auto t1 = std::chrono::steady_clock::now();
-        auto t2 = std::chrono::steady_clock::now();
-        auto t1_ep = t1.time_since_epoch();
-        auto t2_ep = t2.time_since_epoch();
-        auto t11 = std::chrono::duration_cast<std::chrono::nanoseconds>(t1_ep).count();
-        auto t21 = std::chrono::duration_cast<std::chrono::nanoseconds>(t2_ep).count();
-        auto ns_diff = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
-        if (ns_diff < max_diff) {
-            return std::make_tuple(t11, t21);
-        }
-        loop_idx += 1;
-        if (loop_idx % 10000) {
-            // Check for signals periodically
-            if (PyErr_CheckSignals() != 0) {
-                PyErr_Clear();
-                return std::make_tuple(t11, t21);
-            }
-        }
-    }
-}
 #endif
 
 
@@ -73,9 +49,9 @@ std::tuple<long long, long long> measure_steady_time(int max_diff) {
 PYBIND11_MODULE(pyjerrycan, m) {
     m.doc() = "JerryCAN Host Interface";
 
-#ifdef DEBUG
-    m.def("measure_high_res_time", &measure_high_res_time, py::arg("max_diff"));
-    m.def("measure_steady_time", &measure_high_res_time, py::arg("max_diff"));
+#ifdef _EXPOSE_MEASURE_CLOCKS
+    m.def("measure_high_res_time", &measure_clock_time<std::chrono::high_resolution_clock>, py::arg("max_diff"));
+    m.def("measure_steady_time", &measure_clock_time<std::chrono::steady_clock>, py::arg("max_diff"));
 #endif
 
     py::class_<JerryCAN>(m, "JerryCAN")
