@@ -158,7 +158,20 @@ int JerryCAN::ReceiveMessage(jerrycan_msg_t &msg) const {
         }
         return -errno;
     }
-
+    // Get the current time point from the system clock
+    auto now = std::chrono::high_resolution_clock::now();
+    auto steady_now = std::chrono::steady_clock::now();
+    // ::high_resolution_clock may not be always suitable, but on Jetson it's OK.
+    // Convert the time point to a duration since the epoch (usually January 1, 1970)
+    auto duration_since_epoch = now.time_since_epoch();
+    auto steady_duration_since_epoch = steady_now.time_since_epoch();
+    // Cast the duration to nanos
+    auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration_since_epoch);
+    auto steady_nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(steady_duration_since_epoch);
+    //
+    msg.timestamp_ns = nanos.count();
+    msg.index = steady_nanos.count();
+    //
     msg.type = static_cast<jerrycan_cmd_type_t>((frame.can_id >> 5) & 0x3F);
     msg.dst_id = frame.can_id & 0x1F;
     const uint8_t msg_len = jerrycan_msg_get_payload_size(msg.type);

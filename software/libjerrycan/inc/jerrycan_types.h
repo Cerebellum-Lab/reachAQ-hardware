@@ -363,6 +363,8 @@ SIZE_CHECK(jerrycan_rsp_ack_t, 4);
 typedef struct __attribute__((packed)) {
     jerrycan_cmd_type_t type;
     uint8_t dst_id;
+    int64_t timestamp_ns;
+    int64_t index;
     union {
         struct {
             union {
@@ -402,8 +404,14 @@ typedef struct __attribute__((packed)) {
     };
 } jerrycan_msg_t;
 
-BUILD_ASSERT(sizeof(jerrycan_msg_t) == JERRYCAN_ACTUAL_PAYLOAD_SIZE + sizeof(jerrycan_cmd_type_t) + sizeof(uint8_t),
-             "jerrycan_msg_t size should be max payload size + header fields size");
+BUILD_ASSERT(
+    sizeof(jerrycan_msg_t) == (
+            JERRYCAN_ACTUAL_PAYLOAD_SIZE
+            + sizeof(jerrycan_msg_t::type)
+            + sizeof(jerrycan_msg_t::dst_id)
+            + sizeof(jerrycan_msg_t::timestamp_ns)
+            + sizeof(jerrycan_msg_t::index)
+    ), "jerrycan_msg_t size should be max payload size + header fields size");
 
 #define COMMAND_NOT_COMPLETE INT32_MIN
 #define SEND_NO_ACKNOWLEDGEMENT INT32_MAX
