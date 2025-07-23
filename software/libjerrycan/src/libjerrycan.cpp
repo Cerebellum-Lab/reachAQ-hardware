@@ -161,7 +161,7 @@ int JerryCAN::ReceiveMessage(jerrycan_msg_t &msg) const {
     // Get the current time point from the system clock
     auto now = std::chrono::high_resolution_clock::now();
     auto steady_now = std::chrono::steady_clock::now();
-    // ::high_resolution_clock may not be always suitable
+    // ::high_resolution_clock may not be always suitable, but on Jetson it's OK.
     // Convert the time point to a duration since the epoch (usually January 1, 1970)
     auto duration_since_epoch = now.time_since_epoch();
     auto steady_duration_since_epoch = steady_now.time_since_epoch();
