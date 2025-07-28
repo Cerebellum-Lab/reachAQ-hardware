@@ -407,10 +407,10 @@ typedef struct __attribute__((packed)) {
 BUILD_ASSERT(
     sizeof(jerrycan_msg_t) == (
             JERRYCAN_ACTUAL_PAYLOAD_SIZE
-            + sizeof(jerrycan_msg_t::type)
-            + sizeof(jerrycan_msg_t::dst_id)
-            + sizeof(jerrycan_msg_t::timestamp_ns)
-            + sizeof(jerrycan_msg_t::index)
+            + sizeof(jerrycan_cmd_type_t)
+            + sizeof(uint8_t)
+            + sizeof(int64_t)
+            + sizeof(int64_t)
     ), "jerrycan_msg_t size should be max payload size + header fields size");
 
 #define COMMAND_NOT_COMPLETE INT32_MIN
