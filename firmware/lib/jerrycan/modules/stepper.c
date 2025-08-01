@@ -177,34 +177,34 @@ static void stepper_handle_fixed_sequence() {
     switch (moving_state) {
         case MOVE_X:
             motor_id = get_motor_id_for_state(moving_state);
-            moving_state = attempt_motor_move(motor_id) ? MONITOR_X : MOVE_Y;
+            moving_state = attempt_motor_move(motor_id) ? MONITOR_X : MOVE_Z;
             break;
 
         case MONITOR_X:
-            if (is_motor_motion_complete(moving_state)) {
-                moving_state = MOVE_Y;
-            }
-            break;
-
-        case MOVE_Y:
-            motor_id = get_motor_id_for_state(moving_state);
-            moving_state = attempt_motor_move(motor_id) ? MONITOR_Y : MOVE_Z;
-            break;
-
-        case MONITOR_Y:
             if (is_motor_motion_complete(moving_state)) {
                 moving_state = MOVE_Z;
             }
             break;
 
+        case MOVE_Y:
+            motor_id = get_motor_id_for_state(moving_state);
+            moving_state = attempt_motor_move(motor_id) ? MONITOR_Y : MOVING_COMPLETE;
+            break;
+
+        case MONITOR_Y:
+            if (is_motor_motion_complete(moving_state)) {
+                moving_state = MOVING_COMPLETE;
+            }
+            break;
+
         case MOVE_Z:
             motor_id = get_motor_id_for_state(moving_state);
-            moving_state = attempt_motor_move(motor_id) ? MONITOR_Z : MOVING_COMPLETE;
+            moving_state = attempt_motor_move(motor_id) ? MONITOR_Z : MOVE_Y;
             break;
 
         case MONITOR_Z:
             if (is_motor_motion_complete(moving_state)) {
-                moving_state = MOVING_COMPLETE;
+                moving_state = MOVE_Y;
             }
             break;
 
