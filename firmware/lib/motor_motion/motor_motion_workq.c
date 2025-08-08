@@ -684,8 +684,14 @@ int stepper_set_parameters(const struct device *dev, const float max_velocity, c
     return 0;
 }
 
-int stepper_save_fixed_location(struct stepper_work_context *context, const int motor_id, const float position) {
-    context->fixed_position = position;
+int stepper_save_fixed_location(struct stepper_work_context *context, const int motor_id, const float position, const bool is_absolute) {
+    if (is_absolute) {
+        context->fixed_position = position;
+    } else {
+        float val = context->fixed_position + position;
+        
+        context->fixed_position = (val <= 0.0f) ? 0.0f : (val > 15.0f ? val = 15.0f : val);        
+    }
 
     motor_settings_save();
 

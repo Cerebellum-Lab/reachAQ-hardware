@@ -77,7 +77,7 @@ static int stepper_move_handler(const jerrycan_msg_t *msg) {
     context->uuid = msg->uuid;
 
     if (move->save) {
-        stepper_save_fixed_location(context, move->motor_id, move->position);
+        stepper_save_fixed_location(context, move->motor_id, move->position, move->abs_or_rel == JERRYCAN_MOVE_ABSOLUTE);
         return 0;
     } else {
         moving_state = MOVING_SINGLE;

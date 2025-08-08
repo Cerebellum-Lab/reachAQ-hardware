@@ -121,7 +121,7 @@ int stepper_set_parameters(const struct device *dev, float motor_max_velocity, f
  * @param position
  * @return 0 on success; <0 on failure
  */
-int stepper_save_fixed_location(struct stepper_work_context *context, int motor_id, float position);
+int stepper_save_fixed_location(struct stepper_work_context *context, int motor_id, float position, bool is_absolute);
 
 /**
  * Move to the position specified, using the motion profiles in `motor_math.*`.
