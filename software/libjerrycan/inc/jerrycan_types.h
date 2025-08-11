@@ -281,9 +281,10 @@ typedef struct __attribute__((packed)) {
     uint8_t homing_status;
     uint8_t limit_switch;
     float position;
+    float send_position;
 } jerrycan_cmd_stepper_status_t;
 
-SIZE_CHECK(jerrycan_cmd_stepper_status_t, 8);
+SIZE_CHECK(jerrycan_cmd_stepper_status_t, 12);
 
 typedef struct __attribute__((packed)) {
     uint8_t motor_id;

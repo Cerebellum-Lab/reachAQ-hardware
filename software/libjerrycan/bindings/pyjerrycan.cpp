@@ -285,6 +285,7 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("status", &jerrycan_cmd_stepper_status_t::status)
         .def_readwrite("homing_status", &jerrycan_cmd_stepper_status_t::homing_status)
         .def_readwrite("position", &jerrycan_cmd_stepper_status_t::position)
+        .def_readwrite("send_position", &jerrycan_cmd_stepper_status_t::send_position)
         .def_readwrite("limit_switch", &jerrycan_cmd_stepper_status_t::limit_switch)
     ;
 

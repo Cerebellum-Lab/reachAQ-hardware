@@ -338,6 +338,7 @@ static void jerrycan_stepper_status_tx(const struct device *stepper) {
 
     const uint8_t motor_id = ll_motor_get_id(stepper);
     const float position = context->context.last_position_generated;
+    const float send_position = context->fixed_position;
 
     jerrycan_msg_t msg = {.type = JERRYCAN_CMD_STEPPER_STATUS,
                           .stepper_status = {
@@ -345,6 +346,7 @@ static void jerrycan_stepper_status_tx(const struct device *stepper) {
                               .status = 0,  // TODO: Do something with this?
                               .homing_status = stepper_homing_status(stepper),
                               .position = position,
+                              .send_position = send_position,
                               .limit_switch = ll_stepper_get_limit_switch_state(stepper),
                           }};
 
