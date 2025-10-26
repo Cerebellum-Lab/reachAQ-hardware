@@ -73,7 +73,7 @@ The resulting file is: `firmware/pellet_module/build/pellet_module/zephyr/zephyr
 The first time building the project (or if you ever delete the `build` directory), run this command:
 
 ```bash
-cd firmware/pellet_module
+cd firmware/magnet_module
 west build --sysbuild --board cerebellumlab_magnet_module -p
 ```
 

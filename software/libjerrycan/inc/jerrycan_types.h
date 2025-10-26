@@ -56,6 +56,8 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_BOOTLOADER_DATA = 0x1A,
     JERRYCAN_CMD_DELAY = 0x1B,
     JERRYCAN_CMD_FIXED_XYZ = 0x1C,
+    JERRYCAN_CMD_SERVO_ATTACH = 0x1D,
+    JERRYCAN_CMD_SERVO_DETACH = 0x1E,
     JERRYCAN_RSP_ACK = 0x30,
     JERRYCAN_CMD_MIN = 0x00,
     JERRYCAN_CMD_MAX = 0x3F,
@@ -121,6 +123,13 @@ SIZE_CHECK(jerrycan_cmd_stepper_home_t, 1);
 
 // I think the payload for this message can be the same format as the stepper move message
 typedef jerrycan_cmd_stepper_move_t jerrycan_cmd_servo_move_t;
+
+
+typedef struct __attribute__((packed)) {
+    uint8_t motor_id;
+} jerrycan_cmd_servo_attach_t;
+
+typedef jerrycan_cmd_servo_attach_t jerrycan_cmd_servo_detach_t;
 
 typedef enum __attribute__((packed)) {
     JERRYCAN_CFG_STEPPER,

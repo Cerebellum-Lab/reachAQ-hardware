@@ -34,6 +34,10 @@ class JerryCAN {
     [[nodiscard]] int ServoMove(uint8_t dst_id, uint8_t motor_id, float position, float max_velocity,
                                 float max_acceleration, abs_or_rel_t abs_or_rel, uuid_t uuid) const;
 
+    [[nodiscard]] int ServoAttach(uint8_t dst_id, uint8_t motor_id) const;
+
+    [[nodiscard]] int ServoDetach(uint8_t dst_id, uint8_t motor_id) const;
+
     [[nodiscard]] int StepperHome(uint8_t dst_id, uint8_t motor_id, uuid_t uuid) const;
 
     [[nodiscard]] int CfgRead(uint8_t dst_id, const jerrycan_cmd_cfg_t &cfg) const;

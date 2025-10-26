@@ -94,6 +94,32 @@ static jerrycan_rx_callback_t servo_callback = {
     .func = servo_handler,
 };
 
+static int servo_attach_handler(const jerrycan_msg_t *msg) {
+    const struct device *dev = servo_motor_by_id(msg->servo_move.motor_id);
+
+    ll_servo_enable(dev, true);
+
+    return SEND_NO_ACKNOWLEDGEMENT;
+}
+
+static jerrycan_rx_callback_t servo_attach_callback = {
+    .filter_msg_type = JERRYCAN_CMD_SERVO_ATTACH,
+    .func = servo_attach_handler,
+};
+
+static int servo_detach_handler(const jerrycan_msg_t *msg) {
+    const struct device *dev = servo_motor_by_id(msg->servo_move.motor_id);
+
+    ll_servo_enable(dev, false);
+
+    return SEND_NO_ACKNOWLEDGEMENT;
+}
+
+static jerrycan_rx_callback_t servo_detach_callback = {
+    .filter_msg_type = JERRYCAN_CMD_SERVO_DETACH,
+    .func = servo_detach_handler,
+};
+
 static int servo_cfg_write_handler(const jerrycan_msg_t *msg) {
     // Ignore cfg writes that are not servo settings
     if (msg->cfg_write.type != JERRYCAN_CFG_SERVO) {
@@ -208,6 +234,8 @@ K_TIMER_DEFINE(jerrycan_servo_status_tx_timer, jerrycan_servo_status_tx, NULL);
 
 static int jerrycan_servo_init() {
     jerrycan_register_rx_callback(&servo_callback);
+    jerrycan_register_rx_callback(&servo_attach_callback);
+    jerrycan_register_rx_callback(&servo_detach_callback);
     jerrycan_register_rx_callback(&servo_cfg_write_callback);
     jerrycan_register_rx_callback(&servo_cfg_read_callback);
 
