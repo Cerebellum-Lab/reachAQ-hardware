@@ -18,3 +18,11 @@ root = "../.."
 [project]
 name = "pyjerrycan"
 dynamic = ["version"]
+description = "API for interfacing auto-trainer hardware modules."
+license = { text = "AGPL-3.0-only" }
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent"
+]

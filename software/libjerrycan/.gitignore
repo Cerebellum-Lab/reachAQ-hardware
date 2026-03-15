@@ -2,7 +2,7 @@
 cmake-build-*/
 venv
 __pycache__/
-src/pyjerrycan.cpython*
-src/pyjerrycan.egg-info
-pyjerrycan.egg-info
-
+src/*.cpython*
+src/*.egg-info
+*.egg-info
+dist/
