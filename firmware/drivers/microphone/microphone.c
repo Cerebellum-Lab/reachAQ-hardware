@@ -81,7 +81,7 @@ bool ll_microphone_enable_reads(const struct device* device, const bool enable) 
     if (!mic->initialized) {
         static bool reported = false;
         if (!reported) {
-            LOG_ERR("Must initialize the microphone entity before calling mic_enable_reads\n");
+            LOG_ERR("Must initialize the microphone entity before calling mic_enable_reads");
             reported = true;
         }
         return false;
@@ -90,7 +90,7 @@ bool ll_microphone_enable_reads(const struct device* device, const bool enable) 
     if (enable) {
         ret = i2s_trigger(mic->i2sDevice, I2S_DIR_RX, I2S_TRIGGER_PREPARE);
         if (ret < 0) {
-            LOG_ERR("Failed to prepare streaming: %d\n", ret);
+            LOG_ERR("Failed to prepare streaming: %d", ret);
             mic->streamEnabled = false;
             return false;
         }
@@ -98,7 +98,7 @@ bool ll_microphone_enable_reads(const struct device* device, const bool enable) 
 
     ret = i2s_trigger(mic->i2sDevice, I2S_DIR_RX, enable ? I2S_TRIGGER_START : I2S_TRIGGER_STOP);
     if (ret < 0) {
-        LOG_ERR("Failed to %sable streaming: %d\n", enable ? "en" : "dis", ret);
+        LOG_ERR("Failed to %sable streaming: %d", enable ? "en" : "dis", ret);
         mic->streamEnabled = false;
         return false;
     }
@@ -122,7 +122,7 @@ int ll_microphone_read(const struct device* device, void** mem_block, uint32_t* 
     if (!mic->initialized) {
         static bool reported = false;
         if (!reported) {
-            LOG_ERR("Must initialize the microphone entity before calling mic_read\n");
+            LOG_ERR("Must initialize the microphone entity before calling mic_read");
             reported = true;
         }
         return -ENOENT;
@@ -131,7 +131,7 @@ int ll_microphone_read(const struct device* device, void** mem_block, uint32_t* 
     if (!mic->streamEnabled) {
         static bool reported = false;
         if (!reported) {
-            LOG_ERR("Must enable reads before calling mic_read\n");
+            LOG_ERR("Must enable reads before calling mic_read");
             reported = true;
         }
 
