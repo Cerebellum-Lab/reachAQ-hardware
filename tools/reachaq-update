@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VERSION=""
+FORWARD_ARGS=()
+
+usage() {
+    cat <<'EOF'
+Usage: reachaq-update [version] [options]
+
+Verify and flash the pellet firmware included in this release bundle.
+
+Version forms:
+  --2.0.0
+  --version 2.0.0
+  v2.0.0
+
+Options:
+  -m, --address N   Pellet-board JerryCAN address (default: 0)
+  -y, --yes         Skip the interactive FLASH confirmation
+  -h, --help        Show this help
+
+The version may be omitted when the bundle contains exactly one firmware image.
+EOF
+}
+
+while (($#)); do
+    case "$1" in
+        --version)
+            VERSION="${2:?Missing version}"
+            shift
+            ;;
+        --[0-9]*.[0-9]*.[0-9]*)
+            VERSION="${1#--}"
+            ;;
+        v[0-9]*.[0-9]*.[0-9]*|[0-9]*.[0-9]*.[0-9]*)
+            VERSION="$1"
+            ;;
+        -m|--address)
+            FORWARD_ARGS+=("$1" "${2:?Missing address}")
+            shift
+            ;;
+        -y|--yes)
+            FORWARD_ARGS+=("$1")
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $1" >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+    shift
+done
+
+if [[ -z "${VERSION}" ]]; then
+    exec "${SCRIPT_DIR}/flash_pellet_module.sh" "${FORWARD_ARGS[@]}"
+fi
+
+SEMVER="${VERSION#v}"
+if [[ ! "${SEMVER}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "Version must have the form X.Y.Z." >&2
+    exit 2
+fi
+
+FIRMWARE="${SCRIPT_DIR}/pellet_module_fw_v${SEMVER}.bin"
+mapfile -t UPDATER_CANDIDATES < <(
+    find "${SCRIPT_DIR}" -maxdepth 1 -type f \
+        -name "jerrycan_updater_v${SEMVER}_linux_*" -perm -u+x -print | sort
+)
+
+if [[ ! -f "${FIRMWARE}" ]]; then
+    echo "This bundle does not contain pellet firmware v${SEMVER}." >&2
+    exit 1
+fi
+
+if ((${#UPDATER_CANDIDATES[@]} != 1)); then
+    echo "Expected one updater for v${SEMVER}; found ${#UPDATER_CANDIDATES[@]}." >&2
+    exit 1
+fi
+
+exec "${SCRIPT_DIR}/flash_pellet_module.sh" \
+    --firmware "${FIRMWARE}" \
+    --updater "${UPDATER_CANDIDATES[0]}" \
+    "${FORWARD_ARGS[@]}"

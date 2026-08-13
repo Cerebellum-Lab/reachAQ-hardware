@@ -45,6 +45,24 @@ source change -> commit -> version tag -> build rig -> release bundle
 Every rig must use the same archive and pass the included checksum validation.
 Do not rebuild separately on each rig.
 
+## Short command reference
+
+The small command front ends cover routine operation:
+
+```bash
+# Designated build rig
+tools/reachaq-firmware setup
+tools/reachaq-firmware release v2.0.1
+
+# Flash-only rig, from inside an extracted release bundle
+./reachaq-update --2.0.1
+```
+
+Additional build-rig commands are `reachaq-firmware build vX.Y.Z` for a
+build-only verification and `reachaq-firmware package vX.Y.Z` to package
+already-built outputs. The longer scripts remain available for diagnosis and
+as stable implementation entry points.
+
 ## Build rig: one-time setup
 
 The supported reference host is Ubuntu 22.04 on x86-64. Clone only the
@@ -59,7 +77,7 @@ cd reachAQ-hardware
 Run the idempotent setup helper:
 
 ```bash
-tools/setup_firmware_build_host.sh
+tools/reachaq-firmware setup
 ```
 
 It performs the complete setup that otherwise has to be done manually:
@@ -81,7 +99,7 @@ for output to pause during large Git checkouts.
 To keep existing system packages unchanged on an already prepared host:
 
 ```bash
-tools/setup_firmware_build_host.sh --skip-system-packages
+tools/reachaq-firmware setup --skip-system-packages
 ```
 
 ## Build rig: make a release
@@ -107,7 +125,7 @@ git add <reviewed-files>
 git commit -m "Describe the pellet firmware change"
 git tag -a v2.0.1 -m "Cerebellum Lab pellet firmware 2.0.1"
 
-tools/build_pellet_release.sh v2.0.1
+tools/reachaq-firmware release v2.0.1
 
 git push origin main
 git push origin v2.0.1
@@ -128,6 +146,7 @@ reachaq-pellet-v2.0.1-linux-x86_64/
 ├── flash_pellet_module.sh
 ├── jerrycan_updater_v2.0.1_linux_x86_64
 ├── pellet_module_fw_v2.0.1.bin
+├── reachaq-update
 ├── RELEASE-MANIFEST.txt
 └── SHA256SUMS
 ```
@@ -207,15 +226,16 @@ cd reachaq-pellet-v2.0.1-linux-x86_64
 For the standard pellet-board JerryCAN address `0`, run:
 
 ```bash
-./flash_pellet_module.sh
+./reachaq-update --2.0.1
 ```
 
-The script verifies every file in the bundle, checks the `can0` bitrate and CAN
-FD state, displays the updater version, and asks the operator to type `FLASH`
-before changing the board. If a rig uses another address:
+The command verifies that the requested version exists, then the underlying
+flash helper verifies every file in the bundle, checks the `can0` bitrate and
+CAN FD state, displays the updater version, and asks the operator to type
+`FLASH` before changing the board. If a rig uses another address:
 
 ```bash
-./flash_pellet_module.sh --address <decimal-address>
+./reachaq-update --2.0.1 --address <decimal-address>
 ```
 
 Keep power and CAN connected until `JerryCAN update complete` appears. The

@@ -37,14 +37,14 @@ requirements, verification, and troubleshooting, is documented in
 On the build rig, one-time setup is:
 
 ```bash
-tools/setup_firmware_build_host.sh
+tools/reachaq-firmware setup
 ```
 
 After committing and tagging a release, build firmware, build the updater, verify
 the embedded version, and create the flash-only bundle with one command:
 
 ```bash
-tools/build_pellet_release.sh vX.Y.Z
+tools/reachaq-firmware release vX.Y.Z
 ```
 
 For lower-level firmware details, see [firmware/README.md](firmware/README.md).
@@ -59,7 +59,7 @@ wrapper. The standard board address is `0`:
 sha256sum --check reachaq-pellet-vX.Y.Z-linux-x86_64.tar.gz.sha256
 tar -xzf reachaq-pellet-vX.Y.Z-linux-x86_64.tar.gz
 cd reachaq-pellet-vX.Y.Z-linux-x86_64
-./flash_pellet_module.sh
+./reachaq-update --X.Y.Z
 ```
 
 The flash rig needs a correctly configured `can0`, but no firmware build tools.

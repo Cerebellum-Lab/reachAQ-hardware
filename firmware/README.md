@@ -10,7 +10,7 @@ The supported Cerebellum Lab workflow is documented in
 On the one designated build rig, run:
 
 ```bash
-tools/setup_firmware_build_host.sh
+tools/reachaq-firmware setup
 ```
 
 from the repository root. This installs the pinned Zephyr SDK 0.16.8, West,
@@ -66,7 +66,7 @@ For a release, prefer the repository-root helper, which also builds the updater,
 verifies the tag-derived version, and packages the flash-only archive:
 
 ```bash
-tools/build_pellet_release.sh vX.Y.Z
+tools/reachaq-firmware release vX.Y.Z
 ```
 
 For a direct development build, the first build command remains:

@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+usage() {
+    cat <<'EOF'
+Usage: tools/reachaq-firmware <command> [arguments]
+
+Small command front end for the designated firmware build rig.
+
+Commands:
+  setup [--skip-system-packages]  Prepare or refresh the build host
+  release vX.Y.Z                  Build, verify, and package a tagged release
+  build vX.Y.Z                    Build and verify without packaging
+  package vX.Y.Z                  Package already-built verified outputs
+  flash [flash options]           Run the repository flash helper directly
+  help                            Show this help
+
+Examples:
+  tools/reachaq-firmware setup
+  tools/reachaq-firmware release v2.0.1
+EOF
+}
+
+COMMAND="${1:-help}"
+if (($#)); then
+    shift
+fi
+
+case "${COMMAND}" in
+    setup)
+        exec "${SCRIPT_DIR}/setup_firmware_build_host.sh" "$@"
+        ;;
+    release)
+        exec "${SCRIPT_DIR}/build_pellet_release.sh" "$@"
+        ;;
+    build)
+        exec "${SCRIPT_DIR}/build_pellet_release.sh" --build-only "$@"
+        ;;
+    package)
+        exec "${SCRIPT_DIR}/build_pellet_release.sh" --package-only "$@"
+        ;;
+    flash)
+        exec "${SCRIPT_DIR}/flash_pellet_module.sh" "$@"
+        ;;
+    help|-h|--help)
+        usage
+        ;;
+    *)
+        echo "Unknown command: ${COMMAND}" >&2
+        usage >&2
+        exit 2
+        ;;
+esac

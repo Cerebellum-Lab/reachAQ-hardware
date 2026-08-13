@@ -174,6 +174,7 @@ UPDATER_NAME="jerrycan_updater_${VERSION}_linux_${PLATFORM}"
 install -m 0644 "${FIRMWARE_IMAGE}" "${STAGING_DIR}/${FIRMWARE_NAME}"
 install -m 0755 "${UPDATER}" "${STAGING_DIR}/${UPDATER_NAME}"
 install -m 0755 "${SCRIPT_DIR}/flash_pellet_module.sh" "${STAGING_DIR}/flash_pellet_module.sh"
+install -m 0755 "${SCRIPT_DIR}/reachaq-update" "${STAGING_DIR}/reachaq-update"
 
 SOURCE_COMMIT="$(git -C "${REPO_ROOT}" rev-list -n 1 "${VERSION}")"
 cat > "${STAGING_DIR}/RELEASE-MANIFEST.txt" <<EOF
@@ -193,6 +194,7 @@ EOF
         "${FIRMWARE_NAME}" \
         "${UPDATER_NAME}" \
         flash_pellet_module.sh \
+        reachaq-update \
         RELEASE-MANIFEST.txt > SHA256SUMS
 )
 
@@ -211,5 +213,5 @@ Release bundle created:
   ${ARCHIVE}.sha256
 
 Flash-only rigs extract the archive and run:
-  ./${BUNDLE_NAME}/flash_pellet_module.sh
+  ./${BUNDLE_NAME}/reachaq-update --${SEMVER}
 EOF
