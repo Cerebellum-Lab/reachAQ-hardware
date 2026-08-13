@@ -5,17 +5,26 @@
 This project is built on the Zephyr RTOS. It uses the West tool in order to handle various project tasks,
 such as building and flashing.
 
-See the Zephyr Getting Started Guide for how to install the various tools needed for developers
-https://docs.zephyrproject.org/latest/develop/getting_started/index.html
+The supported Cerebellum Lab workflow is documented in
+[Pellet firmware release and deployment](../docs/pellet-firmware-release-and-deployment.md).
+On the one designated build rig, run:
+
+```bash
+tools/setup_firmware_build_host.sh
+```
+
+from the repository root. This installs the pinned Zephyr SDK 0.16.8, West,
+CMake 3.31.2, Python dependencies, and West modules. Flash-only rigs should use
+the versioned release bundle and do not need this setup.
+
+The manual setup below is retained for diagnosis and nonstandard hosts.
 
 It is recommended to do `west config build.sysbuild True` to have West default to using sysbuild at all times.
 
 ### Python Virtual Environment
 
-You will also want to create a virtual environment for this build:
-
 ```bash
-cd <parent>/autotrainer
+cd <parent>/reachAQ-hardware/firmware
 python -m venv .venv
 
 # Then activate the virtual environment
@@ -27,9 +36,9 @@ source .venv/bin/activate
 Once West is installed, initialize the project workspace:
 
 ```bash
-cd <parent>/autotrainer
-west init -l
-west update
+cd <parent>/reachAQ-hardware
+firmware/.venv/bin/west init -l firmware
+firmware/.venv/bin/west update
 ```
 
 Install the python requirements:
@@ -52,6 +61,15 @@ For each board (pellet and magnet), there are two firmware images that need to b
 West implements sysbuild which coordinates building both of these projects for us.
 
 ### Building Pellet Module
+
+For a release, prefer the repository-root helper, which also builds the updater,
+verifies the tag-derived version, and packages the flash-only archive:
+
+```bash
+tools/build_pellet_release.sh vX.Y.Z
+```
+
+For a direct development build, the first build command remains:
 
 The first time building the project (or if you ever delete the `build` directory), run this command:
 

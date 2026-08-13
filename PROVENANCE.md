@@ -16,9 +16,9 @@ for explicitly requested upstream synchronization.
 
 ## Commit authors
 
-The following people appear as authors in the inherited history or the first
-Cerebellum Lab commit. Counts are from `git shortlog -sne --all` when this file
-was created; counts can increase as development continues.
+The following people appear as authors in the inherited history or Cerebellum
+Lab development. Counts are from `git shortlog -sne --all` when this file was
+updated for the v2.0.0 workflow; counts can increase as development continues.
 
 | Contributor | Historical commits | Affiliation indicated by repository metadata |
 | --- | ---: | --- |
@@ -29,7 +29,7 @@ was created; counts can increase as development continues.
 | Kevin DeVries ([kevin-leaflabs-com](https://github.com/kevin-leaflabs-com)) | 30 | LeafLabs |
 | Grégory Starck ([gst-toptal](https://github.com/gst-toptal)) | 7 | Toptal email domain in commit history |
 | Patrick Edson ([pedson](https://github.com/pedson)) | 7 | No company affiliation stated in commit metadata |
-| Benjamin G. Reynolds ([bengreynolds](https://github.com/bengreynolds)) | 1 | Cerebellum Lab / Christie Lab, University of Colorado Anschutz |
+| Benjamin G. Reynolds ([bengreynolds](https://github.com/bengreynolds)) | 2 | Cerebellum Lab / Christie Lab, University of Colorado Anschutz |
 
 Future authors remain credited in Git history and should be added to this table
 when the provenance document is updated.
@@ -52,6 +52,11 @@ The first Cerebellum Lab firmware change binds pellet-board `STIM0` to the
 complete 5 kHz Tone 1 interval and `STIM1` to the complete 6 kHz Tone 2 interval.
 The remaining stimulus outputs are unassigned. Companion reachAQ code labels
 these electrical lines for NI-DAQ tone-confirmation correlation.
+
+Pellet firmware release `v2.0.0` establishes the first versioned Cerebellum Lab
+behavior release. The maintained workflow uses one controlled build rig to
+produce a signed, checksummed release bundle; other rigs deploy that identical
+bundle without rebuilding it.
 
 ## Licensing status
 

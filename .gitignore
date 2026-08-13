@@ -33,6 +33,8 @@ __pycache__
 
 .venv/
 build/
+dist/
+.build-host.env
 **/cmake-build-debug/
 **/*signed.*bin
 **/wheels

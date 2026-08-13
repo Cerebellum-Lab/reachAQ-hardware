@@ -28,68 +28,40 @@ This repository contains hardware design files, firmware, and support software f
 
 ## Building Firmware & Software
 
-For setting up the firmware build dependencies, see the more detailed instructions in
-the [firmware/README.md](firmware/README.md) file.
+Pellet firmware uses a two-tier release process: one designated build rig creates
+a versioned bundle, while all other rigs only verify and flash that bundle. The
+complete process, including v2.0.0 behavior, versioning, host setup, CAN
+requirements, verification, and troubleshooting, is documented in
+[Pellet firmware release and deployment](docs/pellet-firmware-release-and-deployment.md).
+
+On the build rig, one-time setup is:
 
 ```bash
-cmake -B build -GNinja -DCMAKE_INSTALL_PREFIX:PATH=../tmp
-ninja -C build
-ninja -C build install
+tools/setup_firmware_build_host.sh
 ```
 
-> **_NOTE:_** At various points in the build process, the console output may stop showing any updates for several
-> mintues. Please be patient, especially on the first build.
+After committing and tagging a release, build firmware, build the updater, verify
+the embedded version, and create the flash-only bundle with one command:
 
-After the `install` step is complete, the `tmp/` directory will contain the following structure:
-
-```
-tmp/
-├── bin
-│   └── jerrycan_updater
-├── firmware
-│   ├── magnet_module.bin
-│   └── pellet_module.bin
-├── include
-│   ├── jerrycan_types.h
-│   └── libjerrycan.h
-└── lib
-    ├── libjerrycan.a
-    └── pyjerrycan.cpython-310-x86_64-linux-gnu.so
+```bash
+tools/build_pellet_release.sh vX.Y.Z
 ```
 
+For lower-level firmware details, see [firmware/README.md](firmware/README.md).
 For WhiskerWire setup, see [software/README.md](software/README.md).
 
-## Updating Firmware
+## Updating pellet firmware on a rig
 
-To update the firmware on the MouseGym modules, use the `jerrycan_updater` tool. This tool is built as part of the above
-flow. The firmware files are located in the `tmp/firmware/` directory.
-
-In order to flash a Magnet Module with address 0x04, use the following command:
-```bash
-tmp/bin/jerrycan_updater -m 4 -f tmp/firmware/magnet_module.bin
-```
-
-For the pellet module, first discover its current CAN address from the reachAQ
-repository:
+Download and verify the release archive, extract it, and run the included
+wrapper. The standard board address is `0`:
 
 ```bash
-python tools/hardware/validate_can_hardware.py --action discover
+sha256sum --check reachaq-pellet-vX.Y.Z-linux-x86_64.tar.gz.sha256
+tar -xzf reachaq-pellet-vX.Y.Z-linux-x86_64.tar.gz
+cd reachaq-pellet-vX.Y.Z-linux-x86_64
+./flash_pellet_module.sh
 ```
 
-Stop reachAQ before updating so it does not share the CAN interface with the
-updater. Then supply the discovered address and the signed pellet application
-image:
-
-```bash
-tmp/bin/jerrycan_updater -m <pellet-address> -f firmware/pellet_module/build/pellet_module/zephyr/zephyr.signed.bin
-```
-
-The updater checks the current version, transfers the image over `can0`, reboots
-the module, verifies that it responds, and finalizes the new image. Keep power
-and CAN connected for the entire update. Afterward, run the reachAQ discovery
-and version checks:
-
-```bash
-python tools/hardware/validate_can_hardware.py --action discover
-python tools/hardware/validate_can_hardware.py --action version
-```
+The flash rig needs a correctly configured `can0`, but no firmware build tools.
+Close reachAQ during transfer, leave the CAN configuration service running, and
+keep power/CAN connected through finalization.
