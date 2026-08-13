@@ -122,6 +122,11 @@ The pellet module controls and provides status for the following:
 * Stimulus control outputs
 * Tone Generation
 
+On the pellet module, the tone generator also produces TTL confirmation signals
+for acquisition: `STIM0` is asserted for the complete 5 kHz Tone 1 cue and
+`STIM1` is asserted for the complete 6 kHz Tone 2 cue. Other tone frequencies
+leave both confirmation outputs inactive.
+
 #### Magnet Module
 The magnet module controls and provides status for the following:
 * Manget head servo

@@ -88,6 +88,9 @@ typedef struct {
     uint32_t dac_resolution;
     uint32_t dma_channel;
     const struct gpio_dt_spec enable_pin;
+    const struct gpio_dt_spec *tone_output_pins;
+    const uint32_t *tone_output_frequencies_hz;
+    size_t tone_output_count;
 } ll_tone_generator_cfg_t;
 
 typedef struct {
@@ -119,6 +122,24 @@ static inline int ll_tone_generator_enable_clock(const struct stm32_pclken *clk)
         return -ENODEV;
     }
     return clock_control_on(rcc, (clock_control_subsys_t *)clk);
+}
+
+/* Assert only the output assigned to frequency_hz. A frequency of zero clears all outputs. */
+static int ll_tone_generator_set_tone_output(const ll_tone_generator_cfg_t *cfg, unsigned int frequency_hz) {
+    int rc = 0;
+
+    for (size_t i = 0; i < cfg->tone_output_count; i++) {
+        const int ret = gpio_pin_set_dt(&cfg->tone_output_pins[i],
+                                        frequency_hz != 0 && cfg->tone_output_frequencies_hz[i] == frequency_hz);
+        if (ret != 0) {
+            LOG_ERR("Failed to set tone output %zu - %d", i, ret);
+            if (rc == 0) {
+                rc = ret;
+            }
+        }
+    }
+
+    return rc;
 }
 
 /* DMA Initialization */
@@ -242,6 +263,14 @@ static int ll_tone_generator_init(const struct device *dev) {
         LOG_ERR("Failed to clear enable pin - %d", ret);
     }
 
+    for (size_t i = 0; i < cfg->tone_output_count; i++) {
+        ret = gpio_pin_configure_dt(&cfg->tone_output_pins[i], GPIO_OUTPUT_INACTIVE);
+        if (ret != 0) {
+            LOG_ERR("Failed to configure tone output %zu - %d", i, ret);
+            return ret;
+        }
+    }
+
     /* Initialize the duration timer */
     k_timer_init(&data->duration_timer, duration_expiry_cb, NULL);
 
@@ -304,18 +333,29 @@ int ll_tone_generator_play_tone(const struct device *dev, unsigned int frequency
     if (frequency_hz < TONE_GENERATOR_MIN_FREQUENCY || frequency_hz > TONE_GENERATOR_MAX_FREQUENCY) {
         LOG_ERR("Invalid frequency <%d> - must reside within the commandable range [%d, %d]", frequency_hz,
                 TONE_GENERATOR_MIN_FREQUENCY, TONE_GENERATOR_MAX_FREQUENCY);
+        return -EINVAL;
+    }
+
+    /* Set the matching acquisition marker before starting the audio hardware. */
+    ret = ll_tone_generator_set_tone_output(cfg, frequency_hz);
+    if (ret != 0) {
+        return ret;
     }
 
     /* Enable the audio amplifier */
     ret = gpio_pin_set_dt(&cfg->enable_pin, 1);
     if (ret != 0) {
         LOG_ERR("Failed to set enable pin - %d", ret);
+        ll_tone_generator_set_tone_output(cfg, 0);
+        return ret;
     }
 
     /* Start the DMA transfer */
     ret = dma_start(cfg->dma_dev, cfg->dma_channel);
     if (ret != 0) {
         LOG_ERR("Failed to start DMA: %d", ret);
+        gpio_pin_set_dt(&cfg->enable_pin, 0);
+        ll_tone_generator_set_tone_output(cfg, 0);
         return ret;
     }
 
@@ -370,6 +410,7 @@ int ll_tone_generator_play_tone_blocking(const struct device *dev, unsigned int 
 int ll_tone_generator_abort_tone(const struct device *dev) {
     const ll_tone_generator_cfg_t *cfg = dev->config;
     ll_tone_generator_data_t *data = dev->data;
+    int rc = 0;
     int ret;
 
     if (!data->initialized) {
@@ -383,7 +424,7 @@ int ll_tone_generator_abort_tone(const struct device *dev) {
     ret = dma_stop(cfg->dma_dev, cfg->dma_channel);
     if (ret != 0) {
         LOG_ERR("Failed to stop DMA: %d", ret);
-        return ret;
+        rc = ret;
     }
 
     /* Disable the sample rate timer */
@@ -396,12 +437,20 @@ int ll_tone_generator_abort_tone(const struct device *dev) {
     ret = gpio_pin_set_dt(&cfg->enable_pin, 0);
     if (ret != 0) {
         LOG_ERR("Failed to set clear pin - %d", ret);
+        if (rc == 0) {
+            rc = ret;
+        }
+    }
+
+    ret = ll_tone_generator_set_tone_output(cfg, 0);
+    if (ret != 0 && rc == 0) {
+        rc = ret;
     }
 
     data->frequency_hz = 0;
     data->enabled = false;
 
-    return ret;
+    return rc;
 }
 
 /* Returns the amount time in ms remaining for the current tone */
@@ -418,7 +467,26 @@ uint32_t ll_tone_generator_get_frequency(const struct device *dev) {
     return data->frequency_hz;
 }
 
+#define TONE_OUTPUTS_DEFINE(idx)                                                                                   \
+    BUILD_ASSERT(DT_INST_PROP_LEN(idx, tone_output_gpios) ==                                                       \
+                     DT_INST_PROP_LEN(idx, tone_output_frequencies_hz),                                            \
+                 "tone-output-gpios and tone-output-frequencies-hz must contain the same number of entries");    \
+    static const struct gpio_dt_spec tone_output_pins_##idx[] = {                                                  \
+        DT_INST_FOREACH_PROP_ELEM_SEP(idx, tone_output_gpios, GPIO_DT_SPEC_GET_BY_IDX, (, ))};                     \
+    static const uint32_t tone_output_frequencies_hz_##idx[] = DT_INST_PROP(idx, tone_output_frequencies_hz);
+
+#define TONE_OUTPUTS(idx)                                                                                          \
+    COND_CODE_1(DT_INST_NODE_HAS_PROP(idx, tone_output_gpios), (TONE_OUTPUTS_DEFINE(idx)), ())
+
+#define TONE_OUTPUT_PINS(idx)                                                                                      \
+    COND_CODE_1(DT_INST_NODE_HAS_PROP(idx, tone_output_gpios), (tone_output_pins_##idx), (NULL))
+
+#define TONE_OUTPUT_FREQUENCIES(idx)                                                                               \
+    COND_CODE_1(DT_INST_NODE_HAS_PROP(idx, tone_output_gpios), (tone_output_frequencies_hz_##idx), (NULL))
+
 #define TONE_GENERATOR_INST(idx)                                                                                    \
+    TONE_OUTPUTS(idx)                                                                                               \
+                                                                                                                    \
     static struct dma_block_config blk_cfg_##idx = {                                                                \
         .block_size = sizeof(sine_wave),                                                                            \
         .source_address = (uint32_t)sine_wave,                                                                      \
@@ -441,6 +509,9 @@ uint32_t ll_tone_generator_get_frequency(const struct device *dev) {
         .dac_channel = DAC_CHANNEL_NUM_TO_LL_MAP(DT_INST_PROP(idx, dac_channel)),                                   \
         .dma_channel = DT_INST_DMAS_CELL_BY_NAME(idx, tx, channel),                                                 \
         .enable_pin = GPIO_DT_SPEC_INST_GET(idx, enable_gpios),                                                     \
+        .tone_output_pins = TONE_OUTPUT_PINS(idx),                                                                  \
+        .tone_output_frequencies_hz = TONE_OUTPUT_FREQUENCIES(idx),                                                 \
+        .tone_output_count = DT_INST_PROP_LEN_OR(idx, tone_output_gpios, 0),                                        \
     };                                                                                                              \
                                                                                                                     \
     static ll_tone_generator_data_t tone_generator_data_##idx = {                                                   \

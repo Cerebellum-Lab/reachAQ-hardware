@@ -32,3 +32,14 @@ properties:
     type: phandle-array
     required: true
     description: Enable pin for the speaker amplifier
+
+  tone-output-gpios:
+    type: phandle-array
+    description: |
+      Optional digital outputs asserted while their corresponding tone
+      frequency is playing. The number and order of entries must match
+      tone-output-frequencies-hz.
+
+  tone-output-frequencies-hz:
+    type: array
+    description: Frequencies corresponding to tone-output-gpios

@@ -70,8 +70,8 @@
 						   "CAN_ID[2]",
 						   "CAN_ID[3]";
 		input-gpio-interrupt-enable = "DISABLE", "DISABLE", "DISABLE", "DISABLE";
-		output-gpios = <&gpiob 11 GPIO_ACTIVE_HIGH>, // STIM0
-					   <&gpiob 12 GPIO_ACTIVE_HIGH>, // STIM1
+		output-gpios = <&gpiob 11 GPIO_ACTIVE_HIGH>, // STIM0 / Tone 1 confirmation
+					   <&gpiob 12 GPIO_ACTIVE_HIGH>, // STIM1 / Tone 2 confirmation
 					   <&gpiob 13 GPIO_ACTIVE_HIGH>, // STIM2
 					   <&gpiob 14 GPIO_ACTIVE_HIGH>; // STIM3
 		output-gpio-names = "STIM0",
@@ -91,6 +91,10 @@
 		dmas = <&dmamux1 6 6 STM32_DMA_PRIORITY_HIGH>;
 		dma-names = "tx";
 		enable-gpios = <&gpioa 7 GPIO_ACTIVE_HIGH>;
+		// TTL confirmations recorded by the NI-DAQ: Tone 1 = 5 kHz, Tone 2 = 6 kHz.
+		tone-output-gpios = <&gpiob 11 GPIO_ACTIVE_HIGH>,  // STIM0 / Tone 1
+							<&gpiob 12 GPIO_ACTIVE_HIGH>; // STIM1 / Tone 2
+		tone-output-frequencies-hz = <5000 6000>;
 	};
 
 	analog_out: analog_out {
