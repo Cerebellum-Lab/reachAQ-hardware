@@ -1,5 +1,10 @@
 # Pellet firmware release and deployment
 
+> **Rig operators:** use the short
+> [pellet firmware operator quick start](pellet-firmware-operator-quick-start.md).
+> The remainder of this document is for maintainers, build-rig owners, and
+> recovery work.
+
 This document defines the Cerebellum Lab workflow for building, releasing, and
 deploying pellet-board firmware. The intended operating model is:
 
@@ -145,6 +150,7 @@ The archive contains:
 reachaq-pellet-v2.0.1-linux-x86_64/
 ├── flash_pellet_module.sh
 ├── jerrycan_updater_v2.0.1_linux_x86_64
+├── README-FIRST.txt
 ├── pellet_module_fw_v2.0.1.bin
 ├── reachaq-update
 ├── RELEASE-MANIFEST.txt

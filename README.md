@@ -12,6 +12,18 @@ organizational affiliations found in the project history, and licensing status.
 
 This repository contains hardware design files, firmware, and support software for the MouseGym project.
 
+## Rig operator quick start
+
+Most users only need the short
+[pellet firmware operator guide](docs/pellet-firmware-operator-quick-start.md).
+Given an approved release bundle, the complete update command is:
+
+```bash
+./reachaq-update --X.Y.Z
+```
+
+The remaining documentation is intended for maintainers and developers.
+
 ## Repository Structure
 
 - `hardware/`: Contains hardware design files for the MouseGym modules

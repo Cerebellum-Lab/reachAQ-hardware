@@ -188,6 +188,26 @@ Nominal/data bitrates: 1000000/5000000 bit/s (CAN FD)
 Default pellet-board address: 0
 EOF
 
+cat > "${STAGING_DIR}/README-FIRST.txt" <<EOF
+reachAQ pellet firmware ${VERSION}
+
+For rig operators:
+
+1. Close the reachAQ application. Leave reachaq-can.service running.
+2. Keep the pellet board powered and connected to CAN.
+3. From this directory run:
+
+       ./reachaq-update --${SEMVER}
+
+4. Type FLASH when prompted and wait for "JerryCAN update complete".
+   A quiet 40-60 second transfer is normal. Do not disconnect power or CAN.
+5. Reopen reachAQ, confirm board detection, and test Tone 1 -> STIM0 and
+   Tone 2 -> STIM1 in the acquisition system.
+
+If an error occurs, save the complete terminal output and stop. Do not try a
+different firmware version during troubleshooting.
+EOF
+
 (
     cd "${STAGING_DIR}"
     sha256sum \
@@ -195,6 +215,7 @@ EOF
         "${UPDATER_NAME}" \
         flash_pellet_module.sh \
         reachaq-update \
+        README-FIRST.txt \
         RELEASE-MANIFEST.txt > SHA256SUMS
 )
 
