@@ -60,6 +60,11 @@ tools/reachaq-firmware release vX.Y.Z
 ```
 
 For lower-level firmware details, see [firmware/README.md](firmware/README.md).
+
+Board-specific peripheral notes:
+
+- [Pellet board pressure sensors](docs/pellet-pressure-sensors.md) - FSR wiring
+  for `J11`/`J21`, ADC mapping, and the CAN stream format.
 For WhiskerWire setup, see [software/README.md](software/README.md).
 
 ## Updating pellet firmware on a rig

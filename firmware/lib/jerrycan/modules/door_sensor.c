@@ -15,14 +15,11 @@ LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 #define DOOR_2 DEVICE_DT_GET(DOOR_2_NODE_ID)
 #define DOOR_3_NODE_ID DT_NODELABEL(door_sensor_3)
 #define DOOR_3 DEVICE_DT_GET(DOOR_3_NODE_ID)
-#define EXT_BUTTON_1_NODE_ID DT_NODELABEL(ext_button_1)
-#define EXT_BUTTON_1 DEVICE_DT_GET(EXT_BUTTON_1_NODE_ID)
 
 enum {
     DOOR_1_IDX = 0,
     DOOR_2_IDX = 1,
     DOOR_3_IDX = 2,
-    EXT_BUTTON_1_IDX = 3,
 };
 
 typedef struct {
@@ -32,8 +29,7 @@ typedef struct {
 
 static door_data_t gKeys[] = {{.spec = GPIO_DT_SPEC_GET_OR(DOOR_1_NODE_ID, gpios, {0}), .value = 0},
                               {.spec = GPIO_DT_SPEC_GET_OR(DOOR_2_NODE_ID, gpios, {0}), .value = 0},
-                              {.spec = GPIO_DT_SPEC_GET_OR(DOOR_3_NODE_ID, gpios, {0}), .value = 0},
-                              {.spec = GPIO_DT_SPEC_GET_OR(EXT_BUTTON_1_NODE_ID, gpios, {0}), .value = 0}};
+                              {.spec = GPIO_DT_SPEC_GET_OR(DOOR_3_NODE_ID, gpios, {0}), .value = 0}};
 
 /**
  * Transmit message on CAN for the door status data
@@ -46,7 +42,9 @@ static void door_sensor_transmit_msg(struct k_timer *) {
     msg.doors.door1 = gKeys[DOOR_1_IDX].value;
     msg.doors.door2 = gKeys[DOOR_2_IDX].value;
     msg.doors.door3 = gKeys[DOOR_3_IDX].value;
-    msg.doors.external_button = !gKeys[EXT_BUTTON_1_IDX].value;
+    // PA0 is now pressure_sensor_1; the external button no longer exists on this
+    // board. The field is retained so the CAN message layout is unchanged.
+    msg.doors.external_button = 0;
 
     jerrycan_tx(&msg, K_NO_WAIT);
 }
@@ -59,10 +57,6 @@ static void door_sensor_transmit_msg(struct k_timer *) {
  */
 static void door_sensor_handler(struct input_event *event) {
     switch (event->code) {
-        case INPUT_KEY_0:
-            gKeys[EXT_BUTTON_1_IDX].value = event->value ? 0 : 1;
-            break;
-
         case INPUT_KEY_5:
             gKeys[DOOR_1_IDX].value = event->value ? 0 : 1;
             break;
