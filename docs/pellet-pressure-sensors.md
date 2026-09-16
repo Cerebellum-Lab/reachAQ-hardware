@@ -122,3 +122,25 @@ pressed. An unconnected input floats and may read near 0 or near 4095.
 
 Over CAN, confirm that `JERRYCAN_CMD_PRESSURE_READ` arrives for both
 `instance = 0` and `instance = 1`.
+
+## Host-side support
+
+As of the v2.1.0 rollout, the reachAQ `CanInterface` does not decode
+`JERRYCAN_CMD_PRESSURE_READ`; unknown message types are dropped silently, so
+the streams do not appear in reachAQ even when the board is transmitting them
+correctly. Verify on the raw bus instead until a decoder is added:
+
+```bash
+candump can0 | grep " 100 "
+```
+
+JerryCAN message IDs are `command << 5`, so pressure reads appear on `0x100`.
+The payload is `instance` followed by the little-endian `uint32` count:
+
+```text
+can0  100  [06]  00 FF 0F 00 00 00   instance 0, 0x0FFF = 4095
+can0  100  [06]  01 CA 01 00 00 00   instance 1, 0x01CA = 458
+```
+
+An unwired `J11` reads full scale, because R22 pulls the divider to 3V3 with no
+FSR installed. An unwired `J21` floats, because its divider lives in the cable.
