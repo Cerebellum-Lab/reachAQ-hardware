@@ -30,12 +30,6 @@
 	gpio_keys {
 		compatible = "gpio-keys";
 
-		ext_button_1: ext_button_1 {
-			label = "Ext Button 1";
-			gpios = <&gpioa 0 GPIO_ACTIVE_LOW>;
-			zephyr,code = <INPUT_KEY_0>;
-		};
-
 		door_sensor_1: door_sensor_1 {
 			label = "Door Closed 1";
 			gpios = <&gpioc 13 (GPIO_PULL_DOWN | GPIO_ACTIVE_HIGH)>;
@@ -97,11 +91,21 @@
 		tone-output-frequencies-hz = <5000 6000>;
 	};
 
-	analog_out: analog_out {
-		compatible = "ll,analog-out";
+	// FSR pressure sensors. Each sits on its own ADC peripheral: the driver runs a
+	// continuous (ADC_ACTION_REPEAT) async sequence that holds the ADC context lock
+	// for the life of the instance, so two sensors cannot share one ADC.
+	pressure_sensor_1: pressure_sensor_1 {  // J11, PA0
+		compatible = "ll,pressure-sensor";
 		status = "okay";
-		io-channels = <&dac2 1>;
-		resolution = <12>;
+		io-channels = <&adc1 1>;
+		sample-rate = <80>;
+	};
+
+	pressure_sensor_2: pressure_sensor_2 {  // J21, PA6
+		compatible = "ll,pressure-sensor";
+		status = "okay";
+		io-channels = <&adc2 3>;
+		sample-rate = <80>;
 	};
 
 	rgb_led: rgb-led {
@@ -415,8 +419,23 @@
 };
 
 &dac2 {
-	pinctrl-0 = <&dac2_out1_pa6>;
+	// Disabled: PA6 is now ADC2_IN3 for pressure_sensor_2.
+	status = "disabled";
+};
+
+&adc1 {
+	pinctrl-0 = <&adc1_in1_pa0>;
 	pinctrl-names = "default";
+	st,adc-clock-source = <SYNC>;
+	st,adc-prescaler = <4>;
+	status = "okay";
+};
+
+&adc2 {
+	pinctrl-0 = <&adc2_in3_pa6>;
+	pinctrl-names = "default";
+	st,adc-clock-source = <SYNC>;
+	st,adc-prescaler = <4>;
 	status = "okay";
 };
 
