@@ -58,6 +58,8 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_FIXED_XYZ = 0x1C,
     JERRYCAN_CMD_SERVO_ATTACH = 0x1D,
     JERRYCAN_CMD_SERVO_DETACH = 0x1E,
+    JERRYCAN_CMD_GPIO_PULSE = 0x21,
+    JERRYCAN_CMD_GPIO_PULSE_STATUS = 0x22,
     JERRYCAN_RSP_ACK = 0x30,
     JERRYCAN_CMD_MIN = 0x00,
     JERRYCAN_CMD_MAX = 0x3F,
@@ -223,6 +225,35 @@ typedef struct __attribute__((packed)) {
 } jerrycan_cmd_gpio_write_t;
 
 SIZE_CHECK(jerrycan_cmd_gpio_write_t, 4);
+
+/*
+    Finite, firmware-timed digital pulse. The board drives gpio_idx high, holds it for
+    duration_us, and returns it low on its own. gpio_idx is an index into the driver's
+    readable pin names, the same index space as jerrycan_cmd_gpio_write_t.
+*/
+typedef struct __attribute__((packed)) {
+    uint8_t instance;
+    uint16_t gpio_idx;
+    uint32_t duration_us;
+} jerrycan_cmd_gpio_pulse_t;
+
+SIZE_CHECK(jerrycan_cmd_gpio_pulse_t, 7);
+
+typedef enum __attribute__((packed)) {
+    JERRYCAN_GPIO_PULSE_PHASE_REJECTED = 0,   // the command was refused; the line never moved
+    JERRYCAN_GPIO_PULSE_PHASE_ASSERTED = 1,   // the line went high and the return-low is armed
+    JERRYCAN_GPIO_PULSE_PHASE_COMPLETED = 2,  // the line returned low
+} jerrycan_gpio_pulse_phase_t;
+
+typedef struct __attribute__((packed)) {
+    uint8_t instance;
+    uint16_t gpio_idx;
+    uint32_t duration_us;  // the duration actually applied
+    uint8_t phase;         // jerrycan_gpio_pulse_phase_t
+    int32_t error;         // 0 is OK, negative is a system errno constant
+} jerrycan_cmd_gpio_pulse_status_t;
+
+SIZE_CHECK(jerrycan_cmd_gpio_pulse_status_t, 12);
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
@@ -393,6 +424,8 @@ typedef struct __attribute__((packed)) {
                 jerrycan_cmd_temp_hum_read_t temp_hum_read;
                 jerrycan_cmd_gpio_read_t gpio_read;
                 jerrycan_cmd_gpio_write_t gpio_write;
+                jerrycan_cmd_gpio_pulse_t gpio_pulse;
+                jerrycan_cmd_gpio_pulse_status_t gpio_pulse_status;
                 jerrycan_cmd_tone_t tone;
                 jerrycan_cmd_analog_out_t analog_out;
                 jerrycan_cmd_load_cell_read_t load_cell_read;

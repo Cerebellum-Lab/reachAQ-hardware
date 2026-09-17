@@ -25,3 +25,11 @@ properties:
     type: string-array
   output-gpio-interrupt-enable:
     type: string-array
+  pulse-enable-gpio-names:
+    type: string-array
+    description: |
+      Names of the pins that may be driven by JERRYCAN_CMD_GPIO_PULSE, the finite
+      firmware-timed digital pulse. Omitting the property refuses every pulse, so a
+      board has to opt a line in deliberately. Do not list a pin another driver also
+      drives: on the pellet board STIM0 and STIM1 are the tone generator's TTL
+      confirmations and a pulse there would contend with them.
