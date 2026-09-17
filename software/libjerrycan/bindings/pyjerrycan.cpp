@@ -116,6 +116,8 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_readwrite("temp_hum_read", &jerrycan_msg_t::temp_hum_read)
         .def_readwrite("gpio_read", &jerrycan_msg_t::gpio_read)
         .def_readwrite("gpio_write", &jerrycan_msg_t::gpio_write)
+        .def_readwrite("gpio_pulse", &jerrycan_msg_t::gpio_pulse)
+        .def_readwrite("gpio_pulse_status", &jerrycan_msg_t::gpio_pulse_status)
         .def_readwrite("tone", &jerrycan_msg_t::tone)
         .def_readwrite("analog_out", &jerrycan_msg_t::analog_out)
         .def_readwrite("load_cell_read", &jerrycan_msg_t::load_cell_read)
@@ -253,6 +255,22 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .def_property("state",
             [](const jerrycan_cmd_gpio_write_t &a) { return a.state; },
             [](jerrycan_cmd_gpio_write_t &a, const uint8_t v) { a.state = v; })
+    ;
+
+    py::class_<jerrycan_cmd_gpio_pulse_t>(m, "GPIOPulse")
+        .def(py::init<>())
+        .def_readwrite("instance", &jerrycan_cmd_gpio_pulse_t::instance)
+        .def_readwrite("gpio_idx", &jerrycan_cmd_gpio_pulse_t::gpio_idx)
+        .def_readwrite("duration_us", &jerrycan_cmd_gpio_pulse_t::duration_us)
+    ;
+
+    py::class_<jerrycan_cmd_gpio_pulse_status_t>(m, "GPIOPulseStatus")
+        .def(py::init<>())
+        .def_readwrite("instance", &jerrycan_cmd_gpio_pulse_status_t::instance)
+        .def_readwrite("gpio_idx", &jerrycan_cmd_gpio_pulse_status_t::gpio_idx)
+        .def_readwrite("duration_us", &jerrycan_cmd_gpio_pulse_status_t::duration_us)
+        .def_readwrite("phase", &jerrycan_cmd_gpio_pulse_status_t::phase)
+        .def_readwrite("error", &jerrycan_cmd_gpio_pulse_status_t::error)
     ;
 
     py::class_<jerrycan_cmd_tone_t>(m, "Tone")
@@ -433,6 +451,8 @@ PYBIND11_MODULE(pyjerrycan, m) {
         .value("TEMP_HUM_READ", JERRYCAN_CMD_TEMP_HUM_READ)
         .value("GPIO_READ", JERRYCAN_CMD_GPIO_READ)
         .value("GPIO_WRITE", JERRYCAN_CMD_GPIO_WRITE)
+        .value("GPIO_PULSE", JERRYCAN_CMD_GPIO_PULSE)
+        .value("GPIO_PULSE_STATUS", JERRYCAN_CMD_GPIO_PULSE_STATUS)
         .value("TONE", JERRYCAN_CMD_TONE)
         .value("ANALOG_OUT", JERRYCAN_CMD_ANALOG_OUT)
         .value("LOAD_CELL_READ", JERRYCAN_CMD_LOAD_CELL_READ)

@@ -14,6 +14,7 @@
 		zephyr,flash = &flash0;
 		zephyr,canbus = &fdcan3;
 		zephyr,code-partition = &slot0_partition;
+		ll,gpio-pulse-counter = &stim_pulse_counter;
 	};
 
 	leds {
@@ -73,6 +74,9 @@
 						    "STIM2",
 						    "STIM3";
 		output-gpio-interrupt-enable = "DISABLE", "DISABLE", "DISABLE", "DISABLE";
+		// Only STIM2 and STIM3 may be pulsed. STIM0 and STIM1 are the tone generator's
+		// Tone 1 / Tone 2 TTL confirmations and must not be driven from two places.
+		pulse-enable-gpio-names = "STIM2", "STIM3";
 	};
 
 	tone_generator {
@@ -202,6 +206,18 @@
     pinctrl-0 = <&tim4_ch1_pb6  &tim4_ch2_pb7>;
     pinctrl-names = "default";
   };
+};
+
+// Drives the return-low edge of JERRYCAN_CMD_GPIO_PULSE. TIM16 is the only free timer
+// on this board with a capture/compare channel, and it is 16-bit, so a single alarm
+// spans at most 65.535 ms at 1 us per tick; gpio.c chains alarms for longer pulses.
+&timers16 {
+	status = "okay";
+	st,prescaler = <169>; // 170 MHz / (169 + 1) = 1 MHz
+
+	stim_pulse_counter: counter {
+		status = "okay";
+	};
 };
 
 &timers5 {
