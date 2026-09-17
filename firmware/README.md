@@ -19,6 +19,9 @@ the versioned release bundle and do not need this setup.
 
 The manual setup below is retained for diagnosis and nonstandard hosts.
 
+On native Windows, follow [WINDOWS_SETUP_AND_FLASHING.md](WINDOWS_SETUP_AND_FLASHING.md)
+instead; the supported workflow above is bash-only.
+
 It is recommended to do `west config build.sysbuild True` to have West default to using sysbuild at all times.
 
 ### Python Virtual Environment
