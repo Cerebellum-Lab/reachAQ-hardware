@@ -60,6 +60,8 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_SERVO_DETACH = 0x1E,
     JERRYCAN_CMD_GPIO_PULSE = 0x21,
     JERRYCAN_CMD_GPIO_PULSE_STATUS = 0x22,
+    JERRYCAN_CMD_CAPABILITIES_REQUEST = 0x23,
+    JERRYCAN_CMD_CAPABILITIES_RESPONSE = 0x24,
     JERRYCAN_RSP_ACK = 0x30,
     JERRYCAN_CMD_MIN = 0x00,
     JERRYCAN_CMD_MAX = 0x3F,
@@ -255,6 +257,44 @@ typedef struct __attribute__((packed)) {
 
 SIZE_CHECK(jerrycan_cmd_gpio_pulse_status_t, 12);
 
+/*
+    What a board can do, as a bitmask it reports rather than a version the host
+    has to look up in a table. The values are the host's: reachAQ reads them in
+    tools/acquisition/model/firmware_compatibility.py, and a bit means the same
+    thing on both sides or it means nothing.
+
+    A board sets a bit only where the feature is actually present on that board,
+    which is why the pellet module derives the pulse bit from its devicetree
+    rather than hard-coding it. An advertised capability that is not there is
+    worse than one that is missing: the host stops guarding against its absence.
+*/
+#define JERRYCAN_CAPABILITY_TIMING_TRAILER    (1U << 0)
+#define JERRYCAN_CAPABILITY_TIME_SYNC         (1U << 1)
+#define JERRYCAN_CAPABILITY_FINITE_GPIO_PULSE (1U << 2)
+#define JERRYCAN_CAPABILITY_PELLET_PRECHECK   (1U << 3)
+
+/* Bumped when the meaning of a frame changes, not when a capability is added. */
+#define JERRYCAN_WIRE_SCHEMA_VERSION 1
+
+typedef struct __attribute__((packed)) {
+    uint8_t rsvd;
+} jerrycan_cmd_capabilities_request_t;
+
+SIZE_CHECK(jerrycan_cmd_capabilities_request_t, 1);
+
+/*
+    boot_id changes every time the board starts. It lets the host tell a board
+    that rebooted from one that has been up all along, which matters because a
+    reboot silently discards configuration the host believes it has written.
+*/
+typedef struct __attribute__((packed)) {
+    uint8_t wire_schema_version;
+    uint32_t capabilities;
+    uint32_t boot_id;
+} jerrycan_cmd_capabilities_response_t;
+
+SIZE_CHECK(jerrycan_cmd_capabilities_response_t, 9);
+
 typedef struct __attribute__((packed)) {
     uint8_t instance;
     uint16_t frequency_hz;
@@ -426,6 +466,8 @@ typedef struct __attribute__((packed)) {
                 jerrycan_cmd_gpio_write_t gpio_write;
                 jerrycan_cmd_gpio_pulse_t gpio_pulse;
                 jerrycan_cmd_gpio_pulse_status_t gpio_pulse_status;
+                jerrycan_cmd_capabilities_request_t capabilities_request;
+                jerrycan_cmd_capabilities_response_t capabilities_response;
                 jerrycan_cmd_tone_t tone;
                 jerrycan_cmd_analog_out_t analog_out;
                 jerrycan_cmd_load_cell_read_t load_cell_read;
