@@ -219,6 +219,26 @@ Keep `reachaq-can.service` running during the update. Close the reachAQ
 application itself so it does not consume CAN responses intended for the
 updater.
 
+## Flash-only rigs: confirm reachAQ accepts the version first
+
+reachAQ refuses any pellet firmware version its
+`config/pellet-firmware-compatibility.yaml` does not list: the pellet
+controller does not connect and CAN safety shutdown starts. It reads that file
+from the checkout the rig's `reachaq` command imports, so a version qualified
+on a reachAQ branch the rig is not running is still refused. Update reachAQ on
+the rig first, then check that the checkout it runs lists the release you are
+about to flash:
+
+```bash
+conda run -n reachaq python -c "import tools.acquisition.model.firmware_compatibility as m; r = m.FirmwareCompatibilityPolicy.load().evaluate('2.3.0'); print(m.__file__); print(r.version, 'listed' if r.supported else 'NOT LISTED', 'requires', list(r.required_capabilities))"
+```
+
+The first line of output is the file it read; it must be the operator's
+checkout, normally `~/Documents/reachAQ`. If the second line says `NOT
+LISTED`, stop: flashing now leaves a board the application will not use.
+This happened on christielab10 on 2026-09-23, when 2.3.0 was flashed while the
+installed checkout's list ended at 2.1.0.
+
 ## Flash-only rigs: one-command update
 
 Verify and extract the release archive:
@@ -283,6 +303,12 @@ conda run -n reachaq python tools/hardware/validate_can_hardware.py \
 conda run -n reachaq python tools/hardware/validate_can_hardware.py \
   --transport socketcan --channel can0 --action version
 ```
+
+Neither command applies reachAQ's firmware compatibility policy, so both pass
+against a board the application will refuse. Start reachAQ with the
+operator's own command (`reachaq`, or the desktop icon) and confirm the pellet
+controller connects; the hardware refresh reports `controller connection
+failed` and the log names the reason if it does not.
 
 Then perform the acquisition acceptance check:
 
