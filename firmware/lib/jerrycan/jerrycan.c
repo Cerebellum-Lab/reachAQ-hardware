@@ -60,6 +60,8 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
         [JERRYCAN_CMD_GPIO_WRITE] = sizeof(jerrycan_cmd_gpio_write_t),
         [JERRYCAN_CMD_GPIO_PULSE] = sizeof(jerrycan_cmd_gpio_pulse_t),
         [JERRYCAN_CMD_GPIO_PULSE_STATUS] = sizeof(jerrycan_cmd_gpio_pulse_status_t),
+        [JERRYCAN_CMD_CAPABILITIES_REQUEST] = sizeof(jerrycan_cmd_capabilities_request_t),
+        [JERRYCAN_CMD_CAPABILITIES_RESPONSE] = sizeof(jerrycan_cmd_capabilities_response_t),
         [JERRYCAN_CMD_TONE] = sizeof(jerrycan_cmd_tone_t),
         [JERRYCAN_CMD_ANALOG_OUT] = sizeof(jerrycan_cmd_analog_out_t),
         [JERRYCAN_CMD_LOAD_CELL_READ] = sizeof(jerrycan_cmd_load_cell_read_t),
