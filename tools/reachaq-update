@@ -20,6 +20,9 @@ Version forms:
 Options:
   -m, --address N   Pellet-board JerryCAN address (default: 0)
   -y, --yes         Skip the interactive FLASH confirmation
+  --allow-unqualified
+                    Flash even though this rig's reachAQ does not list the
+                    version; reachAQ refuses the board until it does
   -h, --help        Show this help
 
 The version may be omitted when the bundle contains exactly one firmware image.
@@ -42,7 +45,7 @@ while (($#)); do
             FORWARD_ARGS+=("$1" "${2:?Missing address}")
             shift
             ;;
-        -y|--yes)
+        -y|--yes|--allow-unqualified)
             FORWARD_ARGS+=("$1")
             ;;
         -h|--help)
