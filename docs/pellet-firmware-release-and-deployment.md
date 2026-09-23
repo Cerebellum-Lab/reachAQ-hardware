@@ -239,6 +239,16 @@ LISTED`, stop: flashing now leaves a board the application will not use.
 This happened on christielab10 on 2026-09-23, when 2.3.0 was flashed while the
 installed checkout's list ended at 2.1.0.
 
+`reachaq-update` and `flash_pellet_module.sh` enforce this themselves before
+asking for `FLASH`. They ask reachAQ from both checkouts it can start from:
+the Conda environment's installed package and the repository in
+`~/.config/reachaq/launcher.conf`. They refuse if either does not list the
+version, if reachAQ cannot be asked at all, or if the image is not named
+`pellet_module_fw_vX.Y.Z.bin`. Bundles built before this check was added do
+not contain it, so the manual check above still applies to them. To bring up a
+release that is still being qualified, pass `--allow-unqualified`; the banner
+then says reachAQ will not accept the board.
+
 ## Flash-only rigs: one-command update
 
 Verify and extract the release archive:

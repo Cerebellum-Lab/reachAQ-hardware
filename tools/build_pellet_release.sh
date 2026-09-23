@@ -193,16 +193,20 @@ reachAQ pellet firmware ${VERSION}
 
 For rig operators:
 
-1. Close the reachAQ application. Leave reachaq-can.service running.
-2. Keep the pellet board powered and connected to CAN.
-3. From this directory run:
+1. Update reachAQ on this rig first (reachaq-sync). reachAQ refuses any
+   firmware version it does not list, so the updater checks and will not
+   flash ${SEMVER} until this rig's reachAQ lists it.
+2. Close the reachAQ application. Leave reachaq-can.service running.
+3. Keep the pellet board powered and connected to CAN.
+4. From this directory run:
 
        ./reachaq-update --${SEMVER}
 
-4. Type FLASH when prompted and wait for "JerryCAN update complete".
+5. Type FLASH when prompted and wait for "JerryCAN update complete".
    A quiet 40-60 second transfer is normal. Do not disconnect power or CAN.
-5. Reopen reachAQ, confirm board detection, and test Tone 1 -> STIM0 and
-   Tone 2 -> STIM1 in the acquisition system.
+6. Start reachAQ (reachaq, or the desktop icon), confirm the pellet controller
+   connects, and test Tone 1 -> STIM0 and Tone 2 -> STIM1 in the acquisition
+   system.
 
 If an error occurs, save the complete terminal output and stop. Do not try a
 different firmware version during troubleshooting.
