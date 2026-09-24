@@ -224,30 +224,33 @@ updater.
 reachAQ refuses any pellet firmware version its
 `config/pellet-firmware-compatibility.yaml` does not list: the pellet
 controller does not connect and CAN safety shutdown starts. It reads that file
-from the checkout the rig's `reachaq` command imports, so a version qualified
-on a reachAQ branch the rig is not running is still refused. Update reachAQ on
-the rig first, then check that the checkout it runs lists the release you are
-about to flash:
+from the checkout the rig's `reachaq` command runs, so update reachAQ on the
+rig first (`reachaq-sync`), then flash.
+
+`reachaq-update` and `flash_pellet_module.sh` check this themselves before
+asking for `FLASH`. They ask reachAQ from both checkouts it can start from -
+the Conda environment's installed package and the repository in
+`~/.config/reachaq/launcher.conf` - and the banner shows the answer:
+
+```text
+  reachAQ:  accepts v2.3.0 (/home/<user>/Documents/reachAQ)
+```
+
+They refuse if either checkout does not list the version, if reachAQ cannot be
+asked at all, or if the image is not named `pellet_module_fw_vX.Y.Z.bin`. To
+bring up a release that is still being qualified, pass `--allow-unqualified`;
+the banner then says reachAQ will not accept the board.
+
+Bundles up to and including v2.3.0 do not contain the check. With one of those,
+confirm the version is listed before flashing:
 
 ```bash
 conda run -n reachaq python -c "import tools.acquisition.model.firmware_compatibility as m; r = m.FirmwareCompatibilityPolicy.load().evaluate('2.3.0'); print(m.__file__); print(r.version, 'listed' if r.supported else 'NOT LISTED', 'requires', list(r.required_capabilities))"
 ```
 
-The first line of output is the file it read; it must be the operator's
-checkout, normally `~/Documents/reachAQ`. If the second line says `NOT
-LISTED`, stop: flashing now leaves a board the application will not use.
-This happened on christielab10 on 2026-09-23, when 2.3.0 was flashed while the
-installed checkout's list ended at 2.1.0.
-
-`reachaq-update` and `flash_pellet_module.sh` enforce this themselves before
-asking for `FLASH`. They ask reachAQ from both checkouts it can start from:
-the Conda environment's installed package and the repository in
-`~/.config/reachaq/launcher.conf`. They refuse if either does not list the
-version, if reachAQ cannot be asked at all, or if the image is not named
-`pellet_module_fw_vX.Y.Z.bin`. Bundles built before this check was added do
-not contain it, so the manual check above still applies to them. To bring up a
-release that is still being qualified, pass `--allow-unqualified`; the banner
-then says reachAQ will not accept the board.
+The first line is the file it read, which should be the operator's checkout,
+normally `~/Documents/reachAQ`. If the second line says `NOT LISTED`, do not
+flash: the application would refuse the board.
 
 ## Flash-only rigs: one-command update
 
