@@ -1,0 +1,12 @@
+# Shell scripts must keep LF endings in every working tree.
+#
+# With core.autocrlf=true a Windows checkout rewrites them to CRLF, and a CRLF
+# shebang is not executable on Linux: the kernel reads the interpreter as
+# "bash\r" and the script fails with
+#   /usr/bin/env: 'bash\r': No such file or directory
+# These run on the Ubuntu build and flash rigs, and copies made from a Windows
+# checkout reached christielab10 that way. Scoped to scripts, so no other file
+# is renormalised.
+*.sh text eol=lf
+tools/reachaq-firmware text eol=lf
+tools/reachaq-update text eol=lf
