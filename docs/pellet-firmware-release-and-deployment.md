@@ -328,6 +328,11 @@ Then perform the acquisition acceptance check:
 4. Stop/abort each tone and confirm its marker returns inactive.
 5. Record the release version and archive SHA-256 in the rig maintenance log.
 
+For a release that is being qualified, run reachAQ's
+`tools/hardware/qualify_pellet_firmware.py --expect-version X.Y.Z` instead of
+checking by hand. It covers the steps above and more, and writes the evidence
+to a JSON record; see reachAQ's `docs/acquisition/pellet-firmware-compatibility.md`.
+
 ## Troubleshooting
 
 ### `CMake is not installed`
