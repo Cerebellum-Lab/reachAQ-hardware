@@ -46,7 +46,10 @@ Two deliverables, built as two parallel tracks:
 | The reachAQ allowlist lists `timing_trailer` and `time_sync` as optional only because no firmware implements them, and says to make them required when one does | `reachAQ/config/pellet-firmware-compatibility.yaml` |
 | Capability bits 0-3 are taken (`timing_trailer`, `time_sync`, `finite_stim3_pulse`, `pellet_precheck`). Bits 4 and up are free. | `reachAQ/tools/acquisition/model/firmware_compatibility.py` |
 | Message IDs 0x25-0x29 are unused in both firmware and host enums | `jerrycan_types.h`; `socketcan_jerrycan.py` |
-| **Current reachAQ raises `CanTransportReadError("Malformed JerryCAN frame")` on any unknown message type**, and `_addr2tgt` raises on any non-pellet address | `socketcan_jerrycan.py` receive loop; `can_interface.py` |
+| *(Corrected during planning.)* reachAQ installs one receive filter per **known** type (`_jerrycan_filters()`, mask `0x7E0`), so unknown types never reach the decoder. The real hazard: **a known type from a non-pellet address raises `RuntimeError` in `_addr2tgt`, and `read()` has no exception handling, so the whole batch, pellet frames included, is lost.** | `socketcan_jerrycan.py`; `can_interface.py` `read()` and `_translate` |
+| reachAQ keeps **one** `BoardClockModel` and one `BoardSequenceTracker` for the whole bus. A second board's trailers would make them reset each other, so they must become per-board before IO-module trailers are translated (T3). | `can_interface.py` `__init__`, `_apply_board_timing` |
+| `TIME_SYNC_RESPONSE` must carry a trailer: `_translate_time_sync` only fits the clock when `board_timing_valid` is set, and reads `boot_id` from the trailer | `can_interface.py` `_translate_time_sync` |
+| The rig's west manifest is the designated checkout's own `firmware/west.yml`, and `drivers/motor/motor_common.c` compiles unconditionally against STM32 LL headers. Firmware therefore builds only in that checkout, and native_sim ztests fail; firmware unit tests are plain host C. | christielab10 `.west/config`; native_sim probe 2026-10-07 |
 | Old pellet firmware ignores unknown types: its RX filter accepts only its own node ID, and its size table spans all 64 IDs | `firmware/lib/jerrycan/jerrycan.c` |
 | Board type is bits 2-3 of the 5-bit node address. Pellet is type 0, and the magnet board appears to be type 1. | `can_interface.py` `_is_pellet_by_addr`; magnet PCB strap nets |
 | Rig CAN: PEAK PCIe-FD (`peak_pciefd`), 1 Mbit/s nominal, 5 Mbit/s data, FD on | `ip -details link show can0` on christielab10 |
@@ -106,7 +109,7 @@ The trailer follows the uuid byte on **every board-originated frame** whose payl
 | ID | Name | Direction | Payload | Trailer |
 |---|---|---|---|---|
 | 0x1F | `TIME_SYNC_REQUEST` | host → board | `u32 request_id, u64 host_send_perf_ns` (exists in host) | — |
-| 0x20 | `TIME_SYNC_RESPONSE` | board → host | `u32 request_id, u64 request_receive_time_us, u64 response_queue_time_us` (exists in host) | `TX_QUEUE`, informational only; the timing is in the payload |
+| 0x20 | `TIME_SYNC_RESPONSE` | board → host | `u32 request_id, u64 request_receive_time_us, u64 response_queue_time_us` (exists in host) | `TX_QUEUE`, **required**: the host reads `boot_id` from it and ignores the response without it |
 | **0x25** | `SYNC_CLAP` | timekeeper → all | `u32 tick` | `TX_QUEUE`, informational only; the clap's real time is in the clapper's own `SYNC_CLAP_OBSERVED` |
 | **0x26** | `SYNC_CLAP_OBSERVED` | each board → host | `u32 tick, u8 clapper_node` | `OBSERVED` = end-of-frame time of the clap |
 | **0x27** | `SYNC_BARCODE` | timekeeper → host | `u32 tick` | `PHYSICAL_START` = rising edge of the start pulse |
@@ -262,8 +265,10 @@ the `ll,generic-gpios` driver.
      model". Raw evidence is never overwritten, matching the existing policy.
 4. An IO-module device model; digital, analog and output streams in the session
    recording; output control API (TTL write and pulse, PWM).
-5. Allowlist: pellet `2.4.0` with `timing_trailer` and `time_sync` **required**, and a
-   new `board_type: io_module` `1.0.0`.
+5. Allowlist: pellet `2.4.0` with `timing_trailer` and `time_sync` **required**, added at
+   that firmware's release (T2), not ahead of it, per the allowlist's own rule against
+   predicting capabilities. The IO module gets its own policy in the host IO-module
+   plan, since the current file is pellet-specific.
 
 ## 9. Safety and error handling
 
