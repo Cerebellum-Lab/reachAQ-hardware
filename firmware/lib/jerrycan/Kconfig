@@ -16,6 +16,17 @@ config LIB_JERRYCAN_LOG_LEVEL
   help
       Set the log level for the tone generator
 
+config LIB_JERRYCAN_TIMING
+    bool "Board timestamps: timing trailer, TIME_SYNC and the sync clap"
+    default n
+    depends on LIB_JERRYCAN
+    help
+      Append the 20-byte timing trailer to every frame with room for it, answer
+      reachAQ's TIME_SYNC_REQUEST, and report SYNC_CLAP frames from a timekeeper.
+      Off by default so boards that share this library keep their wire format;
+      a board opts in from its prj.conf. With it off the bytes on the wire are
+      exactly those of pellet firmware v2.3.0.
+
 menuconfig LIB_JERRYCAN_HEARTBEAT_LED_DURATION_MS
   int "Heartbeat LED duration"
   default 100

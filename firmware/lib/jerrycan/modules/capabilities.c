@@ -35,7 +35,6 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/init.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/random/random.h>
 
 LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
@@ -50,13 +49,6 @@ LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
 #define BOARD_CAPABILITIES (CAPABILITY_FINITE_GPIO_PULSE)
 
-/*
-    Drawn once at init rather than per request, so every answer within one boot
-    carries the same value and a change of value means a reboot and nothing
-    else.
-*/
-static uint32_t boot_id;
-
 static int capabilities_request(const jerrycan_msg_t *msg) {
     jerrycan_msg_t response = {
         .type = JERRYCAN_CMD_CAPABILITIES_RESPONSE,
@@ -64,7 +56,7 @@ static int capabilities_request(const jerrycan_msg_t *msg) {
             {
                 .wire_schema_version = JERRYCAN_WIRE_SCHEMA_VERSION,
                 .capabilities = BOARD_CAPABILITIES,
-                .boot_id = boot_id,
+                .boot_id = jerrycan_boot_id(),
             },
         .uuid = msg->uuid,
     };
@@ -84,10 +76,9 @@ static jerrycan_rx_callback_t capabilities_callback = {
 };
 
 static int jerrycan_capabilities_init() {
-    boot_id = sys_rand32_get();
     jerrycan_register_rx_callback(&capabilities_callback);
     LOG_INF("Capabilities 0x%08x, wire schema %u, boot id 0x%08x", BOARD_CAPABILITIES,
-            JERRYCAN_WIRE_SCHEMA_VERSION, boot_id);
+            JERRYCAN_WIRE_SCHEMA_VERSION, jerrycan_boot_id());
     return 0;
 }
 

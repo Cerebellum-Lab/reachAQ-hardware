@@ -10,6 +10,11 @@ zephyr_library_sources(
 	       modules/capabilities.c
 )
 
+zephyr_library_sources_ifdef(CONFIG_LIB_JERRYCAN_TIMING
+	       timing_trailer.c
+	       modules/timing.c
+)
+
 # If this board has the motor motion library enabled, include the stepper and servo files
 # to include the appropriate CAN message handlers
 if (CONFIG_LIB_MOTOR_MOTION)
