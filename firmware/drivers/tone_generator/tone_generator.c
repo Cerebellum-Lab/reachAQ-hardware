@@ -97,6 +97,7 @@ typedef struct {
     bool initialized;
     bool enabled;
     unsigned int frequency_hz;
+    uint64_t start_cycles; /* k_cycle_get_64() at the latest tone's marker edge; 0 before the first tone */
     struct dma_config dma_cfg;
     struct k_timer duration_timer;
 } ll_tone_generator_data_t;
@@ -342,6 +343,9 @@ int ll_tone_generator_play_tone(const struct device *dev, unsigned int frequency
         return ret;
     }
 
+    /* The marker edge is what the NI-DAQ records as the tone's start */
+    data->start_cycles = k_cycle_get_64();
+
     /* Enable the audio amplifier */
     ret = gpio_pin_set_dt(&cfg->enable_pin, 1);
     if (ret != 0) {
@@ -465,6 +469,13 @@ uint32_t ll_tone_generator_get_frequency(const struct device *dev) {
     ll_tone_generator_data_t *data = dev->data;
 
     return data->frequency_hz;
+}
+
+/* k_cycle_get_64() at the latest tone's marker edge; 0 if no tone has started */
+uint64_t ll_tone_generator_get_start_cycles(const struct device *dev) {
+    const ll_tone_generator_data_t *data = dev->data;
+
+    return data->start_cycles;
 }
 
 #define TONE_OUTPUTS_DEFINE(idx)                                                                                   \

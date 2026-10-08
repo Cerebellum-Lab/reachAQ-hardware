@@ -4,6 +4,7 @@
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/adc.h>
+#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
 #define DT_DRV_COMPAT ll_pressure_sensor
@@ -22,12 +23,25 @@ typedef struct {
 /* Pressure Sensor data structure */
 typedef struct {
     uint16_t raw_data;
+    /* The latest completed sample and its k_cycle_get_64() time, published together by adc_cb */
+    struct k_spinlock lock;
+    uint16_t published;
+    uint64_t published_cycles;
 } ll_pressure_sensor_data_t;
 
 static int ll_pressure_sensor_enable(const struct device *dev);
 
-/* ADC callback */
-static enum adc_action adc_cb(const struct device *dev, const struct adc_sequence *, uint16_t) {
+/* ADC callback: runs as each sample completes, so its time is the sample's time */
+static enum adc_action adc_cb(const struct device *dev, const struct adc_sequence *sequence, uint16_t) {
+    ARG_UNUSED(dev);
+    ll_pressure_sensor_data_t *data = sequence->options->user_data;
+    const uint64_t now = k_cycle_get_64();
+
+    k_spinlock_key_t key = k_spin_lock(&data->lock);
+    data->published = data->raw_data;
+    data->published_cycles = now;
+    k_spin_unlock(&data->lock, key);
+
     return ADC_ACTION_REPEAT;
 }
 
@@ -64,6 +78,16 @@ uint16_t ll_pressure_sensor_get_pressure(const struct device *dev) {
     return data->raw_data;
 }
 
+/* The latest completed sample and the k_cycle_get_64() time it completed, read as one consistent pair */
+void ll_pressure_sensor_get_sample(const struct device *dev, uint16_t *value, uint64_t *sample_cycles) {
+    ll_pressure_sensor_data_t *data = dev->data;
+
+    k_spinlock_key_t key = k_spin_lock(&data->lock);
+    *value = data->published;
+    *sample_cycles = data->published_cycles;
+    k_spin_unlock(&data->lock, key);
+}
+
 /* Enables the given pressure sensor */
 static int ll_pressure_sensor_enable(const struct device *dev) {
     const ll_pressure_sensor_cfg_t *cfg = dev->config;
@@ -87,7 +111,7 @@ static int ll_pressure_sensor_enable(const struct device *dev) {
     static const struct adc_sequence_options pressure_sensor_sequence_opts_##idx = {                                   \
         .extra_samplings = 0,                                                                                          \
         .callback = adc_cb,                                                                                            \
-        .user_data = NULL,                                                                                             \
+        .user_data = &pressure_sensor_data_##idx,                                                                      \
         .interval_us = FREQ_HZ_TO_PER_US(DT_INST_PROP(idx, sample_rate)),                                              \
     };                                                                                                                 \
     static const ll_pressure_sensor_cfg_t pressure_sensor_cfg_##idx = {                                                \
