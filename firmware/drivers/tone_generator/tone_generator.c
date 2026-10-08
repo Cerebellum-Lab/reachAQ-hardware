@@ -97,7 +97,12 @@ typedef struct {
     bool initialized;
     bool enabled;
     unsigned int frequency_hz;
-    uint64_t start_cycles; /* k_cycle_get_64() at the latest tone's marker edge; 0 before the first tone */
+    /*
+        k_cycle_get_64() when the latest tone started; 0 before the first tone. For a frequency that has a
+        tone-output marker (5 and 6 kHz on the pellet) this is the marker edge the NI-DAQ records. For any other
+        frequency there is no marker edge, and it is the start of playback.
+    */
+    uint64_t start_cycles;
     struct dma_config dma_cfg;
     struct k_timer duration_timer;
 } ll_tone_generator_data_t;
@@ -343,7 +348,10 @@ int ll_tone_generator_play_tone(const struct device *dev, unsigned int frequency
         return ret;
     }
 
-    /* The marker edge is what the NI-DAQ records as the tone's start */
+    /*
+        For a frequency with a tone-output marker, the marker edge just set is what the NI-DAQ records as the
+        tone's start. Any other frequency has no marker edge, and this is the start of playback.
+    */
     data->start_cycles = k_cycle_get_64();
 
     /* Enable the audio amplifier */
@@ -471,7 +479,11 @@ uint32_t ll_tone_generator_get_frequency(const struct device *dev) {
     return data->frequency_hz;
 }
 
-/* k_cycle_get_64() at the latest tone's marker edge; 0 if no tone has started */
+/*
+    k_cycle_get_64() when the latest tone started; 0 if no tone has started. For a frequency that has a
+    tone-output marker (5 and 6 kHz on the pellet) this is the marker edge the NI-DAQ records. For any other
+    frequency there is no marker edge, and it is the start of playback.
+*/
 uint64_t ll_tone_generator_get_start_cycles(const struct device *dev) {
     const ll_tone_generator_data_t *data = dev->data;
 
