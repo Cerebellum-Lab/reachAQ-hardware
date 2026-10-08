@@ -18,6 +18,8 @@ typedef void* sys_snode_t;
 #define JERRYCAN_ACTUAL_PAYLOAD_SIZE (CAN_MAX_DLEN)
 #endif
 
+#include "jerrycan_timing.h"
+
 typedef uint8_t uuid_t;
 
 #define JERRYCAN_MAX_PAYLOAD_SIZE (JERRYCAN_ACTUAL_PAYLOAD_SIZE - sizeof(uuid_t))  // account for UUID
@@ -58,10 +60,17 @@ typedef enum __attribute__((packed)) {
     JERRYCAN_CMD_FIXED_XYZ = 0x1C,
     JERRYCAN_CMD_SERVO_ATTACH = 0x1D,
     JERRYCAN_CMD_SERVO_DETACH = 0x1E,
+    JERRYCAN_CMD_TIME_SYNC_REQUEST = 0x1F,
+    JERRYCAN_CMD_TIME_SYNC_RESPONSE = 0x20,
     JERRYCAN_CMD_GPIO_PULSE = 0x21,
     JERRYCAN_CMD_GPIO_PULSE_STATUS = 0x22,
     JERRYCAN_CMD_CAPABILITIES_REQUEST = 0x23,
     JERRYCAN_CMD_CAPABILITIES_RESPONSE = 0x24,
+    JERRYCAN_CMD_SYNC_CLAP = 0x25,
+    JERRYCAN_CMD_SYNC_CLAP_OBSERVED = 0x26,
+    JERRYCAN_CMD_SYNC_BARCODE = 0x27,
+    JERRYCAN_CMD_ANALOG_BLOCK = 0x28,
+    JERRYCAN_CMD_PWM_SET = 0x29,
     JERRYCAN_RSP_ACK = 0x30,
     JERRYCAN_CMD_MIN = 0x00,
     JERRYCAN_CMD_MAX = 0x3F,
@@ -272,6 +281,8 @@ SIZE_CHECK(jerrycan_cmd_gpio_pulse_status_t, 12);
 #define JERRYCAN_CAPABILITY_TIME_SYNC         (1U << 1)
 #define JERRYCAN_CAPABILITY_FINITE_GPIO_PULSE (1U << 2)
 #define JERRYCAN_CAPABILITY_PELLET_PRECHECK   (1U << 3)
+#define JERRYCAN_CAPABILITY_SYNC_LISTENER     (1U << 4)
+#define JERRYCAN_CAPABILITY_TIMEKEEPER        (1U << 5)
 
 /* Bumped when the meaning of a frame changes, not when a capability is added. */
 #define JERRYCAN_WIRE_SCHEMA_VERSION 1
@@ -294,6 +305,75 @@ typedef struct __attribute__((packed)) {
 } jerrycan_cmd_capabilities_response_t;
 
 SIZE_CHECK(jerrycan_cmd_capabilities_response_t, 9);
+
+/*
+    reachAQ's NTP-style clock exchange. The host fits board time to its own clock
+    from many of these (auto-trainer-device board_clock.py), and only uses a
+    response that carries a timing trailer - the trailer supplies boot_id.
+*/
+typedef struct __attribute__((packed)) {
+    uint32_t request_id;
+    uint64_t host_send_perf_ns;
+} jerrycan_cmd_time_sync_request_t;
+
+SIZE_CHECK(jerrycan_cmd_time_sync_request_t, 12);
+
+typedef struct __attribute__((packed)) {
+    uint32_t request_id;
+    uint64_t request_receive_time_us; /* board time the request arrived, stamped in the CAN RX interrupt */
+    uint64_t response_queue_time_us;  /* board time this response was queued */
+} jerrycan_cmd_time_sync_response_t;
+
+SIZE_CHECK(jerrycan_cmd_time_sync_response_t, 20);
+
+/*
+    The timekeeper's once-a-second clap, sent from the timekeeper's own address.
+    A CAN frame finishes arriving at the same instant on every node, so the board
+    times at which each node heard clap N differ only by their clock offsets.
+*/
+typedef struct __attribute__((packed)) {
+    uint32_t tick;
+} jerrycan_cmd_sync_clap_t;
+
+SIZE_CHECK(jerrycan_cmd_sync_clap_t, 4);
+
+/* "I heard clap `tick` from `clapper_node`"; the trailer (OBSERVED) says when. */
+typedef struct __attribute__((packed)) {
+    uint32_t tick;
+    uint8_t clapper_node;
+} jerrycan_cmd_sync_clap_observed_t;
+
+SIZE_CHECK(jerrycan_cmd_sync_clap_observed_t, 5);
+
+/* The timekeeper started barcode `tick` on the NI-DAQ line; the trailer (PHYSICAL_START) says when. */
+typedef struct __attribute__((packed)) {
+    uint32_t tick;
+} jerrycan_cmd_sync_barcode_t;
+
+SIZE_CHECK(jerrycan_cmd_sync_barcode_t, 4);
+
+#define JERRYCAN_ANALOG_BLOCK_SAMPLE_SLOTS 16
+
+/* channel_count x scan_count raw ADC counts, scan-major; the trailer (SAMPLED) is the first scan's trigger time. */
+typedef struct __attribute__((packed)) {
+    uint8_t instance;
+    uint8_t channel_count;
+    uint8_t scan_count;
+    uint8_t flags;
+    uint16_t scan_period_us;
+    uint16_t samples[JERRYCAN_ANALOG_BLOCK_SAMPLE_SLOTS];
+} jerrycan_cmd_analog_block_t;
+
+SIZE_CHECK(jerrycan_cmd_analog_block_t, 38);
+
+/* period_us 0 keeps the current period; a non-zero period applies to every channel on the timer. */
+typedef struct __attribute__((packed)) {
+    uint8_t channel;
+    uint16_t duty_permyriad;
+    uint32_t period_us;
+} jerrycan_cmd_pwm_set_t;
+
+SIZE_CHECK(jerrycan_cmd_pwm_set_t, 7);
 
 typedef struct __attribute__((packed)) {
     uint8_t instance;
@@ -480,6 +560,13 @@ typedef struct __attribute__((packed)) {
                 jerrycan_cmd_delay_t delay;
                 jerrycan_cmd_fixed_xyz fixed_xyz;
                 jerrycan_rsp_ack_t ack;
+                jerrycan_cmd_time_sync_request_t time_sync_request;
+                jerrycan_cmd_time_sync_response_t time_sync_response;
+                jerrycan_cmd_sync_clap_t sync_clap;
+                jerrycan_cmd_sync_clap_observed_t sync_clap_observed;
+                jerrycan_cmd_sync_barcode_t sync_barcode;
+                jerrycan_cmd_analog_block_t analog_block;
+                jerrycan_cmd_pwm_set_t pwm_set;
             };
             uuid_t uuid;
         };
