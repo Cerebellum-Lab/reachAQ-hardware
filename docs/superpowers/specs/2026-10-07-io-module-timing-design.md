@@ -152,8 +152,11 @@ These are estimates, to be confirmed by measurement in acceptance (section 11).
 
 ## 5. Pellet firmware v2.4.0 (additive)
 
-A new shared module, `firmware/lib/jerrycan/modules/timing.c` (`CONFIG_LIB_JERRYCAN_TIMING`,
-default `y`), used by both boards:
+Shared timing, behind `CONFIG_LIB_JERRYCAN_TIMING`, used by both boards. It defaults to **n**
+and is enabled in the pellet's and the IO module's `prj.conf`, so the magnet module, which
+shares the library, keeps its wire format. The board clock, `boot_id`, receive stamping and
+the trailer live in the core (`jerrycan.c`), because every module and driver needs them. The
+TIME_SYNC responder and clap listener live in `modules/timing.c`.
 
 - **Board clock:** `k_cycle_get_64()` / 170 → µs. It uses no timer peripheral; all of
   the pellet's 32-bit timers are taken. `boot_id` moves here from `capabilities.c` so
@@ -178,7 +181,8 @@ default `y`), used by both boards:
 - **Capabilities:** sets `timing_trailer`, `time_sync`, `sync_listener`.
 - **Node ID:** `get_can_node_id()` reads the board type from devicetree when a property
   is present, and falls back to the current strap read otherwise. The pellet behaviour
-  is unchanged.
+  is unchanged. Only the IO module needs this, so it is implemented in H1, not in pellet
+  v2.4.0.
 - **Unchanged:** pins, IDs, payload layouts, rates, motor, servo, tone and pulse
   behaviour, MCUboot, and the flash layout.
 - **Safe on today's reachAQ:** it already parses the trailer and time-sync, and
