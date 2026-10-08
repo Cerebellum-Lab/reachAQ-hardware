@@ -17,13 +17,10 @@
  * that is absent would be worse than the silence it replaces, because the host
  * stops guarding against what a board claims to have.
  *
- * Two bits the host defines are deliberately never set:
- *
- *   - TIMING_TRAILER, because nothing in this firmware appends one, and
- *     nothing in the host reads one. It is a name reserved on both sides.
- *   - TIME_SYNC, because JERRYCAN_CMD_TIME_SYNC_REQUEST (0x1F) has no handler
- *     in this firmware and no entry in the command enum. A board that claimed
- *     it would be asked for a sync it cannot perform.
+ * The timing bits (TIMING_TRAILER, TIME_SYNC, SYNC_LISTENER) follow
+ * CONFIG_LIB_JERRYCAN_TIMING - the same switch that compiles the trailer, the
+ * TIME_SYNC responder and the clap listener - so a board reports them exactly
+ * when it has them.
  *
  * Dependencies:
  * - `jerrycan_register_rx_callback()`: registers the handler.
@@ -47,7 +44,14 @@ LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 #define CAPABILITY_FINITE_GPIO_PULSE                                                                               \
     (DT_HAS_CHOSEN(ll_gpio_pulse_counter) ? JERRYCAN_CAPABILITY_FINITE_GPIO_PULSE : 0U)
 
-#define BOARD_CAPABILITIES (CAPABILITY_FINITE_GPIO_PULSE)
+#if CONFIG_LIB_JERRYCAN_TIMING
+#define CAPABILITY_TIMING \
+    (JERRYCAN_CAPABILITY_TIMING_TRAILER | JERRYCAN_CAPABILITY_TIME_SYNC | JERRYCAN_CAPABILITY_SYNC_LISTENER)
+#else
+#define CAPABILITY_TIMING 0U
+#endif
+
+#define BOARD_CAPABILITIES (CAPABILITY_FINITE_GPIO_PULSE | CAPABILITY_TIMING)
 
 static int capabilities_request(const jerrycan_msg_t *msg) {
     jerrycan_msg_t response = {
