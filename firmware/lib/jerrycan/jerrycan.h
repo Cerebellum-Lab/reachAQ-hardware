@@ -17,8 +17,8 @@ uint64_t jerrycan_cycles_to_board_time_us(uint64_t cycles);
 uint32_t jerrycan_boot_id(void);
 
 /*
-    Board time at which the frame now being handled finished arriving, stamped in the
-    CAN RX interrupt. Valid only inside a jerrycan RX callback.
+    Board time when the CAN RX interrupt handled the frame now being processed. Valid
+    only inside a jerrycan RX callback.
 */
 uint64_t jerrycan_rx_time_us(void);
 
@@ -27,6 +27,8 @@ uint64_t jerrycan_rx_time_us(void);
 int jerrycan_run(k_timeout_t timeout);
 
 // Register a callback to be called when a message of the specified type is received
+// In the callback, msg->dst_id is the low 5 bits of the received CAN id: this board's own address or 0x1F
+// (broadcast) for host commands, and the sender's address for board-originated frames such as claps.
 void jerrycan_register_rx_callback(jerrycan_rx_callback_t *callback);
 
 // Send a CAN message

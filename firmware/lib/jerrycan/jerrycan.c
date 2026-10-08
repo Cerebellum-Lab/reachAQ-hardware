@@ -20,6 +20,15 @@ static sys_slist_t can_rx_callbacks_list;
 BUILD_ASSERT(IS_ENABLED(CONFIG_TIMER_HAS_64BIT_CYCLE_COUNTER), "JerryCAN board time needs a 64-bit cycle counter");
 
 /*
+    At a whole number of MHz, k_cyc_to_us_floor64() is one exact divide, which is what the
+    CAN RX interrupt should pay. At any other rate Zephyr 3.7 uses a general conversion:
+    a slower divide-and-modulo while SYS_CLOCK_MAX_TIMEOUT_DAYS keeps its default, or, if
+    that is cut to about a day, a multiply-first one that overflows after ~30 h at 170 MHz.
+*/
+BUILD_ASSERT(CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC % USEC_PER_SEC == 0,
+             "JerryCAN board time needs a cycle clock that is a whole number of MHz");
+
+/*
     Every received frame is stamped in the CAN RX interrupt, before the jerrycan thread
     reaches it, so a TIME_SYNC request or a clap is timed when it arrived rather than
     when the thread got round to it. One callback serves every filter: the FDCAN hands
@@ -44,6 +53,9 @@ K_MSGQ_DEFINE(jerrycan_tx_msgq, sizeof(jerrycan_tx_item_t), 150, 8);
 
 static uint32_t boot_id;
 static uint64_t current_rx_time_us;
+
+/* Messages jerrycan_tx_timed() could not queue. jerrycan_run() folds them into the trailer sequence. */
+static atomic_t tx_dropped;
 
 uint64_t jerrycan_cycles_to_board_time_us(uint64_t cycles) { return k_cyc_to_us_floor64(cycles); }
 
@@ -164,6 +176,7 @@ int jerrycan_tx_timed(jerrycan_msg_t *msg, jerrycan_timestamp_kind_t kind, uint8
     // Place message in queue
     const int ret = k_msgq_put(&jerrycan_tx_msgq, &item, timeout);
     if (ret != 0) {
+        atomic_inc(&tx_dropped);
         if (!failureCount++) {
             LOG_ERR("jerrycan_tx failed to place message in queue: %d", ret);
         }
@@ -184,7 +197,11 @@ int jerrycan_run(k_timeout_t timeout) {
     static jerrycan_rx_item_t rx_item;
     static jerrycan_tx_item_t tx_item;
 #if CONFIG_LIB_JERRYCAN_TIMING
-    /* Counts trailer-bearing frames, so the host can tell a lost frame from a quiet board */
+    /*
+        Counts trailer-bearing frames and messages dropped because the TX queue was full,
+        so the host can tell a lost frame from a quiet board, including one lost before
+        it was queued.
+    */
     static uint32_t trailer_sequence;
 #endif
     int ret;
@@ -226,6 +243,9 @@ int jerrycan_run(k_timeout_t timeout) {
             }
 
 #if CONFIG_LIB_JERRYCAN_TIMING
+            // Drops since the last dequeue leave a gap in the sequence, as a lost frame would
+            trailer_sequence += (uint32_t)atomic_clear(&tx_dropped);
+
             const jerrycan_timing_t timing = {
                 .kind = tx_item.kind,
                 .flags = tx_item.flags,
@@ -261,6 +281,7 @@ int jerrycan_run(k_timeout_t timeout) {
             frame = rx_item.frame;
             current_rx_time_us = rx_item.rx_time_us;
             msg.type = frame.id >> 5;
+            // Low 5 id bits: this board or 0x1F for host commands, the sender for board frames such as claps
             msg.dst_id = frame.id & NODE_ID_MASK;
             uint8_t msg_len = jerrycan_msg_get_payload_size(msg.type);
             memcpy(msg.payload, frame.data, msg_len);
