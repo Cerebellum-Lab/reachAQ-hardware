@@ -1594,7 +1594,7 @@ Expected: `capabilities` FAILS with `caps=0x00000004 ... trailer=no` and the scr
 
   > Flash the v2.4.0-dev pellet image onto christielab10's board (address 0) now?
   > - The flash takes about a minute.
-  > - **reachAQ on the rig will refuse the board until it is restored**, because the version is not in its allowlist.
+  > - **reachAQ on the rig must stay closed until the board is restored.** The dev image reports version 2.3.0 (its version comes from `git describe`), so reachAQ's allowlist would not stop it. But the image advertises `time_sync`, so reachAQ's `open()` runs 4 back-to-back time syncs, and its board-clock fit currently raises on those closely spaced observations and aborts `open()`. The reachAQ fix is planned as T3 Task 1.
   > - The board is restored to the v2.3.0 release right after the check.
 
   Do not proceed without a yes.
@@ -1608,16 +1608,24 @@ $RIG "cd ~/Documents/reachAQ-hardware && python3 firmware/lib/jerrycan/test/hil_
 
 The flash script asks the operator to type `FLASH`. Run it in an interactive terminal (for example `mcp__terminal__run_in_terminal`), not with `--yes`.
 
-Expected: every check PASSES, `claps` reports hardware timestamps with residual p95 < 20 µs, and the script exits 0. If anything fails, record the full output before restoring.
+Expected: every check PASSES, `claps` reports hardware timestamps with residual p95 < 20 µs, and the script exits 0. If anything fails, record the full output before restoring. Record the `boot_id` from the `capabilities` line.
 
 **Then restore, whether the check passed or failed:**
 
 ```bash
 $RIG "cd ~/Documents/reachAQ-hardware/dist/reachaq-pellet-v2.3.0-linux-x86_64 && ./reachaq-update --2.3.0"
+$RIG "cd ~/Documents/reachAQ-hardware && python3 firmware/lib/jerrycan/test/hil_timing_check.py"
+```
+
+Expected: the v2.3.0 baseline result from Step 2. `capabilities` FAILS with `caps=0x00000004 ... trailer=no`, the script exits 1, and the reported `boot_id` differs from the dev run's. This is the restore check: the dev image would report `caps=0x00000017` with a trailer, and a different `boot_id` proves the board rebooted into the restored image.
+
+Secondary check only:
+
+```bash
 $RIG "cd ~/Documents/reachAQ && conda run -n reachaq python tools/hardware/validate_can_hardware.py --transport socketcan --channel can0 --action version"
 ```
 
-Expected: the version reads 2.3.0.
+Expected: the version reads 2.3.0. This cannot tell the dev image from the release, because the dev image also reports 2.3.0 (its version comes from `git describe`). Do not run it while the dev image is on the board: it opens the board through reachAQ, which fails on a board that advertises `time_sync` (see Step 3).
 
 **Finally, put the rig checkout back on the ref recorded in Task 0:**
 
@@ -1652,11 +1660,11 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
     - TIME_SYNC responder
     - SYNC_CLAP listener (`SYNC_CLAP_OBSERVED`)
     - physical times on tone, pressure, pulse, GPIO and door frames
-    - capabilities `0x00000013`
+    - capabilities `0x00000017` (`timing_trailer | time_sync | finite_stim3_pulse | sync_listener`)
   - **What did not change:** pins, IDs, payloads, rates, behaviour, wire schema 1; the magnet module's wire format
-  - **Compatibility:** reachAQ already decodes the trailer and time-sync, so v2.4.0 is safe on current reachAQ. It sends `SYNC_CLAP_OBSERVED` only when a timekeeper claps.
+  - **Compatibility:** v2.4.0 is **not** safe on current reachAQ. It advertises `time_sync`, so reachAQ's `open()` runs 4 back-to-back time syncs, and reachAQ's board-clock fit raises on those closely spaced, noisy observations and aborts `open()`: current reachAQ cannot open a v2.4.0 board. reachAQ's board-clock robustness fix (T3 Task 1) must ship first. Until it has, the allowlist entry below is not added and v2.4.0 is not tagged or deployed. reachAQ already decodes the trailer. The board sends `SYNC_CLAP_OBSERVED` only when a timekeeper claps.
   - **Evidence:** the Task 6 PASS output. Note that the spec's pellet-regression acceptance, reachAQ's `tools/hardware/qualify_pellet_firmware.py --expect-version 2.4.0`, runs against the tagged release bundle per the deployment doc, after the user tags. It is not run on the dev image.
-  - **Allowlist entry for reachAQ:** add this to `config/pellet-firmware-compatibility.yaml` after rig qualification. Do not add it before the release is tagged.
+  - **Allowlist entry for reachAQ:** add this to `config/pellet-firmware-compatibility.yaml` after rig qualification. Do not add it before reachAQ's board-clock robustness fix (T3 Task 1) has shipped and the release is tagged.
 
     ```yaml
       - version: 2.4.0
@@ -1675,7 +1683,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
     `sync_listener` is optional because reachAQ consumes claps only after T3.
 
-- [ ] **Step 2: Commit and report.** Do not tag; the release tag and build follow `docs/pellet-firmware-release-and-deployment.md` and are the user's step.
+- [ ] **Step 2: Commit and report.** Do not tag; the release tag and build follow `docs/pellet-firmware-release-and-deployment.md` and are the user's step, and they wait until reachAQ's board-clock robustness fix (T3 Task 1) has shipped.
 
 ```bash
 git add docs/releases/v2.4.0.md
