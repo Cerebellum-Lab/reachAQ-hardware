@@ -285,8 +285,9 @@ the `ll,generic-gpios` driver.
    recording; output control API (TTL write and pulse, PWM).
 5. Allowlist: pellet `2.4.0` with `timing_trailer` and `time_sync` **required**, added at
    that firmware's release, not ahead of it, per the allowlist's own rule against
-   predicting capabilities. That release waits for T3 Task 1 (§10, step 3). The IO module gets its own policy in the host IO-module
-   plan, since the current file is pellet-specific.
+   predicting capabilities. That release waits for T3 Task 1 (§10, step 3). The IO module
+   gets its own policy in the host IO-module plan, since the current file is
+   pellet-specific.
 
 ## 9. Safety and error handling
 
