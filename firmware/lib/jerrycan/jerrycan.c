@@ -40,22 +40,34 @@ typedef struct {
     struct can_frame frame;
 } jerrycan_rx_item_t;
 
-/* A queued message and what its timing trailer reports. */
+/*
+    A queued message and what its timing trailer reports. Without timing there is no
+    trailer, so the item is the bare message and the queue costs what it did in v2.3.0.
+*/
 typedef struct {
+#if CONFIG_LIB_JERRYCAN_TIMING
     uint64_t board_time_us;
     uint8_t kind;
     uint8_t flags;
+#endif
     jerrycan_msg_t msg;
 } jerrycan_tx_item_t;
 
 K_MSGQ_DEFINE(jerrycan_rx_msgq, sizeof(jerrycan_rx_item_t), 10, 8);
+#if CONFIG_LIB_JERRYCAN_TIMING
 K_MSGQ_DEFINE(jerrycan_tx_msgq, sizeof(jerrycan_tx_item_t), 150, 8);
+#else
+BUILD_ASSERT(sizeof(jerrycan_tx_item_t) == sizeof(jerrycan_msg_t), "Without timing a TX queue item is the bare message");
+K_MSGQ_DEFINE(jerrycan_tx_msgq, sizeof(jerrycan_tx_item_t), 150, 4);
+#endif
 
 static uint32_t boot_id;
 static uint64_t current_rx_time_us;
 
+#if CONFIG_LIB_JERRYCAN_TIMING
 /* Messages jerrycan_tx_timed() could not queue. jerrycan_run() folds them into the trailer sequence. */
 static atomic_t tx_dropped;
+#endif
 
 uint64_t jerrycan_cycles_to_board_time_us(uint64_t cycles) { return k_cyc_to_us_floor64(cycles); }
 
@@ -159,24 +171,40 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
 // Add a jerrycan message to the TX queue- these messages will be processed by the main jerrycan_run() loop
 // This allows any thread or interrupt to generate an outgoing CAN message which will then be handled by the main task
 int jerrycan_tx(jerrycan_msg_t *msg, k_timeout_t timeout) {
+#if CONFIG_LIB_JERRYCAN_TIMING
     return jerrycan_tx_timed(msg, JERRYCAN_TIMESTAMP_TX_QUEUE, 0, jerrycan_board_time_us(), timeout);
+#else
+    // No trailer to report a time in, so the clock is not read
+    return jerrycan_tx_timed(msg, JERRYCAN_TIMESTAMP_TX_QUEUE, 0, 0, timeout);
+#endif
 }
 
 int jerrycan_tx_timed(jerrycan_msg_t *msg, jerrycan_timestamp_kind_t kind, uint8_t flags, uint64_t board_time_us,
                       k_timeout_t timeout) {
     static size_t failureCount = 0;
 
+#if CONFIG_LIB_JERRYCAN_TIMING
     const jerrycan_tx_item_t item = {
         .board_time_us = board_time_us,
         .kind = (uint8_t)kind,
         .flags = flags,
         .msg = *msg,
     };
+#else
+    // Without the trailer there is nowhere to report these
+    ARG_UNUSED(kind);
+    ARG_UNUSED(flags);
+    ARG_UNUSED(board_time_us);
+
+    const jerrycan_tx_item_t item = {.msg = *msg};
+#endif
 
     // Place message in queue
     const int ret = k_msgq_put(&jerrycan_tx_msgq, &item, timeout);
     if (ret != 0) {
+#if CONFIG_LIB_JERRYCAN_TIMING
         atomic_inc(&tx_dropped);
+#endif
         if (!failureCount++) {
             LOG_ERR("jerrycan_tx failed to place message in queue: %d", ret);
         }

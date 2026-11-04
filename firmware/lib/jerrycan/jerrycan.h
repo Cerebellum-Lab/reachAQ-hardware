@@ -38,6 +38,8 @@ int jerrycan_tx(jerrycan_msg_t *msg, k_timeout_t timeout);
     Queue a message whose timing trailer reports `kind` at `board_time_us`, instead of
     the moment it was queued (which is what jerrycan_tx() reports, as TX_QUEUE).
     Use it when the board knows when the thing the message describes happened.
+    With CONFIG_LIB_JERRYCAN_TIMING off there is no trailer, so kind, flags and
+    board_time_us are ignored and it queues the message as jerrycan_tx() does.
 */
 int jerrycan_tx_timed(jerrycan_msg_t *msg, jerrycan_timestamp_kind_t kind, uint8_t flags, uint64_t board_time_us,
                       k_timeout_t timeout);
