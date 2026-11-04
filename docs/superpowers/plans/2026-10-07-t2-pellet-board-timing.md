@@ -1367,7 +1367,9 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes the v2.4.0-dev image built in Task 5, and the rig's v2.3.0 bundle at `~/Documents/reachAQ-hardware/dist/reachaq-pellet-v2.3.0-linux-x86_64/`.
 
-- [ ] **Step 1: Write the checker.** It uses only the standard library, so it runs with the rig's system `python3`.
+- [x] **Step 1: Write the checker.** It uses only the standard library, so it runs with the rig's system `python3`.
+
+> **Done; the committed file is authoritative.** The checker was committed in deb4bea and corrected in 2086ce3. The fixes were: a TX_QUEUE kind and queue-time match on the TIME_SYNC response, RTT only on same-source stamps, clap jitter judged only on hardware stamps, `--clapper-address`, and no claps when a timekeeper is already clapping. The listing below is the original draft and lacks those fixes. Do not re-create the file from it.
 
 ```python
 #!/usr/bin/env python3
@@ -1588,7 +1590,7 @@ if __name__ == "__main__":
 $RIG "cd ~/Documents/reachAQ-hardware && python3 firmware/lib/jerrycan/test/hil_timing_check.py"
 ```
 
-Expected: `capabilities` FAILS with `caps=0x00000004 ... trailer=no` and the script exits 1. This proves the checker can tell v2.3.0 from v2.4.0. The SYNC_CLAP frames it sends from address 8 are dropped by v2.3.0's filters and by reachAQ's per-type filters, so they're harmless.
+Expected: `capabilities` FAILS with `caps=0x00000004 ... trailer=no` and the script exits 1. This proves the checker can tell v2.3.0 from v2.4.0. After a failed `capabilities` check the checker stops, so it sends no TIME_SYNC requests and no SYNC_CLAP frames.
 
 - [ ] **Step 3: STOP. Get explicit user approval to flash.** Ask the user, and report their answer:
 
@@ -1635,13 +1637,13 @@ $RIG "cd ~/Documents/reachAQ-hardware && git switch --detach 08c1b41 && git stat
 
 Expected: `0`.
 
-- [ ] **Step 5: Commit the checker** (in the local worktree):
+- [ ] **Step 5: Record the measurements.** The checker is already committed (Step 1). Paste the Step 3 PASS lines into the SDD ledger and into Task 7's release notes. Commit the checker again only if the run forced a change to it:
 
 ```bash
 git add firmware/lib/jerrycan/test/hil_timing_check.py
-git commit -m "test(jerrycan): hardware-in-the-loop check of board timing
+git commit -m "test(jerrycan): <what the hardware run showed the checker needed>
 
-Development tool. On christielab10 it measured: <paste the PASS lines>.
+On christielab10 it measured: <paste the PASS lines>.
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```

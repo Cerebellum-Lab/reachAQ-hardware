@@ -284,8 +284,8 @@ the `ll,generic-gpios` driver.
 4. An IO-module device model; digital, analog and output streams in the session
    recording; output control API (TTL write and pulse, PWM).
 5. Allowlist: pellet `2.4.0` with `timing_trailer` and `time_sync` **required**, added at
-   that firmware's release (T2), not ahead of it, per the allowlist's own rule against
-   predicting capabilities. The IO module gets its own policy in the host IO-module
+   that firmware's release, not ahead of it, per the allowlist's own rule against
+   predicting capabilities. That release waits for T3 Task 1 (§10, step 3). The IO module gets its own policy in the host IO-module
    plan, since the current file is pellet-specific.
 
 ## 9. Safety and error handling
@@ -299,8 +299,9 @@ the `ll,generic-gpios` driver.
 - A reset of the timekeeper restarts tick numbering. Ticks pair with `boot_id`, never
   alone.
 - Clap and TIME_SYNC times are taken in the ISR, so main-loop delay before
-  `SYNC_CLAP_OBSERVED` is sent does not affect accuracy. If the stamp queue overflows,
-  the clap is dropped and the host sees a missing tick.
+  `SYNC_CLAP_OBSERVED` is sent does not affect accuracy. Each stamp travels with its frame
+  through the RX queue (10 frames). If that queue overflows, the clap is dropped and the
+  host sees a missing tick.
 - Bus-off on the IO module: outputs are made safe, and it recovers with the existing
   restart behaviour.
 
@@ -356,7 +357,8 @@ Each step leaves the system working if the next one never ships.
 Each item gets its own plan, executed in this order within its track:
 
 - **Timing track**
-  - T1 reachAQ tolerance + decoders + allowlist
+  - T1 reachAQ tolerance + decoders + allowlist capability names (the `2.4.0` entry
+    itself follows §10 step 3)
   - T2 shared `timing` module + pellet v2.4.0
   - T3 reachAQ clock chain + barcode decoder
 - **Hardware track**
