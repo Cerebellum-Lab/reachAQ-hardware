@@ -6,8 +6,9 @@ Run on the rig, with the pellet board on can0 running a CONFIG_LIB_JERRYCAN_TIMI
     python3 firmware/lib/jerrycan/test/hil_timing_check.py --channel can0 --address 0
 
 It transmits CAPABILITIES_REQUEST and TIME_SYNC_REQUEST to the pellet, SYNC_CLAP
-frames from address 8 (standing in for a timekeeper), and - only with
---play-tone - one 200 ms Tone 1, which is audible and drives STIM0.
+frames from --clapper-address (default 8, standing in for a timekeeper) unless a
+real timekeeper is already clapping, and - only with --play-tone - one 200 ms
+Tone 1, which is audible and drives STIM0.
 """
 
 import argparse
@@ -33,8 +34,7 @@ TONE = 0x0C
 # Board-to-host payload sizes, so the trailer can be found after payload + uuid.
 PAYLOAD_SIZES = {0x01: 8, 0x07: 28, 0x08: 5, 0x0A: 5, 0x0C: 5, 0x0F: 1, 0x13: 3, 0x16: 12, 0x17: 6,
                  0x19: 7, 0x20: 20, 0x22: 12, 0x24: 9, 0x26: 5, 0x30: 4, 0x3F: 1}
-OBSERVED, PHYSICAL_START, SAMPLED = 1, 3, 5
-TIMEKEEPER_ADDRESS = 8
+TX_QUEUE, OBSERVED, PHYSICAL_START, SAMPLED = 0, 1, 3, 5
 REQUIRED_CAPABILITIES = 0b10011  # timing_trailer | time_sync | sync_listener
 
 results = []
@@ -113,33 +113,56 @@ def check_time_sync(s, address, boot_id, count=20):
     sent, answers = {}, {}
     for request_id in range(base + 1, base + count + 1):
         send(s, TIME_SYNC_REQUEST, address, struct.pack("<IQ", request_id, time.perf_counter_ns()))
-        for can_id, data, own, ts, _ in receive(s, 0.05):
+        for can_id, data, own, ts, hw in receive(s, 0.05):
             if own and can_id == (TIME_SYNC_REQUEST << 5) | address:
-                sent[struct.unpack_from("<I", data)[0]] = ts
+                sent[struct.unpack_from("<I", data)[0]] = (ts, hw)
             elif not own and can_id == (TIME_SYNC_RESPONSE << 5) | address:
                 rid, received_us, queued_us = struct.unpack_from("<IQQ", data)
-                answers[rid] = (received_us, queued_us, trailer(TIME_SYNC_RESPONSE, data), ts)
-    good = [rid for rid, (rx, q, t, _) in answers.items()
-            if rid > base and t is not None and t["boot_id"] == boot_id and rx <= q]
-    rtts = sorted((answers[r][3] - sent[r]) / 1000 for r in good if r in sent)
+                answers[rid] = (received_us, queued_us, trailer(TIME_SYNC_RESPONSE, data), ts, hw)
+    # The trailer must say the response was stamped when queued, at the time the payload reports
+    good = [rid for rid, (rx, q, t, _, _) in answers.items()
+            if rid > base and t is not None and t["boot_id"] == boot_id and t["kind"] == TX_QUEUE
+            and t["board_us"] == q and rx <= q]
+    # A round trip is only meaningful when both ends were stamped by the same clock
+    paired = [r for r in good if r in sent]
+    sources = {sent[r][1] for r in paired} | {answers[r][4] for r in paired}
+    if not paired:
+        rtt = "RTT not computed: no valid response matched a request echo"
+    elif len(sources) > 1:
+        rtt = "RTT not computed: mixed hardware/software stamps"
+    else:
+        rtts = sorted((answers[r][3] - sent[r][0]) / 1000 for r in paired)
+        rtt = f"round trip min {rtts[0]:.0f} us ({'hardware' if True in sources else 'software'} stamps)"
     board_us = sorted(answers[r][1] - answers[r][0] for r in good)
     ok = len(good) >= count - 1
-    report("time_sync", ok, f"{len(good)}/{count} valid; round trip min {rtts[0] if rtts else float('nan'):.0f} us, "
+    report("time_sync", ok, f"{len(good)}/{count} valid (trailer TX_QUEUE at response_queue_time_us); {rtt}, "
            f"board handling median {board_us[len(board_us) // 2] if board_us else float('nan')} us")
 
 
-def check_claps(s, address, boot_id, count=50):
+def other_clappers(s, seconds=1.5):
+    """Addresses that sent SYNC_CLAP within `seconds`, listening only."""
+    return sorted({can_id & 0x1F for can_id, _, own, _, _ in receive(s, seconds)
+                   if not own and can_id >> 5 == SYNC_CLAP})
+
+
+def check_claps(s, address, boot_id, clapper_address, count=50):
+    # Fake claps beside a real timekeeper's would corrupt every board's clap fit, so listen first
+    clappers = other_clappers(s)
+    if clappers:
+        report("claps", False, "SKIPPED, no claps sent: a timekeeper is already clapping on this bus "
+               f"(SYNC_CLAP from address {', '.join(str(a) for a in clappers)})")
+        return
     host_ts, board_us, hardware, bad = {}, {}, True, 0
     for tick in range(1, count + 1):
-        send(s, SYNC_CLAP, TIMEKEEPER_ADDRESS, struct.pack("<I", tick))
+        send(s, SYNC_CLAP, clapper_address, struct.pack("<I", tick))
         for can_id, data, own, ts, hw in receive(s, 0.1):
-            if own and can_id == (SYNC_CLAP << 5) | TIMEKEEPER_ADDRESS:
+            if own and can_id == (SYNC_CLAP << 5) | clapper_address:
                 host_ts[struct.unpack_from("<I", data)[0]] = ts
                 hardware = hardware and hw
             elif not own and can_id == (SYNC_CLAP_OBSERVED << 5) | address:
                 heard, clapper = struct.unpack_from("<IB", data)
                 t = trailer(SYNC_CLAP_OBSERVED, data)
-                if t is None or clapper != TIMEKEEPER_ADDRESS or t["kind"] != OBSERVED or t["boot_id"] != boot_id:
+                if t is None or clapper != clapper_address or t["kind"] != OBSERVED or t["boot_id"] != boot_id:
                     bad += 1
                 else:
                     board_us[heard] = t["board_us"]
@@ -152,11 +175,16 @@ def check_claps(s, address, boot_id, count=50):
     slope = sum((x - mx) * (y - my) for x, y in pairs) / sum((x - mx) ** 2 for x, _ in pairs)
     residual_us = sorted(abs(y - (my + slope * (x - mx))) * 1e6 for x, y in pairs)
     p95 = residual_us[int(0.95 * (n - 1))]
-    jitter_ok = p95 < 20.0 if hardware else True
+    # The acceptance is p95 < 20 us against hardware stamps; software stamps cannot show it
+    if hardware:
+        jitter_ok = p95 < 20.0
+        jitter = f"jitter judged (hardware timestamps): p95 {'<' if jitter_ok else '>='} 20 us"
+    else:
+        jitter_ok = False
+        jitter = "jitter NOT judged (kernel software timestamps), so the hardware acceptance is not met"
     ok = n >= count - 2 and bad == 0 and abs(slope - 1.0) < 1e-3 and jitter_ok
-    source = "hardware" if hardware else "kernel software (jitter not judged)"
     report("claps", ok, f"{n}/{count} observed, {bad} malformed, slope {slope:.9f}, residual p95 {p95:.1f} us, "
-           f"max {residual_us[-1]:.1f} us vs {source} timestamps")
+           f"max {residual_us[-1]:.1f} us; {jitter}")
 
 
 def check_periodic_trailers(s, address, boot_id):
@@ -193,14 +221,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--channel", default="can0")
     parser.add_argument("--address", type=int, default=0)
+    parser.add_argument("--clapper-address", type=int, default=8,
+                        help="address the fake SYNC_CLAP frames are sent from (default 8, an IO-module address)")
     parser.add_argument("--play-tone", action="store_true")
     args = parser.parse_args()
+    if not 0 <= args.clapper_address <= 31 or args.clapper_address == args.address:
+        parser.error("--clapper-address must be 0-31 and differ from --address")
 
     s = open_socket(args.channel)
     boot_id = check_capabilities(s, args.address)
     if boot_id is not None:
         check_time_sync(s, args.address, boot_id)
-        check_claps(s, args.address, boot_id)
+        check_claps(s, args.address, boot_id, args.clapper_address)
         check_periodic_trailers(s, args.address, boot_id)
         if args.play_tone:
             check_tone(s, args.address)
