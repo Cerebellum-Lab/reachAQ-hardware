@@ -57,6 +57,7 @@ Two deliverables, built as two parallel tracks:
 | PXI-6221 buffered DI is `port0` only. Lines 0-3 are tone1, tone2, cam_frames and barcode; 4-5 are shutters; 6-7 are free but earmarked for laser readback. DAQ sampling is 10 kHz. | `reachAQ/planning.md`; `docs/linux-install/ni-daq-pxi.md` |
 | The pellet build has a 64-bit cycle counter at 170 MHz (`CONFIG_TIMER_HAS_64BIT_CYCLE_COUNTER=y`) | Rig build `.config` |
 | Pellet power: 12 V from the CAN cable (`CAN_PWR_IN`) or a barrel jack, diode-ORed (UPS840), then TPS565208 → 5 V and TPS561201 → 3.3 V. CAN uses ATA6561 on Nano-Fit 2x2 connectors carrying 12 V. | `hardware/pellet_module/pellet.kicad_pcb` |
+| *(Found in the final review.)* **Today's reachAQ cannot open a board that advertises `time_sync`.** `open()` then sends 4 back-to-back `TIME_SYNC_REQUEST`s. `BoardClockModel._fit` raises `ValueError` when the fitted slope falls outside [0.999, 1.001], which closely spaced, noisy observations produce. Nothing on the translate, `read()` or `get_response()` path catches it, so `open()` closes the channel and re-raises. Pellet v2.4.0 sets `time_sync`, so reachAQ's board-clock robustness fix (T3 Task 1) must ship before v2.4.0 is allowlisted or deployed. | Final review 2026-11-03; `reachAQ/.../can_interface.py` `open()` time-sync loop; `reachAQ/.../board_clock.py` `_fit` slope bound |
 
 ## 3. Architecture
 
@@ -161,17 +162,26 @@ TIME_SYNC responder and clap listener live in `modules/timing.c`.
 - **Board clock:** `k_cycle_get_64()` / 170 → µs. It uses no timer peripheral; all of
   the pellet's 32-bit timers are taken. `boot_id` moves here from `capabilities.c` so
   both share one value.
-- **TIME_SYNC responder:** a dedicated `can_add_rx_filter` for 0x1F addressed to this
-  node. Its callback (ISR context) stamps `request_receive_time_us` and queues the reply.
-  `response_queue_time_us` is stamped when the reply is queued.
-- **Clap listener:** a dedicated filter for type 0x25 from **any** node. The ISR stamps
-  it, and the main loop sends `SYNC_CLAP_OBSERVED`. ISR work is limited to one stamp and
-  one `k_msgq_put`.
+- **Receive stamping:** **one** RX callback, in ISR context, is shared by every JerryCAN
+  filter. It stamps the board time, then puts the stamp and the frame on the RX queue;
+  ISR work is limited to that one stamp and one `k_msgq_put`. The jerrycan thread hands
+  the stamp to RX handlers as `jerrycan_rx_time_us()`. There is no dedicated filter per
+  timed type, because the FDCAN delivers a frame only to the **first** hardware filter it
+  matches: a separate 0x1F filter would silently lose to the node filter.
+- **TIME_SYNC responder:** an ordinary RX handler for 0x1F, which arrives through the
+  node filter. `request_receive_time_us` is the ISR stamp. `response_queue_time_us` is
+  stamped when the jerrycan thread queues the reply, and the reply's `TX_QUEUE` trailer
+  carries the same time.
+- **Clap listener:** the clap filter (type 0x25 from **any** node) is one more filter on
+  that same callback. Its handler sends `SYNC_CLAP_OBSERVED` from the jerrycan thread,
+  stamped `OBSERVED` at the ISR time.
 - **Trailer:** appended in `jerrycan_run`, where every frame is built, for payloads of
   43 B or less. The default kind is `TX_QUEUE`, with the time `jerrycan_tx()` was called.
-  A new `jerrycan_tx_timed(msg, kind, time_us)` carries better times through an internal
-  queue item. **The shared `jerrycan_msg_t` is not changed**, so the host C++ library
-  and pyjerrycan are untouched.
+  `jerrycan_tx_timed(msg, kind, flags, board_time_us, timeout)` carries better times
+  through an internal queue item. With timing off the item is the bare message, as in
+  v2.3.0, and `kind`, `flags` and `board_time_us` are ignored. **The shared
+  `jerrycan_msg_t` is not changed**, so the host C++ library and pyjerrycan are
+  untouched.
 - **Better times:**
   - `PRESSURE_READ`: `SAMPLED`, stamped in the ADC callback
   - `GPIO_READ` and `DOOR_SENSOR` periodic state: `SAMPLED`, when the state was read
@@ -185,9 +195,13 @@ TIME_SYNC responder and clap listener live in `modules/timing.c`.
   v2.4.0.
 - **Unchanged:** pins, IDs, payload layouts, rates, motor, servo, tone and pulse
   behaviour, MCUboot, and the flash layout.
-- **Safe on today's reachAQ:** it already parses the trailer and time-sync, and
-  `SYNC_CLAP_OBSERVED` is only sent when a timekeeper is clapping. The one required host
-  change is a `2.4.0` allowlist entry, because unknown versions are blocked.
+- **Not safe on today's reachAQ** *(corrected in the final review, 2026-11-03)*. reachAQ
+  already parses the trailer, and `SYNC_CLAP_OBSERVED` is only sent when a timekeeper is
+  clapping. But v2.4.0 sets `time_sync`, so reachAQ's `open()` runs 4 back-to-back time
+  syncs. Its board-clock fit raises on those closely spaced, noisy observations, and that
+  aborts `open()` (section 2). reachAQ's board-clock robustness fix (T3 Task 1) must ship
+  before pellet v2.4.0 is allowlisted or deployed. The `2.4.0` allowlist entry is also
+  required, because unknown versions are blocked, and it is added only after that fix.
 
 ## 6. IO module hardware
 
@@ -292,9 +306,15 @@ the `ll,generic-gpios` driver.
 
 ## 10. Rollout order
 
-1. reachAQ tolerance, decoders and allowlist entries.
-2. Pellet v2.4.0. This can also ship before step 1 as long as no timekeeper is on the bus.
-3. IO module joins the bus.
+1. reachAQ tolerance and decoders (T1).
+2. reachAQ board-clock robustness (T3 Task 1): a time-sync fit that rejects its input
+   never aborts `open()`. *(Added in the final review, 2026-11-03; see section 2.)*
+3. Pellet v2.4.0 and its `2.4.0` allowlist entry. It must not be allowlisted or deployed
+   before step 2, because today's reachAQ cannot open a board that advertises
+   `time_sync`. It can ship before step 1 as long as no timekeeper is on the bus. T2's
+   implementation and its hardware-in-the-loop check, run with reachAQ closed, can
+   precede step 2; only the release waits.
+4. IO module joins the bus.
 
 Each step leaves the system working if the next one never ships.
 
