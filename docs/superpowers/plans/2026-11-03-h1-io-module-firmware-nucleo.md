@@ -672,6 +672,18 @@ CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE=2048
 };
 
 /*
+ * A disabled timer does not disable its pwm child: drivers instantiate per node status, so with CONFIG_PWM=y
+ * (Task 7) pwm2 would take PA5 (LD2) and pwm3 would initialise TIM3, which the barcode driver owns (Task 5).
+ */
+&pwm2 {
+	status = "disabled";
+};
+
+&pwm3 {
+	status = "disabled";
+};
+
+/*
  * The NUCLEO enables these for its Arduino/Morpho headers. Their drivers apply pinctrl after the GPIO driver has
  * configured the IO pins and would take them: usart1 PC4/PC5 (DI1, DI2), i2c1 PB8/PB9 (TTL7), spi1 PA5-PA7 and
  * cs PB6 (DI3, DI4, CAN_ID[0]), spi2 PB12-PB15 (an ADC input, DI10, TTL0, TTL1), spi3 PA15/PC10-PC12 (DI11, DI8, DI9).
@@ -721,7 +733,7 @@ $RIG "cd ~/Documents/reachAQ-hardware && $ENV && $BUILD_MAGNET 2>&1 | grep -iE '
 
 Expected:
 - **IO:** builds with no warnings. The board type is `2`, `LIB_JERRYCAN_TIMING=y`, and there is no MCUboot, motor, tone, SPI or I2C code.
-- **Pin claims:** the listing shows only `lpuart1` (PA2/PA3) and `fdcan1` (PA11/PA12). Tasks 5-7 add `barcode` (PA4), `analog_inputs` (the 8 ADC pins) and `pwm` (PA8/PA9/PC2/PC3); each of those tasks re-runs this listing. No claimed pin may be a generic-gpios pin. If the `edt.pickle` API differs in this Zephyr, find the equivalent with `grep -B2 -A8 'pinctrl-0' /tmp/h1-io/zephyr/zephyr.dts` and say so in the report.
+- **Pin claims:** the listing shows `lpuart1` (PA2/PA3) and `fdcan1` (PA11/PA12), plus the board's `adc1` (PA0) and `dac1` (PA4) until Tasks 6 and 5 disable them. No `pwm` node may appear. Tasks 5-7 add `barcode` (PA4), `analog_inputs` (the 8 ADC pins) and `pwm` (PA8/PA9/PC2/PC3); each of those tasks re-runs this listing. No claimed pin may be a generic-gpios pin. If the `edt.pickle` API differs in this Zephyr, find the equivalent with `grep -B2 -A8 'pinctrl-0' /tmp/h1-io/zephyr/zephyr.dts` and say so in the report.
 - **Pellet:** within the size budget.
 - **Magnet:** same as baseline.
 
@@ -894,7 +906,7 @@ CMake: `zephyr_library_sources_ifdef(CONFIG_LIB_JERRYCAN_TIMEKEEPER modules/time
 };
 
 &timers3 {
-	status = "disabled"; /* owned by ll,barcode-generator through LL */
+	status = "disabled"; /* owned by ll,barcode-generator through LL; its pwm3 child is disabled in Task 3 */
 };
 ```
 
