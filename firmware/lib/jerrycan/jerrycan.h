@@ -5,12 +5,13 @@
 #include "jerrycan_types.h"
 
 /*
-    Board clock: microseconds since boot, from the 64-bit CPU cycle counter. The same
-    clock stamps every timing trailer. Safe in any context, including interrupts.
+    Board time: microseconds on the board clock (board_clock.h), the DWT cycle counter extended
+    to 64 bits. At boot it starts anywhere below one CYCCNT wrap (25.3 s at 170 MHz), not at 0.
+    The same clock stamps every timing trailer. Safe in any context, including interrupts.
 */
 uint64_t jerrycan_board_time_us(void);
 
-/* Convert a k_cycle_get_64() reading taken elsewhere (e.g. in a driver ISR) to board time. */
+/* Convert a board_clock_cycles() reading taken elsewhere (e.g. in a driver ISR) to board time. */
 uint64_t jerrycan_cycles_to_board_time_us(uint64_t cycles);
 
 /* Random per boot. Reported in CAPABILITIES_RESPONSE and in every timing trailer. */

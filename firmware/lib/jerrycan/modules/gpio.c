@@ -48,6 +48,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
+#include "board_clock.h"
 #include "generic_gpios.h"
 #include "jerrycan.h"
 
@@ -291,7 +292,7 @@ static void gpio_pulse_alarm_cb(const struct device *dev, uint8_t chan_id, uint3
 
     if (gpio_pulse.ticks_remaining == 0) {
         (void)ll_generic_gpio_write_pin(gpio_pulse.generic_gpio, gpio_pulse.writable_idx, 0);
-        low_cycles = k_cycle_get_64();
+        low_cycles = board_clock_cycles();
 
         instance = gpio_pulse.instance;
         gpio_idx = gpio_pulse.gpio_idx;
@@ -340,7 +341,7 @@ static void gpio_pulse_failsafe_handler(struct k_work *work) {
 
     (void)counter_cancel_channel_alarm(gpio_pulse_counter, 0);
     (void)ll_generic_gpio_write_pin(gpio_pulse.generic_gpio, gpio_pulse.writable_idx, 0);
-    const uint64_t low_cycles = k_cycle_get_64();
+    const uint64_t low_cycles = board_clock_cycles();
 
     instance = gpio_pulse.instance;
     gpio_idx = gpio_pulse.gpio_idx;
@@ -466,7 +467,7 @@ static int gpio_pulse_start(uint16_t instance, uint16_t gpio_idx, uint32_t durat
             relative to the counter value read inside the arm, so any work between the edge and the arm would
             lengthen the pulse. It is raw cycles, converted to board time by the caller outside this lock.
         */
-        *asserted_cycles = k_cycle_get_64();
+        *asserted_cycles = board_clock_cycles();
     }
 
     if (rc != 0) {

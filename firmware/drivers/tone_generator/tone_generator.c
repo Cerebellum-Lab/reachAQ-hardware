@@ -9,6 +9,8 @@
 #include <zephyr/dt-bindings/dma/stm32_dma.h>
 #include <zephyr/logging/log.h>
 
+#include "board_clock.h"
+
 #define DT_DRV_COMPAT ll_tone_generator
 
 LOG_MODULE_REGISTER(ll_tone_generator, CONFIG_LL_TONE_GENERATOR_LOG_LEVEL);
@@ -98,7 +100,7 @@ typedef struct {
     bool enabled;
     unsigned int frequency_hz;
     /*
-        k_cycle_get_64() when the latest tone started; 0 before the first tone. For a frequency that has a
+        board_clock_cycles() when the latest tone started; 0 before the first tone. For a frequency that has a
         tone-output marker (5 and 6 kHz on the pellet) this is the marker edge the NI-DAQ records. For any other
         frequency there is no marker edge, and it is the start of playback.
     */
@@ -352,7 +354,7 @@ int ll_tone_generator_play_tone(const struct device *dev, unsigned int frequency
         For a frequency with a tone-output marker, the marker edge just set is what the NI-DAQ records as the
         tone's start. Any other frequency has no marker edge, and this is the start of playback.
     */
-    data->start_cycles = k_cycle_get_64();
+    data->start_cycles = board_clock_cycles();
 
     /* Enable the audio amplifier */
     ret = gpio_pin_set_dt(&cfg->enable_pin, 1);
@@ -480,7 +482,7 @@ uint32_t ll_tone_generator_get_frequency(const struct device *dev) {
 }
 
 /*
-    k_cycle_get_64() when the latest tone started; 0 if no tone has started. For a frequency that has a
+    board_clock_cycles() when the latest tone started; 0 if no tone has started. For a frequency that has a
     tone-output marker (5 and 6 kHz on the pellet) this is the marker edge the NI-DAQ records. For any other
     frequency there is no marker edge, and it is the start of playback.
 */

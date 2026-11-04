@@ -5,6 +5,7 @@ menuconfig LIB_JERRYCAN
     select CAN
     select CAN_FD_MODE
     select CAN_STM32_FDCAN
+    select LIB_BOARD_CLOCK
     depends on LIB_JERRYCAN_AUDIO_PRIORITY < 0
     depends on LIB_JERRYCAN_AUDIO_STACK_SIZE > 0
     help

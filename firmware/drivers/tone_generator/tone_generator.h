@@ -25,7 +25,7 @@ uint32_t ll_tone_generator_get_time_remaining(const struct device *dev);
 uint32_t ll_tone_generator_get_frequency(const struct device *dev);
 
 /*
-    k_cycle_get_64() when the latest tone started; 0 if no tone has started. For a frequency that has a
+    board_clock_cycles() when the latest tone started; 0 if no tone has started. For a frequency that has a
     tone-output marker (5 and 6 kHz on the pellet) this is the marker edge on the STIM line the NI-DAQ records.
     For any other frequency there is no marker edge, and it is the start of playback.
 */

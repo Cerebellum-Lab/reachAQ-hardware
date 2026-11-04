@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 3.20)
 
 project(jerrycan_host_test C)
 
+enable_testing()
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic -Wall -Wextra -Werror")
 
@@ -15,3 +17,14 @@ target_include_directories(timing_trailer_test
         ..
         ../../../../software/libjerrycan/inc
 )
+
+add_test(NAME timing_trailer_test COMMAND timing_trailer_test)
+
+add_executable(board_clock_test board_clock_test.c)
+
+target_include_directories(board_clock_test
+    PRIVATE
+        ../../board_clock
+)
+
+add_test(NAME board_clock_test COMMAND board_clock_test)

@@ -6,6 +6,8 @@
 #include <zephyr/sys/slist.h>
 #include <zephyr/random/random.h>
 
+#include "board_clock.h"
+
 #if CONFIG_LIB_JERRYCAN_TIMING
 #include "timing_trailer.h"
 #endif
@@ -16,17 +18,6 @@ static const struct device *gpio_dev = DEVICE_DT_GET_ANY(ll_generic_gpios);
 LOG_MODULE_REGISTER(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
 static sys_slist_t can_rx_callbacks_list;
-
-BUILD_ASSERT(IS_ENABLED(CONFIG_TIMER_HAS_64BIT_CYCLE_COUNTER), "JerryCAN board time needs a 64-bit cycle counter");
-
-/*
-    At a whole number of MHz, k_cyc_to_us_floor64() is one exact divide, which is what the
-    CAN RX interrupt should pay. At any other rate Zephyr 3.7 uses a general conversion:
-    a slower divide-and-modulo while SYS_CLOCK_MAX_TIMEOUT_DAYS keeps its default, or, if
-    that is cut to about a day, a multiply-first one that overflows after ~30 h at 170 MHz.
-*/
-BUILD_ASSERT(CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC % USEC_PER_SEC == 0,
-             "JerryCAN board time needs a cycle clock that is a whole number of MHz");
 
 /*
     Every received frame is stamped in the CAN RX interrupt, before the jerrycan thread
@@ -69,9 +60,13 @@ static uint64_t current_rx_time_us;
 static atomic_t tx_dropped;
 #endif
 
-uint64_t jerrycan_cycles_to_board_time_us(uint64_t cycles) { return k_cyc_to_us_floor64(cycles); }
+/*
+    Board time is the board clock (board_clock.h) in whole microseconds. The conversion is one exact divide, which is
+    what the CAN RX interrupt should pay; board_clock.c asserts the whole-MHz core clock that makes it exact.
+*/
+uint64_t jerrycan_cycles_to_board_time_us(uint64_t cycles) { return board_clock_cycles_to_us(cycles); }
 
-uint64_t jerrycan_board_time_us(void) { return jerrycan_cycles_to_board_time_us(k_cycle_get_64()); }
+uint64_t jerrycan_board_time_us(void) { return jerrycan_cycles_to_board_time_us(board_clock_cycles()); }
 
 uint32_t jerrycan_boot_id(void) { return boot_id; }
 

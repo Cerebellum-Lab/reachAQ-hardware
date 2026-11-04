@@ -17,6 +17,7 @@ menuconfig LL_TONE_GENERATOR
         select USE_STM32_LL_TIM
         select USE_STM32_LL_DAC
         select DMA
+        select LIB_BOARD_CLOCK
         help
             Enable support for the tone generator
 

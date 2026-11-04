@@ -1,0 +1,11 @@
+config LIB_BOARD_CLOCK
+    bool "Board clock: the DWT cycle counter extended to 64 bits"
+    default n
+    depends on CPU_CORTEX_M_HAS_DWT
+    depends on SOC_FAMILY_STM32
+    help
+      The clock every board timestamp is taken from: the Cortex-M DWT cycle
+      counter (CYCCNT), extended to 64 bits in software and kept counting
+      through WFI idle. Unlike the tickless SysTick count behind
+      k_cycle_get_64(), it loses no cycles when the system timer is
+      reprogrammed. Selected by JerryCAN and by the drivers that stamp events.
