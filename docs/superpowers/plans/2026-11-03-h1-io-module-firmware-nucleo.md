@@ -671,6 +671,31 @@ CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE=2048
 	status = "disabled";
 };
 
+/*
+ * The NUCLEO enables these for its Arduino/Morpho headers. Their drivers apply pinctrl after the GPIO driver has
+ * configured the IO pins and would take them: usart1 PC4/PC5 (DI1, DI2), i2c1 PB8/PB9 (TTL7), spi1 PA5-PA7 and
+ * cs PB6 (DI3, DI4, CAN_ID[0]), spi2 PB12-PB15 (an ADC input, DI10, TTL0, TTL1), spi3 PA15/PC10-PC12 (DI11, DI8, DI9).
+ */
+&usart1 {
+	status = "disabled";
+};
+
+&i2c1 {
+	status = "disabled";
+};
+
+&spi1 {
+	status = "disabled";
+};
+
+&spi2 {
+	status = "disabled";
+};
+
+&spi3 {
+	status = "disabled";
+};
+
 &timers16 {
 	status = "okay";
 	st,prescaler = <169>; /* 1 MHz */
@@ -687,13 +712,16 @@ CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE=2048
 
 ```bash
 $RIG "cd ~/Documents/reachAQ-hardware && $ENV && $BUILD_IO 2>&1 | grep -iE 'warning|error' | head; $SIZE /tmp/h1-io/zephyr/zephyr.elf"
-$RIG "cd ~/Documents/reachAQ-hardware && grep -E 'jerrycan_board_type|DT_N_S_zephyr_user_P_jerrycan_board_type ' /tmp/h1-io/zephyr/include/generated/zephyr/devicetree_generated.h | head -3; grep -E '^CONFIG_(LIB_JERRYCAN_TIMING|BOOTLOADER_MCUBOOT|LIB_MOTOR_MOTION|LL_TONE_GENERATOR)=' /tmp/h1-io/zephyr/.config"
+$RIG "cd ~/Documents/reachAQ-hardware && grep -E 'jerrycan_board_type|DT_N_S_zephyr_user_P_jerrycan_board_type ' /tmp/h1-io/zephyr/include/generated/zephyr/devicetree_generated.h | head -3; grep -E '^CONFIG_(LIB_JERRYCAN_TIMING|BOOTLOADER_MCUBOOT|LIB_MOTOR_MOTION|LL_TONE_GENERATOR|SPI|I2C)=' /tmp/h1-io/zephyr/.config"
+# Every enabled node that claims pins through pinctrl, with the pins it claims
+$RIG "cd ~/Documents/reachAQ-hardware && $ENV && python -c \"import pickle, sys; sys.path.insert(0, 'deps/zephyr/scripts/dts/python-devicetree/src'); edt = pickle.load(open('/tmp/h1-io/zephyr/edt.pickle', 'rb')); [print(n.path, [c.name for p in n.pinctrls for c in p.conf_nodes]) for n in edt.nodes if n.status == 'okay' and n.pinctrls]\""
 $RIG "cd ~/Documents/reachAQ-hardware && $ENV && $BUILD_PELLET 2>&1 | tail -1 && $SIZE /tmp/h1-pellet/pellet_module/zephyr/zephyr.elf"
 $RIG "cd ~/Documents/reachAQ-hardware && $ENV && $BUILD_MAGNET 2>&1 | grep -iE 'error|FAILED' | sort -u | diff - /tmp/h1-magnet-baseline.txt && echo 'magnet: same as baseline'"
 ```
 
 Expected:
-- **IO:** builds with no warnings. The board type is `2`, `LIB_JERRYCAN_TIMING=y`, and there is no MCUboot, motor or tone code.
+- **IO:** builds with no warnings. The board type is `2`, `LIB_JERRYCAN_TIMING=y`, and there is no MCUboot, motor, tone, SPI or I2C code.
+- **Pin claims:** the listing shows only `lpuart1` (PA2/PA3) and `fdcan1` (PA11/PA12). Tasks 5-7 add `barcode` (PA4), `analog_inputs` (the 8 ADC pins) and `pwm` (PA8/PA9/PC2/PC3); each of those tasks re-runs this listing. No claimed pin may be a generic-gpios pin. If the `edt.pickle` API differs in this Zephyr, find the equivalent with `grep -B2 -A8 'pinctrl-0' /tmp/h1-io/zephyr/zephyr.dts` and say so in the report.
 - **Pellet:** within the size budget.
 - **Magnet:** same as baseline.
 
