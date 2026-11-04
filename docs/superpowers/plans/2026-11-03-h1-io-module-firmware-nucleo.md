@@ -22,7 +22,7 @@
 
 ## Decisions this plan makes that the spec leaves open or changes
 
-Each is reversible. The user can veto any of them before execution.
+Reviewed by the user on 2026-11-03: decisions 1 (barcode from the update interrupt) and 5 (heartbeat-gated power outputs) were explicitly approved, and none was vetoed. The spec now records 1, 2 and 5.
 
 1. **Barcode from the timer update interrupt, not DMA (changes spec §4.5/§7).**
    - Edges still come from the hardware timer: TIM3 runs PWM with CCR preload, and each edge happens at an update event.

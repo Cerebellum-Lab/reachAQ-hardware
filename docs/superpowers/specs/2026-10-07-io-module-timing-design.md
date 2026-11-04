@@ -136,9 +136,11 @@ switch. The board type is a firmware/devicetree constant, not strap pins.
 ### 4.5 Barcode waveform (DAQ `port0/line3`, 5 V TTL)
 
 Each tick: a 1 ms high start pulse, then the 32-bit tick number LSB-first at 1 ms per bit
-(high = 1), then low. That is 33 ms per second. A hardware timer driven by DMA generates
-it, so every edge has a known board time. The host uses **every edge**, not only the
-start edge, which averages away the DAQ's ±50 µs quantisation.
+(high = 1), then low. That is 33 ms per second. A hardware timer generates it, so every
+edge has a known board time: each edge falls on a timer update, and the update interrupt
+only preloads the next 1 ms slot's level. *(Changed from DMA in the H1 plan, approved
+2026-11-03: same edge accuracy, no buffer-refill race.)* The host uses **every edge**, not
+only the start edge, which averages away the DAQ's ±50 µs quantisation.
 
 ### 4.6 Bus budget (1 Mbit/s nominal, 5 Mbit/s data)
 
@@ -252,12 +254,13 @@ New app `firmware/io_module/` and board `boards/arm/cerebellumlab_io_module/`. R
 jerrycan (heartbeat, status, capabilities, bootloader, gpio), the `timing` module, and
 the `ll,generic-gpios` driver.
 
-- **Timekeeper module:** a timer interrupt at 1 Hz runs tick N.
+- **Timekeeper module:** TIM3's 1 ms update interrupt plays the barcode and runs tick N
+  once a second. Only the board at node id 8 (DIP 0) is the timekeeper; a second IO
+  module only listens.
   - `can_send()` the `SYNC_CLAP`; the TX-complete callback stamps the time and sends its
     own `SYNC_CLAP_OBSERVED`.
-  - Load the barcode waveform into TIM3 + DMA, and report `SYNC_BARCODE` with the start
-    edge time. TIM3 and the cycle counter share the 170 MHz clock, so the edge time is
-    computed rather than sampled.
+  - Report `SYNC_BARCODE` with the start edge time. TIM3 and the cycle counter share the
+    170 MHz clock, so the edge time is computed rather than sampled.
 - **Digital in:** EXTI on both edges, timestamped in the ISR, sends `GPIO_READ`
   immediately with `OBSERVED`. The existing 100 ms periodic state continues as
   `SAMPLED`. A 2,000 msg/s cap merges bursts and sets trailer flag `COALESCED`.
@@ -282,7 +285,9 @@ the `ll,generic-gpios` driver.
    - add this as a new alignment tier between "NI physical edge" and "board clock
      model". Raw evidence is never overwritten, matching the existing policy.
 4. An IO-module device model; digital, analog and output streams in the session
-   recording; output control API (TTL write and pulse, PWM).
+   recording; output control API (TTL write and pulse, PWM). **The host must send
+   `HEARTBEAT` at ≥ 1 Hz while power outputs are in use** (§9). reachAQ sends none
+   today, so the IO module refuses non-zero `PWM_SET` with `-ETIMEDOUT` until it does.
 5. Allowlist: pellet `2.4.0` with `timing_trailer` and `time_sync` **required**, added at
    that firmware's release, not ahead of it, per the allowlist's own rule against
    predicting capabilities. That release waits for T3 Task 1 (§10, step 3). The IO module
