@@ -105,24 +105,21 @@ config LIB_JERRYCAN_GPIO_PULSE_MAX_CONCURRENT
   IO module `prj.conf`: `CONFIG_LIB_JERRYCAN_GPIO_PULSE_MAX_CONCURRENT=8`. BUILD_ASSERT that it does not exceed the number of writable pins where that is known at build time. Otherwise, document the capacity rule.
 
 - [ ] **Step 2: `gpio_pulse_alarm_cb` (counter ISR).** Under the lock:
-  1. Compute `elapsed = ticks − last_cc`, set `last_cc = ticks`, and call `gpio_pulse_table_charge`.
+  1. Read the counter, compute `elapsed = now − last_cc`, set `last_cc = now`, and call `gpio_pulse_table_charge`. Charging to the counter's current value, not to the alarm's `ticks`, lets an edge that fell due during the interrupt's latency end in this interrupt (reviewed deviation D1).
   2. `take_due` in a loop: write each line low, stamp it, and collect it in a local array (capacity = the Kconfig maximum).
   3. Compute `next_hop` and re-arm when anything is still in flight.
   4. Reschedule or cancel the failsafe.
 
   Outside the lock: one `jerrycan_generic_gpio_tx()` if anything ended, and one `COMPLETED` status per ended pulse, each with its own stamp.
 
-- [ ] **Step 3: `gpio_pulse_start`.** Validation is unchanged. Under the lock:
-  1. If other pulses are in flight:
-     - cancel the alarm;
-     - read the counter and charge `now − last_cc`;
-     - set `last_cc = now`;
-     - take out and end any entry now due, exactly as the ISR does, so a pulse whose alarm was just cancelled cannot be lost.
-  2. `gpio_pulse_table_add`; on `-EBUSY`, re-arm for what is in flight and return `-EBUSY`.
-  3. Arm the failsafe.
-  4. Write the line high.
-  5. Re-arm for `next_hop` and stamp the asserted edge.
-  6. On a failed write or arm, undo only this entry and leave the others armed.
+- [ ] **Step 3: `gpio_pulse_start`.** Validation is unchanged. A refused request must touch nothing (Review Focus 4). Under the lock, add first (this order replaced the first draft's cancel-and-charge-first order after review):
+  1. `gpio_pulse_table_add`. On `-EBUSY`, unlock and return, with the alarm, table and failsafe untouched.
+  2. Find the slot, set its deadline, and sync the failsafe, so the line is covered before it moves.
+  3. Write the line high. If the write fails: drive it low, remove the entry, and sync. The alarm was never moved, so do not re-arm; the table is uncharged at this point.
+  4. Read the counter and stamp the asserted edge. If other pulses were in flight: cancel the alarm, credit the new entry, then charge and drain, so that it counts from its edge and the running pulses pay for the start. Then re-arm for `next_hop`. If the re-arm fails: drive the line low, remove the entry, cancel, re-arm for the rest, and sync.
+  5. Sync the failsafe if anything ended.
+
+  The credit stays before the charge, and `next_hop` never runs before a charge and drain.
 
   Check in `deps/zephyr/drivers/counter/counter_ll_stm32_timer.c` what `cancel` does to an alarm flag already pending, and how the relative-alarm late detection behaves below half the range (`:222-236`). Cite the lines in the report.
 
@@ -150,5 +147,10 @@ These can run only on a board:
 - **Coincident ends.** Start pulses so that their ends coincide. Measure the spread between lines on a scope, and confirm every `COMPLETED` arrives.
 - **All 8 at once.** Run all 8 at once, repeated, under the DI storm and the analog stream.
 - **Refusals.** A same-output overlap and a 9th request are refused with `-EBUSY`, and nothing else is disturbed.
-- **Staggered ends.** Start pulses so that their ends are 2-30 µs apart, under the analog stream. Each falling edge must be within +20 µs of its deadline. An edge due just after the interrupt's counter read waits for the message queuing (estimated 5-7 µs plus 3 µs per ended pulse). If this fails, move the status queuing out of the interrupt.
-- **Pellet unchanged.** A pellet second pulse is still refused (`qualify_pellet_firmware.py`).
+- **Physical width against stamps.** Judge the overlap, coincident and staggered checks on a scope, and record the DI stamps separately. EXTI shares TIM16's priority, so a falling edge's stamp waits for the counter interrupt to exit (estimated +7-10 µs with one pulse ending, up to about +37 µs with eight, unmeasured).
+- **Staggered ends.** Start N pulses with coincident ends (N = 1, 3, 7) and one more ending 2-5 ticks later, under the analog stream. The last edge waits for the locked work and the message queuing of the N before it, with an estimated bound of about 14 + 4.3N µs (N=1 18, N=2 23, N=3 27, N=7 44; unmeasured). Compare against that bound and against +20 µs. Expect it to pass at N=1 and possibly fail at N=3 or more. If it fails, move the status queuing out of the interrupt (estimated 8 + 1.3N); the stamps survive, so nothing else changes.
+- **The failsafe with several in flight.** Run pulses of 30 ms, 100 ms and 3 s. Clear `TIM16_DIER.CC1IE` over SWD: the soonest pulse is forced low, with a failure status, and the rest are re-armed and end on time with status 0. Repeat with `CR1.CEN` cleared: each pulse is forced low at its own deadline. Reset the board afterwards.
+- **Hop boundaries.** Measure widths at 32767, 32768, 65535, 65536, 65537 and 98304 µs, alone and with a 100 µs pulse started during the last hop.
+- **Refusal timing.** Send same-output requests during the last 50 µs of a 1 ms pulse, on the IO module and the pellet. The running pulse's width must be unchanged.
+- **Stack.** During "all 8 at once", read the ISR and thread stack high-water marks (680 of 2048 B is static).
+- **Pellet unchanged.** A pellet second pulse is still refused with `-EBUSY`. `qualify_pellet_firmware.py` cannot do this check (its `check_refusals` tests only `-EPERM`), so add a step to it or send the two pulses by hand. Also scope pellet widths at 100 µs and 1 ms against v2.3.0, predicting about +0.9 µs (counted, unmeasured).
