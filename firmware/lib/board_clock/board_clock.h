@@ -13,6 +13,10 @@
     CYCCNT is not reset at boot, and a reset that keeps power may leave it running, so the first reading after boot is
     anywhere below 2^32 cycles (25.3 s at 170 MHz) rather than 0. It is 32 bits and wraps every 25.3 s at 170 MHz; a
     keep-alive timer reads it every 10 s so that no wrap goes uncounted.
+
+    A debug probe that ends its session can clear the enables CYCCNT needs, and board time is then wrong until the next
+    reset. The keep-alive sets them again at each expiry and warns once if it found one cleared; the cycles that
+    passed in between are not recovered.
 */
 
 /* What the extension remembers between readings: CYCCNT as last read, and how many times it has wrapped. */

@@ -9,3 +9,10 @@ config LIB_BOARD_CLOCK
       through WFI idle. Unlike the tickless SysTick count behind
       k_cycle_get_64(), it loses no cycles when the system timer is
       reprogrammed. Selected by JerryCAN and by the drivers that stamp events.
+
+config LIB_BOARD_CLOCK_LOG_LEVEL
+    int "Log level (0-4)"
+    default 3
+    depends on LIB_BOARD_CLOCK
+    help
+      Set the log level for the board clock

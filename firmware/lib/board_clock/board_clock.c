@@ -4,6 +4,11 @@
  *
  * Every reader takes the same lock around the CYCCNT read and the extension step, so the extension state only ever
  * moves forward with CYCCNT, whether the reader is a thread, a priority-0 interrupt or the keep-alive.
+ *
+ * The keep-alive also sets the counter's three enables again on every expiry. A debug probe that ends its session can
+ * clear them (pyOCD writes DEMCR = 0 when it closes), and with TRCENA clear the DWT reads are UNKNOWN, so board time
+ * would stay wrong until the next reset. The first time an enable is found cleared it logs a warning. The cycles that
+ * passed while the counter was off are not recovered.
  */
 
 #include "board_clock.h"
@@ -13,7 +18,10 @@
 #include <zephyr/drivers/clock_control/stm32_clock_control.h>
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 #include <zephyr/spinlock.h>
+
+LOG_MODULE_REGISTER(board_clock, CONFIG_LIB_BOARD_CLOCK_LOG_LEVEL);
 
 /* A wrap is 2^32 cycles, 25.26 s at 170 MHz; a reading every 10 s counts each one with more than half a wrap spare */
 #define BOARD_CLOCK_KEEPALIVE_S 10U
@@ -59,8 +67,51 @@ uint64_t board_clock_cycles(void) {
 
 uint64_t board_clock_cycles_to_us(uint64_t cycles) { return cycles / BOARD_CLOCK_CYCLES_PER_US; }
 
+/* Which enables board_clock_assert_enables() found cleared */
+#define BOARD_CLOCK_TRCENA_CLEARED BIT(0)
+#define BOARD_CLOCK_CYCCNTENA_CLEARED BIT(1)
+#define BOARD_CLOCK_DBG_SLEEP_CLEARED BIT(2)
+
+/*
+    Set the three enables that board_clock_init() sets, each one only if it is clear, and touch nothing else. TRCENA
+    comes first, since the DWT is not accessible without it. Returns the enables that were found clear, 0 if none.
+*/
+static uint32_t board_clock_assert_enables(void) {
+    uint32_t cleared = 0;
+
+    if ((CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk) == 0) {
+        CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+        cleared |= BOARD_CLOCK_TRCENA_CLEARED;
+    }
+    if ((DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk) == 0) {
+        DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+        cleared |= BOARD_CLOCK_CYCCNTENA_CLEARED;
+    }
+    if ((DBGMCU->CR & DBGMCU_CR_DBG_SLEEP) == 0) {
+        LL_DBGMCU_EnableDBGSleepMode();
+        cleared |= BOARD_CLOCK_DBG_SLEEP_CLEARED;
+    }
+
+    return cleared;
+}
+
+/*
+    Runs in the system timer interrupt, and nothing else uses `warned`. The enables are set before the read, so that
+    the read is of a counter that is running.
+*/
 static void board_clock_keepalive(struct k_timer *timer) {
+    static bool warned;
+
     ARG_UNUSED(timer);
+
+    const uint32_t cleared = board_clock_assert_enables();
+
+    if (cleared != 0 && !warned) {
+        warned = true;
+        LOG_WRN("Board time was interrupted: a debug probe cleared the cycle counter enables (0x%x: 1 TRCENA, "
+                "2 CYCCNTENA, 4 DBG_SLEEP). They are set again, but the cycles in between are lost",
+                cleared);
+    }
 
     (void)board_clock_cycles();
 }
