@@ -271,7 +271,9 @@ the `ll,generic-gpios` driver.
   immediately with `OBSERVED`. The existing 100 ms periodic state continues as
   `SAMPLED`. A 2,000 msg/s cap merges bursts and sets trailer flag `COALESCED`.
 - **TTL out:** existing `GPIO_WRITE` and `GPIO_PULSE` (counter-timed, as on pellet), and
-  `GPIO_PULSE_STATUS` with `PHYSICAL_START` / `COMPLETED`.
+  `GPIO_PULSE_STATUS` with `PHYSICAL_START` / `COMPLETED`. Each output runs its own
+  `GPIO_PULSE` at the same time as the others, off one timer, and a second pulse on the
+  same output is refused with `-EBUSY`; the pellet stays at one pulse board-wide.
 - **Analog:** TIM6 TRGO at 1 kHz triggers an ADC1 8-channel scan into a circular DMA
   buffer. Every 2 scans → one `ANALOG_BLOCK`, with time computed from the trigger count.
   Sequence numbers expose lost frames.
