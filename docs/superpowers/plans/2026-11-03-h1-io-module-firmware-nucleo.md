@@ -1310,12 +1310,13 @@ Settle these with the user at the start of the hardware session, and record each
     - Debug halt longer than the timeout (default image): halt the core for 5 s and resume. Pass: no reset (same `boot_id`), because the watchdog pauses under a debugger. Reset the board afterwards.
     - No-bus `can_send` hang (default image): turn an output on with heartbeats running, then take the module off the bus, so that nothing ACKs and `can_send` blocks. Pass: no reset for at least 10 s (same `boot_id`), and the output goes off 2.0 s after the last heartbeat, by the heartbeat timer.
     - Reset reason: after each reset above, the boot log shows one warning naming the cause (watchdog or software reset). A power cycle shows none.
+    - A TTL pulse in flight through a forced fault and through a forced hang: the line ends low in both, at the reset.
     - Pin level after the main output enable is cleared, with the internal pull-down only: low, not floating high.
     - No false watchdog reset: the `boot_id` is unchanged through the 20 k and 40 k edges/s runs and the ≥ 1 h analog run.
     - Read `DBGMCU_APB1FZR1` bit 12 back after an SWD attach. The tool is undecided and could rewrite it.
     - The boot log names a software reset after an SWD reset or `west flash`. That is expected, not a fault.
     - Worst case from the last HEARTBEAT: a hang starting just before the 2 s timer expires takes up to about 3.09 s. Check the README states it.
-  - Only when the forced-fault test and the `DBG_TIM1_STOP` gate have both passed, a real load may be connected. Record both results in the report first.    - A TTL pulse in flight through a forced fault and through a forced hang: the line ends low in both, at the reset.
+  - Only when the forced-fault test and the `DBG_TIM1_STOP` gate have both passed, a real load may be connected. Record both results in the report first.
 
 - [ ] **Step 5: H1a checks, only once H1a has run.** They come from "Hardware checks to add to H1 Task 11" in `docs/superpowers/plans/2026-11-05-h1a-independent-ttl-pulses.md` and apply only when its commit is on the branch under test. Until then the one-pulse limit stands and these are skipped.
   - Overlap accuracy: loop TTL0 and TTL1 to two DIs, and run overlapping pulses of 100 µs to 5 s. Each measured width is within ±20 µs of commanded, with the shorter one ending first.
