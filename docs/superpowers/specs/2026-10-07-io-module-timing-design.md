@@ -149,7 +149,7 @@ only the start edge, which averages away the DAQ's ±50 µs quantisation.
 | Sync (clap + 2 observed + barcode report) | 4 frames/s | negligible |
 | Pellet trailers (frames grow from ≤8 to ≤32 B) | about 280 frames/s already | +1% |
 | `ANALOG_BLOCK` at 1 kHz, 8 ch | 500 frames/s (64 B DLC) | about 8% |
-| IO-module digital events | burst-capped at 2,000/s | worst case about 15% during bursts |
+| IO-module digital events | burst-capped at 2,000/s | worst case about 19% during bursts (2,000/s of 32 B FD frames, about 94 µs each) |
 
 These are estimates, to be confirmed by measurement in acceptance (section 11).
 
@@ -314,8 +314,19 @@ the `ll,generic-gpios` driver.
   `SYNC_CLAP_OBSERVED` is sent does not affect accuracy. Each stamp travels with its frame
   through the RX queue (10 frames). If that queue overflows, the clap is dropped and the
   host sees a missing tick.
-- Bus-off on the IO module: outputs are made safe, and it recovers with the existing
-  restart behaviour.
+- Bus-off on the IO module *(amended 2026-11-05: the spec now follows the firmware,
+  which is unchanged)*: it recovers with the existing restart behaviour. A transient
+  bus-off recovers in about 1.4 ms and the heartbeats continue, so the outputs stay on,
+  because host control survives. A persistent bus-off stops the heartbeats, so the
+  outputs go off within 2 s.
+- Faults and hangs on the IO module *(decided 2026-11-05)*: a 1 s hardware watchdog
+  (IWDG) is fed every 250 ms from the system workqueue, the thread that also switches
+  the outputs off, and it pauses while a debugger halts the core. A fatal-error handler
+  clears TIM1's main output enable first, then logs and resets.
+  - On a fault the outputs go off within microseconds. On a hang, or a DI signal fast
+    enough to starve the workqueue, they go off within about 1 s, when the watchdog
+    resets the board.
+  - A reset forgets `ESTOP`, but the outputs boot off.
 
 ## 10. Rollout order
 
@@ -348,7 +359,11 @@ Each step leaves the system working if the next one never ships.
   2. Loopback: IO-module TTL out → DI. The measured delta matches the commanded pulse
      within 20 µs.
   3. Bus load measured at 1 kHz analog plus pellet traffic. Pass: < 30% sustained, and
-     no pellet frame loss (PEAK `dropped` counter unchanged).
+     no pellet frame loss (PEAK `dropped` counter unchanged). The pellet's traffic
+     counts toward the load, because it shares the bus, so the figure that decides is
+     the one with the pellet running. H1's bench run (H1 plan, Task 11 Step 3) reports
+     the load both with and without pellet traffic, with the DI burst at its cap (about
+     19% on its own, section 4.6), which is stricter than this criterion.
   4. Pellet regression: the existing qualification evidence run passes on v2.4.0.
 - **PCB:** ERC/DRC clean, power budget, TBD62783A thermal at 4 × 0.5 A, and a bring-up
   checklist (rails, SWD, CAN, each IO group, barcode on a scope).

@@ -74,11 +74,19 @@ Reviewed by the user on 2026-11-03: decisions 1 (barcode from the update interru
 - **Safety (spec §9):**
   - Power outputs are off at boot, on ESTOP, and 2 s after the last `HEARTBEAT`.
   - TTL outputs are low at boot and otherwise hold their state.
-  - Bus-off stops heartbeats, so the watchdog makes the power outputs safe.
+  - Bus-off (user decision 2026-11-05: the spec follows the firmware, which is unchanged): a transient bus-off recovers in about 1.4 ms and the heartbeats continue, so the power outputs stay on, because host control survives. A persistent bus-off stops the heartbeats, so the outputs go off within 2 s.
+  - Faults and hangs (IO module only; user decision 2026-11-05, final fix F5):
+    - A 1 s hardware watchdog (IWDG) is fed every 250 ms from the system workqueue, the thread that also runs the power-output off path. It pauses while a debugger halts the core. A hang, or a DI signal fast enough to starve the workqueue, resets the board within about 1 s, with the outputs off.
+    - A strong `k_sys_fatal_error_handler()` clears TIM1's main output enable at the register first, then logs and resets. On a fault the outputs go off within microseconds.
+    - A reset forgets ESTOP, but the outputs boot off. F5 does not change the pellet or magnet image.
 - **Additive for the other boards:**
   - The pellet and magnet builds keep their behaviour. Every shared-library change is a no-op unless the board opts in through Kconfig or devicetree.
   - `CONFIG_LIB_JERRYCAN_TIMEKEEPER` and `CONFIG_LIB_JERRYCAN_GPIO_EVENT_RATE_HZ` default to off.
   - Pellet `text` may grow by at most 512 B over Task 0's baseline, and `data`/`bss` by at most 16 B.
+  - **Ruled exception: the board clock (user decision 2026-11-04).** The DWT board clock is shared code, so it changes the pellet too (fix waves A and D, ported to `feat/pellet-board-timing` as bc394f1 and 35d27f7). It is outside the budget above.
+    - Task 0's baseline plus the board clock is `216064/37093/42888` (`215588/37033/42879` plus `476/60/9`). That is the pellet as built on `feat/pellet-board-timing` after the port.
+    - The budget applies to the rest of this branch's pellet change: the head's pellet minus `216064/37093/42888` must be at most `512/16/16`.
+    - At bb8a13a the pellet is `216284/37093/42888`, so the rest is `220/0/0`: Task 4's limiter hook `116` and fix wave D's by-index GPIO read `104`. The final fix replaces that read with a per-port read and reports the new pellet figure.
 - **Builds only on christielab10, in its designated checkout `~/Documents/reachAQ-hardware`**, because its west manifest is that checkout's own `firmware/west.yml`.
   - Record its ref in Task 0. Restore it (detached `08c1b41`, clean) at the end of **every** working session and before any pause.
   - Build outputs go under `/tmp/h1-*`.
@@ -1099,12 +1107,13 @@ config LIB_JERRYCAN_POWER_OUT_HEARTBEAT_TIMEOUT_MS
 
 - [ ] **Step 1: Full verification on the committed state.**
   1. Sync.
-  2. `$HOST_TEST` (expected: 5/5).
+  2. `$HOST_TEST`. Expected: every test passes. Do not pin the count: it is whatever the head has (8/8 at bb8a13a, more after the final fix). Record it.
   3. Build all three.
-  4. Run `$SIZE` on the IO and pellet ELFs.
+  4. Run `$SIZE` on the IO and pellet ELFs. Expected for the pellet: the head's figure minus `216064/37093/42888` is at most `512/16/16`, per the ruled exception in Global Constraints (at bb8a13a: `216284/37093/42888`; the final fix reports the figure for the head).
   5. Run the magnet diff.
-  6. Run `grep -c 'BOTH' /tmp/h1-io/zephyr/zephyr.dts` (expected: 12 DI).
-  7. Run `grep -E '^CONFIG_LIB_JERRYCAN_(TIMING|TIMEKEEPER|GPIO_EVENT_RATE_HZ)=' /tmp/h1-io/zephyr/.config`.
+  6. Run `grep -o BOTH /tmp/h1-io/zephyr/zephyr.dts | wc -l` (expected: 12 DI). `grep -c` counts lines and prints 1.
+  7. Run `grep -E '^CONFIG_(LIB_JERRYCAN_(TIMING|TIMEKEEPER|GPIO_EVENT_RATE_HZ)|WATCHDOG)=' /tmp/h1-io/zephyr/.config`. Expected: `TIMING=y`, `TIMEKEEPER=y`, `GPIO_EVENT_RATE_HZ=2000` and `CONFIG_WATCHDOG=y`.
+  8. Run `grep '^CONFIG_WATCHDOG=' /tmp/h1-pellet/pellet_module/zephyr/.config /tmp/h1-magnet/magnet_module/zephyr/.config`. Expected: no output, because F5 is IO-module only. If a line appears, report it as a finding.
 
   Record every result in the task report.
 - [ ] **Step 2: Restore the rig checkout.** Expected `08c1b41 0`.
@@ -1113,7 +1122,7 @@ config LIB_JERRYCAN_POWER_OUT_HEARTBEAT_TIMEOUT_MS
 $RIG "cd ~/Documents/reachAQ-hardware && git switch --detach 08c1b41 && git rev-parse --short HEAD && git status --short | wc -l"
 ```
 
-- [ ] **Step 3:** The whole-branch review runs here (SDD final review, scope `feat/pellet-board-timing..feat/io-module-firmware`). Then **stop**. Tasks 9-11 wait for the hardware and the user's go-ahead.
+- [ ] **Step 3:** The whole-branch review runs here (SDD final review, scope `af4ede9..feat/io-module-firmware`: `feat/pellet-board-timing` has moved on and carries cherry-picks of the board-clock commits, so its tip no longer marks where this branch started). Then **stop**. Tasks 9-11 wait for the hardware and the user's go-ahead.
 
 ---
 
@@ -1128,20 +1137,94 @@ Each task starts by asking the user, in that session, for:
 - The user flashes it with ST-Link from the machine the NUCLEO is plugged into, or approves `west flash` there.
 - Rebuild with Task 8's commands first, and restore the rig checkout at the end of the session.
 
+### Before Task 9: the SWD machine, SWD hygiene, joining the bus, the instrumentation build
+
+Settle these with the user at the start of the hardware session, and record each answer in Task 9's report.
+
+**Flash and SWD machine (undecided).**
+- The rig has no usable SWD tool for the G474: pyOCD lacks the target pack, and OpenOCD and STM32CubeProgrammer are not on `PATH`. The Flashing note above cannot be followed on the rig as it stands.
+- Decide which machine the NUCLEO's ST-LINK USB is plugged into, and which tool runs there. The tool must flash `zephyr.hex`, read and write registers while the core runs, halt, single-step and resume, and reset the board. Tasks 9-11 use all five.
+- The ST-LINK's virtual COM port is the console, so the boot log and `kernel stacks` come from that machine. The checker and the CAN capture run on the rig.
+- The rig is also the pellet's flash rig. Select the NUCLEO's probe by its serial number, and never flash the rig's pellet board.
+
+**Reset after every SWD session, before any timing check.**
+- pyOCD writes `DEMCR` = 0 when it closes a session, which clears `TRCENA`. `CYCCNT` then freezes for up to 10 s, until the board clock's keep-alive restores it.
+- In that window the analog stream can go `LOST` and stay stopped, and the barcode phase can shift. A read-only register check would otherwise look like a firmware failure.
+- After the last SWD session of a sequence (halts and single-steps included), reset the board and confirm a new `boot_id` before the next timing check.
+- Task 9 Step 6 is the one place the keep-alive is tested on purpose, without the reset.
+
+**Before joining the live bus.**
+- The module transmits from boot and has no quiet mode. Its claps, barcode reports, `ANALOG_BLOCK` and DI frames start the moment it is powered on the bus.
+- So check the CAN setup on the bench first, with the transceiver not connected to the bus (Task 9 Step 3). Read FDCAN1 `NBTP`, `DBTP` and `TDCR`; `RCC_CCIPR.FDCANSEL`, which must read `01` (PLL Q); and `RCC_PLLCFGR.PLLQEN`, which must be set. Join the bus only when `NBTP` and `DBTP` decode to 1 Mbit/s nominal and 5 Mbit/s data at the FDCAN kernel clock of 170 MHz.
+- Add no third terminator: the bus already has its two, so leave the breakout's own termination open. Keep the stub from the bus to the breakout short.
+
+**Instrumentation build (build it before Task 9).**
+- Several checks need faults and timing hooks that the default image must not contain. They live in one dev-only image, built from the same sources with an extra Kconfig fragment and an extra devicetree overlay that only this build passes, in its own build directory: `$BUILD_IO` with `--build-dir /tmp/h1-io-dev` and `-- -DEXTRA_CONF_FILE=<fragment> -DEXTRA_DTC_OVERLAY_FILE=<overlay>`.
+- It must be built, and shown to be separate, before Task 9 starts. It is the only image with these features. Every check that does not say "instrumentation image", and every pass/fail timing measurement, runs on the default image (`/tmp/h1-io`).
+- Its code is not part of the product. Where it lives afterwards (its own branch, or behind the Kconfig option) is the user's decision after Task 11.
+
+| Feature | Used by |
+|---|---|
+| Free-running reference timer: `TIM2` at 1 MHz, 32-bit (71 minutes per wrap). The overlay disables `timers2`, so this build enables it with no PWM child, leaving PA5 and LD2 alone | Task 9 Steps 1 and 5; Task 11 Step 2 |
+| `CYCCNT` (as board time) and the reference timer read back to back, on a shell command and at a set interval | Task 9 Steps 1 and 5; Task 11 Step 2 |
+| DWT cycle counts around `read_state`, the DI change handler, the TIM3 update ISR (ordinary updates and the once-a-second tick update) and the priority-0 handlers in total | Task 10 Step 8; Task 11 Step 2 |
+| Injected `irq_lock`: hold off interrupts for a set time at a set phase of the 1 ms TIM3 slot, once or repeatedly | Task 10 Step 5; Task 11 Step 3 |
+| Forced DMA stop: clear the analog scanner DMA channel's `EN` | Task 11 Step 3 |
+| `CYCCNT` offset: add N cycles to the counter | Task 11 Step 3 |
+| `CNDTR` poll, flagging a value of 0 or above one lap (32) | Task 11 Step 3 |
+| Spare-GPIO markers around the analog read gap and callback | Task 11 Step 3 |
+| TTL0 raised from the tick callback | Task 10 Step 2 |
+| Forced fault: a deliberate fatal error on a shell command | Task 11 Step 4 |
+| Forced hang (`irq_lock` spin) and starved workqueue (a work item that blocks it), on shell commands | Task 11 Step 4 |
+
+- [ ] **Build both images on the rig and show the split.** Expected:
+  - the default image's `nm` shows none of the instrumentation symbols, its `.config` lacks the instrumentation option, and its `$SIZE` equals Task 8's;
+  - the instrumentation image's `nm` shows them.
+
 ### Task 9: Hardware check script and bring-up
 
 **Files:** Create `firmware/io_module/test/io_hil_check.py`. Standard library only, raw `AF_CAN` socket. Reuse `firmware/lib/jerrycan/test/hil_timing_check.py`'s `open_socket`, frame and trailer parsing by importing it via `sys.path`, not by copying.
 
-- [ ] **Step 1: Write the checker.**
+- [ ] **Step 1: Does `CYCCNT` count through WFI? Run this first.** Fix waves B and C (the barcode and analog numbering) rest on it, so a failure invalidates Tasks 10 and 11. Instrumentation image, bench, no bus, console only.
+  - Idle the board for 60 s. The image reads the board clock and the reference timer back to back once a second.
+  - Pass: over the run, the board clock and the reference timer advance by the same number of µs, within 1 µs (the timer's resolution), and the board clock shows no 25.26 s step.
+  - Fail: if `CYCCNT` stops in WFI, the signature is an analog `LOST` stop within milliseconds of boot and a stalled barcode. Stop and report; Tasks 10 and 11 are meaningless until the board clock is fixed.
+  - Then read `DWT_CYCCNT` over SWD before and after a 1 s core halt. Pass: the difference is about 0, because `CYCCNT` stops with the core (Task 10 Step 6's `DBG_TIM3_STOP` rests on this). Reset the board afterwards.
+- [ ] **Step 2: Write the checker.**
   - **Subcommands:** `caps`, `sync`, `timekeeper`, `gpio`, `analog`, `power`. It reports one `[PASS]`/`[FAIL]` line per check and exits non-zero on any failure.
   - **Arguments:** `--address` (default 8).
-  - **Safety:** it sends only requests addressed to `--address`, plus `HEARTBEAT` and `ESTOP` broadcasts for `power`. It sends no claps, and it never addresses the pellet.
-- [ ] **Step 2: Bring-up.**
-  - Console boot log: `CAN_ID: 0x8`, then no errors from `jerrycan_init` or the drivers.
+  - **Safety:** it sends only requests addressed to `--address`, `HEARTBEAT` and `ESTOP` included: the node filter accepts them, so they are never broadcast. It sends no claps, and it never addresses the pellet.
+  - **Heartbeat:** `gpio` (and `power`) can send a single `HEARTBEAT` or `ESTOP` to `--address`, and can run a background 1 Hz `HEARTBEAT` for the length of a run (`--heartbeat`), stoppable on command so that a run can stop it and time the outputs going off. Task 11 Steps 2-3 need it: without a heartbeat, a non-zero `PWM_SET` is refused with `-ETIMEDOUT`.
+  - **Bus load:** it sums the bits of every received frame (FD format at 1/5 Mbit/s) and reports the total for all frames and for the frames from `--address` alone.
+- [ ] **Step 3: Bench bring-up, no bus.** Default image. The transceiver is not connected to the bus, or absent.
+  - Before power: the NUCLEO's solder bridges that tie A4/A5 (PC1/PC0) to PB9/PB8 are open. PB9 is `TTL7`, a GPIO line.
+  - Console boot log: `CAN_ID: 0x8`, capabilities `0x37`, then no errors from `jerrycan_init` or the drivers. With no bus, TX-queue-full lines are expected, not failures: nothing ACKs, `can_send` never returns, and the analog stream fills the 150-item TX queue in 0.3 s.
+  - `kernel stacks`: record the interrupt stack and each thread's peak at idle. Task 11 Step 2 records them again under load.
+  - Analog registers over SWD, core running:
+    - TIM6: `PSC` 169, `ARR` 999, `CR2.MMS` 010.
+    - DMAMUX1 `C0CR`: request id 5.
+    - DMA1 `CCR1`: `CIRC`, `MINC`, `HTIE` and `TCIE` set, 16-bit sizes.
+    - ADC1 `CFGR`: `EXTSEL` 13, `EXTEN` 01, `DMACFG` and `DMAEN` set; `SQR1.L` 7.
+    - NVIC `IPR` for IRQ 11 (DMA1 channel 1) and IRQ 18 (ADC1_2): priority 1 (`0x10`, four priority bits).
+  - DMA1 `CNDTR` reads 32 in the first millisecond after the scanner starts, so no extra scan ran before the first trigger. Reset and halt, run to the end of `analog_scanner_start`, and read it (TIM6 is frozen in a halt).
+  - CAN setup, per "Before joining the live bus": `NBTP`, `DBTP`, `TDCR`, `FDCANSEL` (expect `01`) and `PLLQEN`. Record the decoded bit rates and sample points.
+  - Reset the board.
+- [ ] **Step 4: Join the bus and bring up.** Only after Step 3's CAN setup reads pass and the user has said go.
+  - Console boot log as in Step 3, now without TX-queue-full lines.
   - `caps`: `0x37`, wire schema 1, a non-zero `boot_id`.
   - `sync`: 20 `TIME_SYNC` exchanges, each response with a `TX_QUEUE` trailer whose time equals `response_queue_time_us`.
   - `HEARTBEAT` is echoed and LD2 blinks.
-- [ ] **Step 3: Commit the checker** with the measured lines in the message.
+- [ ] **Step 5: The board clock over time, idle.** No DI changes and no outputs; the checker sends only what a bullet below asks for.
+  - Instrumentation image, ≥ 10 min: the board clock and the reference timer, read back to back at the start, every 60 s and at the end, advance by the same number of µs within 1 µs (no drift).
+  - Instrumentation image, ≥ 5 min with no traffic and the pair read only at the start and the end: no 25.26 s step against the reference timer (the keep-alive is the only reader).
+  - Capture node 8's frames for ≥ 320 s (12 wraps of 25.26 s). `board_time_us` in the trailers never decreases and has no 25.26 s step.
+  - Three cold boots (power cycle) and three warm boots (NRST): the first `board_time_us` after each is below 25.3 s plus the time to the first frame, and each boot's `boot_id` differs from the last, so a host that fits per `boot_id` starts a new model (reachAQ stays closed; the checker prints the pairs).
+  - `sync` for ≥ 10 min: fit board time against host time and record the slope in ppm. Task 11 Step 2 repeats it under load.
+- [ ] **Step 6: The keep-alive after an SWD flash, without the reset.** Default image. This is the one deliberate exception to "reset after every SWD session".
+  - Flash over SWD and let the tool close without resetting. Within 10 s the keep-alive restores `TRCENA`, `CYCCNTENA` and `DBG_SLEEP`.
+  - Pass: the log shows exactly one warning about it; `board_time_us` has no 25.3 s step; a second disconnect without a reset logs no second warning; a cold boot logs none.
+  - Then reset the board.
+- [ ] **Step 7: Commit the checker** with the measured lines in the message.
 
 ### Task 10: Timekeeper on the bus and on the NI-DAQ
 
@@ -1149,38 +1232,99 @@ Each task starts by asking the user, in that session, for:
   - One `SYNC_CLAP` and one `SYNC_BARCODE` per second from address 8. Ticks are consecutive and equal between the two.
   - The `SYNC_CLAP_OBSERVED` for each tick has `clapper_node` 8 and an `OBSERVED` time 0 < t < 2 ms after that clap's `TX_QUEUE` trailer time.
   - `SYNC_BARCODE`'s `PHYSICAL_START` times step by exactly 1 000 000 µs.
+  - Nothing overtakes a clap. Capture the bus for the 60 s while a 1 kHz square drives DI0 (`GPIO_READ`, id 0x0A) and `sync` requests run (`TIME_SYNC_RESPONSE`, 0x20); both ids are lower than `SYNC_CLAP`'s 0x25, so they would win arbitration against a clap queued before them. Pass: node 8's trailer `sequence` never decreases in capture order (a gap from a dropped frame is allowed), including across every clap.
 - [ ] **Step 2: Scope check on PA4 against the predicted time.**
-  - Drive TTL0 high from the tick callback, debug only, then revert. Or use the PEAK hardware RX time of `SYNC_BARCODE` as a coarse cross-check.
+  - Drive TTL0 high from the tick callback, in the instrumentation image (not the default one). Or use the PEAK hardware RX time of `SYNC_BARCODE` as a coarse cross-check.
   - Confirm the start pulse is 1.000 ms, the bits are 1.000 ms, and the bit order is LSB first for a known tick.
 - [ ] **Step 3: NI-DAQ.** Only if the user wires PA4 to PXI-6221 `port0/line3` and T3 is on the rig.
+  - PA4's high level at the DAQ input reads as high: above the PXI-6221 digital input's VIH of 2.2 V (the NUCLEO drives 3.3 V directly).
   - Record 10 minutes while a 10 kHz square drives DI0 and the analog stream runs.
   - T3's `decode_barcode_frames` must decode every tick with 0 rejected, and the timekeeper→NI fit residual must be ≤ 0.1 ms.
 - [ ] **Step 4: Second-module behaviour.** Strap `CAN_ID[0]` (PB6) to GND, giving address 9, and reboot.
-  - `caps --address 9` reads `0x17`.
+  - `caps --address 9` reads `0x17`, and the boot log prints `0x17` (node 8 printed `0x37` in Task 9).
   - No `SYNC_CLAP` or `SYNC_BARCODE` appears for 5 s.
   - PA4 stays low.
   - Remove the strap afterwards.
+- [ ] **Step 5: A held-off barcode update.** Instrumentation image, wired as in Step 3. Its injected `irq_lock` holds off the TIM3 update interrupt for a set time at a set phase.
+  - Lock for ≥ 1 ms and for ≥ 3 ms, inside slots 1-32 of a tick (the bits) and across slot 500 (idle). Pass, for each: only that tick is rejected by `decode_barcode_frames`; the late `SYNC_BARCODE` and `SYNC_CLAP` carry the right tick and start time; the ticks after it fit the same line as before, with no 1 ms offset.
+  - Sweep the lock length over k × 1 ms ± a few µs (k = 1 to 3), and its start phase across one slot. Pass: each missed update costs at most one wrong slot, and there is never a persistent slip.
+- [ ] **Step 6: Debug halts and single-steps.** Reset the board after this step.
+  - Read `DBGMCU_APB1FZR1` over SWD: bit 1 (`DBG_TIM3_STOP`) is set.
+  - Halt the core for ≥ 5 s, then resume. Pass: the ticks after the resume continue the numbering without a gap, and the DAQ decodes them. Board time stopped during the halt, so the clock fit is not expected to survive it.
+  - Single-step about 1000 times, then compare an edge's measured time with the computed `start_us`, before and after. Record the drift per step. The ledger sets no bar; the system target is 0.1 ms.
+- [ ] **Step 7: Bus faults.** Neither check runs on the live rig bus: a CANH-CANL short there would take the pellet's link down too.
+  - No-ACK bench: the module and its transceiver alone, with nothing on the bus to ACK. The log shows exactly one clap-timeout line, then the pre-existing TX hang (`can_send` never returns). Nothing else changes, and the board does not reset.
+  - CANH-CANL short: on a bench segment with only the module and the checker's PEAK (no pellet), short CANH to CANL at the module's transceiver, then remove the short. During the short the module does not hang (console alive, LD2 blinking). After it, frames reach the checker again without a reset: same `boot_id`, and the tick numbering continues.
+- [ ] **Step 8: Barcode ISR time.** Instrumentation image. Record the min, mean and max cycles of the TIM3 update ISR over ≥ 60 s, for ordinary updates and for the once-a-second tick update (which includes the 64-bit divide on the report path). No pass bar is set in the ledger; the plan's original estimate for an ordinary update was under 1 µs.
 
 ### Task 11: DI, TTL, analog and power outputs
 
-- [ ] **Step 1: TTL→DI loopback.** Wire TTL0 (PB14) to DI0 (PB2) and send `GPIO_PULSE` TTL0 for 1 ms.
+- [ ] **Step 1: TTL→DI loopback.** Wire TTL0 (PB14) to DI0 (PB2) and send `GPIO_PULSE` TTL0 for 1 ms, 100 times.
   - `GPIO_PULSE_STATUS` `PHYSICAL_START`/`COMPLETED` and DI0's two `GPIO_READ` `OBSERVED` times must agree within 20 µs (spec §11, acceptance 2).
-- [ ] **Step 2: Rate cap on the wire.** Wire power output CH1 (PA8) to DI1 (PC4) and set `PWM_SET` CH1 to a 100 µs period at 50 %, which gives 20 kHz edges.
+  - Report both edges, each against 20 µs: `PHYSICAL_START` against DI0's rising `OBSERVED`, and `COMPLETED` against DI0's falling `OBSERVED`, with the worst case and the median of each. The falling edge is the one at risk: the pulse's counter interrupt reads the pins and queues two messages before DI0's interrupt, at the same priority, can run. The final review estimated 18-28 µs for it before the per-port read (final fix F1), against 1-3 µs for the rising edge.
+  - Index map: drive each of the 22 readable lines in turn and confirm which bit of `GPIO_READ` changes. `CAN_ID[0..1]` are bits 0-1 (strap to GND; they are active low, so the bit reads 1 while strapped), `DI0`-`DI11` are bits 2-13 (drive from 3.3 V), and `TTL0`-`TTL7` are bits 14-21 (`GPIO_WRITE`).
+- [ ] **Step 2: Rate cap on the wire.** Run the checker's background heartbeat throughout (`gpio --heartbeat`, Task 9 Step 2): without one, a non-zero `PWM_SET` is refused with `-ETIMEDOUT`. Wire power output CH1 (PA8) to DI1 (PC4) and set `PWM_SET` CH1 to a 100 µs period at 50 %, which gives 20 kHz edges.
   - Over 10 s, change-triggered `GPIO_READ` from address 8 runs at ≤ 2010 frames/s, and `COALESCED` frames are present.
   - After `PWM_SET` duty 0, the last frame's DI1 bit reads 0.
+  - 40 k edges/s: repeat both checks with a 50 µs period at 50 %.
+  - Load, at 20 k and at 40 k edges/s (instrumentation image): record the share of CPU time in priority-0 handlers (DWT cycles per second against 170 M), and the cycles around `read_state` and the DI change handler. Pass: the whole handler fits well inside the 50 µs edge period of 20 kHz edges (8500 cycles). Compare `read_state` with the final fix's count of about 350 cycles (counted from the disassembly, unmeasured), and extrapolate the edge rate at which the CPU saturates against the README's estimate.
+  - ESTOP latency, at each rate: send `ESTOP` to address 8, and time from the end of the `ESTOP` frame on the bus (PEAK hardware stamp) to the output line going low on a scope. Pass: all outputs off. Report the latency; the README's estimate is the TX-queue drain (about 30 ms) plus up to one 6.5 ms period.
+  - Heartbeats stopped under load: with the 40 k run going, stop the heartbeats. Pass: the output is off 2.0 s plus at most one period after the last heartbeat.
+  - About 100 kHz: set the minimum 10 µs period at 50 % (100 kHz, 200 k edges/s), expected to be above the saturation point. A saturating signal is expected to reset the board with the outputs off, and that is the passing result. Pass: the board resets (new `boot_id`, the boot log names the watchdog), PA8 is low after the reset and stays low. If it does not reset, 200 k edges/s is below saturation: record the load and say so. The loopback's source is the output itself, so the storm ends with the reset; an external signal that fast would reset the board repeatedly, with the outputs off, rather than leave them on.
+  - `kernel stacks`, after the 40 k run, with the analog stream running: the interrupt stack's peak is below its 2048 B (a static walk of the nested interrupts gave about 1.34 kB).
+  - The board clock under load (instrumentation image), ≥ 10 min at 20 k edges/s with CAN traffic: the board clock and the reference timer advance together within 1 µs (no drift), and the `sync` slope equals Task 9 Step 5's within the fit's own uncertainty.
 - [ ] **Step 3: Analog.** Tie the channels to GND, 3V3, and a divider at about mid-scale.
   - The counts are within ±40 of the expected values.
   - `ANALOG_BLOCK` arrives at 500 ± 1 frames/s with no trailer sequence gaps.
-  - `SAMPLED` times step by exactly 2000 µs.
-  - **Bus load** (spec §11, acceptance 3), with the analog stream and Step 2's storm running together. Sum each received frame's bits from the checker, using the FD frame format at 1/5 Mbit/s. Pass: < 30 % sustained, and the PEAK `dropped` counter (`ip -s -d link show can0`) is unchanged.
-- [ ] **Step 4: Power rules.** Check each on a scope or meter at PA8/PA9/PC2/PC3:
+  - `SAMPLED` times step by exactly 2000 µs, over a run of at least 1 h.
+  - **Bus load** (spec §11, acceptance 3), with the analog stream and Step 2's storm running together. Sum each received frame's bits from the checker, using the FD frame format at 1/5 Mbit/s. Pass: < 30 % sustained, and the PEAK `dropped` counter (`ip -s -d link show can0`) is unchanged. Report the load twice from the same capture: for all frames, and for the frames from address 8 alone. The pellet's traffic counts toward acceptance 3 (spec §11), so the all-frames figure is the one that decides. With no pellet traffic on the bus the two are equal, and the report says so.
+  - Absolute label: loop TTL0 to AIN0 (PA0) and send `GPIO_PULSE`. The first scan whose AIN0 count shows the edge must be the first scan with a `SAMPLED` time after the edge's `PHYSICAL_START`, within one scan period (1000 µs). The checks above cannot see a constant 1 ms label slip; this one can.
+  - Edge-phase sweep: repeat the absolute-label check with the pulse start swept across one 1 ms scan period in 50 µs steps. The phase at which the first scan to show the edge changes bounds the `start_us` offset. Record the bound.
+  - Held-off DMA interrupt (instrumentation image): inject an `irq_lock` of 2.5 ms and of 5 ms, at least 20 times each. Pass: each lock skips pairs, the `SAMPLED` deltas around it are 4000 µs (2.5 ms) and 6000 µs (5 ms), the log shows one warning, and the stream does not stop.
+  - Forced stops (instrumentation image): clearing the DMA channel's `EN` stops the stream on an ADC overrun, with an error in the log. Adding 2 scan periods to `CYCCNT` stops it `LOST`.
+  - `CNDTR` poll (instrumentation image), ≥ 10 min: the value is never 0 and never above one lap (32). The firmware treats a bad position as fatal, and the DMA reload's atomicity is unconfirmed without RM0440.
+  - Read gap and callback timing (instrumentation image): put the spare-GPIO markers on a scope, and record the gap between the `CNDTR` read and the `CYCCNT` read, and the callback's length. Pass: the gap is inside the 988 µs tolerance the re-review derived at 1 kHz.
+  - Debug halts (reset the board afterwards): halt the core about 100 times and compare TIM6's `CNT` phase with `CYCCNT` before and after. Pass: the phase does not grow with the number of halts. If TIM6 gains on `CYCCNT` per halt, an on-time read turns `LOST` after about 2300 cycles at 8 channels, which is a few hundred single-steps. This is debug-only; record the drift per halt.
+- [ ] **Step 4: Power rules.** **No real load goes on PA8/PA9/PC2/PC3 until the forced-fault test and the `DBG_TIM1_STOP` gate below have both passed.** Until then, check each rule on a scope or meter, with at most a 10 k pull-down on the pin. Keep the heartbeat running as in Step 2 unless the check is about the heartbeat.
+  - Boot: scope each of PA8/PA9/PC2/PC3 from reset to the first `PWM_SET`, with and without a 10 k pull-down. Pass: with the pull-down the pin stays low throughout. Without it, record the level before and after the PWM driver's init, because the MCU's internal pull-down applies only from then on. This is the evidence for the H2 pull-down item.
   - `PWM_SET` with no heartbeat → ACK `-ETIMEDOUT` (−116 in Zephyr's errno numbering, not Linux's −110), and the output stays off.
   - With heartbeats at 1 Hz, 25 % at 1000 µs shows a 250 µs pulse.
   - A period change on one channel keeps the others' duty.
-  - `ESTOP` assert → all off, and non-zero `PWM_SET` → `-EPERM`. After release, outputs stay off until set.
-  - Stop the heartbeats → all off within 2.0-2.1 s.
-  - Out-of-range channel, duty or period → `-EINVAL`, and nothing changes.
-- [ ] **Step 5: Record and stop.** Put the results in the ledger.
+  - Period 1000 → 10 → 6553 µs with four different duties: after each change every channel's pulse is its duty times the new period. Watch all four on a scope in persistence mode. Pass: a channel written after the others may show one period of its old compare value (README), no more, and a channel at duty 0 never moves.
+  - `ESTOP` assert → all off within one period, and non-zero `PWM_SET` → `-EPERM`. After release, outputs stay off until set.
+  - Stop the heartbeats → all off 2.0 s plus at most one period after the last frame (so within 2.0-2.1 s).
+  - Heartbeat spacing 1990-2010 ms (the expiry race): with an output on, sweep the spacing in 2 ms steps. Pass: at 1990 ms the output never drops, at 2010 ms it drops every time, and at any spacing in between it either stays on or is off by 2.0 s plus one period after the last heartbeat, never later.
+  - Out-of-range requests → `-EINVAL`, and nothing changes: channel 4, duty 10001, period 9, and period 6554.
+  - Refusal log limiter: send refused `PWM_SET`s at 100/s for 10 s with one reason, and again alternating two reasons (for example `-EINVAL` and `-ETIMEDOUT`, with no heartbeat running). Pass: the first refusal of each reason is logged at once, then at most one line per reason per 5 s, each saying how many refusals it left out.
+  - Bus-off: on Task 10 Step 7's bench segment, with an output on and heartbeats running, short CANH to CANL at the module's transceiver. Pass: the output is off within 2 s of the short, plus at most one period.
+  - **Fault safety gates** (the instrumentation image unless it says default). Run them before any load is connected:
+    - `DBG_TIM1_STOP` (default image): with an output at about 50 % duty, halt the core about 20 times and look at the line at each halt. Pass: the line never freezes high, and `DBGMCU_APB2FZR` bit 11 is set. The README states "TIM1's outputs are disabled while its counter is stopped" as ST's documented behaviour for advanced timers, checked against neither RM0440 nor hardware; this is that check. Reset the board afterwards.
+    - Forced fault at 50 % duty, with an output running: the line is low within microseconds of the trigger (put a marker on the trigger and scope both; a delay near a PWM period means the main output enable was not cleared first), then the board resets: a new `boot_id`, and the boot log names a software reset.
+    - Forced hang (`irq_lock` spin) with an output running: the output is off and the board has reset between 0.75 s and 1.0 s after the hang started (the last feed was up to 250 ms earlier), widened by the LSI tolerance given in the final-fix report. Repeat at least 5 times and record the range.
+    - Starved workqueue (a work item that blocks it) with an output running: the board resets within the same range, and the output is off.
+    - Debug halt longer than the timeout (default image): halt the core for 5 s and resume. Pass: no reset (same `boot_id`), because the watchdog pauses under a debugger. Reset the board afterwards.
+    - No-bus `can_send` hang (default image): turn an output on with heartbeats running, then take the module off the bus, so that nothing ACKs and `can_send` blocks. Pass: no reset for at least 10 s (same `boot_id`), and the output goes off 2.0 s after the last heartbeat, by the heartbeat timer.
+    - Reset reason: after each reset above, the boot log shows one warning naming the cause (watchdog or software reset). A power cycle shows none.
+  - Only when the forced-fault test and the `DBG_TIM1_STOP` gate have both passed, a real load may be connected. Record both results in the report first.
+- [ ] **Step 5: H1a checks, only once H1a has run.** They come from "Hardware checks to add to H1 Task 11" in `docs/superpowers/plans/2026-11-05-h1a-independent-ttl-pulses.md` and apply only when its commit is on the branch under test. Until then the one-pulse limit stands and these are skipped.
+  - Overlap accuracy: loop TTL0 and TTL1 to two DIs, and run overlapping pulses of 100 µs to 5 s. Each measured width is within ±20 µs of commanded, with the shorter one ending first.
+  - Coincident ends: start pulses so that their ends coincide. Measure the spread between the lines on a scope, and confirm every `COMPLETED` arrives.
+  - All 8 at once: run all 8 outputs at once, repeated, under the DI storm and the analog stream.
+  - Refusals: a same-output overlap and a 9th request are refused with `-EBUSY`, and nothing else is disturbed.
+  - Pellet unchanged: a pellet second pulse is still refused (`qualify_pellet_firmware.py`). It needs a pellet running the H1a build; this plan flashes no pellet, so that needs the user's explicit approval in that session.
+- [ ] **Step 6: Record and stop.** Put the results in the ledger.
   - Fixes found here go through the SDD fix round and a scoped re-review.
+  - Decide with the user, from Step 2's measured load, whether masking EXTI while a change is held is needed. It is a design change, deferred until the storm was measured.
+  - Say what becomes of the instrumentation build (see "Before Task 9").
+  - Carry to T2's hardware-in-the-loop run, which needs the pellet (this plan never flashes it): the regression of the clap, tone and pulse residuals against load, from fix wave A.
   - Restore the rig checkout.
   - The branch stays unmerged until the user decides.
+
+---
+
+## H2 checklist
+
+Findings from H1 that the PCB plan must carry:
+- **Pull-downs on the TBD62783A inputs.** Between the PWM driver's init and `power_out`'s init, the level of PA8/PA9/PC2/PC3 depends on TIM1's idle state, and duty 0 reaches the pin only at the next update (up to 6.5 ms). H1 adds only the MCU's weak internal pull-down, so the PCB needs a pull-down on each input. Task 11 Step 4's boot scope is the evidence.
+- **`FDCAN_SEL` wording.** `FDCAN_SEL(1)` selects PLL Q in hardware (`LL_RCC_FDCAN_CLKSOURCE_PLL`), not PCLK. It gives 170 MHz because `div-q` makes PLL Q 170 MHz. The PCB board's devicetree comment and README must say that, and keep the selection.
+- **`iwdg` stays enabled.** The IO app asserts at build time that the `iwdg` node is okay. The PCB board (`cerebellumlab_io_module`) must keep it enabled, and the assert must not be removed to make a board build.
