@@ -150,4 +150,5 @@ These can run only on a board:
 - **Coincident ends.** Start pulses so that their ends coincide. Measure the spread between lines on a scope, and confirm every `COMPLETED` arrives.
 - **All 8 at once.** Run all 8 at once, repeated, under the DI storm and the analog stream.
 - **Refusals.** A same-output overlap and a 9th request are refused with `-EBUSY`, and nothing else is disturbed.
+- **Staggered ends.** Start pulses so that their ends are 2-30 µs apart, under the analog stream. Each falling edge must be within +20 µs of its deadline. An edge due just after the interrupt's counter read waits for the message queuing (estimated 5-7 µs plus 3 µs per ended pulse). If this fails, move the status queuing out of the interrupt.
 - **Pellet unchanged.** A pellet second pulse is still refused (`qualify_pellet_firmware.py`).

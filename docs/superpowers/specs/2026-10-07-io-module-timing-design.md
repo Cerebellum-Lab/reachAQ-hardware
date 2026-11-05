@@ -325,9 +325,11 @@ the `ll,generic-gpios` driver.
   (IWDG) is fed every 250 ms from the system workqueue, the thread that also switches
   the outputs off, and it pauses while a debugger halts the core. A fatal-error handler
   clears TIM1's main output enable first, then logs and resets.
-  - On a fault the outputs go off within microseconds. On a hang, or a DI signal fast
+  - On a fault the outputs go off within tens of microseconds. On a hang, or a DI signal fast
     enough to starve the workqueue, they go off within about 1 s, when the watchdog
     resets the board.
+  - Counted from the last `HEARTBEAT`, a hang that starts just before the 2 s timer
+    expires takes up to about 3.1 s; no watchdog timeout can avoid that overlap.
   - A reset forgets `ESTOP`, but the outputs boot off.
 
 ## 10. Rollout order
