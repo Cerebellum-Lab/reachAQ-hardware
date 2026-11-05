@@ -101,7 +101,7 @@ The trailer follows the uuid byte on **every board-originated frame** whose payl
 | flags | u8 | bit0 `COALESCED`: events were merged by the rate cap |
 | boot_id | u32 | Random per boot; the same value reported in `CAPABILITIES_RESPONSE` |
 | sequence | u32 | Per-board counter of trailer-bearing frames |
-| board_time_us | u64 | Board clock, µs since boot |
+| board_time_us | u64 | Board clock in µs. Its origin is arbitrary, within 25.3 s of a reset; the host fits the offset per `boot_id` |
 
 `kind` says what `board_time_us` marks. Old host code ignores the bytes after the uuid.
 
@@ -161,8 +161,14 @@ shares the library, keeps its wire format. The board clock, `boot_id`, receive s
 the trailer live in the core (`jerrycan.c`), because every module and driver needs them. The
 TIME_SYNC responder and clap listener live in `modules/timing.c`.
 
-- **Board clock:** `k_cycle_get_64()` / 170 → µs. It uses no timer peripheral; all of
-  the pellet's 32-bit timers are taken. `boot_id` moves here from `capabilities.c` so
+- **Board clock:** the Cortex-M DWT cycle counter (CYCCNT), extended to 64 bits in
+  software, / 170 → µs.
+  - A 10 s keep-alive timer catches each 25.3 s wrap.
+  - DBGMCU DBG_SLEEP keeps the core clock running in WFI idle.
+  - It uses no timer peripheral; all of the pellet's 32-bit timers are taken.
+  - Not `k_cycle_get_64()`. Zephyr 3.7's tickless SysTick loses tens of cycles on every
+    reprogram, so that clock runs slow by an amount that depends on the workload
+    (decided 2026-11-04). `boot_id` moves here from `capabilities.c` so
   both share one value.
 - **Receive stamping:** **one** RX callback, in ISR context, is shared by every JerryCAN
   filter. It stamps the board time, then puts the stamp and the frame on the RX queue;

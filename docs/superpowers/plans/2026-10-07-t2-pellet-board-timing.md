@@ -7,6 +7,8 @@
 **Architecture:**
 - **Core (`firmware/lib/jerrycan/jerrycan.c`):**
   - board clock: `k_cycle_get_64()` → µs
+    - Superseded on 2026-11-04 by the DWT cycle counter extended to 64 bits (`firmware/lib/board_clock/`, ported from the H1 fix wave; spec §5).
+    - The tickless SysTick count loses cycles. Steps below that name `k_cycle_get_64()` were written before that change.
   - per-boot `boot_id`
   - **one** CAN RX callback, shared by every filter, that stamps each frame's arrival in the interrupt
   - a TX queue item carrying the trailer's kind and time; the trailer is appended where every frame is built

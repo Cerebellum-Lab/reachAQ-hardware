@@ -66,7 +66,8 @@ Reviewed by the user on 2026-11-03: decisions 1 (barcode from the update interru
 - **Addresses:** the IO module is board type 2 (addresses 8-11). The type comes from devicetree (`zephyr,user` `jerrycan-board-type = <2>`). The low 2 bits come from `CAN_ID[0..1]`.
 - **Barcode:**
   - Each tick: a 1 ms high start pulse, then the 32-bit tick LSB-first at 1 ms per bit, then low until the next tick. Ticks are 1 s apart.
-  - Tick N's start edge is at `start_us + N × 1 000 000` on the board clock (`k_cyc_to_us_floor64(k_cycle_get_64())`, the same clock as `jerrycan_board_time_us()`).
+  - Tick N's start edge is at `start_us + N × 1 000 000` on the board clock (`board_clock_cycles_to_us(board_clock_cycles())`, the same clock as `jerrycan_board_time_us()`).
+  - On 2026-11-05, fix wave A replaced `k_cycle_get_64()` with the DWT board clock (`firmware/lib/board_clock/`, spec §5). Task steps below that still name `k_cycle_get_64()` were written before that change.
   - Tick 0 starts when the barcode starts.
 - **Analog:** 1 kHz scans of 8 channels on ADC1, 2 scans per `ANALOG_BLOCK` (500 frames/s), raw 12-bit counts. The trailer is `SAMPLED` at the first scan's trigger time.
 - **Rate cap:** change-triggered `GPIO_READ` is capped at 2000 frames/s with a burst of 8. Merged changes carry `COALESCED`. The 100 ms periodic `GPIO_READ` (`SAMPLED`) is unchanged.
