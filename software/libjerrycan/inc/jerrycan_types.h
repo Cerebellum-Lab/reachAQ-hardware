@@ -272,6 +272,8 @@ SIZE_CHECK(jerrycan_cmd_gpio_pulse_status_t, 12);
 #define JERRYCAN_CAPABILITY_TIME_SYNC         (1U << 1)
 #define JERRYCAN_CAPABILITY_FINITE_GPIO_PULSE (1U << 2)
 #define JERRYCAN_CAPABILITY_PELLET_PRECHECK   (1U << 3)
+/* Set only where the board found its stepper enable net at boot, so a pellet without one does not report it. */
+#define JERRYCAN_CAPABILITY_STEPPER_DRIVER_FAULT (1U << 6) /* bits 4 and 5 are taken on the timing and IO lines */
 
 /* Bumped when the meaning of a frame changes, not when a capability is added. */
 #define JERRYCAN_WIRE_SCHEMA_VERSION 1
@@ -354,6 +356,10 @@ typedef struct __attribute__((packed)) {
 } jerrycan_cmd_load_cell_tare_t;
 
 SIZE_CHECK(jerrycan_cmd_load_cell_tare_t, 1);
+
+/* jerrycan_cmd_stepper_status_t.status. Always 0 on a board without the capability above. */
+#define JERRYCAN_STEPPER_STATUS_DRIVER_FAULT (1U << 0)
+#define JERRYCAN_STEPPER_STATUS_ENABLE_OFF   (1U << 1)
 
 typedef struct __attribute__((packed)) {
     uint8_t motor_id;

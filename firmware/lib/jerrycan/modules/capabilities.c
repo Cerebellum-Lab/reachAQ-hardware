@@ -37,6 +37,10 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/random/random.h>
 
+#if DT_HAS_COMPAT_STATUS_OKAY(ll_stepper_power)
+#include "stepper_power.h"
+#endif
+
 LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
 /*
@@ -51,6 +55,22 @@ LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 #define BOARD_CAPABILITIES (CAPABILITY_FINITE_GPIO_PULSE)
 
 /*
+    BOARD_CAPABILITIES is what the devicetree settles. Whether a pellet has the stepper enable net is found at
+    boot, so that bit is added per request and is not part of the macro or of the init log.
+*/
+static uint32_t board_capabilities(void) {
+    uint32_t capabilities = BOARD_CAPABILITIES;
+
+#if DT_HAS_COMPAT_STATUS_OKAY(ll_stepper_power)
+    if (stepper_power_present()) {
+        capabilities |= JERRYCAN_CAPABILITY_STEPPER_DRIVER_FAULT;
+    }
+#endif
+
+    return capabilities;
+}
+
+/*
     Drawn once at init rather than per request, so every answer within one boot
     carries the same value and a change of value means a reboot and nothing
     else.
@@ -63,7 +83,7 @@ static int capabilities_request(const jerrycan_msg_t *msg) {
         .capabilities_response =
             {
                 .wire_schema_version = JERRYCAN_WIRE_SCHEMA_VERSION,
-                .capabilities = BOARD_CAPABILITIES,
+                .capabilities = board_capabilities(),
                 .boot_id = boot_id,
             },
         .uuid = msg->uuid,
