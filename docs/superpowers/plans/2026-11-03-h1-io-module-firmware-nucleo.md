@@ -85,8 +85,7 @@ Reviewed by the user on 2026-11-03: decisions 1 (barcode from the update interru
   - Pellet `text` may grow by at most 512 B over Task 0's baseline, and `data`/`bss` by at most 16 B.
   - **Ruled exception: the board clock (user decision 2026-11-04).** The DWT board clock is shared code, so it changes the pellet too (fix waves A and D, ported to `feat/pellet-board-timing` as bc394f1 and 35d27f7). It is outside the budget above.
     - Task 0's baseline plus the board clock is `216064/37093/42888` (`215588/37033/42879` plus `476/60/9`). That is the pellet as built on `feat/pellet-board-timing` after the port.
-    - The budget applies to the rest of this branch's pellet change: the head's pellet minus `216064/37093/42888` must be at most `512/16/16`.
-    - At bb8a13a the pellet is `216284/37093/42888`, so the rest is `220/0/0`: Task 4's limiter hook `116` and fix wave D's by-index GPIO read `104`. The final fix replaces that read with a per-port read and reports the new pellet figure.
+    - **Budget raised (user decision 2026-11-06).** The head's pellet minus `216064/37093/42888` must be at most `1396/12/132`, which is `217460/37105/43020`. The first budget of `512/16/16` was set before the per-port GPIO read (`+132/+12/+128`) and the shared pulse table (`+1044/0/+4`). Flash is not short: the signed image is 254.9 kB in a 454 kB slot. Any growth past this figure needs a new ruling.
 - **Builds only on christielab10, in its designated checkout `~/Documents/reachAQ-hardware`**, because its west manifest is that checkout's own `firmware/west.yml`.
   - Record its ref in Task 0. Restore it (detached `08c1b41`, clean) at the end of **every** working session and before any pause.
   - Build outputs go under `/tmp/h1-*`.
@@ -1109,7 +1108,7 @@ config LIB_JERRYCAN_POWER_OUT_HEARTBEAT_TIMEOUT_MS
   1. Sync.
   2. `$HOST_TEST`. Expected: every test passes. Do not pin the count: it is whatever the head has (8/8 at bb8a13a, more after the final fix). Record it.
   3. Build all three.
-  4. Run `$SIZE` on the IO and pellet ELFs. Expected for the pellet: the head's figure minus `216064/37093/42888` is at most `512/16/16`, per the ruled exception in Global Constraints (at bb8a13a: `216284/37093/42888`; the final fix reports the figure for the head).
+  4. Run `$SIZE` on the IO and pellet ELFs. Expected for the pellet: at most `217460/37105/43020`, the raised budget in Global Constraints.
   5. Run the magnet diff.
   6. Run `grep -o BOTH /tmp/h1-io/zephyr/zephyr.dts | wc -l` (expected: 12 DI). `grep -c` counts lines and prints 1.
   7. Run `grep -E '^CONFIG_(LIB_JERRYCAN_(TIMING|TIMEKEEPER|GPIO_EVENT_RATE_HZ)|WATCHDOG)=' /tmp/h1-io/zephyr/.config`. Expected: `TIMING=y`, `TIMEKEEPER=y`, `GPIO_EVENT_RATE_HZ=2000` and `CONFIG_WATCHDOG=y`.
@@ -1286,6 +1285,7 @@ Settle these with the user at the start of the hardware session, and record each
   - Absolute label: loop TTL0 to AIN0 (PA0) and send `GPIO_PULSE`. The first scan whose AIN0 count shows the edge must be the first scan with a `SAMPLED` time after the edge's `PHYSICAL_START`, within one scan period (1000 µs). The checks above cannot see a constant 1 ms label slip; this one can.
   - Edge-phase sweep: repeat the absolute-label check with the pulse start swept across one 1 ms scan period in 50 µs steps. The phase at which the first scan to show the edge changes bounds the `start_us` offset. Record the bound.
   - Held-off DMA interrupt (instrumentation image): inject an `irq_lock` of 2.5 ms and of 5 ms, at least 20 times each. Pass: a 2.5 ms lock skips one pair in about a quarter of trials and none in the rest, and a 5 ms lock skips one or two pairs, depending on phase. Each skip shows as one `SAMPLED` delta of 4000 or 6000 µs with exactly 2000 µs either side. The log shows one warning for the first skip, and the stream does not stop.
+  - Hold-off injection (instrumentation image, a priority-0 spin hook, and a ramp or a TTL edge on AIN0 to identify the scan). Between the CNDTR and CYCCNT reads: 2.5 ms stops the stream `LOST`; 4.0 ms keeps it running, with labels matching the samples and 2 pairs skipped. Between the reads and the copy: 3 ms gives one block with samples 4 ms newer than its label. If real bursts reach these windows, take the deferred fixes: retry the reads when they are more than half a period apart, and copy the half to a local array, re-check CYCCNT and treat a late copy as a skipped pair.
   - Forced stops (instrumentation image): clearing the DMA channel's `EN` stops the stream on an ADC overrun, with an error in the log. Adding 2 scan periods to `CYCCNT` stops it `LOST`. Adding exactly 1 scan period (a persistent one-scan slip) gives 3 more frames and then a stop with the "disagrees" error.
   - `CNDTR` poll (instrumentation image), ≥ 10 min: the value is never 0 and never above one lap (32). The firmware treats a bad position as fatal, and the DMA reload's atomicity is unconfirmed without RM0440.
   - Read gap and callback timing (instrumentation image): put the spare-GPIO markers on a scope, and record the gap between the `CNDTR` read and the `CYCCNT` read, and the callback's length. Pass: the gap is inside the 988 µs tolerance the re-review derived at 1 kHz.
@@ -1310,7 +1310,13 @@ Settle these with the user at the start of the hardware session, and record each
     - Debug halt longer than the timeout (default image): halt the core for 5 s and resume. Pass: no reset (same `boot_id`), because the watchdog pauses under a debugger. Reset the board afterwards.
     - No-bus `can_send` hang (default image): turn an output on with heartbeats running, then take the module off the bus, so that nothing ACKs and `can_send` blocks. Pass: no reset for at least 10 s (same `boot_id`), and the output goes off 2.0 s after the last heartbeat, by the heartbeat timer.
     - Reset reason: after each reset above, the boot log shows one warning naming the cause (watchdog or software reset). A power cycle shows none.
-    - A TTL pulse in flight through a forced fault and through a forced hang: the line ends low in both, at the reset.
+    - TTL high time on a forced fault: scope a 100 ms pulse with a forced fault during it, once with an idle log and once with a full backlog. Pass: the line goes low within tens of microseconds of the fault, ahead of the reset (the handler writes in-flight pulse lines low before logging). A line held high with `GPIO_WRITE` stays high until the reset.
+    - TTL high time on a forced hang (`irq_lock` spin): the pulse line stays high until the watchdog reset. Pass: low within 0.69-1.09 s. A thread or workqueue hang does not affect it: TIM16 ends the pulse on time.
+    - Watchdog failed to start (`-EIO`, instrumentation image: fail `wdt_setup` or stop the LSI): non-zero `PWM_SET` returns `-EIO` with or without a HEARTBEAT, duty 0 returns 0, out of range returns `-EINVAL`, the log is rate-limited, and the outputs stay low.
+    - Longest priority-0 busy window: DWT over the chain with 8 pulse ends coincident with all 12 DI edges. Compare with the estimate of about 150 µs at 1 CPI and at most about 450 µs. 900 µs or more is a failure: it reaches the analog read gap and the 1 ms barcode slot.
+    - IRQ order: scope TTL width and barcode slots during a saturating burst on DI0, then on DI11. Predicted: DI0 (EXTI2, IRQ 8) holds the pulse line high for the burst and DI11 (EXTI15_10, IRQ 40) does not. The tie-break rule has not been checked on this board.
+    - Queue-full recovery: on a no-ACK bench with 8 pulses in flight, restore the bus. Expect a sequence gap, no `-EBUSY` on the next pulse, and the next `GPIO_READ` showing the lines low.
+    - Reset log: `kernel reboot` logs the software-reset line, and NRST logs no reset-cause line.
     - Pin level after the main output enable is cleared, with the internal pull-down only: low, not floating high.
     - No false watchdog reset: the `boot_id` is unchanged through the 20 k and 40 k edges/s runs and the ≥ 1 h analog run.
     - Read `DBGMCU_APB1FZR1` bit 12 back after an SWD attach. The tool is undecided and could rewrite it.
@@ -1329,6 +1335,7 @@ Settle these with the user at the start of the hardware session, and record each
   - Hop boundaries: widths at 32767, 32768, 65535, 65536, 65537 and 98304 µs, alone and with a 100 µs pulse started during the last hop.
   - Refusal timing: same-output requests during the last 50 µs of a 1 ms pulse, on the IO module and the pellet. The running pulse's width is unchanged.
   - Stack: during "all 8 at once", read the ISR and thread stack high-water marks (680 of 2048 B is static).
+  - Message order: during "all 8 at once" at minimum width, count any `COMPLETED` that arrives before its `ASSERTED`. The stamps stay right, but the host plan needs to know.
   - Pellet unchanged: a pellet second pulse is still refused with `-EBUSY`. `qualify_pellet_firmware.py` cannot do this check (its `check_refusals` tests only `-EPERM`), so add a step to it or send the two pulses by hand. Also scope pellet widths at 100 µs and 1 ms against v2.3.0, predicting about +0.9 µs (counted, unmeasured). It needs a pellet running the H1a build; this plan flashes no pellet, so that needs the user's explicit approval in that session.
 - [ ] **Step 6: Record and stop.** Put the results in the ledger.
   - Fixes found here go through the SDD fix round and a scoped re-review.
@@ -1343,6 +1350,7 @@ Settle these with the user at the start of the hardware session, and record each
 ## H2 checklist
 
 Findings from H1 that the PCB plan must carry:
+- **Pull-downs on the 74AHCT244 inputs.** After any reset the MCU pins are not driven until GPIO init, so a floating CMOS input leaves the BNC output undefined. "A reset ends a pulse" depends on this on the PCB, and the barcode buffer has the same exposure.
 - **Pull-downs on the TBD62783A inputs.** Between the PWM driver's init and `power_out`'s init, the level of PA8/PA9/PC2/PC3 depends on TIM1's idle state, and duty 0 reaches the pin only at the next update (up to 6.5 ms). H1 adds only the MCU's weak internal pull-down, so the PCB needs a pull-down on each input. Task 11 Step 4's boot scope is the evidence.
 - **`FDCAN_SEL` wording.** `FDCAN_SEL(1)` selects PLL Q in hardware (`LL_RCC_FDCAN_CLKSOURCE_PLL`), not PCLK. It gives 170 MHz because `div-q` makes PLL Q 170 MHz. The PCB board's devicetree comment and README must say that, and keep the selection.
 - **`iwdg` stays enabled.** The IO app asserts at build time that the `iwdg` node is okay. The PCB board (`cerebellumlab_io_module`) must keep it enabled, and the assert must not be removed to make a board build.

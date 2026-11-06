@@ -296,6 +296,13 @@ the `ll,generic-gpios` driver.
    recording; output control API (TTL write and pulse, PWM). **The host must send
    `HEARTBEAT` at ≥ 1 Hz while power outputs are in use** (§9). reachAQ sends none
    today, so the IO module refuses non-zero `PWM_SET` with `-ETIMEDOUT` until it does.
+   If the module's watchdog failed to start it refuses non-zero `PWM_SET` with `-EIO`
+   instead, on every request (§9), which the host should report as a board fault. The
+   host must also watch for silence on `ANALOG_BLOCK` (0x28) while the module's other
+   frames keep flowing: a stopped stream leaves no sequence gap, and the image has no CAN
+   reset, so a recording can lose its analog data with nobody told. `COMPLETED` is
+   best-effort: a full TX queue drops it, shown as a sequence gap, and the periodic
+   `GPIO_READ` restates the pin within 100 ms.
 5. Allowlist: pellet `2.4.0` with `timing_trailer` and `time_sync` **required**, added at
    that firmware's release, not ahead of it, per the allowlist's own rule against
    predicting capabilities. That release waits for T3 Task 1 (§10, step 3). The IO module
@@ -330,6 +337,10 @@ the `ll,generic-gpios` driver.
     resets the board.
   - Counted from the last `HEARTBEAT`, a hang that starts just before the 2 s timer
     expires takes up to about 3.1 s; no watchdog timeout can avoid that overlap.
+  - If the watchdog fails to start, the module keeps running but refuses every non-zero
+    `PWM_SET` with `-EIO`, because the log alone is not visible over CAN.
+  - The fatal-error handler also writes low any TTL line with a timed pulse in flight,
+    before it logs. Lines the host holds high stay high until the reset.
   - A reset forgets `ESTOP`, but the outputs boot off.
 
 ## 10. Rollout order
