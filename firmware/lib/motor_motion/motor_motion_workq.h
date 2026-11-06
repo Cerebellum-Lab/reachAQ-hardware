@@ -193,6 +193,11 @@ int servo_read_config(const struct device *dev, servo_config_t *config);
 void set_all_e_stop_flags(void);
 
 /**
+ * Refuse motion on the steppers in `motor_mask` (bit n for stepper n) until each one is homed again.
+ */
+void stepper_mark_unhomed(uint8_t motor_mask);
+
+/**
  * @param dev stepper device
  * @return The current homing status of the motor
  */

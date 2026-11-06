@@ -136,6 +136,16 @@ int ll_motor_queue_data(const struct device *dev, uint32_t *buf, size_t len, k_t
     return ret;
 }
 
+// Stop the DMA and drop every queued block, so the next ll_motor_queue_data() finds an empty queue and restarts it.
+void ll_motor_queue_stop(const struct device *dev) {
+    const ll_motor_cfg_t *cfg = dev->config;
+    const ll_motor_data_t *data = dev->data;
+
+    // Stop first: the completion callback must not pull another block while the queue is purged.
+    dma_stop(cfg->dma_dev, data->dma_channel);
+    k_msgq_purge(cfg->msgq);
+}
+
 uint8_t ll_motor_get_id(const struct device *dev) {
     const ll_motor_cfg_t *cfg = dev->config;
 

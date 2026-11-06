@@ -817,6 +817,7 @@ int stepper_home(const struct device *dev) {
 
     if (ll_stepper_get_limit_switch_state(dev) == 1) {
         LOG_INF("Already touching limit switch");
+        atomic_flag_clear(&work_context->e_stop_triggered);
         stepper_set_position_to_zero(dev);
         return 0;
     }
@@ -872,7 +873,15 @@ void set_all_e_stop_flags(void) {
     }
 
     for (size_t i = 0; i < ARRAY_SIZE(servo_contexts); i++) {
-        atomic_flag_test_and_set(&stepper_contexts[i].e_stop_triggered);
+        atomic_flag_test_and_set(&servo_contexts[i].e_stop_triggered);
+    }
+}
+
+void stepper_mark_unhomed(const uint8_t motor_mask) {
+    for (size_t i = 0; i < ARRAY_SIZE(stepper_contexts); i++) {
+        if (motor_mask & BIT(i)) {
+            atomic_flag_test_and_set(&stepper_contexts[i].e_stop_triggered);
+        }
     }
 }
 

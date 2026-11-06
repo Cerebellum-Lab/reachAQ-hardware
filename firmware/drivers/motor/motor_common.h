@@ -73,6 +73,7 @@ int ll_common_start_dma(struct dma_config *dma_cfg);
 void ll_motor_dma_tx_callback(const struct device *dma_dev, void *arg, uint32_t channel, int status);
 int ll_motor_queue_get_num_used(const struct device *dev);
 int ll_motor_queue_data(const struct device *dev, uint32_t *buf, size_t len, k_timeout_t timeout);
+void ll_motor_queue_stop(const struct device *dev);
 int ll_motor_start_dma(const struct device *dev);
 int ll_motor_init(const struct device *dev);
 int ll_motor_register_callback(const struct device *dev, ll_motor_cb_t *cb);
