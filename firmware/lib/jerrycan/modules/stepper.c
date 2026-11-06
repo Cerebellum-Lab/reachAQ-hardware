@@ -36,6 +36,8 @@
 #include "jerrycan.h"
 #include "motor_motion.h"
 #include "motor_motion_workq.h"
+#include "stepper_power.h"
+#include "stepper_power_policy.h"
 
 LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
@@ -43,6 +45,10 @@ LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
 /* Number of enabled steppers found in the device tree */
 #define STEPPER_COUNT DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT)
+
+/* The wire bits are the policy's bits. */
+BUILD_ASSERT(JERRYCAN_STEPPER_STATUS_DRIVER_FAULT == STEPPER_POWER_STATUS_DRIVER_FAULT);
+BUILD_ASSERT(JERRYCAN_STEPPER_STATUS_ENABLE_OFF == STEPPER_POWER_STATUS_ENABLE_OFF);
 
 typedef enum {
     MOVING_NONE = 0,
@@ -164,7 +170,7 @@ static void stepper_handle_motion_complete() {
             LOG_INF("Motion Complete for %d. state=%d. uuid=%d", i, moving_state, context->uuid);
             context->motion_mode = MOTION_IDLE;
             if (moving_state == MOVING_SINGLE || moving_state == MOVING_COMPLETE) {
-                jerrycan_send_ack(context->uuid, 0);
+                jerrycan_send_ack(context->uuid, stepper_power_motion_error());
                 moving_state = MOVING_NONE;
             }
         }
@@ -333,6 +339,18 @@ static jerrycan_rx_callback_t stepper_home_callback = {
     .func = stepper_home_handler,
 };
 
+static int stepper_estop_handler(const jerrycan_msg_t *msg) {
+    // One-shot and unacknowledged, like the IO module: non-zero asserts, 0 releases
+    stepper_power_set_estop(msg->estop.rsvd != 0);
+
+    return SEND_NO_ACKNOWLEDGEMENT;
+}
+
+static jerrycan_rx_callback_t stepper_estop_callback = {
+    .filter_msg_type = JERRYCAN_CMD_ESTOP,
+    .func = stepper_estop_handler,
+};
+
 static void jerrycan_stepper_status_tx(const struct device *stepper) {
     const struct stepper_work_context *context = find_stepper_context_from_device(stepper);
 
@@ -343,7 +361,7 @@ static void jerrycan_stepper_status_tx(const struct device *stepper) {
     jerrycan_msg_t msg = {.type = JERRYCAN_CMD_STEPPER_STATUS,
                           .stepper_status = {
                               .motor_id = motor_id,
-                              .status = 0,  // TODO: Do something with this?
+                              .status = stepper_power_status_bits(motor_id),
                               .homing_status = stepper_homing_status(stepper),
                               .position = position,
                               .send_position = send_position,
@@ -377,6 +395,7 @@ static int jerrycan_stepper_init() {
     jerrycan_register_rx_callback(&stepper_cfg_read_callback);
     jerrycan_register_rx_callback(&stepper_home_callback);
     jerrycan_register_rx_callback(&stepper_fixed_callback);
+    jerrycan_register_rx_callback(&stepper_estop_callback);
 
     /* Start timer to send the stepper status messages periodically */
     k_timer_start(&jerrycan_stepper_status_tx_timer, K_MSEC(100),
