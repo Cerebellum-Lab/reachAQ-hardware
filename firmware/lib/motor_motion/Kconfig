@@ -26,6 +26,11 @@ menuconfig LIB_MOTOR_MOTION_SHELL
     help
       Enable the shell for the motor motion math library
 
+config LIB_MOTOR_MOTION_HOST_SILENCE_TIMEOUT_MS
+  int "Time without a frame addressed to this board before the shared stepper enable goes off"
+  default 30000
+  range 5000 600000
+
 config LIB_MOTOR_MOTION_WORK_QUEUE_PRIORITY
   int "Thread priority for the motor motion work queue"
   default 0

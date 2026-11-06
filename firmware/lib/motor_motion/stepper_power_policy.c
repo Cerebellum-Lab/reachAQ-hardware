@@ -34,7 +34,7 @@ stepper_power_action_t stepper_power_policy_poll(stepper_power_policy_t *p, uint
         return STEPPER_POWER_ACT_NONE;
     }
 
-    /* EN off clears DIAG, so a reading only counts while the enable is on. */
+    /* A reading only counts while the enable is on. An ot or uv_cp still active shows again once EN returns. */
     const bool enabled = stepper_power_policy_enable_wanted(p);
     const uint8_t confirmed = enabled ? (uint8_t)(p->diag_prev & diag_mask) : 0U;
     p->diag_prev = enabled ? diag_mask : 0U;

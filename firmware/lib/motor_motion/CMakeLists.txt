@@ -9,6 +9,11 @@ zephyr_library_sources(
         motor_motion.c
 )
 
+zephyr_library_sources_ifdef(CONFIG_DT_HAS_LL_STEPPER_POWER_ENABLED
+        stepper_power.c
+        stepper_power_policy.c
+)
+
 zephyr_library_sources_ifdef(CONFIG_LIB_MOTOR_MOTION_SHELL
         motor_motion_shell.c
 )

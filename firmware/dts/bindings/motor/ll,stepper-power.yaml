@@ -1,0 +1,17 @@
+description: |
+  Shared stepper driver enable and the drivers' DIAG outputs, polled by the motor motion library
+
+compatible: ll,stepper-power
+
+include:
+  - name: base.yaml
+
+properties:
+  enable-gpios:
+    type: phandle-array
+    required: true
+    description: Shared enable of the stepper drivers.
+  diag-gpios:
+    type: phandle-array
+    required: true
+    description: DIAG output of each stepper driver, in motor id order.
