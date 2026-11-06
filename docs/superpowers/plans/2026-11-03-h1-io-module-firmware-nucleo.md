@@ -1133,18 +1133,20 @@ Each task starts by asking the user, in that session, for:
 
 **Flashing:**
 - The ELF comes from `/tmp/h1-io/zephyr/zephyr.hex` on the rig.
-- The user flashes it with ST-Link from the machine the NUCLEO is plugged into, or approves `west flash` there.
+- It is flashed with STM32CubeProgrammer on this PC (see below).
 - Rebuild with Task 8's commands first, and restore the rig checkout at the end of the session.
 
 ### Before Task 9: the SWD machine, SWD hygiene, joining the bus, the instrumentation build
 
 Settle these with the user at the start of the hardware session, and record each answer in Task 9's report.
 
-**Flash and SWD machine (undecided).**
-- The rig has no usable SWD tool for the G474: pyOCD lacks the target pack, and OpenOCD and STM32CubeProgrammer are not on `PATH`. The Flashing note above cannot be followed on the rig as it stands.
-- Decide which machine the NUCLEO's ST-LINK USB is plugged into, and which tool runs there. The tool must flash `zephyr.hex`, read and write registers while the core runs, halt, single-step and resume, and reset the board. Tasks 9-11 use all five.
-- The ST-LINK's virtual COM port is the console, so the boot log and `kernel stacks` come from that machine. The checker and the CAN capture run on the rig.
-- The rig is also the pellet's flash rig. Select the NUCLEO's probe by its serial number, and never flash the rig's pellet board.
+**Flash and SWD machine (user decision 2026-11-06): STM32CubeProgrammer on this PC.**
+- v2.20.0 is already installed at `C:\Program Files\STMicroelectronics\STM32Cube\STM32CubeProgrammer\bin\STM32_Programmer_CLI.exe`. Its help lists what Tasks 9-11 need: `-w`/`-d` to flash, `-r32` and `-w32`, `mode=HOTPLUG` to attach without a reset, `-halt`, `-step`, `-run`, and `-rst`/`-hardRst`. Nobody has run these against a board yet. In Task 9, confirm that `mode=HOTPLUG` reads registers with the core running and does not reset it.
+- The NUCLEO's ST-LINK USB plugs into this PC. Its virtual COM port is the console, so the boot log and `kernel stacks` come from this PC. The checker and the CAN capture run on the rig, so the NUCLEO needs a CAN connection to the rig's bus and a USB cable to this PC, with a common ground through the CAN connector.
+- Copy `/tmp/h1-io/zephyr/zephyr.hex` from the rig to this PC to flash it.
+- Whether CubeProgrammer clears `DEMCR` when it disconnects is unknown (pyOCD does). The reset rule below applies regardless. Task 9 Step 6 tests it on purpose.
+- The rig's pellet board is flashed over CAN from the rig and has no probe on this PC, so this tool cannot touch it.
+- For the PCB (H2), not the NUCLEO: the board has a Tag-Connect TC2070 landing for an STLINK-V3MINIE. The no-legs cable with the 1.27 mm STDC14 end appears to be `TC2070-IDC-NL-050`, not plain `TC2070-IDC-NL`; confirm the pinout before ordering.
 
 **Reset after every SWD session, before any timing check.**
 - pyOCD writes `DEMCR` = 0 when it closes a session, which clears `TRCENA`. `CYCCNT` then freezes for up to 10 s, until the board clock's keep-alive restores it.
@@ -1286,6 +1288,7 @@ Settle these with the user at the start of the hardware session, and record each
   - Edge-phase sweep: repeat the absolute-label check with the pulse start swept across one 1 ms scan period in 50 µs steps. The phase at which the first scan to show the edge changes bounds the `start_us` offset. Record the bound.
   - Held-off DMA interrupt (instrumentation image): inject an `irq_lock` of 2.5 ms and of 5 ms, at least 20 times each. Pass: a 2.5 ms lock skips one pair in about a quarter of trials and none in the rest, and a 5 ms lock skips one or two pairs, depending on phase. Each skip shows as one `SAMPLED` delta of 4000 or 6000 µs with exactly 2000 µs either side. The log shows one warning for the first skip, and the stream does not stop.
   - Hold-off injection (instrumentation image, a priority-0 spin hook, and a ramp or a TTL edge on AIN0 to identify the scan). Between the CNDTR and CYCCNT reads: 2.5 ms stops the stream `LOST`; 4.0 ms keeps it running, with labels matching the samples and 2 pairs skipped. Between the reads and the copy: 3 ms gives one block with samples 4 ms newer than its label. If real bursts reach these windows, take the deferred fixes: retry the reads when they are more than half a period apart, and copy the half to a local array, re-check CYCCNT and treat a late copy as a skipped pair.
+  - Final stopped block: every forced stop below also sends exactly one `ANALOG_BLOCK` with `flags` bit 0 set, the reason in bits 4-7 (1 ADC overrun, 2 DMA error, 3 position unreadable, 4 position out of range, 5 trigger-count disagreement), `scan_count` 0 and a `TX_QUEUE` trailer, then silence. Read it off the bus.
   - Forced stops (instrumentation image): clearing the DMA channel's `EN` stops the stream on an ADC overrun, with an error in the log. Adding 2 scan periods to `CYCCNT` stops it `LOST`. Adding exactly 1 scan period (a persistent one-scan slip) gives 3 more frames and then a stop with the "disagrees" error.
   - `CNDTR` poll (instrumentation image), ≥ 10 min: the value is never 0 and never above one lap (32). The firmware treats a bad position as fatal, and the DMA reload's atomicity is unconfirmed without RM0440.
   - Read gap and callback timing (instrumentation image): put the spare-GPIO markers on a scope, and record the gap between the `CNDTR` read and the `CYCCNT` read, and the callback's length. Pass: the gap is inside the 988 µs tolerance the re-review derived at 1 kHz.

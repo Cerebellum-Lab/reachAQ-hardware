@@ -276,6 +276,11 @@ the `ll,generic-gpios` driver.
   same output is refused with `-EBUSY`; the pellet stays at one pulse board-wide.
 - **Analog:** TIM6 TRGO at 1 kHz triggers an ADC1 8-channel scan into a circular DMA
   buffer. Every 2 scans → one `ANALOG_BLOCK`, with time computed from the trigger count.
+  If the stream stops, which lasts until a reset, it sends one final `ANALOG_BLOCK` with
+  `flags` bit 0 (`STREAM_STOPPED`) set and the reason in bits 4-7 (1 ADC overrun, 2 DMA
+  error, 3 DMA position unreadable, 4 DMA position out of range, 5 trigger-count
+  disagreement), `scan_count` 0, sample slots 0, and a `TX_QUEUE` trailer. It is
+  best-effort: a full TX queue drops it. `flags` is 0 on every other block.
   Sequence numbers expose lost frames.
 - **Power out:** `PWM_SET` → TIM1 CH1-4, with a shared period.
 
@@ -298,7 +303,8 @@ the `ll,generic-gpios` driver.
    today, so the IO module refuses non-zero `PWM_SET` with `-ETIMEDOUT` until it does.
    If the module's watchdog failed to start it refuses non-zero `PWM_SET` with `-EIO`
    instead, on every request (§9), which the host should report as a board fault. The
-   host must also watch for silence on `ANALOG_BLOCK` (0x28) while the module's other
+   host must also watch for silence on `ANALOG_BLOCK` (0x28), even though a stop normally
+   sends a final flagged block (§7), while the module's other
    frames keep flowing: a stopped stream leaves no sequence gap, and the image has no CAN
    reset, so a recording can lose its analog data with nobody told. `COMPLETED` is
    best-effort: a full TX queue drops it, shown as a sequence gap, and the periodic
