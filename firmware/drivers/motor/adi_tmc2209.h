@@ -35,3 +35,29 @@ int adi_tmc2209_set_ihold_irun(const struct device *dev, uint8_t hold_current, u
  * @return -errno on failure
  */
 int adi_tmc2209_set_microstep(const struct device *dev, uint32_t steps_per_fullstep);
+
+/**
+ * Check that `dev` took the configuration written by init. An unconfigured driver powers up at IRUN=31.
+ *
+ * Rewrites IHOLD_IRUN with the init values and requires IFCNT to count exactly that one write, since
+ * IHOLD_IRUN is write-only. Then requires GCONF pdn_disable and mstep_reg_select to still be set, and
+ * the GSTAT reset flag to be clear. Clears nothing.
+ *
+ * Thread context only: every register access sleeps 10 ms. The driver has no locking, so the caller
+ * must keep other accesses to the same UART out of the way.
+ *
+ * @param dev ADI TMC2209 device to check.
+ * @return 0 if configured, -EIO if the write was not counted or the driver reset, -errno on a read error.
+ */
+int adi_tmc2209_verify_configured(const struct device *dev);
+
+/**
+ * Read DRV_STATUS and GSTAT and log each of ot, otpw, s2ga, s2gb, s2vsa, s2vsb and drv_err that is set
+ * with LOG_ERR, tagged with the driver address. Writes nothing and clears nothing, so GSTAT reset and
+ * the DRV_STATUS short flags stay as they were.
+ *
+ * Thread context only: every register access sleeps 10 ms.
+ *
+ * @param dev ADI TMC2209 device to report on.
+ */
+void adi_tmc2209_log_fault(const struct device *dev);
