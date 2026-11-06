@@ -11,6 +11,9 @@ int jerrycan_run(k_timeout_t timeout);
 // Register a callback to be called when a message of the specified type is received
 void jerrycan_register_rx_callback(jerrycan_rx_callback_t *callback);
 
+// Set a function to call for each received frame addressed to this board or to all boards, before the callbacks run
+void jerrycan_set_host_frame_hook(void (*hook)(void));
+
 // Send a CAN message
 int jerrycan_tx(jerrycan_msg_t *msg, k_timeout_t timeout);
 

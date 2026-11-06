@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <zephyr/shell/shell.h>
 
+#include "adi_tmc2209.h"
 #include "motor_motion.h"
+#include "stepper_power.h"
 
 LOG_MODULE_REGISTER(motor_math, LOG_LEVEL_DBG);
 
@@ -275,6 +277,8 @@ static int cmd_stepper_set_physical_parameters(const struct shell *shell, size_t
 }
 
 static int cmd_stepper_move(const struct shell *shell, size_t argc, char **argv) {
+    stepper_power_host_frame();
+
     if (argc != 5) {
         shell_print(shell, "Invalid number of arguments");
         return -EINVAL;
@@ -343,6 +347,8 @@ static int cmd_stepper_stop(const struct shell *shell, size_t argc, char **argv)
 }
 
 static int cmd_stepper_home(const struct shell *shell, size_t argc, char **argv) {
+    stepper_power_host_frame();
+
     if (argc != 2) {
         shell_print(shell, "Invalid number of arguments");
         return -EINVAL;
@@ -369,6 +375,38 @@ static int cmd_stepper_home(const struct shell *shell, size_t argc, char **argv)
 
     return 0;
 }
+
+#ifdef CONFIG_DT_HAS_LL_STEPPER_POWER_ENABLED
+static const char *yes_no(const bool value) { return value ? "yes" : "no"; }
+
+static int cmd_stepper_power_status(const struct shell *shell, size_t argc, char **argv) {
+    stepper_power_state_t state;
+
+    stepper_power_read_state(&state);
+
+    shell_print(shell, "detected: %s", yes_no(state.detected));
+    shell_print(shell, "ready: %s", yes_no(state.ready));
+    shell_print(shell, "fault mask: 0x%02x", state.fault_mask);
+    shell_print(shell, "silent: %s", yes_no(state.silent));
+    shell_print(shell, "estop: %s", yes_no(state.estop));
+    shell_print(shell, "enable: %s", state.enable_on ? "on" : "off");
+    shell_print(shell, "diag: 0x%02x", state.diag_mask);
+
+    for (size_t i = 0; i < DT_NUM_INST_STATUS_OKAY(ll_stepper); i++) {
+        const ll_motor_cfg_t *cfg = stepper_motor_by_id(i)->config;
+
+        shell_print(shell, "driver %d verify: %d", (int)i, adi_tmc2209_verify_configured(cfg->stepper_driver_device));
+    }
+
+    return 0;
+}
+
+static int cmd_stepper_power_oops(const struct shell *shell, size_t argc, char **argv) {
+    k_oops();
+
+    return 0;
+}
+#endif
 
 SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_motor_math,
@@ -403,5 +441,14 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
                   cmd_stepper_move, 5, 0),
     SHELL_CMD_ARG(stepper_stop, NULL, "Stop a stepper motor\nUsage: stepper_stop <stepper>", cmd_stepper_stop, 2, 0),
     SHELL_CMD_ARG(stepper_home, NULL, "Home a stepper\nUsage: stepper_home <stepper>", cmd_stepper_home, 2, 0),
+    IF_ENABLED(CONFIG_DT_HAS_LL_STEPPER_POWER_ENABLED,
+               (SHELL_CMD_ARG(stepper_power_status, NULL,
+                              "Show the shared stepper enable's state and verify each driver over UART.\nUsage: "
+                              "stepper_power_status",
+                              cmd_stepper_power_status, 1, 0),
+                SHELL_CMD_ARG(stepper_power_oops, NULL,
+                              "Trigger a fatal error, to check that it takes the enable off.\nUsage: "
+                              "stepper_power_oops",
+                              cmd_stepper_power_oops, 1, 0),))
     SHELL_SUBCMD_SET_END);
 SHELL_CMD_REGISTER(motor_math, &sub_motor_math, "Motor math motion commands", NULL);

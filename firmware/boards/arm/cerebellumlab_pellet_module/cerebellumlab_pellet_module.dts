@@ -132,6 +132,15 @@
 		};
 	};
 
+	stepper_power: stepper_power {
+		compatible = "ll,stepper-power";
+		status = "okay";
+		enable-gpios = <&gpiod 2 GPIO_ACTIVE_LOW>;	// shared ~EN, R41 pull-up on v1.3, no connection on v1.2
+		diag-gpios = <&gpiof 1 (GPIO_PULL_DOWN | GPIO_ACTIVE_HIGH)>,	// U2 through R42
+			     <&gpiob 2 (GPIO_PULL_DOWN | GPIO_ACTIVE_HIGH)>,	// U5
+			     <&gpiob 10 (GPIO_PULL_DOWN | GPIO_ACTIVE_HIGH)>;	// U6; EXTI10 is LIMIT2's, so polled
+	};
+
 	aliases {
 		led0 = &status_led;
 		mcuboot-led0 = &status_led;

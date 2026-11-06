@@ -13,6 +13,7 @@
 #include "motor_settings.h"
 #include "servo.h"
 #include "stepper.h"
+#include "stepper_power.h"
 
 LOG_MODULE_DECLARE(motor_motion, CONFIG_LIB_MOTOR_MOTION_LOG_LEVEL);
 
@@ -472,6 +473,16 @@ static void stepper_work_check_driver_handler(struct k_work *work) {
     k_work_reschedule_for_queue(&motor_workq, dwork, K_MSEC(STEPPER_DRIVER_CHECK_PERIOD));
 }
 
+#ifdef CONFIG_DT_HAS_LL_STEPPER_POWER_ENABLED
+static struct k_work_delayable stepper_power_poll_work;
+
+static void stepper_power_poll_handler(struct k_work *work) {
+    stepper_power_poll();
+
+    k_work_reschedule_for_queue(&motor_workq, k_work_delayable_from_work(work), K_MSEC(STEPPER_DRIVER_CHECK_PERIOD));
+}
+#endif
+
 /* ***** Initialization ***** */
 static int motor_workq_init_and_start(void) {
     for (size_t i = 0; i < ARRAY_SIZE(stepper_contexts); i++) {
@@ -517,6 +528,16 @@ static int motor_workq_init_and_start(void) {
 
     k_work_queue_start(&motor_workq, motor_workq_stack, K_THREAD_STACK_SIZEOF(motor_workq_stack),
                        CONFIG_LIB_MOTOR_MOTION_WORK_QUEUE_PRIORITY, NULL);
+
+    stepper_power_init();
+
+#ifdef CONFIG_DT_HAS_LL_STEPPER_POWER_ENABLED
+    if (stepper_power_present()) {
+        k_work_init_delayable(&stepper_power_poll_work, stepper_power_poll_handler);
+        k_work_schedule_for_queue(&motor_workq, &stepper_power_poll_work, K_MSEC(STEPPER_DRIVER_CHECK_PERIOD));
+    }
+#endif
+
     return 0;
 }
 
@@ -576,6 +597,10 @@ int servo_move_to_position(const struct device *dev, float target_position, cons
     if (context == NULL) {
         LOG_ERR("Stepper context not found for device");
         return -ENODEV;
+    }
+
+    if (stepper_power_estop_active()) {
+        return -EPERM;
     }
 
     if (context->motion_mode == MOTION_IN_PROGESS) {
@@ -713,6 +738,11 @@ int stepper_move_to_position(const struct device *dev, const float target_positi
         return -ENODEV;
     }
 
+    const int rc = stepper_power_motion_error();
+    if (rc != 0) {
+        return rc;
+    }
+
     if (context->motion_mode == MOTION_IN_PROGESS) {
         LOG_ERR("Attempted to move while move is active");
         return -EBUSY;
@@ -813,6 +843,11 @@ int stepper_home(const struct device *dev) {
     if (cfg->limit_switch_pin.port == NULL) {
         LOG_ERR("Limit switch pin not set");
         return -ENOTSUP;
+    }
+
+    const int rc = stepper_power_recover();
+    if (rc != 0) {
+        return rc;
     }
 
     if (ll_stepper_get_limit_switch_state(dev) == 1) {
