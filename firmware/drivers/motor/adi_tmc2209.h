@@ -52,9 +52,9 @@ int adi_tmc2209_set_microstep(const struct device *dev, uint32_t steps_per_fulls
 int adi_tmc2209_verify_configured(const struct device *dev);
 
 /**
- * Read DRV_STATUS and GSTAT and log each of ot, otpw, s2ga, s2gb, s2vsa, s2vsb and drv_err that is set
- * with LOG_ERR, tagged with the driver address. Writes nothing and clears nothing, so GSTAT reset and
- * the DRV_STATUS short flags stay as they were.
+ * Read DRV_STATUS and GSTAT and log each of ot, otpw, s2ga, s2gb, s2vsa, s2vsb, drv_err, uv_cp and reset
+ * that is set with LOG_ERR, tagged with the driver address. Writes nothing and clears nothing, so GSTAT
+ * reset and the DRV_STATUS short flags stay as they were.
  *
  * Thread context only: every register access sleeps 10 ms.
  *
