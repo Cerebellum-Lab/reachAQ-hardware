@@ -13,6 +13,8 @@ build tools or this source repository.
 - Keep the pellet board powered and connected to CAN.
 - Close the reachAQ application.
 - Leave `reachaq-can.service` running.
+- A v1.3 pellet board needs firmware 2.3.1 or later. On older firmware it
+  accepts moves and does not move.
 
 ## Update the rig
 
