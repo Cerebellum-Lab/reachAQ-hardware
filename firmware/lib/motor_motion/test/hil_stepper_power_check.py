@@ -7,10 +7,17 @@ Run on the rig, with the pellet board on can0, reachAQ closed and nothing in the
 
 THIS MOVES THE MOTORS. It sends CAPABILITIES_REQUEST, CFG_READ (never CFG_WRITE, which persists to flash),
 STEPPER_HOME, STEPPER_MOVE, SERVO_MOVE, FIXED_XYZ, a HEARTBEAT every second while it waits for a slow ACK, and ESTOP.
-ESTOP goes to the broadcast address 0x1F, as the host's EStop() sends it, so every module on the bus stops, not only
-the pellet. Stepper moves stay within half the configured velocity and acceleration and within 15 turns (the host's
-_STEPPER_MAX_TURNS). FIXED_XYZ is the exception: the firmware runs it at the configured velocity to positions the
-script reads and never changes. Servo moves stay inside the servo's configured minimum and maximum position.
+ESTOP goes to the board's own address, never to the broadcast address 0x1F that the host's EStop() uses: ESTOP(1) and
+ESTOP(0) on a shared bus would stop and release every module, including an e-stop someone else asserted. The pellet
+dispatches on the message type and counts a frame to its own address as a host frame, so the same firmware path runs.
+The broadcast form is not exercised. Stepper moves stay within half the configured velocity and acceleration and within
+15 turns (the host's _STEPPER_MAX_TURNS). FIXED_XYZ is the exception: the firmware runs it at the configured velocity
+to positions the script reads and never changes. Servo moves stay inside the servo's configured minimum and maximum
+position.
+
+Nothing here may leave a motor running unwatched. A HOME that gets no ACK may still be homing (it has no travel limit,
+and a second HOME answers -EBUSY), so the script sends ESTOP at once, reports it, releases ESTOP and stops the run. On
+Ctrl-C, SIGTERM or SIGHUP (a dropped ssh session) it asserts ESTOP and releases it, and every axis then needs homing.
 
 Each check prints [PASS|FAIL|SKIP] name: detail, and the script exits non-zero on any FAIL. A check that cannot run
 prints SKIP and never PASS. After each check the script releases ESTOP, re-homes every axis that needs it, and asks the
@@ -21,6 +28,7 @@ import argparse
 import collections
 import itertools
 import math
+import signal
 import socket
 import struct
 import sys
@@ -50,6 +58,7 @@ HEARTBEAT = 0x3F
 # where the board does not look.
 TX_PAYLOAD_SIZES = {ESTOP: 1, STEPPER_MOVE: 13, SERVO_MOVE: 13, STEPPER_HOME: 1, CFG_READ: 28, FIXED_XYZ: 1,
                     CAPABILITIES_REQUEST: 1, HEARTBEAT: 1}
+MOTION_TYPES = frozenset((STEPPER_MOVE, SERVO_MOVE, STEPPER_HOME, FIXED_XYZ))
 # Frames only a host sends. Seeing one addressed to the board (or to everyone) means another host is driving it.
 HOST_ONLY_TYPES = frozenset((ESTOP, STEPPER_MOVE, SERVO_MOVE, STEPPER_HOME, CFG_READ, BOOTLOADER_COMMAND,
                              BOOTLOADER_DATA, FIXED_XYZ, CAPABILITIES_REQUEST))
@@ -107,10 +116,18 @@ SILENCE_LATE_S = 1.0  # and this long after it
 results = []
 
 
+def say(text):
+    """print(), except that a terminal that has gone away (a dropped ssh session) must not stop the cleanup."""
+    try:
+        print(text, flush=True)
+    except OSError:
+        pass
+
+
 def report(name, ok, detail):
     """ok is True for PASS, False for FAIL and None for SKIP."""
     results.append(ok)
-    print(f"[{'SKIP' if ok is None else 'PASS' if ok else 'FAIL'}] {name}: {detail}", flush=True)
+    say(f"[{'SKIP' if ok is None else 'PASS' if ok else 'FAIL'}] {name}: {detail}")
 
 
 class Skip(Exception):
@@ -119,6 +136,10 @@ class Skip(Exception):
 
 class Fail(Exception):
     """The check cannot go on and has failed. The message is printed as FAIL."""
+
+
+class Abort(Exception):
+    """A motor may be running that the script cannot account for. ESTOP has been sent; no further check may run."""
 
 
 def fmt_errors(errors):
@@ -187,6 +208,8 @@ class Board:
         self.host_seen = set()
         self.last_tx = time.monotonic()
         self.estop_asserted = False
+        self.motion_sent = False  # a command that can move a motor has gone out
+        self.abort_reason = None
         self.needs_home = set()
         self.boot_id = None
         self._uuids = itertools.cycle(range(1, 256))
@@ -244,19 +267,32 @@ class Board:
     def send_frame(self, msg_type, payload, dst=None):
         """Send with a fresh non-zero uuid. Returns (uuid, time sent)."""
         uuid = next(self._uuids)
+        if msg_type in MOTION_TYPES:
+            self.motion_sent = True
         send(self.s, msg_type, self.address if dst is None else dst, payload, uuid)
         self.last_tx = time.monotonic()
         return uuid, self.last_tx
 
     def estop(self, asserted):
-        """ESTOP to the broadcast address, like the host's EStop(). Returns the time it was sent."""
+        """ESTOP to this board's address, not the broadcast one: on a shared bus the broadcast form would stop and
+        release every module. Returns the time it was sent."""
         if asserted:
             self.estop_asserted = True
             self.needs_home.update(AXES)  # every axis needs a home after an ESTOP
-        sent = self.send_frame(ESTOP, bytes([1 if asserted else 0]), dst=BROADCAST)[1]
+        sent = self.send_frame(ESTOP, bytes([1 if asserted else 0]))[1]
         if not asserted:
             self.estop_asserted = False
         return sent
+
+    def stop_motion(self):
+        """ESTOP, then release it: stops whatever may be moving and leaves the board usable. Every axis needs a home
+        afterwards. Does nothing if no command that moves a motor was ever sent."""
+        if not self.motion_sent:
+            return
+        self.estop(True)
+        self.pump(0.3)
+        self.estop(False)
+        say("ESTOP asserted and released at the board: every axis now needs homing.")
 
     def move_stepper(self, axis, turns, velocity, acceleration, relative=True):
         cfg = self.stepper_cfg(axis)
@@ -372,14 +408,27 @@ class Board:
     # --- commands that need a known state ---------------------------------------------------------------------
 
     def home(self, axis):
-        """Home one axis. Returns (error codes of every ACK for it, seconds to the first one)."""
+        """Home one axis. Returns (error codes of every ACK for it, seconds to the first one).
+
+        A HOME has no travel limit and a second one answers -EBUSY, so one that gets no ACK may still be moving the
+        axis: ESTOP goes out at once, the axis is marked as needing a home, and Abort stops the run. An error ACK also
+        leaves the axis needing a home."""
         cfg = self.stepper_cfg(axis)
+        timeout = home_timeout(cfg)
         uuid, sent = self.send_frame(STEPPER_HOME, bytes([axis]))
-        acks = self.wait_acks(uuid, sent, home_timeout(cfg))
+        acks = self.wait_acks(uuid, sent, timeout)
         errors = [a.error for a in acks]
         if errors == [0]:
             self.needs_home.discard(axis)
-        return errors, (acks[0].t - sent if acks else None)
+        else:
+            self.needs_home.add(axis)
+        if not acks:
+            self.estop(True)
+            self.pump(0.3)  # let the stop take effect before restore releases it
+            self.abort_reason = (f"axis {axis} did not ACK its home within {timeout:.0f} s and may still be moving: "
+                                 "ESTOP sent to the board, run stopped, every axis needs homing")
+            raise Abort(self.abort_reason)
+        return errors, acks[0].t - sent
 
     def preflight(self):
         """Nothing is moved. The board must answer, and no other host may be talking to it. True if ready."""
@@ -399,29 +448,40 @@ class Board:
 
     def restore(self, name):
         """Leave the board as the next check expects it: ESTOP released, every axis that needs a home homed, and the
-        same boot. False if the board stopped answering."""
-        if self.estop_asserted:
-            self.estop(False)
-            self.pump(0.3)
-        for axis in sorted(self.needs_home):
-            errors, _ = self.home(axis)
-            if errors == [0]:
-                print(f"  note: re-homed axis {axis} after {name}", flush=True)
-            else:
-                report(f"{name}/rehome", False, f"axis {axis} home ACK {fmt_errors(errors)}, want [0]")
-        response = self.request_capabilities()
-        if response is None:
-            report(f"{name}/alive", False, "the board stopped answering; no further command will be sent")
+        same boot. False if the run must stop: the board stopped answering, or a home got no ACK (then ESTOP is only
+        released, and nothing is homed or sent after that)."""
+        try:
+            if self.estop_asserted:
+                self.estop(False)
+                self.pump(0.3)
+            if self.abort_reason is not None:
+                return False
+            for axis in sorted(self.needs_home):
+                errors, _ = self.home(axis)
+                if errors == [0]:
+                    say(f"  note: re-homed axis {axis} after {name}")
+                else:
+                    report(f"{name}/rehome", False, f"axis {axis} home ACK {fmt_errors(errors)}, want [0]")
+            response = self.request_capabilities()
+            if response is None:
+                report(f"{name}/alive", False, "the board stopped answering; no further command will be sent")
+                return False
+            if response[2] != self.boot_id:
+                report(f"{name}/boot_id", False,
+                       f"boot_id 0x{self.boot_id:08x} -> 0x{response[2]:08x}: the board restarted during {name}")
+                self.boot_id = response[2]
+            return True
+        except Abort as abort:
+            report(f"{name}/rehome", False, str(abort))
             return False
-        if response[2] != self.boot_id:
-            report(f"{name}/boot_id", False,
-                   f"boot_id 0x{self.boot_id:08x} -> 0x{response[2]:08x}: the board restarted during {name}")
-            self.boot_id = response[2]
-        return True
+        finally:
+            if self.estop_asserted:  # a home inside this method may have sent ESTOP: release it, whatever happened
+                self.estop(False)
+                self.pump(0.3)
 
 
 def prompt_operator(text, on_eof):
-    print(f"\n>>> {text}", flush=True)
+    say(f"\n>>> {text}")
     try:
         input("    Press Enter when done: ")
     except EOFError:
@@ -738,12 +798,12 @@ def check_diag_fault(b):
                 problems.append(f"motor {motor} status 0x{snapshot[motor].status:02x} after the home, want 0")
     finally:
         if forced:
-            print(f"\nWARNING: DIAG is still forced on axis {axis}.", flush=True)
+            say(f"\nWARNING: DIAG is still forced on axis {axis}.")
             try:
                 prompt_operator(f"Clear it now: adi_tmc2209 write {axis} 0x40 0x0 and adi_tmc2209 write {axis} 0x14 0x0",
                                 Fail)
             except Fail:
-                print("Clear the forced DIAG before anything else is run.", flush=True)
+                say("Clear the forced DIAG before anything else is run.")
     return problems, "; ".join(notes)
 
 
@@ -785,7 +845,7 @@ def check_silence_cycles(b):
         if problems:
             break
         done += 1
-        print(f"  cycle {cycle}/{cycles} ok", flush=True)
+        say(f"  cycle {cycle}/{cycles} ok")
     if problems:
         return problems, f"{done}/{cycles} cycles"
 
@@ -880,7 +940,7 @@ def run_check(b, name):
     if name in V13_ONLY and b.version != "v1.3":
         report(name, None, "applies to v1.3 boards only")
         return True
-    interrupted = False
+    unexpected = False
     try:
         try:
             problems, info = CHECKS[name](b)
@@ -889,17 +949,42 @@ def run_check(b, name):
             report(name, None, str(skip))
         except Fail as fail:
             report(name, False, str(fail))
-    except KeyboardInterrupt:
-        interrupted = True  # the operator wants it to stop: do not start homing moves
+        except Abort as abort:
+            report(name, False, str(abort))
+    except BaseException:
+        # Ctrl-C or a bug: the script no longer knows what the motors are doing. Do not send homing moves; main
+        # stops the motion with ESTOP.
+        unexpected = True
         raise
     finally:
         alive = False
-        if not interrupted:
+        if not unexpected:
             try:
                 alive = b.restore(name)
             except Exception as error:  # restore must not hide what the check raised
                 report(f"{name}/restore", False, f"{type(error).__name__}: {error}")
+                try:
+                    b.stop_motion()
+                except Exception:
+                    pass
     return alive
+
+
+def interrupt(signum, frame):
+    raise KeyboardInterrupt
+
+
+def set_signals(handler, names, saved):
+    """Point the named signals at `handler`, remembering what they were in `saved` (the first time only)."""
+    for name in names:
+        sig = getattr(signal, name, None)  # SIGHUP does not exist everywhere
+        if sig is None:
+            continue
+        try:
+            old = signal.signal(sig, handler)
+        except (ValueError, OSError):
+            continue
+        saved.setdefault(sig, old)
 
 
 def main():
@@ -945,25 +1030,49 @@ def main():
 
     s = open_socket(args.channel)
     board = Board(s, args)
+    saved_signals = {}
+    # A dropped ssh session sends SIGHUP and a kill sends SIGTERM: treat both as Ctrl-C, so the board is not left
+    # estopped or a motor running.
+    set_signals(interrupt, ("SIGTERM", "SIGHUP"), saved_signals)
     try:
         if board.preflight():
             for name in names:
                 if not run_check(board, name):
                     break
     except KeyboardInterrupt:
-        report("interrupted", False, "stopped by the operator; the motors finish the move they are on")
+        # A second signal must not cut the cleanup short. Stop first, then talk: the terminal may be gone.
+        set_signals(signal.SIG_IGN, ("SIGINT", "SIGTERM", "SIGHUP"), saved_signals)
+        try:
+            board.stop_motion()
+        except Exception as error:
+            say(f"WARNING: could not stop the motors with ESTOP: {error}")
+        report("interrupted", False, "stopped by the operator or a signal; ESTOP was asserted and released if a "
+               "motion command had gone out, so every axis needs homing")
     except Exception as error:  # report what stopped the run, then release the board below
-        traceback.print_exc()
+        try:
+            board.stop_motion()  # the script no longer knows what the motors are doing
+        except Exception as stop_error:
+            say(f"WARNING: could not stop the motors with ESTOP: {stop_error}")
+        try:
+            traceback.print_exc()
+        except OSError:
+            pass
         report("error", False, f"{type(error).__name__}: {error}")
     finally:
         if board.estop_asserted:
             try:
                 board.estop(False)
             except Exception as error:
-                print(f"WARNING: could not release ESTOP: {error}. Release it before using the board.", flush=True)
+                say(f"WARNING: could not release ESTOP: {error}. Release it before using the board.")
         s.close()
+        for sig, old in saved_signals.items():
+            if old is not None:
+                try:
+                    signal.signal(sig, old)
+                except (ValueError, OSError):
+                    pass
 
-    print(f"{results.count(True)} PASS, {results.count(False)} FAIL, {results.count(None)} SKIP")
+    say(f"{results.count(True)} PASS, {results.count(False)} FAIL, {results.count(None)} SKIP")
     return 1 if False in results else 0
 
 
