@@ -136,13 +136,21 @@ int ll_motor_queue_data(const struct device *dev, uint32_t *buf, size_t len, k_t
     return ret;
 }
 
-// Stop the DMA and drop every queued block, so the next ll_motor_queue_data() finds an empty queue and restarts it.
+// Stop the DMA and a stepper's timer counter and drop every queued block, so the next ll_motor_queue_data() finds an
+// empty queue and restarts both.
 void ll_motor_queue_stop(const struct device *dev) {
     const ll_motor_cfg_t *cfg = dev->config;
     const ll_motor_data_t *data = dev->data;
 
     // Stop first: the completion callback must not pull another block while the queue is purged.
     dma_stop(cfg->dma_dev, data->dma_channel);
+
+    // dma_stop prevents the callback that would stop the counter. Left running, it steps the motor at the stale period
+    // as soon as the next move re-enables the channel, before that move's DMA starts.
+    if (cfg->stop_on_dma_complete) {
+        LL_TIM_DisableCounter(cfg->timer);
+    }
+
     k_msgq_purge(cfg->msgq);
 }
 
