@@ -15,6 +15,7 @@ Opt-in modes run instead of those checks (the first two still start with the cap
     --soak          the board clock against the host for 335 s idle, then 335 s under TIME_SYNC load
     --rtt-report    TIME_SYNC round trips for a burst of 4 and for singles 1 s and 30 s apart
     --listen-stamps SECONDS   transmits nothing: do received frames carry hardware timestamps?
+    --probe         one CAPABILITIES_REQUEST and nothing more: what answers, and with what boot_id?
 
 The first two send only TIME_SYNC_REQUEST, which the board answers and which changes nothing on it. --json PATH
 writes every result and --raw PREFIX every frame and response, for the record.
@@ -903,9 +904,13 @@ def main():
     parser.add_argument("--json", metavar="PATH", help="also write every result to this file as JSON")
     parser.add_argument("--raw", metavar="PREFIX",
                         help="write every frame and response to PREFIX.frames.csv, PREFIX.responses.csv, PREFIX.rtt.csv")
+    parser.add_argument("--probe", action="store_true",
+                        help="send one CAPABILITIES_REQUEST and stop: whatever answers, and nothing else is transmitted")
     args = parser.parse_args()
     if not 0 <= args.clapper_address <= 31 or args.clapper_address == args.address:
         parser.error("--clapper-address must be 0-31 and differ from --address")
+    if args.probe and (args.soak or args.rtt_report or args.listen_stamps or args.play_tone):
+        parser.error("--probe is the capabilities check alone; it cannot be combined with another mode")
     if (args.soak or args.rtt_report or args.listen_stamps) and args.play_tone:
         parser.error("--soak, --rtt-report and --listen-stamps run instead of the standard checks, so --play-tone has no effect with them")
     if args.listen_stamps and (args.soak or args.rtt_report):
@@ -922,7 +927,7 @@ def main():
                 json.dump({"checks": report_log, **extra}, out, indent=1, default=str)
         return 0 if all(results) else 1
     boot_id = check_capabilities(s, args.address)
-    if boot_id is not None:
+    if boot_id is not None and not args.probe:
         if args.soak or args.rtt_report:
             if args.soak:
                 raw = RawLog(args.raw, ("frames", "responses"))
