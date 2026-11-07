@@ -39,13 +39,19 @@ static const struct device *driver_by_id(const size_t id) {
 /**
  * Thread context only: the UART sleeps. Checks and logs every driver, not just the first failure.
  *
+ * A driver that fails is checked once more, so one UART glitch does not refuse motion until reboot. A driver that
+ * really reset fails again: GCONF stays 0 until it is rewritten, and the proof does not rewrite it.
+ *
  * @return true if all of them proved configured.
  */
 static bool drivers_configured(void) {
     bool all_configured = true;
 
     for (size_t i = 0; i < ARRAY_SIZE(diag); i++) {
-        const int ret = adi_tmc2209_verify_configured(driver_by_id(i));
+        int ret = adi_tmc2209_verify_configured(driver_by_id(i));
+        if (ret != 0) {
+            ret = adi_tmc2209_verify_configured(driver_by_id(i));
+        }
         if (ret != 0) {
             LOG_ERR("Stepper driver %d not proven configured: %d", (int)i, ret);
             all_configured = false;
