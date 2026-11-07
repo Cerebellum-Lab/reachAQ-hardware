@@ -950,7 +950,7 @@ CMake: `zephyr_library_sources_ifdef(CONFIG_LIB_JERRYCAN_TIMEKEEPER modules/time
    first_scan counts scans from start; start_us is the board time the trigger timer started. */
 typedef void (*analog_scanner_cb_t)(const struct device *dev, const uint16_t *scans, uint8_t channel_count,
                                     uint8_t scan_count, uint64_t first_scan, uint64_t start_us, void *user_data);
-int analog_scanner_start(const struct device *dev, analog_scanner_cb_t cb, void *user_data);
+int analog_scanner_start(const struct device *dev, analog_scanner_cb_t cb, analog_scanner_stop_cb_t stop_cb, void *user_data); /* stop_cb added later for the final stopped block */
 uint32_t analog_scanner_period_us(const struct device *dev);
 ```
 
@@ -1160,8 +1160,8 @@ Settle these with the user at the start of the hardware session, and record each
 - Add no third terminator: the bus already has its two, so leave the breakout's own termination open. Keep the stub from the bus to the breakout short.
 
 **Instrumentation build (build it before Task 9).**
-- Several checks need faults and timing hooks that the default image must not contain. They live in one dev-only image, built from the same sources with an extra Kconfig fragment and an extra devicetree overlay that only this build passes, in its own build directory: `$BUILD_IO` with `--build-dir /tmp/h1-io-dev` and `-- -DEXTRA_CONF_FILE=<fragment> -DEXTRA_DTC_OVERLAY_FILE=<overlay>`.
-- It must be built, and shown to be separate, before Task 9 starts. It is the only image with these features. Every check that does not say "instrumentation image", and every pass/fail timing measurement, runs on the default image (`/tmp/h1-io`).
+- Several checks need faults and timing hooks that the default image must not contain. They live in one dev-only image, built from the same sources with an extra Kconfig fragment and an extra devicetree overlay that only this build passes, in its own build directory: `$BUILD_IO` with `--build-dir /tmp/h1-io-instr` and `-- -DEXTRA_CONF_FILE=<fragment> -DEXTRA_DTC_OVERLAY_FILE=<overlay>`.
+- It must be built, and shown to be separate, before Task 9 starts. It is the only image with these features. The tools now exist on this branch: the image in `firmware/lib/io_instr/` and `firmware/io_module/instrumentation/`, and the checker in `firmware/io_module/test/io_hil_check.py`. The image's README lists every command and the step that uses it. Its hooks add time: Task 11 Step 2's 8500-cycle bar and saturation extrapolation, and Step 4's 900 µs bar, are judged with that README's correction, so run `instr probe calibrate` first. Task 9 Steps 1 and 5, Task 10 Steps 2 and 5, Task 11 Step 3 and the fault timing are not affected. Every other check that does not say "instrumentation image" runs on the default image (`/tmp/h1-io`).
 - Its code is not part of the product. Where it lives afterwards (its own branch, or behind the Kconfig option) is the user's decision after Task 11.
 
 | Feature | Used by |

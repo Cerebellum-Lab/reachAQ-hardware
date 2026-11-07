@@ -1612,7 +1612,7 @@ $RIG "cd ~/Documents/reachAQ-hardware && python3 firmware/lib/jerrycan/test/hil_
 
 The flash script asks the operator to type `FLASH`. Run it in an interactive terminal (for example `mcp__terminal__run_in_terminal`), not with `--yes`.
 
-Expected: every check PASSES, `claps` reports hardware timestamps with residual p95 < 20 µs, and the script exits 0. If anything fails, record the full output before restoring. Record the `boot_id` from the `capabilities` line.
+Expected: every check PASSES and the script exits 0. `claps` reports `NOT JUDGED`, with its software-stamp residual: this PEAK card puts no hardware stamp on echoes and batches its RX interrupts, so it cannot measure clap stamps to 20 µs. Clap accuracy is measured against the NI-DAQ by spec acceptance 1. The approved run also adds a clock soak, the round-trip report and a T3 bench, through `rig_run.sh` in the T2 ledger folder. If anything fails, record the full output before restoring. Record the `boot_id` from the `capabilities` line.
 
 **Then restore, whether the check passed or failed:**
 
