@@ -741,6 +741,9 @@ void adi_tmc2209_log_fault(const struct device *dev) {
         read_ok = false;
     } else {
         faults += log_fault_flag(config, "GSTAT drv_err (shut down by overtemperature or short)", gstat.gstat.drv_err);
+        // DIAG is also raised by these two, and neither sets a DRV_STATUS flag.
+        faults += log_fault_flag(config, "GSTAT uv_cp (charge pump undervoltage)", gstat.gstat.uv_cp);
+        faults += log_fault_flag(config, "GSTAT reset (driver reset since init)", gstat.gstat.reset);
     }
 
     if (read_ok && faults == 0) {
