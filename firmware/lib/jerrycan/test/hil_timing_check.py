@@ -10,17 +10,19 @@ frames from --clapper-address (default 8, standing in for a timekeeper) unless a
 real timekeeper is already clapping, and - only with --play-tone - one 200 ms
 Tone 1, which is audible and drives STIM0.
 
-Two opt-in modes run instead of those checks (each still starts with the capabilities check):
+Opt-in modes run instead of those checks (the first two still start with the capabilities check):
 
     --soak          the board clock against the host for 335 s idle, then 335 s under TIME_SYNC load
     --rtt-report    TIME_SYNC round trips for a burst of 4 and for singles 1 s and 30 s apart
+    --listen-stamps SECONDS   transmits nothing: do received frames carry hardware timestamps?
 
-Both send only TIME_SYNC_REQUEST, which the board answers and which changes nothing on it. --json PATH
-writes every result for the record.
+The first two send only TIME_SYNC_REQUEST, which the board answers and which changes nothing on it. --json PATH
+writes every result and --raw PREFIX every frame and response, for the record.
 """
 
 import argparse
 import bisect
+import collections
 import itertools
 import json
 import math
@@ -58,6 +60,12 @@ def report(name, ok, detail):
     results.append(ok)
     report_log.append({"name": name, "ok": ok, "detail": detail})
     print(f"[{'PASS' if ok else 'FAIL'}] {name}: {detail}")
+
+
+def not_judged(name, detail):
+    """A measurement this rig cannot judge. Printed and recorded, and neither passes nor fails the run."""
+    report_log.append({"name": name, "ok": None, "detail": detail})
+    print(f"[NOT JUDGED] {name}: {detail}")
 
 
 def open_socket(channel):
@@ -203,16 +211,18 @@ def check_claps(s, address, boot_id, clapper_address, count=50):
     slope = sum((x - mx) * (y - my) for x, y in pairs) / sum((x - mx) ** 2 for x, _ in pairs)
     residual_us = sorted(abs(y - (my + slope * (x - mx))) * 1e6 for x, y in pairs)
     p95 = residual_us[int(0.95 * (n - 1))]
-    # The acceptance is p95 < 20 us against hardware stamps; software stamps cannot show it
-    if hardware:
-        jitter_ok = p95 < 20.0
-        jitter = f"jitter judged (hardware timestamps): p95 {'<' if jitter_ok else '>='} 20 us"
-    else:
-        jitter_ok = False
-        jitter = "jitter NOT judged (kernel software timestamps), so the hardware acceptance is not met"
+    # The acceptance is p95 < 20 us against hardware stamps. On the rig's PEAK card the echo of a frame we sent never
+    # has one, and a software stamp is taken in a receive interrupt the card delays (16 messages or 1 ms), so the
+    # jitter cannot be judged there. Real clap accuracy is measured against the NI-DAQ (spec acceptance 1).
+    jitter_ok = p95 < 20.0 if hardware else True
     ok = n >= count - 2 and bad == 0 and abs(slope - 1.0) < 1e-3 and jitter_ok
     report("claps", ok, f"{n}/{count} observed, {bad} malformed, slope {slope:.9f}, residual p95 {p95:.1f} us, "
-           f"max {residual_us[-1]:.1f} us; {jitter}")
+           f"max {residual_us[-1]:.1f} us"
+           + ("; jitter judged (hardware timestamps): p95 " + ("<" if jitter_ok else ">=") + " 20 us" if hardware else ""))
+    if not hardware:
+        not_judged("claps_jitter", f"residual p95 {p95:.1f} us, max {residual_us[-1]:.1f} us against kernel SOFTWARE stamps. "
+                   "Not judged: the card stamps our echoes in software, in a receive interrupt it delays by up to 1 ms, "
+                   "so this residual is the card's, not the board's. Clap accuracy is measured against the NI-DAQ.")
 
 
 def check_periodic_trailers(s, address, boot_id):
@@ -258,7 +268,12 @@ SLOPE_SANITY_PPM = 500.0  # the board's crystal and the adapter's agree to ~100 
 MIN_SOAK_SPAN_S = 330.0  # 5.5 min, which holds 13 wraps
 MIN_ANSWERED = 0.9  # fraction of TIME_SYNC requests that must be answered
 RTT_WINDOW_S = 0.002  # reachAQ's BoardClockModel._fit keeps exchanges within this of the best round trip
+ONE_WAY_SLACK_S = 300e-6  # a response arriving more than this later than the best is queueing noise: left out of the fit
 KIND_NAMES = {0: "TX_QUEUE", 1: "OBSERVED", 2: "COMMAND_RECEIVED", 3: "PHYSICAL_START", 4: "COMPLETED", 5: "SAMPLED"}
+# Types whose first payload byte says which sensor or motor sent them. The pellet's two pressure sensors are sampled
+# by two ADCs on their own schedules, so their SAMPLED stamps interleave: each is its own stream.
+INSTANCE_TYPES = {0x08: "pressure", 0x09: "temp/hum", 0x0A: "gpio", 0x16: "stepper", 0x17: "servo"}
+RULER_TYPE, RULER_KIND, RULER_PERIOD_S = 0x0A, 5, 0.100  # GPIO_READ, SAMPLED, from a 100 ms k_timer (gpio.c)
 
 
 def percentile(sorted_values, q):
@@ -367,22 +382,90 @@ def wrap_related_steps(steps, wrap_s=WRAP_SECONDS, size_tolerance=0.02, spacing_
     return {"wrap_sized": sized, "wrap_spaced": spaced}
 
 
-def analyze_exchanges(rows, rtt_slack_s=0.001):
-    """One soak phase. `rows` are (host_mid_s, board_mid_s, host_rtt_s, effective_rtt_s) per TIME_SYNC exchange,
-    all stamped by the same host clock. Exchanges slower than the best by more than `rtt_slack_s` are dropped,
-    as reachAQ's fit does, then the board-against-host line is fitted and checked for steps."""
+def window_minima(times, values, window, backward):
+    """For each i, the minimum of `values` over [times[i] - window, times[i]] (backward) or [times[i], times[i] + window]
+    (forward). `times` ascend. Linear time."""
+    n = len(times)
+    out, queue = [0.0] * n, collections.deque()
+    for i in (range(n) if backward else range(n - 1, -1, -1)):
+        while queue and values[queue[-1]] >= values[i]:
+            queue.pop()
+        queue.append(i)
+        while (times[queue[0]] < times[i] - window) if backward else (times[queue[0]] > times[i] + window):
+            queue.popleft()
+        out[i] = values[queue[0]]
+    return out
+
+
+def one_way_rows(points, window_s=5.0):
+    """Rows for analyze_exchanges from (host_s, board_s) points, one per TIME_SYNC response: the adapter's hardware
+    stamp of the response's arrival, and response_queue_time_us, the board time at which the board queued it.
+
+    A response takes at least a fixed time from queued to received and sometimes longer, when it waits behind other
+    frames. That extra time is each row's `excess`: how far its (host time - board time) sits above the lowest within
+    `window_s` seconds. The floor is local, and the higher of the floors just before and just after the point, because
+    a step in the board's clock (the fault being looked for) moves every later point, and a global floor would have
+    taken one side of the step for slow responses and dropped it. A request's own echo is not used at all: on the
+    rig's PEAK card an echo has no hardware stamp, and its software stamp is taken in the same delayed receive
+    interrupt as the response's (16 messages or 1 ms), which made every round trip read about 1 us."""
+    points = sorted(points)
+    if len(points) < 10:
+        return [(h, b, 0.0) for h, b in points]
+    h0, b0 = points[0]
+    hs, bs = [h - h0 for h, _ in points], [b - b0 for _, b in points]
+    rate = lagged_slope(hs, bs, min(10.0, (hs[-1] - hs[0]) / 4.0)) or 1.0  # board seconds per host second
+    level = [h - b / rate for h, b in zip(hs, bs)]  # constant, plus how late the response was
+    floor = [max(a, b) for a, b in zip(window_minima(hs, level, window_s, True), window_minima(hs, level, window_s, False))]
+    return [(h + h0, b + b0, max(0.0, lv - fl)) for h, b, lv, fl in zip(hs, bs, level, floor)]
+
+
+def response_points(answers, boot_id):
+    """(host_s, board_s) for each valid TIME_SYNC response that has a hardware stamp, and the counts. Valid: the right
+    boot, a TX_QUEUE trailer whose time equals the payload's response_queue_time_us, and a request received no later
+    than the response was queued.
+    answers: request_id -> (request_receive_us, response_queue_us, trailer, software_ns, hardware_ns)."""
+    valid = [a for _, a in sorted(answers.items())
+             if a[2]["boot_id"] == boot_id and a[2]["kind"] == TX_QUEUE and a[2]["board_us"] == a[1] and a[0] <= a[1]]
+    points = [(a[4] / 1e9, a[1] / 1e6) for a in valid if a[4]]
+    return points, {"valid": len(valid), "hardware": len(points)}
+
+
+def period_ruler(frames, msg_type=RULER_TYPE, kind=RULER_KIND, nominal_s=RULER_PERIOD_S):
+    """The period of a periodic board message, in board time, against its nominal period, in ppm.
+
+    GPIO_READ is sent from a 100 ms k_timer. A k_timer counts kernel ticks, and Zephyr's tickless SysTick driver loses
+    cycles each time it reprograms the timer, so the real time between ticks runs long by an amount that depends on the
+    workload: that is the fault the DWT board clock replaced. Both clocks count the same crystal, so the crystal's error
+    cancels and the ruler needs no host clock. Tens of ppm over nominal here would show the kernel tick losing time that
+    the DWT clock does not lose. Near 0 shows only that the tick lost little in this workload: it does NOT show the DWT
+    clock is right, because a clock built on the tick would read 0 here too.
+    frames: (msg_type, kind, board_us, boot_id, sequence, instance). Returns None if too few frames."""
+    times = [f[2] / 1e6 for f in frames if f[0] == msg_type and f[1] == kind]
+    if len(times) < 20:
+        return None
+    span = times[-1] - times[0]
+    count = round(span / nominal_s)
+    median = statistics.median(b - a for a, b in zip(times, times[1:]))
+    if count < 10 or abs(median - nominal_s) > 0.05 * nominal_s:
+        return {"usable": False, "frames": len(times), "median_period_s": median}
+    return {"usable": True, "frames": len(times), "span_s": span, "periods": count,
+            "ppm_over_nominal": (span / (count * nominal_s) - 1.0) * 1e6, "median_period_s": median}
+
+
+def analyze_exchanges(rows, slack_s=ONE_WAY_SLACK_S):
+    """One soak phase. `rows` are (host_s, board_s, excess_s) from one_way_rows. Rows whose excess is more than
+    `slack_s` above the lowest are dropped, then the board-against-host line is fitted and checked for steps."""
     out = {"used": len(rows)}
-    sane = [r for r in rows if r[3] >= 0.0]
+    sane = [r for r in rows if r[2] >= 0.0]
     if len(sane) < 10:
-        out["error"] = f"only {len(sane)} exchanges with a usable round trip"
+        out["error"] = f"only {len(sane)} responses with a usable timestamp"
         return out
-    out["host_rtt_us"] = _micro(summarize([r[2] for r in sane]))
-    out["effective_rtt_us"] = _micro(summarize([r[3] for r in sane]))
-    best = min(r[3] for r in sane)
-    kept = sorted((r for r in sane if r[3] <= best + rtt_slack_s), key=lambda r: r[0])
+    out["excess_us"] = _micro(summarize([r[2] for r in sane]))
+    best = min(r[2] for r in sane)
+    kept = sorted((r for r in sane if r[2] <= best + slack_s), key=lambda r: r[0])
     out["kept"] = len(kept)
     if len(kept) < 10:
-        out["error"] = f"only {len(kept)} exchanges within {rtt_slack_s * 1e3:g} ms of the best round trip"
+        out["error"] = f"only {len(kept)} responses within {slack_s * 1e6:g} us of the lowest latency"
         return out
     x0, y0 = kept[0][0], kept[0][1]
     xs = [r[0] - x0 for r in kept]
@@ -469,13 +552,13 @@ def judge_soak(idle, load, min_span_s=MIN_SOAK_SPAN_S, limit_ppm=LOAD_SLOPE_LIMI
     if len({a.get("source") for _, a in phases}) > 1:
         broken.append("the phases were stamped by different clocks (" + ", ".join(
             f"{label} {a.get('source')}" for label, a in phases) + "), so their slopes cannot be compared")
-    software = any(a.get("source") == "software" for _, a in phases)
-    checks.append(("soak_data", not short and not broken,
-                   "; ".join(short + broken) or ", ".join(
+    unstamped = [f"{label}: only {a['counts']['hardware']} of {a['counts']['valid']} responses carry a hardware stamp"
+                 for label, a in phases if a.get("counts") and a["counts"]["hardware"] < 0.9 * a["counts"]["valid"]]
+    checks.append(("soak_data", not short and not broken and not unstamped,
+                   "; ".join(short + broken + unstamped) or ", ".join(
                        f"{label} {a.get('answered', '?')}/{a.get('requests', '?')} answered, {a['kept']} used"
-                       + (f", {a['source']} stamps" if a.get("source") else "") for label, a in phases)
-                   + ("; kernel software stamps, so the host clock is CLOCK_REALTIME and NTP slewing enters both slopes"
-                      if software else "")))
+                       + (f" (hardware stamps on {a['counts']['hardware']} of {a['counts']['valid']} valid)" if a.get("counts") else "")
+                       for label, a in phases)))
     if broken:
         return checks  # nothing below can be judged
 
@@ -509,7 +592,9 @@ def judge_soak(idle, load, min_span_s=MIN_SOAK_SPAN_S, limit_ppm=LOAD_SLOPE_LIMI
     difference = load["slope_ppm"] - idle["slope_ppm"]
     checks.append(("soak_load_slope", abs(difference) <= limit_ppm,
                    f"idle 1{_ppm(idle['slope_ppm'])}, load 1{_ppm(load['slope_ppm'])}, difference {difference:+.3f} ppm (limit {limit_ppm:g}); "
-                   f"residual rms idle {idle['residual_rms_us']:.1f} us, load {load['residual_rms_us']:.1f} us" + stepped))
+                   f"residual rms idle {idle['residual_rms_us']:.1f} us, load {load['residual_rms_us']:.1f} us. "
+                   "This shows only that CAN traffic does not change the rate; it cannot show the SysTick fault (TIME_SYNC adds no "
+                   "timer reprograms), so see the GPIO_READ period ruler" + stepped))
     return checks
 
 
@@ -518,18 +603,19 @@ def kind_name(kind):
 
 
 def judge_ordering(frames, sync_rows, boot_id):
-    """frames: (msg_type, kind, board_us, boot_id, sequence) for every trailer-bearing frame the board sent, in
-    arrival order. Stamps are compared per message type and per kind: a SAMPLED stamp is older than the
-    TX_QUEUE stamp of a frame queued after it, which is documented, so kinds are never compared with each other."""
-    bad = monotonic_violations(((t, k), us) for t, k, us, _, _ in frames)
-    streams = len({(t, k) for t, k, _, _, _ in frames})
+    """frames: (msg_type, kind, board_us, boot_id, sequence, instance) for every trailer-bearing frame the board sent,
+    in arrival order. Stamps are compared per message type, per kind and, for the types that carry one, per instance:
+    a SAMPLED stamp is older than the TX_QUEUE stamp of a frame queued after it, which is documented, so kinds are
+    never compared with each other, and two ADCs that sample independently are two streams."""
+    bad = monotonic_violations(((t, k, i), us) for t, k, us, _, _, i in frames)
+    streams = len({(t, k, i) for t, k, _, _, _, i in frames})
     checks = [("soak_monotonic", not bad,
-               "; ".join(f"0x{t:02x} {kind_name(k)}: {v['count']} backward (worst {v['worst']} us)"
-                         for (t, k), v in sorted(bad.items())) or f"{len(frames)} frames in {streams} type/kind streams never went backward")]
+               "; ".join(f"0x{t:02x} {kind_name(k)}{'' if i is None else ' instance ' + str(i)}: {v['count']} backward (worst {v['worst']} us)"
+                         for (t, k, i), v in sorted(bad.items(), key=str)) or f"{len(frames)} frames in {streams} type/kind/instance streams never went backward")]
     order = time_sync_order_violations(sync_rows)
     checks.append(("soak_time_sync_order", not any(order.values()),
                    f"{len(sync_rows)} responses: " + ", ".join(f"{k.replace('_', ' ')} {v}" for k, v in order.items())))
-    boots = sorted({b for _, _, _, b, _ in frames})
+    boots = sorted({f[3] for f in frames})
     checks.append(("soak_boot_id", boots == [boot_id],
                    "boot_id " + (", ".join(f"0x{b:08x}" for b in boots) or "none seen") + f" (expected 0x{boot_id:08x})"))
     return checks
@@ -560,9 +646,41 @@ def judge_rtt(groups, window_s=RTT_WINDOW_S):
 
 # --- Collection (needs the board) -------------------------------------------------------------------
 
+class RawLog:
+    """Every board frame and every TIME_SYNC response of a run as CSV, written as they arrive, so that an analysis error
+    never costs another flash. With no prefix it does nothing."""
+
+    HEADERS = {
+        "frames": "phase,user_ns,type,kind,board_us,boot_id,sequence,instance,hardware_ns,software_ns",
+        "responses": "phase,request_id,user_ns,request_receive_us,response_queue_us,boot_id,kind,hardware_ns,software_ns",
+        "rtt": "group,request_id,sent_ns,received_ns,request_receive_us,response_queue_us",
+    }
+
+    def __init__(self, prefix, names):
+        self.files = {}
+        for name in names if prefix else ():
+            self.files[name] = open(f"{prefix}.{name}.csv", "w", buffering=1 << 16)
+            self.files[name].write(self.HEADERS[name] + "\n")
+
+    def row(self, name, *values):
+        f = self.files.get(name)
+        if f is not None:
+            f.write(",".join("" if v is None else str(v) for v in values) + "\n")
+
+    def flush(self):
+        for f in self.files.values():
+            f.flush()
+
+    def close(self):
+        for f in self.files.values():
+            f.close()
+
+
 def receive_until(s, deadline):
     """Like receive(), but returns at the monotonic `deadline` however long the bus is quiet, so a caller can
-    keep its own send schedule. Leaves the socket timeout changed: the caller restores it."""
+    keep its own send schedule. Yields decode_stamped()'s tuple plus perf_counter_ns() taken the moment recvmsg()
+    returned, which is when T3's Python reader stamps a frame (its `index`). Leaves the socket timeout changed: the
+    caller restores it."""
     while True:
         wait = deadline - time.monotonic()
         if wait <= 0:
@@ -572,35 +690,17 @@ def receive_until(s, deadline):
             raw, ancillary, flags, _ = s.recvmsg(FRAME.size, 256)
         except socket.timeout:
             return
+        received_ns = time.perf_counter_ns()
         message = decode_stamped(raw, ancillary, flags)
         if message is not None:
-            yield message
+            yield message + (received_ns,)
 
 
-def exchange_rows(sent, answers, boot_id):
-    """Pair each valid TIME_SYNC response with the echo of its request. A round trip needs both ends stamped by
-    the same clock: the adapter's hardware clock if both have a hardware stamp, else the kernel's software clock.
-    The hardware clock is used when it covers at least as many exchanges. Returns (rows, source, counts)."""
-    valid = []
-    for rid in sorted(answers):
-        rx_us, q_us, t, rx_sw, rx_hw = answers[rid]
-        if (rid not in sent or t["boot_id"] != boot_id or t["kind"] != TX_QUEUE or t["board_us"] != q_us
-                or rx_us > q_us):
-            continue
-        valid.append((sent[rid][0], sent[rid][1], rx_sw, rx_hw, rx_us, q_us))
-    hardware = [(v[1], v[3], v[4], v[5]) for v in valid if v[1] and v[3]]
-    software = [(v[0], v[2], v[4], v[5]) for v in valid if v[0] and v[2]]
-    chosen, source = (hardware, "hardware") if len(hardware) >= len(software) else (software, "software")
-    rows = [((tx + rx) / 2e9, (rx_us + q_us) / 2e6, (rx - tx) / 1e9, (rx - tx) / 1e9 - (q_us - rx_us) / 1e6)
-            for tx, rx, rx_us, q_us in chosen]
-    return rows, source, {"valid": len(valid), "hardware": len(hardware), "software": len(software)}
-
-
-def run_exchange_phase(s, address, boot_id, label, id_base, seconds, rate, frames):
+def run_exchange_phase(s, address, boot_id, label, id_base, seconds, rate, raw):
     """TIME_SYNC requests at `rate` per second for `seconds`, receiving everything the board sends meanwhile.
-    Appends every trailer-bearing board frame to `frames`."""
+    Returns (result, sync_rows, frames): every trailer-bearing board frame, for the ordering checks."""
     period = 1.0 / rate
-    sent, answers, requests, send_errors = {}, {}, 0, 0
+    answers, frames, requests, send_errors = {}, [], 0, 0
     start = time.monotonic()
     end = start + seconds
     next_send, next_progress = start, start + 30.0
@@ -621,49 +721,59 @@ def run_exchange_phase(s, address, boot_id, label, id_base, seconds, rate, frame
                     next_send = now + period
             if now >= next_progress:
                 print(f"  [{label}] {now - start:.0f}/{seconds:.0f} s, {requests} sent, {len(answers)} answered", flush=True)
+                raw.flush()
                 next_progress += 30.0
-            for can_id, data, own, _, _, sw, hw in receive_until(s, min(next_send, end)):
+            for can_id, data, own, _, _, sw, hw, got_ns in receive_until(s, min(next_send, end)):
                 msg_type, sender = can_id >> 5, can_id & 0x1F
-                if own:
-                    if can_id == (TIME_SYNC_REQUEST << 5) | address:
-                        rid = struct.unpack_from("<I", data)[0]
-                        if id_base < rid <= id_base + requests:
-                            sent[rid] = (sw, hw)
-                    continue
-                if sender != address:
+                if own or sender != address:  # our own requests come back as echoes; they carry nothing we use
                     continue
                 t = trailer(msg_type, data)
                 if t is None:
                     continue
-                frames.append((msg_type, t["kind"], t["board_us"], t["boot_id"], t["sequence"]))
+                instance = data[0] if msg_type in INSTANCE_TYPES and data else None
+                frames.append((msg_type, t["kind"], t["board_us"], t["boot_id"], t["sequence"], instance))
+                raw.row("frames", label, got_ns, msg_type, t["kind"], t["board_us"], t["boot_id"], t["sequence"], instance, hw, sw)
                 if msg_type == TIME_SYNC_RESPONSE:
                     rid, rx_us, q_us = struct.unpack_from("<IQQ", data)
                     if id_base < rid <= id_base + requests:
                         answers[rid] = (rx_us, q_us, t, sw, hw)
+                        raw.row("responses", label, rid, got_ns, rx_us, q_us, t["boot_id"], t["kind"], hw, sw)
     finally:
         s.settimeout(0.05)
-    rows, source, counts = exchange_rows(sent, answers, boot_id)
-    result = analyze_exchanges(rows)
-    result.update({"requests": requests, "answered": len(answers), "echoed": len(sent), "send_errors": send_errors,
-                   "source": source, "counts": counts})
-    sync_rows = [(rid, a[0], a[1]) for rid, a in answers.items()]
-    return result, sync_rows
+        raw.flush()
+    points, counts = response_points(answers, boot_id)
+    result = analyze_exchanges(one_way_rows(points))
+    result.update({"requests": requests, "answered": len(answers), "send_errors": send_errors, "counts": counts,
+                   "ruler": period_ruler(frames)})
+    return result, [(rid, a[0], a[1]) for rid, a in answers.items()], frames
 
 
-def run_soak(s, address, boot_id, args):
+def run_soak(s, address, boot_id, args, raw):
     frames, sync_rows, phases = [], [], {}
     print(f"clock soak: {args.soak_seconds:.0f} s idle at {args.soak_idle_rate:g} request/s, then "
-          f"{args.soak_seconds:.0f} s under load at {args.soak_load_rate:g} requests/s", flush=True)
+          f"{args.soak_seconds:.0f} s under load at {args.soak_load_rate:g} requests/s. Each response's board time "
+          "(response_queue_time_us) is fitted against the adapter's hardware stamp of its arrival, one way.", flush=True)
     for label, id_base, rate in (("idle", 0x7A100000, args.soak_idle_rate), ("load", 0x7A200000, args.soak_load_rate)):
-        phases[label], rows = run_exchange_phase(s, address, boot_id, label, id_base, args.soak_seconds, rate, frames)
+        phases[label], rows, phase_frames = run_exchange_phase(s, address, boot_id, label, id_base, args.soak_seconds, rate, raw)
         sync_rows += rows
+        frames += phase_frames
         a = phases[label]
         print(f"  {_describe_phase(label, a)}", flush=True)
-        print(f"  [{label}] {a['source']} stamps on {max(a['counts']['hardware'], a['counts']['software'])} of "
-              f"{a['counts']['valid']} valid exchanges (hardware {a['counts']['hardware']}, software {a['counts']['software']}); "
-              f"effective round trip {_fmt_us(a.get('effective_rtt_us'))}", flush=True)
+        print(f"  [{label}] hardware stamps on {a['counts']['hardware']} of {a['counts']['valid']} valid responses; "
+              f"latency above the best {_fmt_us(a.get('excess_us'))}", flush=True)
+        ruler = a["ruler"]
+        if ruler and ruler.get("usable"):
+            print(f"  [{label}] info, not a verdict: GPIO_READ (0x0A SAMPLED, 100 ms k_timer) period ruler {ruler['ppm_over_nominal']:+.1f} ppm "
+                  f"over 100 ms ({ruler['periods']} periods in {ruler['span_s']:.1f} s of board time)", flush=True)
+        else:
+            print(f"  [{label}] info, not a verdict: GPIO_READ period ruler unusable "
+                  f"({'fewer than 20 SAMPLED GPIO_READ frames' if ruler is None else ruler})", flush=True)
         if label == "idle":
             time.sleep(2.0)
+    print("  period ruler: the 100 ms k_timer behind GPIO_READ counts kernel ticks, which the old SysTick clock lost; "
+          "both run from one crystal, so no host clock is involved. Tens of ppm over nominal would show the tick losing "
+          "time the DWT clock does not lose. Near 0 shows only that the tick lost little in this workload; it does not "
+          "show the DWT clock is right.", flush=True)
     gaps = sum(1 for a, b in zip(frames, frames[1:]) if b[3] == a[3] and b[4] != a[4] + 1)
     print(f"  board frames with a trailer: {len(frames)}; sequence gaps seen by this host: {gaps} (information only, "
           "the host socket can drop frames too)", flush=True)
@@ -674,37 +784,32 @@ def run_soak(s, address, boot_id, args):
 
 
 def timed_exchange(s, address, boot_id, request_id, timeout=0.25):
-    """One TIME_SYNC exchange, sent now. Returns (host_rtt_s, effective_rtt_s, "hardware" or "software") or None."""
-    send(s, TIME_SYNC_REQUEST, address, struct.pack("<IQ", request_id, time.perf_counter_ns()))
-    tx = answer = None
-    for can_id, data, own, _, _, sw, hw in receive_until(s, time.monotonic() + timeout):
-        if own and can_id == (TIME_SYNC_REQUEST << 5) | address:
-            if struct.unpack_from("<I", data)[0] == request_id:
-                tx = (sw, hw)
-        elif not own and can_id == (TIME_SYNC_RESPONSE << 5) | address:
+    """One TIME_SYNC exchange, timed in user space as T3 times it: perf_counter_ns() just before send(), and
+    perf_counter_ns() the moment recvmsg() returns the response. That includes Python, the socket and the card's
+    receive-interrupt delay (16 messages or 1 ms), which is what reachAQ's fit sees. Kernel and hardware stamps are not
+    used: on this card the echo of a request has no hardware stamp, and a software stamp is taken in the same delayed
+    interrupt as the response's, so a round trip made from them reads about 1 us. Returns
+    (host_rtt_s, effective_rtt_s, sent_ns, received_ns, request_receive_us, response_queue_us) or None."""
+    sent_ns = time.perf_counter_ns()
+    send(s, TIME_SYNC_REQUEST, address, struct.pack("<IQ", request_id, sent_ns))
+    answer = None
+    for can_id, data, own, _, _, _, _, got_ns in receive_until(s, time.monotonic() + timeout):
+        if not own and can_id == (TIME_SYNC_RESPONSE << 5) | address:
             rid, rx_us, q_us = struct.unpack_from("<IQQ", data)
             t = trailer(TIME_SYNC_RESPONSE, data)
             if rid == request_id and t is not None and t["boot_id"] == boot_id and t["board_us"] == q_us and rx_us <= q_us:
-                answer = (rx_us, q_us, sw, hw)
-        if tx is not None and answer is not None:
-            break
-    if tx is None or answer is None:
+                answer = (rx_us, q_us, got_ns)
+                break
+    if answer is None:
         return None
-    if tx[1] and answer[3]:
-        start, end, source = tx[1], answer[3], "hardware"
-    elif tx[0] and answer[2]:
-        start, end, source = tx[0], answer[2], "software"
-    else:
-        return None
-    host = (end - start) / 1e9
-    return host, host - (answer[1] - answer[0]) / 1e6, source
+    host = (answer[2] - sent_ns) / 1e9
+    return host, host - (answer[1] - answer[0]) / 1e6, sent_ns, answer[2], answer[0], answer[1]
 
 
-def run_rtt_report(s, address, boot_id, args):
+def run_rtt_report(s, address, boot_id, args, raw):
     groups = {"burst": [], "single_1s": [], "single_30s": []}
     host = {name: [] for name in groups}
     lost = {name: 0 for name in groups}
-    sources = set()
     request_id = [0x7A300000]
 
     def one(name):
@@ -718,10 +823,11 @@ def run_rtt_report(s, address, boot_id, args):
             return
         host[name].append(result[0])
         groups[name].append(result[1])
-        sources.add(result[2])
+        raw.row("rtt", name, request_id[0], result[2], result[3], result[4], result[5])
 
-    print(f"round-trip report: {args.rtt_bursts} bursts of 4, {args.rtt_singles_1s} singles 1 s apart, "
-          f"{args.rtt_singles_30s} singles 30 s apart", flush=True)
+    print(f"round-trip report, timed in user space as T3 times it (perf_counter_ns around send() and recvmsg()): "
+          f"{args.rtt_bursts} bursts of 4, {args.rtt_singles_1s} singles 1 s apart, {args.rtt_singles_30s} singles 30 s apart",
+          flush=True)
     for i in range(args.rtt_bursts):
         for _ in range(4):  # as reachAQ's open() does: each request goes out when the previous reply is in
             one("burst")
@@ -734,6 +840,7 @@ def run_rtt_report(s, address, boot_id, args):
             due += spacing
             if spacing > 1.0:
                 print(f"  [{name}] {i + 1}/{count}", flush=True)
+    raw.flush()
     stats = {name: {"effective_us": _micro(summarize(groups[name])), "host_us": _micro(summarize(host[name])),
                     "lost": lost[name]} for name in groups}
     for name in groups:
@@ -744,11 +851,31 @@ def run_rtt_report(s, address, boot_id, args):
         print(f"  {name}: n={e['n']} lost={lost[name]}  effective round trip us min {e['min']:.0f} median {e['median']:.0f} "
               f"p95 {e['p95']:.0f} max {e['max']:.0f}   (host round trip us min {h['min']:.0f} median {h['median']:.0f} "
               f"p95 {h['p95']:.0f} max {h['max']:.0f})", flush=True)
-    print(f"  stamps: {' and '.join(sorted(sources)) or 'none'}; "
-          "effective = host round trip minus the board's own handling time, the figure reachAQ's fit uses")
+    print("  effective = user-space round trip minus the board's own handling time, the figure reachAQ's fit uses")
     for name, ok, detail in judge_rtt(groups):
         report(name, ok, detail)
     return stats
+
+
+def check_hardware_stamps(s, seconds):
+    """Passive: transmits nothing. Do the frames the board sends us carry the adapter's hardware stamp? The soak needs
+    it on every response, and no run had read one on this rig before this check."""
+    frames = []
+    for can_id, data, own, _, _, sw, hw, _ in receive_until(s, time.monotonic() + seconds):
+        if not own:
+            frames.append((sw, hw))
+    s.settimeout(0.05)
+    stamped = [f for f in frames if f[1]]
+    ordered = all(b[1] >= a[1] for a, b in zip(stamped, stamped[1:]))
+    if len(stamped) >= 2 and stamped[-1][0] > stamped[0][0]:
+        against_software = f", hardware clock {((stamped[-1][1] - stamped[0][1]) / (stamped[-1][0] - stamped[0][0]) - 1) * 1e6:+.1f} ppm against the kernel clock"
+    else:
+        against_software = ""
+    ok = len(frames) >= 20 and len(stamped) >= 0.99 * len(frames) and ordered
+    report("hardware_stamps", ok, f"{len(frames)} frames received in {seconds:g} s, {len(stamped)} with a non-zero hardware stamp, "
+           f"{'in order' if ordered else 'NOT in order'}{against_software}"
+           + ("" if ok else "; the soak and the clock checks cannot give a verdict without hardware stamps on received frames"))
+    return {"frames": len(frames), "hardware_stamped": len(stamped), "ordered": ordered}
 
 
 def main():
@@ -762,31 +889,49 @@ def main():
                         help="board clock against the host, idle then under TIME_SYNC load (replaces the standard checks)")
     parser.add_argument("--soak-seconds", type=float, default=335.0,
                         help="length of each soak phase; at least 330 s (13 wraps) is needed to pass (default 335)")
-    parser.add_argument("--soak-idle-rate", type=float, default=1.0, help="TIME_SYNC requests per second when idle")
+    parser.add_argument("--soak-idle-rate", type=float, default=5.0,
+                        help="TIME_SYNC requests per second when idle (default 5, which still leaves the board idle "
+                             "between its own events and lowers the smallest step the fit can show about 2.2 times from 1/s)")
     parser.add_argument("--soak-load-rate", type=float, default=200.0, help="TIME_SYNC requests per second under load")
     parser.add_argument("--rtt-report", action="store_true",
                         help="TIME_SYNC round trips: bursts of 4 and singles 1 s and 30 s apart (replaces the standard checks)")
     parser.add_argument("--rtt-bursts", type=int, default=5)
     parser.add_argument("--rtt-singles-1s", type=int, default=45)
     parser.add_argument("--rtt-singles-30s", type=int, default=6)
+    parser.add_argument("--listen-stamps", type=float, metavar="SECONDS",
+                        help="transmit nothing; listen this long and require hardware timestamps on received frames")
     parser.add_argument("--json", metavar="PATH", help="also write every result to this file as JSON")
+    parser.add_argument("--raw", metavar="PREFIX",
+                        help="write every frame and response to PREFIX.frames.csv, PREFIX.responses.csv, PREFIX.rtt.csv")
     args = parser.parse_args()
     if not 0 <= args.clapper_address <= 31 or args.clapper_address == args.address:
         parser.error("--clapper-address must be 0-31 and differ from --address")
-    if (args.soak or args.rtt_report) and args.play_tone:
-        parser.error("--soak and --rtt-report run instead of the standard checks, so --play-tone has no effect with them")
+    if (args.soak or args.rtt_report or args.listen_stamps) and args.play_tone:
+        parser.error("--soak, --rtt-report and --listen-stamps run instead of the standard checks, so --play-tone has no effect with them")
+    if args.listen_stamps and (args.soak or args.rtt_report):
+        parser.error("--listen-stamps transmits nothing and cannot be combined with --soak or --rtt-report")
     if args.soak_seconds <= 0 or args.soak_idle_rate <= 0 or args.soak_load_rate <= 0:
         parser.error("--soak-seconds and the soak rates must be positive")
 
     s = open_socket(args.channel)
-    boot_id = check_capabilities(s, args.address)
     extra = {}
+    if args.listen_stamps:
+        extra["hardware_stamps"] = check_hardware_stamps(s, args.listen_stamps)
+        if args.json:
+            with open(args.json, "w") as out:
+                json.dump({"checks": report_log, **extra}, out, indent=1, default=str)
+        return 0 if all(results) else 1
+    boot_id = check_capabilities(s, args.address)
     if boot_id is not None:
         if args.soak or args.rtt_report:
             if args.soak:
-                extra["soak"] = run_soak(s, args.address, boot_id, args)
+                raw = RawLog(args.raw, ("frames", "responses"))
+                extra["soak"] = run_soak(s, args.address, boot_id, args, raw)
+                raw.close()
             if args.rtt_report:
-                extra["rtt"] = run_rtt_report(s, args.address, boot_id, args)
+                raw = RawLog(args.raw, ("rtt",))
+                extra["rtt"] = run_rtt_report(s, args.address, boot_id, args, raw)
+                raw.close()
         else:
             check_time_sync(s, args.address, boot_id)
             check_claps(s, args.address, boot_id, args.clapper_address)
