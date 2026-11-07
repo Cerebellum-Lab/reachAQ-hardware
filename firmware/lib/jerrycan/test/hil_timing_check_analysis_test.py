@@ -113,11 +113,13 @@ def test_responses_without_hardware_stamps_fail_the_data_check():
 
 # --- the PEAK card: no hardware stamp on echoes, a receive interrupt after 16 messages or 1 ms, software stamps taken in it ---
 
-def card_answers(seconds, rate, ppm, seed):
+def card_answers(seconds, rate, ppm, seed, excursion=None):
     """TIME_SYNC responses as the card delivers them. Hardware stamps are exact (arrival on the wire, plus a little
     queueing); software stamps are batched into the interrupt; the request's echo has no hardware stamp. The first
     version of the soak paired echo and response by software stamps: both landed in one interrupt, every round trip
-    read about 1 us, the effective round trip went negative and every row was dropped."""
+    read about 1 us, the effective round trip went negative and every row was dropped.
+
+    `excursion` = (start_s, width_s, delta_us) shifts the board's clock by delta_us for that long, then back."""
     rnd = random.Random(seed)
     events = []  # (arrival_s, request_id, response_queue_us, request_receive_us)
     for i in range(int(seconds * rate)):
@@ -125,7 +127,8 @@ def card_answers(seconds, rate, ppm, seed):
         rx_board = tx + 110e-6
         q = rx_board + rnd.uniform(12e-6, 40e-6)
         arrive = q + 150e-6 + abs(rnd.gauss(0, 15e-6)) + (rnd.random() < 0.05) * rnd.uniform(0.0, 0.0012)
-        events.append((arrive, i + 1, int(q * (1 + ppm * 1e-6) * 1e6), int(rx_board * (1 + ppm * 1e-6) * 1e6)))
+        shift = excursion[2] if excursion and excursion[0] <= tx < excursion[0] + excursion[1] else 0
+        events.append((arrive, i + 1, int(q * (1 + ppm * 1e-6) * 1e6) + shift, int(rx_board * (1 + ppm * 1e-6) * 1e6) + shift))
     background = [(k * 0.012 + j * 130e-6, 0, 0, 0) for k in range(int(seconds / 0.012)) for j in range(2)]
     stream = sorted(events + background)
     answers, i = {}, 0
@@ -176,6 +179,66 @@ def test_responses_without_a_hardware_stamp_give_no_points():
     answers = {rid: (a[0], a[1], a[2], a[3], 0) for rid, a in card_answers(20, 5.0, 25.0, 5).items()}
     points, counts = hil.response_points(answers, 7)
     assert points == [] and counts["hardware"] == 0 and counts["valid"] == len(answers)
+
+
+def card_soak(excursion=None, seed=1):
+    """Idle phase (optionally with a clock excursion) and a clean load phase, both through the card model."""
+    idle = phase(hil.one_way_rows(hil.response_points(card_answers(335, 5.0, 25.0, seed, excursion), 7)[0]))
+    load = phase(hil.one_way_rows(hil.response_points(card_answers(335, 50.0, 25.0, seed + 1), 7)[0]))
+    return idle, load, {n: (ok, d) for n, ok, d in hil.judge_soak(idle, load)}
+
+
+def test_a_clock_briefly_behind_is_the_one_way_fits_blind_spot_and_the_output_says_so():
+    _, _, verdicts = card_soak((150.0, 3.0, -2000))
+    assert failing(verdicts) == [], verdicts  # -2 ms for 3 s passes every check: lateness and a briefly-behind clock look alike
+    assert "Limit of the one-way fit" in verdicts["soak_steps"][1] and "behind" in verdicts["soak_steps"][1]
+
+
+def test_the_same_excursion_ahead_or_for_longer_is_caught():
+    for excursion in ((150.0, 3.0, 2000), (150.0, 8.0, -2000), (150.0, 12.0, -2000)):
+        assert "soak_steps" in failing(card_soak(excursion)[2]), excursion
+
+
+def test_the_kept_floor_has_margin_under_a_healthy_board_and_catches_a_thin_fit():
+    idle, load, verdicts = card_soak()
+    kept = [phase_["kept"] / phase_["used"] for phase_ in (idle, load)]
+    assert min(kept) > 0.9 and min(kept) > hil.MIN_KEPT_FRACTION + 0.1, kept  # the model with 5% of responses late
+    assert failing(verdicts) == []
+    thin = [(h, b, e if i % 4 == 0 else 0.002) for i, (h, b, e) in enumerate(rows(335, 5.0))]  # 3 in 4 are 2 ms late
+    bad = {n: d for n, ok, d in hil.judge_soak(phase(thin), phase(rows(335, 50.0, seed=2))) if not ok}
+    assert "soak_data" in bad and "rests on a minority" in bad["soak_data"] and "25%" in bad["soak_data"], bad
+
+
+def stopped_in_wfi(answers, seed=5):
+    """The board's clock runs only while the core is awake (an interrupt, the main thread, a 100 ms burst), each wake of
+    jittered length: about 2% duty, and it scatters every point."""
+    rnd, acc, last, out = random.Random(seed), 0.0, None, {}
+    for rid in sorted(answers):
+        a = answers[rid]
+        t = a[4] / 1e9
+        dt = 0.0 if last is None else t - last
+        last = t
+        acc += (dt / 0.012 * (60e-6 + rnd.uniform(-30e-6, 30e-6)) + dt / 0.1 * (200e-6 + rnd.uniform(-80e-6, 80e-6))
+                + 100e-6 + rnd.uniform(-30e-6, 30e-6))
+        q_us = int((5.0 + acc) * 1e6)
+        out[rid] = (q_us - 20, q_us, {**a[2], "board_us": q_us}, a[3], a[4])
+    return out
+
+
+def test_a_counter_stopped_in_wfi_fails_its_own_check_and_not_only_the_data_check():
+    idle = phase(hil.one_way_rows(hil.response_points(stopped_in_wfi(card_answers(335, 5.0, 25.0, 6)), 7)[0]))
+    load = phase(hil.one_way_rows(hil.response_points(card_answers(335, 50.0, 25.0, 7), 7)[0]))
+    assert idle["kept"] < hil.MIN_KEPT_FRACTION * idle["used"]  # the filter is scattered, as the review's model found (22%)
+    failed = failing({n: (ok, d) for n, ok, d in hil.judge_soak(idle, load)})
+    assert "soak_data" in failed and "soak_idle_slope" in failed, failed
+
+
+def test_a_counter_stopped_so_hard_that_nothing_is_kept_still_has_a_slope_to_be_judged_by():
+    answers = {rid: (a[0], 5000000, {**a[2], "board_us": 5000000}, a[3], a[4]) for rid, a in card_answers(335, 5.0, 25.0, 8).items()}
+    idle = phase(hil.one_way_rows(hil.response_points(answers, 7)[0]))
+    load = phase(hil.one_way_rows(hil.response_points(card_answers(335, 50.0, 25.0, 9), 7)[0]))
+    failed = failing({n: (ok, d) for n, ok, d in hil.judge_soak(idle, load)})
+    assert "soak_idle_slope" in failed, failed
 
 
 # --- ordering ---
@@ -246,6 +309,22 @@ def test_period_ruler_reads_the_ppm_over_nominal():
         assert ruler["usable"] and abs(ruler["ppm_over_nominal"] - ppm) < 1.0, (ppm, ruler)
     ruler = hil.period_ruler(gpio_frames(38.0, drop=0.1))  # lost frames do not change the long-baseline reading
     assert abs(ruler["ppm_over_nominal"] - 38.0) < 1.0, ruler
+
+
+def test_period_ruler_does_not_alias_at_the_rates_the_rig_has_recorded():
+    # The rig's recordings read +322, +337, +384 and +538..+546 ppm. Over 335 s the span-based count wrapped every 298.6 ppm.
+    for ppm in (322.0, 337.0, 384.0, 545.0, -200.0, 1200.0):
+        for drop in (0.0, 0.1):
+            ruler = hil.period_ruler(gpio_frames(ppm, drop=drop, seed=3))
+            assert ruler["usable"] and abs(ruler["ppm_over_nominal"] - ppm) < 1.0, (ppm, drop, ruler)
+
+
+def test_the_span_based_period_count_would_have_aliased():  # shows the test above can fail
+    for ppm, printed in ((337.0, 38.2), (545.0, -52.5), (322.0, 23.2)):
+        times = [f[2] / 1e6 for f in gpio_frames(ppm)]
+        span = times[-1] - times[0]
+        old = (span / (round(span / 0.1) * 0.1) - 1.0) * 1e6
+        assert abs(old - printed) < 1.0 and abs(old - ppm) > 250, (ppm, old)
 
 
 def test_period_ruler_refuses_what_is_not_a_100_ms_stream():

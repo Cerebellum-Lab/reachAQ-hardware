@@ -270,6 +270,7 @@ MIN_SOAK_SPAN_S = 330.0  # 5.5 min, which holds 13 wraps
 MIN_ANSWERED = 0.9  # fraction of TIME_SYNC requests that must be answered
 RTT_WINDOW_S = 0.002  # reachAQ's BoardClockModel._fit keeps exchanges within this of the best round trip
 ONE_WAY_SLACK_S = 300e-6  # a response arriving more than this later than the best is queueing noise: left out of the fit
+MIN_KEPT_FRACTION = 0.80  # of the responses, per phase, that the filter must keep (see judge_soak for why 80%)
 KIND_NAMES = {0: "TX_QUEUE", 1: "OBSERVED", 2: "COMMAND_RECEIVED", 3: "PHYSICAL_START", 4: "COMPLETED", 5: "SAMPLED"}
 # Types whose first payload byte says which sensor or motor sent them. The pellet's two pressure sensors are sampled
 # by two ADCs on their own schedules, so their SAMPLED stamps interleave: each is its own stream.
@@ -437,15 +438,21 @@ def period_ruler(frames, msg_type=RULER_TYPE, kind=RULER_KIND, nominal_s=RULER_P
     GPIO_READ is sent from a 100 ms k_timer. A k_timer counts kernel ticks, and Zephyr's tickless SysTick driver loses
     cycles each time it reprograms the timer, so the real time between ticks runs long by an amount that depends on the
     workload: that is the fault the DWT board clock replaced. Both clocks count the same crystal, so the crystal's error
-    cancels and the ruler needs no host clock. Tens of ppm over nominal here would show the kernel tick losing time that
-    the DWT clock does not lose. Near 0 shows only that the tick lost little in this workload: it does NOT show the DWT
-    clock is right, because a clock built on the tick would read 0 here too.
+    cancels and the ruler needs no host clock. Tens or hundreds of ppm over nominal here would show the kernel tick
+    losing time that the DWT clock does not lose. Near 0 shows only that the tick lost little in this workload: it does
+    NOT show the DWT clock is right, because a clock built on the tick would read 0 here too.
+
+    The number of periods is counted gap by gap (each gap is a whole number of periods, at least one), never from the
+    span it then divides: a count taken as round(span / nominal) wraps once the true error reaches half a period over
+    the span (every 298.6 ppm over 335 s), so a true +337 ppm read as +38 ppm and +545 as -52.5, which looks like a
+    believable answer. Counting gaps is right to well over +/-10000 ppm, and lost frames (a gap of two or more periods)
+    are counted as the periods they span.
     frames: (msg_type, kind, board_us, boot_id, sequence, instance). Returns None if too few frames."""
     times = [f[2] / 1e6 for f in frames if f[0] == msg_type and f[1] == kind]
     if len(times) < 20:
         return None
     span = times[-1] - times[0]
-    count = round(span / nominal_s)
+    count = sum(max(1, round((b - a) / nominal_s)) for a, b in zip(times, times[1:]))
     median = statistics.median(b - a for a, b in zip(times, times[1:]))
     if count < 10 or abs(median - nominal_s) > 0.05 * nominal_s:
         return {"usable": False, "frames": len(times), "median_period_s": median}
@@ -462,6 +469,12 @@ def analyze_exchanges(rows, slack_s=ONE_WAY_SLACK_S):
         out["error"] = f"only {len(sane)} responses with a usable timestamp"
         return out
     out["excess_us"] = _micro(summarize([r[2] for r in sane]))
+    ordered = sorted(sane, key=lambda r: r[0])
+    span_all = ordered[-1][0] - ordered[0][0]
+    if span_all > 0:  # every point, unfiltered: the median slope between points 10 s apart, which a step or a few bad points do not move
+        all_slope = lagged_slope([r[0] - ordered[0][0] for r in ordered], [r[1] - ordered[0][1] for r in ordered],
+                                 min(10.0, span_all / 4.0))
+        out["all_slope_ppm"] = None if all_slope is None else (all_slope - 1.0) * 1e6
     best = min(r[2] for r in sane)
     kept = sorted((r for r in sane if r[2] <= best + slack_s), key=lambda r: r[0])
     out["kept"] = len(kept)
@@ -535,10 +548,17 @@ def _ppm(value):
 def _describe_phase(label, a):
     if "error" in a:
         return f"{label}: {a['error']}"
-    return (f"{label}: {a['kept']}/{a['used']} exchanges kept, board span {a['board_span_s']:.1f} s "
+    return (f"{label}: {a['kept']}/{a['used']} responses kept ({100.0 * a['kept'] / a['used']:.1f}%), board span {a['board_span_s']:.1f} s "
             f"({a['wraps']:.1f} wraps), slope 1{_ppm(a['slope_ppm'])} (lag-median 1{_ppm(a['robust_slope_ppm'])}), "
             f"residual rms {a['residual_rms_us']:.1f} us p95 {a['residual_p95_us']:.1f} us max {a['residual_max_us']:.1f} us, "
             f"noise {a['noise_us']:.1f} us, largest step {a['max_step_us']:.1f} us")
+
+
+# What the one-way fit cannot see, printed beside the steps verdict so a PASS is not read as more than it is.
+ONE_WAY_LIMIT = (
+    f"Limit of the one-way fit: a response that is late and a board clock that is briefly behind look the same, so the clock "
+    f"running more than {ONE_WAY_SLACK_S * 1e6:.0f} us behind for less than about 5 s (the width of the local floor) is dropped as "
+    "lateness and passes every check; the same excursion ahead, or behind for longer than that, shows as steps and fails")
 
 
 def judge_soak(idle, load, min_span_s=MIN_SOAK_SPAN_S, limit_ppm=LOAD_SLOPE_LIMIT_PPM, step_fail_s=STEP_FAIL_S):
@@ -549,47 +569,64 @@ def judge_soak(idle, load, min_span_s=MIN_SOAK_SPAN_S, limit_ppm=LOAD_SLOPE_LIMI
 
     short = [f"{label} {a['answered']}/{a['requests']} answered" for label, a in phases
              if a.get("requests") and a.get("answered", 0) < MIN_ANSWERED * a["requests"]]
-    broken = [f"{label}: {a['error']}" for label, a in phases if "error" in a]
+    errors = [f"{label}: {a['error']}" for label, a in phases if "error" in a]
     if len({a.get("source") for _, a in phases}) > 1:
-        broken.append("the phases were stamped by different clocks (" + ", ".join(
+        errors.append("the phases were stamped by different clocks (" + ", ".join(
             f"{label} {a.get('source')}" for label, a in phases) + "), so their slopes cannot be compared")
     unstamped = [f"{label}: only {a['counts']['hardware']} of {a['counts']['valid']} responses carry a hardware stamp"
                  for label, a in phases if a.get("counts") and a["counts"]["hardware"] < 0.9 * a["counts"]["valid"]]
-    checks.append(("soak_data", not short and not broken and not unstamped,
-                   "; ".join(short + broken + unstamped) or ", ".join(
-                       f"{label} {a.get('answered', '?')}/{a.get('requests', '?')} answered, {a['kept']} used"
-                       + (f" (hardware stamps on {a['counts']['hardware']} of {a['counts']['valid']} valid)" if a.get("counts") else "")
-                       for label, a in phases)))
-    if broken:
-        return checks  # nothing below can be judged
+    # A healthy board keeps nearly every response (98.5% or better in the board's transmit-path model, 95% in the model that
+    # has 5% of responses up to 1.2 ms late). A counter that stops in WFI scatters every point and kept 22% (371 of 1675).
+    # Below the floor the fit rests on a minority and the filter's blind spot (below) grows, so the data is not trusted.
+    thin = [f"{label}: only {a['kept']} of {a['used']} responses ({100.0 * a['kept'] / a['used']:.0f}%) were within "
+            f"{ONE_WAY_SLACK_S * 1e6:.0f} us of the local floor; under {MIN_KEPT_FRACTION * 100:.0f}% the fit rests on a minority"
+            for label, a in phases if "kept" in a and a["used"] and a["kept"] < MIN_KEPT_FRACTION * a["used"]]
+    problems = short + errors + unstamped + thin
+    checks.append(("soak_data", not problems,
+                   "; ".join(problems) or ", ".join(
+                       f"{label} {a.get('answered', '?')}/{a.get('requests', '?')} answered, {a['kept']}/{a['used']} kept "
+                       f"({100.0 * a['kept'] / a['used']:.1f}%)"
+                       + (f", hardware stamps on {a['counts']['hardware']} of {a['counts']['valid']} valid" if a.get("counts") else "")
+                       for label, a in phases) + f" (floor {MIN_KEPT_FRACTION * 100:.0f}% kept)"))
+
+    # The idle slope is judged on whatever data there is, even when soak_data failed: a counter stopped in WFI scatters the
+    # filter into discarding most points, and it must fail its own check, not only the data check.
+    idle_ppm = idle.get("slope_ppm", idle.get("all_slope_ppm"))
+    stepped = " (the fit runs across the steps soak_steps found)" if any(
+        abs(s["step_us"]) >= step_fail_s * 1e6 for _, a in phases for s in a.get("steps", [])) else ""
+    if idle_ppm is None:
+        idle_check = ("soak_idle_slope", False, "no slope could be fitted to the idle phase")
+    else:
+        idle_check = ("soak_idle_slope", abs(idle_ppm) <= SLOPE_SANITY_PPM,
+                      f"idle slope 1{_ppm(idle_ppm)} against the host over {idle.get('board_span_s', float('nan')):.0f} s with the board "
+                      f"mostly idle{'' if 'slope_ppm' in idle else ' (from all points: the filter left too few)'}; within "
+                      f"{SLOPE_SANITY_PPM:.0f} ppm of 1 shows the counter runs in WFI (stopped in it, the slope would be far from 1)" + stepped)
+    if errors:
+        return checks + [idle_check]  # nothing else can be judged
 
     spans = [(label, a["board_span_s"], a["wraps"]) for label, a in phases]
     checks.append(("soak_wraps", all(span >= min_span_s for _, span, _ in spans),
                    "; ".join(f"{label} {span:.1f} s = {wraps:.1f} wraps" for label, span, wraps in spans)
                    + f" (need {min_span_s:.0f} s each, 13 wraps of {WRAP_SECONDS:.2f} s)"))
 
-    problems, notes = [], []
+    found, notes = [], []
     for label, a in phases:
         if a["step_floor_us"] > 0.5 * step_fail_s * 1e6:
-            problems.append(f"{label}: noise {a['noise_us']:.0f} us is too high to resolve a {step_fail_s * 1e3:g} ms step "
-                            f"(smallest step it could show is {a['step_floor_us']:.0f} us)")
+            found.append(f"{label}: noise {a['noise_us']:.0f} us is too high to resolve a {step_fail_s * 1e3:g} ms step "
+                         f"(smallest step it could show is {a['step_floor_us']:.0f} us)")
         for s in a["steps"]:
             text = f"{label}: {s['step_us']:+.1f} us at {s['at_s']:.0f} s"
             if abs(s["step_us"]) >= step_fail_s * 1e6:
-                problems.append(f"step {text}" + (f" (a whole number of {WRAP_SECONDS:.2f} s wraps)" if s["wrap_sized"] else ""))
+                found.append(f"step {text}" + (f" (a whole number of {WRAP_SECONDS:.2f} s wraps)" if s["wrap_sized"] else ""))
             else:
                 notes.append(text)
-        problems += [f"{label}: jumps at {x:.0f} s and {y:.0f} s are a whole number of wraps apart" for x, y in a["wrap_spaced"]]
-    checks.append(("soak_steps", not problems,
-                   "; ".join(problems) or f"no step of {step_fail_s * 1e3:g} ms or more, none a whole wrap in size or spacing; "
+        found += [f"{label}: jumps at {x:.0f} s and {y:.0f} s are a whole number of wraps apart" for x, y in a["wrap_spaced"]]
+    checks.append(("soak_steps", not found,
+                   "; ".join(found) or f"no step of {step_fail_s * 1e3:g} ms or more, none a whole wrap in size or spacing; "
                    f"largest idle {idle['max_step_us']:.1f} us, load {load['max_step_us']:.1f} us"
-                   + (f"; smaller jumps noted: {'; '.join(notes)}" if notes else "")))
+                   + (f"; smaller jumps noted: {'; '.join(notes)}" if notes else "") + ". " + ONE_WAY_LIMIT))
 
-    stepped = " (the fit runs across the steps soak_steps found)" if any(
-        abs(s["step_us"]) >= step_fail_s * 1e6 for _, a in phases for s in a["steps"]) else ""
-    checks.append(("soak_idle_slope", abs(idle["slope_ppm"]) <= SLOPE_SANITY_PPM,
-                   f"idle slope 1{_ppm(idle['slope_ppm'])} against the host over {idle['board_span_s']:.0f} s with the board "
-                   f"mostly idle; within {SLOPE_SANITY_PPM:.0f} ppm of 1 shows the counter runs in WFI (stopped in it, the slope would be far from 1)" + stepped))
+    checks.append(idle_check)
     difference = load["slope_ppm"] - idle["slope_ppm"]
     checks.append(("soak_load_slope", abs(difference) <= limit_ppm,
                    f"idle 1{_ppm(idle['slope_ppm'])}, load 1{_ppm(load['slope_ppm'])}, difference {difference:+.3f} ppm (limit {limit_ppm:g}); "
@@ -772,7 +809,7 @@ def run_soak(s, address, boot_id, args, raw):
         if label == "idle":
             time.sleep(2.0)
     print("  period ruler: the 100 ms k_timer behind GPIO_READ counts kernel ticks, which the old SysTick clock lost; "
-          "both run from one crystal, so no host clock is involved. Tens of ppm over nominal would show the tick losing "
+          "both run from one crystal, so no host clock is involved. Tens or hundreds of ppm over nominal would show the tick losing "
           "time the DWT clock does not lose. Near 0 shows only that the tick lost little in this workload; it does not "
           "show the DWT clock is right.", flush=True)
     gaps = sum(1 for a, b in zip(frames, frames[1:]) if b[3] == a[3] and b[4] != a[4] + 1)
