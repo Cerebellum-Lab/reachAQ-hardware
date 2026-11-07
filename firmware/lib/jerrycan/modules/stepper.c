@@ -64,6 +64,9 @@ typedef enum {
 
 static moving_state_t moving_state = MOVING_NONE;
 
+// First axis of a FIXED_XYZ that was refused, for its final ACK. The status timer's ISR and the main thread touch it.
+static int fixed_sequence_error;
+
 static int stepper_move_handler(const jerrycan_msg_t *msg) {
     // If we receive a stepper message, we should move the stepper
     LOG_INF(
@@ -143,10 +146,19 @@ static bool attempt_motor_move(int motor_id) {
     struct stepper_work_context *context = find_stepper_context_from_device(dev);
 
     LOG_WRN("Attempt move for Motor %d", motor_id);
+    const motion_mode_t mode_before = context->motion_mode;
     const int rc = stepper_move_to_position(dev, context->fixed_position, context->motor_max_velocity,
                                             context->motor_max_acceleration);
 
     if (rc < 0) {
+        // Only refusals count. -EAGAIN is an axis already at its target, and none of these occur on a v1.2 board with
+        // no ESTOP, so its ACK stays 0.
+        const bool refused = rc == -EPERM || rc == -EIO || rc == -ETIMEDOUT ||
+                             (rc == -EBUSY && mode_before != MOTION_IN_PROGESS);
+        if (refused && fixed_sequence_error == 0) {
+            fixed_sequence_error = rc;
+        }
+
         context->motion_mode = MOTION_DONE;
         return false;
     }
@@ -170,7 +182,9 @@ static void stepper_handle_motion_complete() {
             LOG_INF("Motion Complete for %d. state=%d. uuid=%d", i, moving_state, context->uuid);
             context->motion_mode = MOTION_IDLE;
             if (moving_state == MOVING_SINGLE || moving_state == MOVING_COMPLETE) {
-                jerrycan_send_ack(context->uuid, stepper_power_motion_error());
+                jerrycan_send_ack(context->uuid,
+                                  fixed_sequence_error != 0 ? fixed_sequence_error : stepper_power_motion_error());
+                fixed_sequence_error = 0;
                 moving_state = MOVING_NONE;
             }
         }
@@ -228,6 +242,7 @@ static void stepper_handle_fixed_sequence() {
 
 static int stepper_fixed_move(const jerrycan_msg_t *msg) {
     set_uuid_for_xyz_context(msg->uuid);
+    fixed_sequence_error = 0;
     moving_state = MOVE_X;
 
     return COMMAND_NOT_COMPLETE;
