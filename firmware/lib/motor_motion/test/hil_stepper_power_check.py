@@ -18,10 +18,18 @@ position.
 Nothing here may leave a motor running unwatched. A HOME that gets no ACK may still be homing (it has no travel limit,
 and a second HOME answers -EBUSY), so the script sends ESTOP at once, reports it, releases ESTOP and stops the run. On
 Ctrl-C, SIGTERM or SIGHUP (a dropped ssh session) it asserts ESTOP and releases it, and every axis then needs homing.
+Only firmware from this branch handles ESTOP. On older firmware (v2.3.0 and earlier) it does nothing, and a v1.2 board
+reports the same capabilities on both, so the script cannot tell which it is talking to: be ready to cut power.
 
-Each check prints [PASS|FAIL|SKIP] name: detail, and the script exits non-zero on any FAIL. A check that cannot run
-prints SKIP and never PASS. After each check the script releases ESTOP, re-homes every axis that needs it, and asks the
-board for its capabilities again, so one failure does not cascade and a restart of the board is noticed.
+Each check prints [PASS|FAIL|SKIP] name: detail. A check that cannot run prints SKIP and never PASS. Exit status: 0 only
+if every selected check passed, 1 on any FAIL, 2 for bad arguments (nothing is sent), 3 if nothing failed but something
+was skipped, with a line naming what was skipped. After each check the script releases ESTOP, re-homes every axis that
+needs it, asks the board for its capabilities again, so that one failure does not cascade and a restart of the board is
+noticed, and audits the ACKs: one whose uuid the script never sent as a command, or a second one for a command, is a
+FAIL naming the uuid. A stale ACK that carries another uuid is otherwise ignored, because a check looks for its own.
+
+silence_cycles moves one axis +0.25 turn after each of 30 silences, rotating the axes, so that steps lost at the enable
+edge add up in one direction, and then finds the limit switch from 0.1 turn short of it. It takes about 16 minutes.
 """
 
 import argparse
@@ -59,6 +67,9 @@ HEARTBEAT = 0x3F
 TX_PAYLOAD_SIZES = {ESTOP: 1, STEPPER_MOVE: 13, SERVO_MOVE: 13, STEPPER_HOME: 1, CFG_READ: 28, FIXED_XYZ: 1,
                     CAPABILITIES_REQUEST: 1, HEARTBEAT: 1}
 MOTION_TYPES = frozenset((STEPPER_MOVE, SERVO_MOVE, STEPPER_HOME, FIXED_XYZ))
+# Commands the board ACKs, each with the uuid it was sent with. ESTOP, HEARTBEAT and CFG_READ are never ACKed, so they
+# carry uuid 0, which the script never uses for a command.
+ACKED_TYPES = MOTION_TYPES | {CAPABILITIES_REQUEST}
 # Frames only a host sends. Seeing one addressed to the board (or to everyone) means another host is driving it.
 HOST_ONLY_TYPES = frozenset((ESTOP, STEPPER_MOVE, SERVO_MOVE, STEPPER_HOME, CFG_READ, BOOTLOADER_COMMAND,
                              BOOTLOADER_DATA, FIXED_XYZ, CAPABILITIES_REQUEST))
@@ -81,8 +92,8 @@ WIRE_SCHEMA_VERSION = 1
 STATUS_DRIVER_FAULT = 0x01
 STATUS_ENABLE_OFF = 0x02
 
-# Errno values as they travel on the wire. These are the firmware's, from Zephyr's minimal libc: its ETIMEDOUT is 116,
-# where Linux's is 110. Do not replace them with Python's errno module.
+# Errno values as they travel on the wire. These are the firmware's, from picolibc (CONFIG_PICOLIBC=y): its ETIMEDOUT is
+# 116, where Linux's is 110. Do not replace them with Python's errno module.
 ACK_EPERM = -1
 ACK_EIO = -5
 ACK_EBUSY = -16
@@ -112,8 +123,13 @@ SERVO_MOVE_FRACTION = 0.4
 SERVO_MIN_S = 1.5
 SILENCE_EARLY_S = 0.5  # silence_midmove: the motion may stop this long before the timeout
 SILENCE_LATE_S = 1.0  # and this long after it
+SILENCE_STEP_TURNS = 0.25  # silence_cycles: the move after each silence, on one axis
+SILENCE_SHORT_TURNS = 0.1  # then the axis goes back to this far short of its switch
+SILENCE_LONG_TURNS = 0.2  # and on this much further, which has to reach the switch
+# ESTOP is handled only by firmware from this branch on, and v2.3.0 and v2.3.1 report the same capabilities on a v1.2.
+ESTOP_CAVEAT = "Firmware older than this branch ignores ESTOP: check that the motors stopped, be ready to cut power."
 
-results = []
+results = []  # (name, True | False | None)
 
 
 def say(text):
@@ -126,7 +142,7 @@ def say(text):
 
 def report(name, ok, detail):
     """ok is True for PASS, False for FAIL and None for SKIP."""
-    results.append(ok)
+    results.append((name, ok))
     say(f"[{'SKIP' if ok is None else 'PASS' if ok else 'FAIL'}] {name}: {detail}")
 
 
@@ -212,6 +228,10 @@ class Board:
         self.abort_reason = None
         self.needs_home = set()
         self.boot_id = None
+        self.ack_counts = {}  # uuid of every command sent that the board ACKs -> ACKs received for it
+        self.ack_problems = []
+        self.acks_matched = 0
+        self._absorbed = 0  # acks[:_absorbed] have been counted
         self._uuids = itertools.cycle(range(1, 256))
         self._stepper_cfgs = {}
         self._servo_cfgs = {}
@@ -264,9 +284,39 @@ class Board:
 
     # --- send -------------------------------------------------------------------------------------------------
 
+    def count_acks(self):
+        """Match the ACKs received since the last call against the commands sent. An ACK with a uuid the script never
+        sent as a command, or a further ACK for one command, goes to ack_problems. A uuid is unique per command (they
+        wrap only after 255), so a repeat means the board ACKed twice."""
+        for ack in self.acks[self._absorbed:]:
+            seen = self.ack_counts.get(ack.uuid)
+            if seen is None:
+                self.ack_problems.append(f"uuid {ack.uuid} was ACKed {fmt_errors([ack.error])} but never sent")
+                continue
+            if seen:
+                self.ack_problems.append(f"uuid {ack.uuid} was ACKed again {fmt_errors([ack.error])}")
+            else:
+                self.acks_matched += 1
+            self.ack_counts[ack.uuid] = seen + 1
+        self._absorbed = len(self.acks)
+
+    def audit_acks(self, name):
+        """Report, as a FAIL, what count_acks found since the last audit."""
+        self.count_acks()
+        problems, self.ack_problems = self.ack_problems, []
+        if problems:
+            counts = {}
+            for problem in problems:
+                counts[problem] = counts.get(problem, 0) + 1
+            report(f"{name}/acks", False, "; ".join(p if n == 1 else f"{p} x{n}" for p, n in counts.items()))
+
     def send_frame(self, msg_type, payload, dst=None):
-        """Send with a fresh non-zero uuid. Returns (uuid, time sent)."""
-        uuid = next(self._uuids)
+        """Send with a fresh non-zero uuid, or uuid 0 for a frame the board never ACKs. Returns (uuid, time sent)."""
+        uuid = 0
+        if msg_type in ACKED_TYPES:
+            self.count_acks()  # before the uuid can be reused
+            uuid = next(self._uuids)
+            self.ack_counts[uuid] = 0
         if msg_type in MOTION_TYPES:
             self.motion_sent = True
         send(self.s, msg_type, self.address if dst is None else dst, payload, uuid)
@@ -292,7 +342,8 @@ class Board:
         self.estop(True)
         self.pump(0.3)
         self.estop(False)
-        say("ESTOP asserted and released at the board: every axis now needs homing.")
+        self.motion_sent = False  # stopped: a second call does nothing until another command moves a motor
+        say("ESTOP asserted and released at the board: every axis now needs homing. " + ESTOP_CAVEAT)
 
     def move_stepper(self, axis, turns, velocity, acceleration, relative=True):
         cfg = self.stepper_cfg(axis)
@@ -426,7 +477,7 @@ class Board:
             self.estop(True)
             self.pump(0.3)  # let the stop take effect before restore releases it
             self.abort_reason = (f"axis {axis} did not ACK its home within {timeout:.0f} s and may still be moving: "
-                                 "ESTOP sent to the board, run stopped, every axis needs homing")
+                                 f"ESTOP sent to the board, run stopped, every axis needs homing. {ESTOP_CAVEAT}")
             raise Abort(self.abort_reason)
         return errors, acks[0].t - sent
 
@@ -449,7 +500,7 @@ class Board:
     def restore(self, name):
         """Leave the board as the next check expects it: ESTOP released, every axis that needs a home homed, and the
         same boot. False if the run must stop: the board stopped answering, or a home got no ACK (then ESTOP is only
-        released, and nothing is homed or sent after that)."""
+        released, and nothing is homed or sent after that). Last, audit the ACKs received since the previous audit."""
         try:
             if self.estop_asserted:
                 self.estop(False)
@@ -478,6 +529,7 @@ class Board:
             if self.estop_asserted:  # a home inside this method may have sent ESTOP: release it, whatever happened
                 self.estop(False)
                 self.pump(0.3)
+            self.audit_acks(name)
 
 
 def prompt_operator(text, on_eof):
@@ -526,8 +578,10 @@ def check_status_idle(b):
 
 def check_home_and_move(b):
     problems, notes = [], []
+    # All three before anything moves, so that a Skip cannot hide an earlier FAIL.
+    axis_limits = {axis: b.limits(axis) for axis in AXES}
     for axis in AXES:
-        cfg, v, a = b.limits(axis)
+        cfg, v, a = axis_limits[axis]
         errors, took = b.home(axis)
         if errors != [0]:
             problems.append(f"axis {axis} home ACK {fmt_errors(errors)}, want [0]")
@@ -548,7 +602,8 @@ def check_home_and_move(b):
 
 
 def check_estop_multiblock_restart(b):
-    axis = b.args.axis or 0
+    # Axis 2 by default: a stop that ACKs an idle axis's stale uuid shows only when the mover is not axis 0.
+    axis = 2 if b.args.axis is None else b.args.axis
     cfg, v_cap, a = b.limits(axis)
     pulses_per_turn = cfg.steps_per_rev * cfg.microsteps
     distance = MULTIBLOCK_PULSES / pulses_per_turn
@@ -644,7 +699,10 @@ def check_recover_at_limit(b):
         if status is None or abs(status.position - 1.0) > POSITION_TOLERANCE_TURNS:
             problems.append(f"position after the move {'none' if status is None else format(status.position, '.3f')}, "
                             "want 1.000")
-    return problems, f"axis {axis}: on its switch, ESTOP 1 then 0, home ACK 0, +1 turn ACK 0"
+        # The position is generated, not measured: only the switch shows that the axis left it.
+        if status is not None and status.limit != 0:
+            problems.append("limit_switch still reads closed after +1 turn off the switch: the axis did not move")
+    return problems, f"axis {axis}: on its switch, ESTOP 1 then 0, home ACK 0, +1 turn ACK 0, switch read after it"
 
 
 def check_fixed_xyz_interrupted(b):
@@ -717,20 +775,27 @@ def check_servo_after_estop(b):
 
     b.estop(False)
     b.pump(0.3)
-    stopped_at = b.servo_position(motor)
-    back = start if abs(stopped_at - start) >= SERVO_MIN_MOVE / 2 else target
+    # SERVO_STATUS carries the position the profile has generated, not a measurement. After an ESTOP that is where the
+    # next move's profile starts.
+    profile_start = b.servo_position(motor)
+    back = start if abs(profile_start - start) >= SERVO_MIN_MOVE / 2 else target
+    planned = abs(back - profile_start) / v  # seconds at cruise, less than the profile takes
     uuid, sent = b.move_servo(motor, back, v, a)
     acks = b.wait_acks(uuid, sent, move_timeout(delta, v, a))
     errors = [x.error for x in acks]
     if errors != [0]:
         problems.append(f"servo move after ESTOP(0): ACK {fmt_errors(errors)}, want [0]")
     else:
+        elapsed = acks[0].t - sent
+        if elapsed < 0.5 * planned:
+            problems.append(f"servo move after ESTOP(0) ACKed after {elapsed:.2f} s, under half of the {planned:.2f} s "
+                            "it takes: it did not run")
         b.pump(0.3)
-        final = b.servo_position(motor)
+        final = b.servo_position(motor)  # the planned end, so this shows only that the profile finished
         if abs(final - back) > max(1.0, 0.02 * (hi - lo)):
             problems.append(f"servo reports {final:.1f} after the move to {back:.1f}")
-        notes.append(f"servo {motor}: {start:.1f} to {target:.1f} (stopped at {stopped_at:.1f}), then to {back:.1f}, "
-                     f"ACK 0 after {acks[0].t - sent:.2f} s")
+        notes.append(f"servo {motor}: {start:.1f} to {target:.1f} (status {profile_start:.1f} after the ESTOP, "
+                     f"not measured), then to {back:.1f}, ACK 0 after {elapsed:.2f} s of {planned:.2f} s planned")
     return problems, "; ".join(notes)
 
 
@@ -798,6 +863,11 @@ def check_diag_fault(b):
                 problems.append(f"motor {motor} status 0x{snapshot[motor].status:02x} after the home, want 0")
     finally:
         if forced:
+            if sys.exc_info()[0] is not None:  # Ctrl-C, a signal or a failure on its way out: stop first, then talk
+                try:
+                    b.stop_motion()
+                except Exception as error:
+                    say(f"WARNING: could not stop the motors with ESTOP: {error}")
             say(f"\nWARNING: DIAG is still forced on axis {axis}.")
             try:
                 prompt_operator(f"Clear it now: adi_tmc2209 write {axis} 0x40 0x0 and adi_tmc2209 write {axis} 0x14 0x0",
@@ -820,53 +890,86 @@ def enable_off_problem(b, end):
     return ""
 
 
+def silence_run_time_s(cycles, quiet_s, limits_by_axis):
+    """About how long silence_cycles takes, not counting the homes."""
+    total = 0.0
+    for cycle in range(cycles):
+        _, v, a = limits_by_axis[AXES[cycle % len(AXES)]]
+        total += quiet_s + SILENCE_STEP_TURNS / v + 2.0 * v / a + ACK_SETTLE_S
+    for axis in AXES:
+        _, v, a = limits_by_axis[axis]
+        travel = SILENCE_STEP_TURNS * len(range(axis, cycles, len(AXES)))
+        total += (travel + SILENCE_LONG_TURNS) / v + 4.0 * v / a + 2 * ACK_SETTLE_S + 2.0
+    return total
+
+
 def check_silence_cycles(b):
-    axis = b.args.axis or 0
-    cfg, v, a = b.limits(axis)
+    """Does a move sent after a silence lose steps? Every cycle waits quiet_s with no frame, checks that all three
+    motors report ENABLE_OFF, then moves one axis +0.25 turn and wants ACK 0. The axes rotate (cycle mod 3), so with 30
+    cycles each travels 10 x 0.25 = 2.5 turns away from its switch, and steps lost at the enable edge add up in one
+    direction. Then each axis, with no silence, goes back to 0.1 turn short of the switch (it must read open) and 0.2
+    turn further (it must hit). Cycles that went +1 and -1 turn could not show this: they net zero for any constant
+    loss."""
     quiet_s, cycles = b.args.quiet_s, b.args.cycles
-    errors, _ = b.home(axis)
-    if errors != [0]:
-        raise Fail(f"axis {axis} home ACK {fmt_errors(errors)}, want [0]; nothing else was tried")
+    axis_limits = {axis: b.limits(axis) for axis in AXES}  # all three before anything moves
+    steps = {axis: len(range(axis, cycles, len(AXES))) for axis in AXES}
+    travel = {axis: SILENCE_STEP_TURNS * steps[axis] for axis in AXES}
+    say(f"  silence_cycles: {cycles} cycles of {quiet_s:g} s quiet, moves per axis {[steps[x] for x in AXES]}, "
+        f"expected run time about {silence_run_time_s(cycles, quiet_s, axis_limits) / 60.0:.0f} minutes, "
+        "plus the homes")
+    for axis in AXES:  # a known start: every axis on its switch
+        errors, _ = b.home(axis)
+        if errors != [0]:
+            raise Fail(f"axis {axis} home ACK {fmt_errors(errors)}, want [0]; nothing else was tried")
     problems = []
     done = 0
-    for cycle in range(1, cycles + 1):
-        for turns in (1.0, -1.0):
-            end = b.quiet(quiet_s)
-            wrong = enable_off_problem(b, end)
-            if wrong:
-                problems.append(f"cycle {cycle}, after {quiet_s:g} s quiet: {wrong}")
-                break
-            uuid, sent = b.move_stepper(axis, turns, v, a)
-            errors = [x.error for x in b.wait_acks(uuid, sent, move_timeout(turns, v, a))]
-            if errors != [0]:
-                b.needs_home.add(axis)
-                problems.append(f"cycle {cycle}, move {turns:+g} turn after quiet: ACK {fmt_errors(errors)}, want [0]")
-                break
-        if problems:
+    for cycle in range(cycles):
+        axis = AXES[cycle % len(AXES)]
+        cfg, v, a = axis_limits[axis]
+        end = b.quiet(quiet_s)
+        wrong = enable_off_problem(b, end)
+        if wrong:
+            problems.append(f"cycle {cycle + 1}, axis {axis}, after {quiet_s:g} s quiet: {wrong}")
+            break
+        uuid, sent = b.move_stepper(axis, SILENCE_STEP_TURNS, v, a)
+        b.needs_home.add(axis)  # it is off its switch from here on
+        errors = [x.error for x in b.wait_acks(uuid, sent, move_timeout(SILENCE_STEP_TURNS, v, a))]
+        if errors != [0]:
+            problems.append(f"cycle {cycle + 1}, axis {axis}, move +{SILENCE_STEP_TURNS:g} turn after quiet: "
+                            f"ACK {fmt_errors(errors)}, want [0]")
             break
         done += 1
-        say(f"  cycle {cycle}/{cycles} ok")
+        say(f"  cycle {cycle + 1}/{cycles} (axis {axis}) ok")
     if problems:
         return problems, f"{done}/{cycles} cycles"
 
-    # Steps lost at each EN edge add up: the axis should still be 0.1 turn short of its switch, and 0.2 turn on, on it.
-    b.needs_home.add(axis)
-    uuid, sent = b.move_stepper(axis, 0.1, v, a, relative=False)
-    errors = [x.error for x in b.wait_acks(uuid, sent, move_timeout(0.1, v, a))]
-    status = b.settled_status().get(axis)
-    if errors != [0]:
-        problems.append(f"move to 0.1 turn: ACK {fmt_errors(errors)}, want [0]")
-    elif status is None or status.limit != 0:
-        problems.append("the limit switch reads closed at 0.1 turn short of it: the axis has drifted toward it")
-    uuid, sent = b.move_stepper(axis, -0.1, v, a, relative=False)
-    errors = [x.error for x in b.wait_acks(uuid, sent, move_timeout(0.2, v, a))]
-    status = b.settled_status().get(axis)
-    if errors != [0]:
-        problems.append(f"move 0.2 turn further: ACK {fmt_errors(errors)}, want [0]")
-    elif status is None or status.limit != 1:
-        problems.append("the limit switch reads open after moving 0.2 turn on from 0.1 short of it: the axis has "
-                        "drifted away from it")
-    return problems, f"axis {axis}: {cycles} cycles of {quiet_s:g} s quiet, then 0.1 turn short (open) and 0.2 on (hit)"
+    # No silence from here on. Lost steps have moved each axis toward its switch (or gained ones away from it).
+    for axis in AXES:
+        cfg, v, a = axis_limits[axis]
+        b.needs_home.add(axis)
+        uuid, sent = b.move_stepper(axis, SILENCE_SHORT_TURNS, v, a, relative=False)
+        errors = [x.error for x in b.wait_acks(uuid, sent, move_timeout(travel[axis], v, a))]
+        status = b.settled_status().get(axis)
+        if errors != [0]:
+            problems.append(f"axis {axis}: move back to {SILENCE_SHORT_TURNS:g} turn: ACK {fmt_errors(errors)}, "
+                            "want [0]")
+            continue
+        if status is None or status.limit != 0:
+            problems.append(f"axis {axis}: switch closed {SILENCE_SHORT_TURNS:g} turn short of it after {steps[axis]} "
+                            f"moves of {SILENCE_STEP_TURNS:g} turn after a silence: steps were lost")
+            continue  # the position is no longer known, so do not drive further toward the switch
+        uuid, sent = b.move_stepper(axis, -SILENCE_LONG_TURNS, v, a)
+        errors = [x.error for x in b.wait_acks(uuid, sent, move_timeout(SILENCE_LONG_TURNS, v, a))]
+        status = b.settled_status().get(axis)
+        if errors != [0]:
+            problems.append(f"axis {axis}: move {SILENCE_LONG_TURNS:g} turn further: ACK {fmt_errors(errors)}, "
+                            "want [0]")
+        elif status is None or status.limit != 1:
+            problems.append(f"axis {axis}: switch still open {SILENCE_LONG_TURNS:g} turn on from "
+                            f"{SILENCE_SHORT_TURNS:g} short of it: steps were gained")
+    return problems, (f"{cycles} cycles of {quiet_s:g} s quiet over axes 0, 1, 2 ({steps[0]}, {steps[1]}, {steps[2]} "
+                      f"moves of {SILENCE_STEP_TURNS:g} turn); each axis then open at {SILENCE_SHORT_TURNS:g} turn "
+                      f"short and hit after {SILENCE_LONG_TURNS:g} more")
 
 
 def check_silence_midmove(b):
@@ -990,7 +1093,11 @@ def set_signals(handler, names, saved):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0],
                                      epilog="checks: " + ", ".join(CHECKS) + ". On v1.2 the last three (diag_fault, "
-                                     "silence_cycles, silence_midmove) are v1.3 only.")
+                                     "silence_cycles, silence_midmove) are v1.3 only. Exit status: 0 if every selected "
+                                     "check passed, 1 on any FAIL, 2 for bad arguments, 3 if nothing failed but a "
+                                     "check was skipped. ESTOP does nothing on firmware older than this branch "
+                                     "(v2.3.0 and earlier), and a v1.2 board reports the same capabilities on both, so "
+                                     "the script cannot tell them apart: be ready to cut power.")
     parser.add_argument("--board", required=True, choices=("v1.2", "v1.3"), help="which board is on the bus")
     parser.add_argument("--check", metavar="NAME[,NAME...]",
                         help="checks to run, in this order (default: all for the board; diag_fault and "
@@ -998,13 +1105,16 @@ def main():
     parser.add_argument("--channel", default="can0")
     parser.add_argument("--address", type=int, default=0)
     parser.add_argument("--axis", type=int, choices=AXES,
-                        help="stepper axis for diag_fault (required there), silence_* and the single-axis checks "
-                             "(default 0)")
+                        help="stepper axis for diag_fault (required there), recover_at_limit and silence_midmove "
+                             "(default 0) and estop_multiblock_restart (default 2: a stop that ACKs an idle axis's "
+                             "stale uuid shows only when the mover is not axis 0). silence_cycles uses all three axes")
     parser.add_argument("--servo", type=int, choices=(0, 1, 2), default=0, help="servo for servo_after_estop")
     parser.add_argument("--quiet-s", type=float, default=32.0,
                         help="silence_cycles: seconds without a frame before each move; set it to the host silence "
                              "timeout T plus 2 (default 32, for the default T of 30)")
-    parser.add_argument("--cycles", type=int, default=20, help="silence_cycles: quiet-and-move cycles")
+    parser.add_argument("--cycles", type=int, default=30,
+                        help="silence_cycles: quiet-and-move cycles, one axis each in turn, +0.25 turn per cycle "
+                             "(default 30: 10 per axis, 2.5 turns of travel; about 16 minutes at --quiet-s 32)")
     parser.add_argument("--silence-timeout-s", type=float,
                         help="silence_midmove: the host silence timeout of the image under test (5 for the "
                              "-DCONFIG_LIB_MOTOR_MOTION_HOST_SILENCE_TIMEOUT_MS=5000 build)")
@@ -1027,6 +1137,8 @@ def main():
             parser.error("diag_fault needs --axis N")
         if "silence_midmove" in names and args.silence_timeout_s is None:
             parser.error("silence_midmove needs --silence-timeout-s (5 for the 5 s test build)")
+    if "silence_cycles" in names and -(-args.cycles // len(AXES)) * SILENCE_STEP_TURNS > STEPPER_MAX_TURNS:
+        parser.error(f"--cycles {args.cycles} would move an axis more than {STEPPER_MAX_TURNS:g} turns from its switch")
 
     s = open_socket(args.channel)
     board = Board(s, args)
@@ -1072,8 +1184,18 @@ def main():
                 except (ValueError, OSError):
                     pass
 
-    say(f"{results.count(True)} PASS, {results.count(False)} FAIL, {results.count(None)} SKIP")
-    return 1 if False in results else 0
+    outcomes = [ok for _, ok in results]
+    say(f"{outcomes.count(True)} PASS, {outcomes.count(False)} FAIL, {outcomes.count(None)} SKIP; "
+        f"{board.acks_matched} ACKs matched to the commands sent")
+    if False in outcomes:
+        return 1
+    skipped = [name for name, ok in results if ok is None]
+    not_run = [name for name in names if name not in {done for done, _ in results}]
+    if skipped or not_run:
+        say("NOT A FULL PASS" + (f", skipped: {', '.join(skipped)}" if skipped else "")
+            + (f", not run: {', '.join(not_run)}" if not_run else "") + " (exit status 3)")
+        return 3
+    return 0
 
 
 if __name__ == "__main__":
