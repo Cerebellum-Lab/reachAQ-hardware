@@ -134,6 +134,9 @@ void stepper_power_poll(void) {
     switch (action) {
         case STEPPER_POWER_ACT_STOP_FAULT:
             steppers_stop_moving();
+            // log_fault's "no fault flag set" is compiled out at the driver's log level, so a uv_cp or driver reset
+            // would otherwise print nothing.
+            LOG_ERR("Stepper driver fault, DIAG mask 0x%02x: steppers stopped", faulted);
             for (size_t i = 0; i < ARRAY_SIZE(diag); i++) {
                 if (faulted & BIT(i)) {
                     adi_tmc2209_log_fault(driver_by_id(i));

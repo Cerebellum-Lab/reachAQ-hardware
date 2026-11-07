@@ -591,7 +591,8 @@ int servo_move_to_position(const struct device *dev, float target_position, cons
     /*
      * The library is currently not set up to allow servos to have limit switches
      * and homing. Thus, we do not check if the e-stop flag is set, because there
-     * is no way to unset it.
+     * is no way to unset it. That is the per-axis flag; an asserted ESTOP is
+     * checked below.
      */
 
     if (context == NULL) {
