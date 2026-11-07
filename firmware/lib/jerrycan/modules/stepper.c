@@ -182,8 +182,10 @@ static void stepper_handle_motion_complete() {
             LOG_INF("Motion Complete for %d. state=%d. uuid=%d", i, moving_state, context->uuid);
             context->motion_mode = MOTION_IDLE;
             if (moving_state == MOVING_SINGLE || moving_state == MOVING_COMPLETE) {
-                jerrycan_send_ack(context->uuid,
-                                  fixed_sequence_error != 0 ? fixed_sequence_error : stepper_power_motion_error());
+                // A single move that overrode a sequence does not inherit its refusal.
+                const bool sequence_refused = moving_state == MOVING_COMPLETE && fixed_sequence_error != 0;
+
+                jerrycan_send_ack(context->uuid, sequence_refused ? fixed_sequence_error : stepper_power_motion_error());
                 fixed_sequence_error = 0;
                 moving_state = MOVING_NONE;
             }
