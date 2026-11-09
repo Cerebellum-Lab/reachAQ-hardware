@@ -28,8 +28,14 @@ needs it, asks the board for its capabilities again, so that one failure does no
 noticed, and audits the ACKs: one whose uuid the script never sent as a command, or a second one for a command, is a
 FAIL naming the uuid. A stale ACK that carries another uuid is otherwise ignored, because a check looks for its own.
 
+estop_multiblock_restart moves its axis just over 1.25 DMA blocks (1280 pulses: 6.67 turns at 24 steps per revolution
+and microsteps 8, 3.33 turns at 48), so that a block is still queued when the ESTOP lands, and homes the axis again at
+the end. It is skipped if that is further than --max-turns (default 8), or if the ESTOP would not land inside the first
+block.
+
 silence_cycles moves one axis +0.25 turn after each of 30 silences, rotating the axes, so that steps lost at the enable
-edge add up in one direction, and then finds the limit switch from 0.1 turn short of it. It takes about 16 minutes.
+edge add up in one direction, and then finds the limit switch from 0.1 turn short of it. It takes about 17 minutes, 16
+of them the 30 silences of 32 s; --cycles must be a multiple of 3, so that every axis moves.
 """
 
 import argparse
@@ -108,8 +114,10 @@ ACK_SETTLE_S = 0.5  # after an ACK, keep listening this long so that a second AC
 ESTOP_SETTLE_S = 1.0
 KEEPALIVE_S = 1.0
 ESTOP_DELAY_S = 0.6  # from the move frame to the ESTOP
-MULTIBLOCK_PULSES = 2 * 1024 + 512  # over two DMA blocks (STEPPER_BUFFER_SIZE 1024, BUFS_PER_MOTOR 2)
+STEPPER_BLOCK_PULSES = 1024  # STEPPER_BUFFER_SIZE, pulses in one DMA block (BUFS_PER_MOTOR 2: both queued at the start)
+MULTIBLOCK_PULSES = STEPPER_BLOCK_PULSES * 5 // 4  # 1.25 blocks: one running and a second queued behind it
 MULTIBLOCK_MIN_S = 2.0  # slowest the multi-block move is stretched to, so the ESTOP lands in it
+MULTIBLOCK_MAX_TURNS = 8.0  # --max-turns: the furthest estop_multiblock_restart may take an axis from its switch
 POSITION_TOLERANCE_TURNS = 0.02
 FIXED_XYZ_ESTOP_DELAY_S = 0.25  # the firmware steps its X, Z, Y sequence on the 100 ms status tick
 FIXED_XYZ_SETTLE_S = 1.5
@@ -206,6 +214,37 @@ def home_timeout(cfg):
     homing = cfg.homing_velocity
     seconds = STEPPER_MAX_TURNS / homing if math.isfinite(homing) and homing > 0 else 60.0
     return min(max(seconds + 5.0, 10.0), 180.0)
+
+
+def move_pulses_by(seconds, distance, velocity, acceleration, pulses_per_turn):
+    """Pulses a stepper has emitted `seconds` into a move of `distance` turns, from the firmware's sinusoidal profile
+    (displacement_hat() in motor_math.c). The firmware truncates the move to whole pulses, so the total is
+    int(distance x pulses_per_turn). The board starts a little after the frame was sent, so this errs high."""
+    y_f = abs(distance)
+    y_s = y_f / 2.0
+    y_aux = velocity * velocity / acceleration
+    y_a = min(y_s, y_aux)
+    v_w = math.sqrt(y_s * acceleration) if y_s < y_aux else velocity
+    t_a = 2.0 * v_w / acceleration
+    omega = 2.0 * math.pi / t_a
+    k_s = t_a * v_w / (4.0 * math.pi ** 2)
+    t_s = (y_s - y_a) / velocity + t_a
+    t_t = 2.0 * t_s
+
+    def accelerating(t):
+        return max(0.0, acceleration / 4.0 * t * t + k_s * (math.cos(omega * t) - 1.0))
+
+    if seconds <= 0.0:
+        turns = 0.0
+    elif seconds <= t_a:
+        turns = accelerating(seconds)
+    elif seconds <= t_t - t_a:
+        turns = y_s + v_w * (seconds - t_s)
+    elif seconds < t_t:
+        turns = y_f - accelerating(t_t - seconds)
+    else:
+        turns = y_f
+    return min(int(turns * pulses_per_turn), int(y_f * pulses_per_turn))
 
 
 class Board:
@@ -336,7 +375,7 @@ class Board:
 
     def stop_motion(self):
         """ESTOP, then release it: stops whatever may be moving and leaves the board usable. Every axis needs a home
-        afterwards. Does nothing if no command that moves a motor was ever sent."""
+        afterwards. Does nothing if no command that moves a motor has been sent since the last stop."""
         if not self.motion_sent:
             return
         self.estop(True)
@@ -606,11 +645,19 @@ def check_estop_multiblock_restart(b):
     axis = 2 if b.args.axis is None else b.args.axis
     cfg, v_cap, a = b.limits(axis)
     pulses_per_turn = cfg.steps_per_rev * cfg.microsteps
-    distance = MULTIBLOCK_PULSES / pulses_per_turn
-    if distance > STEPPER_MAX_TURNS:
-        raise Skip(f"{MULTIBLOCK_PULSES} pulses are {distance:.1f} turns at {pulses_per_turn:g} pulses per turn, "
-                   f"over the {STEPPER_MAX_TURNS:g} turn limit")
+    # The smallest move over 1.25 blocks, a hair over so that float32 cannot truncate it to 1279 pulses. The check only
+    # needs a block still queued when the ESTOP lands, and every turn further is travel the axis may not have.
+    distance = MULTIBLOCK_PULSES / pulses_per_turn * (1.0 + 1e-6)
+    total = int(distance * pulses_per_turn)  # the firmware truncates a move to whole pulses
+    if distance > b.args.max_turns:
+        raise Skip(f"over 1.25 blocks is {distance:.2f} turns ({total} pulses at {pulses_per_turn:g} pulses per turn), "
+                   f"over --max-turns {b.args.max_turns:g}")
     v = min(v_cap, distance / MULTIBLOCK_MIN_S)
+    delay = min(ESTOP_DELAY_S, 0.3 * distance / v)
+    expected = move_pulses_by(delay, distance, v, a, pulses_per_turn)
+    if expected >= STEPPER_BLOCK_PULSES:
+        raise Skip(f"the ESTOP at {delay:.2f} s would land after about {expected} of {total} pulses, not below the "
+                   f"first block's {STEPPER_BLOCK_PULSES}: the stale-block case would not be shown")
     problems, notes = [], []
     errors, _ = b.home(axis)
     if errors != [0]:
@@ -618,7 +665,7 @@ def check_estop_multiblock_restart(b):
 
     # ESTOP while a multi-block move is running: one ACK, -EPERM, with the move's uuid
     uuid, sent = b.move_stepper(axis, distance, v, a)
-    b.pump_until(sent + min(ESTOP_DELAY_S, 0.3 * distance / v))
+    b.pump_until(sent + delay)
     estop_at = b.estop(True)
     acks = b.wait_acks(uuid, sent, 3.0, settle=ESTOP_SETTLE_S)
     errors = [x.error for x in acks]
@@ -627,7 +674,8 @@ def check_estop_multiblock_restart(b):
     if errors != [ACK_EPERM]:
         problems.append(f"ESTOP mid-move: ACKs {fmt_errors(errors)} for uuid {uuid}, want exactly [-EPERM]")
     else:
-        notes.append(f"ESTOP at {estop_at - sent:.2f} s, ACK -EPERM at {acks[0].t - sent:.2f} s")
+        notes.append(f"ESTOP at {estop_at - sent:.2f} s, about {expected} of {total} pulses expected by the planned "
+                     f"{delay:.2f} s (block of {STEPPER_BLOCK_PULSES}), ACK -EPERM at {acks[0].t - sent:.2f} s")
 
     # a move while ESTOP is asserted
     uuid, sent = b.move_stepper(axis, distance, v, a)
@@ -663,8 +711,14 @@ def check_estop_multiblock_restart(b):
         if status is None or abs(status.position - distance) > max(POSITION_TOLERANCE_TURNS, 4.0 / pulses_per_turn):
             problems.append(f"position after the move {'none' if status is None else format(status.position, '.3f')},"
                             f" want {distance:.3f}")
-        notes.append(f"axis {axis}: {distance:.3f} turns ({MULTIBLOCK_PULSES} pulses) at {v:.3f} turn/s; "
+        notes.append(f"axis {axis}: {distance:.3f} turns ({total} pulses) at {v:.3f} turn/s; "
                      f"restart move ACK 0 after {elapsed:.2f} s")
+        # The move left the axis distance turns out. Leave it home, and let a home that fails fail the check.
+        errors, took = b.home(axis)
+        if errors != [0]:
+            problems.append(f"home after the restart move: ACK {fmt_errors(errors)}, want [0]")
+        else:
+            notes.append(f"home back ACK 0 after {took:.1f} s")
     return problems, "; ".join(notes)
 
 
@@ -954,7 +1008,11 @@ def check_silence_cycles(b):
             problems.append(f"axis {axis}: move back to {SILENCE_SHORT_TURNS:g} turn: ACK {fmt_errors(errors)}, "
                             "want [0]")
             continue
-        if status is None or status.limit != 0:
+        if status is None:
+            problems.append(f"axis {axis}: no status received after the move back to {SILENCE_SHORT_TURNS:g} turn, so "
+                            "the switch was not read")
+            continue  # the switch state is not known, so do not drive further toward it
+        if status.limit != 0:
             problems.append(f"axis {axis}: switch closed {SILENCE_SHORT_TURNS:g} turn short of it after {steps[axis]} "
                             f"moves of {SILENCE_STEP_TURNS:g} turn after a silence: steps were lost")
             continue  # the position is no longer known, so do not drive further toward the switch
@@ -964,7 +1022,10 @@ def check_silence_cycles(b):
         if errors != [0]:
             problems.append(f"axis {axis}: move {SILENCE_LONG_TURNS:g} turn further: ACK {fmt_errors(errors)}, "
                             "want [0]")
-        elif status is None or status.limit != 1:
+        elif status is None:
+            problems.append(f"axis {axis}: no status received after the move {SILENCE_LONG_TURNS:g} turn further, so "
+                            "the switch was not read")
+        elif status.limit != 1:
             problems.append(f"axis {axis}: switch still open {SILENCE_LONG_TURNS:g} turn on from "
                             f"{SILENCE_SHORT_TURNS:g} short of it: steps were gained")
     return problems, (f"{cycles} cycles of {quiet_s:g} s quiet over axes 0, 1, 2 ({steps[0]}, {steps[1]}, {steps[2]} "
@@ -1109,12 +1170,18 @@ def main():
                              "(default 0) and estop_multiblock_restart (default 2: a stop that ACKs an idle axis's "
                              "stale uuid shows only when the mover is not axis 0). silence_cycles uses all three axes")
     parser.add_argument("--servo", type=int, choices=(0, 1, 2), default=0, help="servo for servo_after_estop")
+    parser.add_argument("--max-turns", type=float, default=MULTIBLOCK_MAX_TURNS,
+                        help="estop_multiblock_restart: skip it if its move (just over 1.25 blocks, 1280 pulses, so "
+                             "6.67 turns at 24 steps per revolution and microsteps 8) is further than this many turns "
+                             f"from the switch (default {MULTIBLOCK_MAX_TURNS:g}, at most {STEPPER_MAX_TURNS:g}); keep "
+                             "it inside the axis's travel")
     parser.add_argument("--quiet-s", type=float, default=32.0,
                         help="silence_cycles: seconds without a frame before each move; set it to the host silence "
                              "timeout T plus 2 (default 32, for the default T of 30)")
     parser.add_argument("--cycles", type=int, default=30,
-                        help="silence_cycles: quiet-and-move cycles, one axis each in turn, +0.25 turn per cycle "
-                             "(default 30: 10 per axis, 2.5 turns of travel; about 16 minutes at --quiet-s 32)")
+                        help="silence_cycles: quiet-and-move cycles, one axis each in turn, +0.25 turn per cycle; a "
+                             "multiple of 3, at least 3 (default 30: 10 per axis, 2.5 turns of travel; about 17 "
+                             "minutes at --quiet-s 32, 16 of them quiet)")
     parser.add_argument("--silence-timeout-s", type=float,
                         help="silence_midmove: the host silence timeout of the image under test (5 for the "
                              "-DCONFIG_LIB_MOTOR_MOTION_HOST_SILENCE_TIMEOUT_MS=5000 build)")
@@ -1122,8 +1189,14 @@ def main():
 
     if not 0 <= args.address < BROADCAST:
         parser.error(f"--address must be 0 to {BROADCAST - 1}")
-    if args.cycles < 1 or args.quiet_s < 3.0:
-        parser.error("--cycles must be at least 1 and --quiet-s at least 3")
+    if args.cycles < len(AXES) or args.cycles % len(AXES):
+        parser.error(f"--cycles must be a multiple of {len(AXES)} and at least {len(AXES)}: an axis that never moves "
+                     "sits at 0, and the 0.1 turn move to it is under the firmware's same-position gate "
+                     "(1/microsteps turn, 0.125 at microsteps 8), which answers -EAGAIN")
+    if args.quiet_s < 3.0:
+        parser.error("--quiet-s must be at least 3")
+    if not 0.0 < args.max_turns <= STEPPER_MAX_TURNS:
+        parser.error(f"--max-turns must be above 0 and at most {STEPPER_MAX_TURNS:g}")
     if args.silence_timeout_s is not None and args.silence_timeout_s < 5.0:
         parser.error("--silence-timeout-s must be at least 5, the lowest the firmware accepts")
     if args.check is None:
