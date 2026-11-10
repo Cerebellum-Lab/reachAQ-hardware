@@ -34,6 +34,7 @@ target_sources(jerrycan PUBLIC
         FILES
             inc/libjerrycan.h
             inc/jerrycan_types.h
+            inc/jerrycan_timing.h
 )
 
 target_link_libraries(jerrycan PRIVATE

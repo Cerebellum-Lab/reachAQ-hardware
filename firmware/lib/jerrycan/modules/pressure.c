@@ -20,8 +20,11 @@
  * Dependencies:
  * - `ll_pressure_sensor_is_initialized()`: Checks if the pressure sensor is initialized.
  * - `ll_pressure_sensor_is_enabled()`: Checks if the pressure sensor is enabled.
- * - `ll_pressure_sensor_get_pressure()`: Retrieves the current pressure value (in mV) from the sensor.
- * - `jerrycan_tx()`: Transmits CAN messages via the JerryCAN library.
+ * - `ll_pressure_sensor_get_sample()`: Retrieves the latest pressure value (in mV) from the sensor, with the
+ *    time its ADC sample completed.
+ * - `jerrycan_tx_timed()`: Transmits CAN messages via the JerryCAN library. Unlike `jerrycan_tx()`, it
+ *    carries the timing trailer's kind and time (here, when the ADC sample completed) instead of the time the
+ *    message was queued.
  *
  * Usage:
  * This module initializes at startup using Zephyr’s SYS_INIT macro. The timer is
@@ -64,17 +67,27 @@ static void jerrycan_pressure_sensor_tx() {
     /* For each pressure sensor, construct and send a pressure message*/
     for (int i = 0; i < PRESSURE_SENSOR_COUNT; i++) {
         const jerrycan_pressure_sensor_context_t *context = &contexts[i];
+        uint16_t pressure;
+        uint64_t sample_cycles;
+
+        ll_pressure_sensor_get_sample(context->pressure_sensor, &pressure, &sample_cycles);
 
         jerrycan_msg_t msg = {
             .type = JERRYCAN_CMD_PRESSURE_READ,
             .pressure_read =
                 {
                     .instance = context->instance_number,
-                    .pressure = ll_pressure_sensor_get_pressure(context->pressure_sensor),
+                    .pressure = pressure,
                 },
         };
 
-        jerrycan_tx(&msg, K_NO_WAIT);
+        if (sample_cycles == 0) {
+            /* No sample has completed yet, so there is no sample time to report: stamp it as queued now */
+            jerrycan_tx_timed(&msg, JERRYCAN_TIMESTAMP_TX_QUEUE, 0, jerrycan_board_time_us(), K_NO_WAIT);
+        } else {
+            jerrycan_tx_timed(&msg, JERRYCAN_TIMESTAMP_SAMPLED, 0, jerrycan_cycles_to_board_time_us(sample_cycles),
+                              K_NO_WAIT);
+        }
     }
 }
 

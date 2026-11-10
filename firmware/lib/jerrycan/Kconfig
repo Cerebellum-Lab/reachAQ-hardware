@@ -5,6 +5,7 @@ menuconfig LIB_JERRYCAN
     select CAN
     select CAN_FD_MODE
     select CAN_STM32_FDCAN
+    select LIB_BOARD_CLOCK
     depends on LIB_JERRYCAN_AUDIO_PRIORITY < 0
     depends on LIB_JERRYCAN_AUDIO_STACK_SIZE > 0
     help
@@ -15,6 +16,19 @@ config LIB_JERRYCAN_LOG_LEVEL
   default 3
   help
       Set the log level for the tone generator
+
+config LIB_JERRYCAN_TIMING
+    bool "Board timestamps: timing trailer, TIME_SYNC and the sync clap"
+    default n
+    depends on LIB_JERRYCAN
+    depends on CAN_FD_MODE
+    help
+      Append the 20-byte timing trailer to every frame with room for it, answer
+      reachAQ's TIME_SYNC_REQUEST, and report SYNC_CLAP frames from a timekeeper.
+      Off by default so boards that share this library keep their wire format;
+      a board opts in from its prj.conf. With it off the bytes on the wire are
+      exactly those of pellet firmware v2.3.0. Needs CAN FD: an 8-byte classic
+      frame has no room for the trailer, yet the capability bits would claim one.
 
 menuconfig LIB_JERRYCAN_HEARTBEAT_LED_DURATION_MS
   int "Heartbeat LED duration"

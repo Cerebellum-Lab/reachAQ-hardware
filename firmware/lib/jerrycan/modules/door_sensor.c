@@ -46,7 +46,7 @@ static void door_sensor_transmit_msg(struct k_timer *) {
     // board. The field is retained so the CAN message layout is unchanged.
     msg.doors.external_button = 0;
 
-    jerrycan_tx(&msg, K_NO_WAIT);
+    jerrycan_tx_timed(&msg, JERRYCAN_TIMESTAMP_SAMPLED, 0, jerrycan_board_time_us(), K_NO_WAIT);
 }
 
 /**

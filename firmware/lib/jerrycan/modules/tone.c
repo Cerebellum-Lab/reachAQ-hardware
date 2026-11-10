@@ -25,7 +25,10 @@
  * - `ll_tone_generator_get_time_remaining()`: Retrieves the remaining time for the current tone.
  * - `ll_tone_generator_play_tone()`: Plays a tone with specified frequency and duration.
  * - `jerrycan_register_rx_callback()`: Registers a CAN message callback in the JerryCAN system.
- * - `jerrycan_tx()`: Transmits CAN messages via the JerryCAN library.
+ * - `ll_tone_generator_get_start_cycles()`: Retrieves when the latest tone started.
+ * - `jerrycan_tx_timed()`: Transmits CAN messages via the JerryCAN library. Unlike `jerrycan_tx()`, it
+ *    carries the timing trailer's kind and time (when the tone started, or when its state was sampled) instead of
+ *    the time the message was queued.
  *
  * Usage:
  * This module initializes at startup using Zephyr’s SYS_INIT macro. It starts a timer
@@ -62,7 +65,8 @@ typedef struct {
 /* Array of tone generator contexts for all enabled tone generator devices */
 static jerrycan_tone_context_t contexts[TONE_GENERATOR_COUNT] = {DT_INST_FOREACH_STATUS_OKAY(TONE_CONTEXT_COMMA)};
 
-static void jerrycan_tone_generator_tx(jerrycan_tone_context_t *context) {
+static void jerrycan_tone_generator_tx(jerrycan_tone_context_t *context, jerrycan_timestamp_kind_t kind,
+                                       uint64_t board_time_us) {
     const struct device *tone_generator = context->tone_generator;
     uint16_t instance_number = context->instance_number;
 
@@ -73,7 +77,7 @@ static void jerrycan_tone_generator_tx(jerrycan_tone_context_t *context) {
                               .duration_ms = ll_tone_generator_get_time_remaining(tone_generator),
                           }};
 
-    int ret = jerrycan_tx(&msg, K_NO_WAIT);
+    int ret = jerrycan_tx_timed(&msg, kind, 0, board_time_us, K_NO_WAIT);
     if (ret < 0) {
         LOG_WRN("Failed to transmit CAN message for tone_generator%d", instance_number);
     }
@@ -87,7 +91,7 @@ static void jerrycan_tone_generator_tx(jerrycan_tone_context_t *context) {
 static void jerrycan_tone_generator_bulk_tx() {
     /* For each tone generator, construct and send a tone message */
     for (int i = 0; i < TONE_GENERATOR_COUNT; i++) {
-        jerrycan_tone_generator_tx(&contexts[i]);
+        jerrycan_tone_generator_tx(&contexts[i], JERRYCAN_TIMESTAMP_SAMPLED, jerrycan_board_time_us());
     }
 }
 
@@ -121,8 +125,18 @@ static int jerrycan_tone_generator_write_handler(const jerrycan_msg_t *msg) {
             LOG_ERR("Failed to write tone over CAN: Error playing tone - %d", rc);
         }
 
-        /* Transmit state immediately after starting tone */
-        jerrycan_tone_generator_tx(&contexts[idx]);
+        /*
+            Transmit state immediately after starting tone, stamped when the tone started. That is the STIM
+            marker edge the NI-DAQ records, but only for a frequency with a tone-output marker (5 and 6 kHz on
+            the pellet). For any other frequency there is no marker edge, and it is the start of playback.
+        */
+        if (rc == 0) {
+            jerrycan_tone_generator_tx(
+                &contexts[idx], JERRYCAN_TIMESTAMP_PHYSICAL_START,
+                jerrycan_cycles_to_board_time_us(ll_tone_generator_get_start_cycles(tone_generator)));
+        } else {
+            jerrycan_tone_generator_tx(&contexts[idx], JERRYCAN_TIMESTAMP_SAMPLED, jerrycan_board_time_us());
+        }
     }
 
     return rc == 0 ? COMMAND_NOT_COMPLETE : rc;

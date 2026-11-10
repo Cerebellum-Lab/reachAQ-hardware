@@ -24,7 +24,9 @@
  * - `ll_generic_gpio_read_pin_by_name()`: Reads the state of a named GPIO pin.
  * - `ll_generic_gpio_write_pin_by_name()`: Writes a state to a named GPIO pin.
  * - `jerrycan_register_rx_callback()`: Registers a CAN message callback in the JerryCAN system.
- * - `jerrycan_tx()`: Transmits CAN messages via the JerryCAN library.
+ * - `jerrycan_tx_timed()`: Transmits CAN messages via the JerryCAN library. Unlike `jerrycan_tx()`, it
+ *    carries the timing trailer's kind and time (when the pins were read, or when a pulse edge happened) instead of
+ *    the time the message was queued.
  *
  * Usage:
  * This module initializes at startup using Zephyr's SYS_INIT mechanism. It
@@ -46,6 +48,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
+#include "board_clock.h"
 #include "generic_gpios.h"
 #include "jerrycan.h"
 
@@ -106,6 +109,7 @@ static void jerrycan_generic_gpio_tx() {
         const jerrycan_generic_gpio_context_t *context = &contexts[i];
         const struct device *generic_gpio = context->generic_gpio;
         uint16_t instance_number = context->instance_number;
+        const uint64_t sampled_us = jerrycan_board_time_us();
         uint64_t state = 0;
 
         int idx = 0;
@@ -123,7 +127,7 @@ static void jerrycan_generic_gpio_tx() {
                                   .state = state,
                               }};
 
-        jerrycan_tx(&msg, K_NO_WAIT);
+        jerrycan_tx_timed(&msg, JERRYCAN_TIMESTAMP_SAMPLED, 0, sampled_us, K_NO_WAIT);
     }
 }
 
@@ -187,7 +191,8 @@ static int jerrycan_generic_gpio_write_handler(const jerrycan_msg_t *msg) {
 #define GPIO_PULSE_FAILSAFE_MARGIN_MS 20U
 
 static void gpio_pulse_emit_status(uint8_t instance, uint16_t gpio_idx, uint32_t duration_us, uint8_t phase,
-                                   int32_t error, uint8_t uuid) {
+                                   int32_t error, uint8_t uuid, jerrycan_timestamp_kind_t kind,
+                                   uint64_t board_time_us) {
     jerrycan_msg_t msg = {.type = JERRYCAN_CMD_GPIO_PULSE_STATUS,
                           .gpio_pulse_status =
                               {
@@ -199,7 +204,7 @@ static void gpio_pulse_emit_status(uint8_t instance, uint16_t gpio_idx, uint32_t
                               },
                           .uuid = uuid};
 
-    jerrycan_tx(&msg, K_NO_WAIT);
+    jerrycan_tx_timed(&msg, kind, 0, board_time_us, K_NO_WAIT);
 }
 
 #if GPIO_PULSE_SUPPORTED
@@ -269,6 +274,7 @@ static void gpio_pulse_alarm_cb(const struct device *dev, uint8_t chan_id, uint3
     uint32_t duration_us = 0;
     uint8_t uuid = 0;
     uint32_t next_hop = 0;
+    uint64_t low_cycles = 0;
     bool completed = false;
 
     k_spinlock_key_t key = k_spin_lock(&gpio_pulse_lock);
@@ -286,6 +292,7 @@ static void gpio_pulse_alarm_cb(const struct device *dev, uint8_t chan_id, uint3
 
     if (gpio_pulse.ticks_remaining == 0) {
         (void)ll_generic_gpio_write_pin(gpio_pulse.generic_gpio, gpio_pulse.writable_idx, 0);
+        low_cycles = board_clock_cycles();
 
         instance = gpio_pulse.instance;
         gpio_idx = gpio_pulse.gpio_idx;
@@ -304,7 +311,8 @@ static void gpio_pulse_alarm_cb(const struct device *dev, uint8_t chan_id, uint3
 
     if (completed) {
         jerrycan_generic_gpio_tx();
-        gpio_pulse_emit_status(instance, gpio_idx, duration_us, JERRYCAN_GPIO_PULSE_PHASE_COMPLETED, 0, uuid);
+        gpio_pulse_emit_status(instance, gpio_idx, duration_us, JERRYCAN_GPIO_PULSE_PHASE_COMPLETED, 0, uuid,
+                               JERRYCAN_TIMESTAMP_COMPLETED, jerrycan_cycles_to_board_time_us(low_cycles));
         return;
     }
 
@@ -333,6 +341,7 @@ static void gpio_pulse_failsafe_handler(struct k_work *work) {
 
     (void)counter_cancel_channel_alarm(gpio_pulse_counter, 0);
     (void)ll_generic_gpio_write_pin(gpio_pulse.generic_gpio, gpio_pulse.writable_idx, 0);
+    const uint64_t low_cycles = board_clock_cycles();
 
     instance = gpio_pulse.instance;
     gpio_idx = gpio_pulse.gpio_idx;
@@ -346,7 +355,8 @@ static void gpio_pulse_failsafe_handler(struct k_work *work) {
     LOG_ERR("GPIO pulse failsafe forced gpio_idx %d low after %u us", gpio_idx, duration_us);
 
     jerrycan_generic_gpio_tx();
-    gpio_pulse_emit_status(instance, gpio_idx, duration_us, JERRYCAN_GPIO_PULSE_PHASE_COMPLETED, -ETIME, uuid);
+    gpio_pulse_emit_status(instance, gpio_idx, duration_us, JERRYCAN_GPIO_PULSE_PHASE_COMPLETED, -ETIME, uuid,
+                           JERRYCAN_TIMESTAMP_COMPLETED, jerrycan_cycles_to_board_time_us(low_cycles));
 }
 
 /* True when the board named this pin in pulse-enable-gpio-names */
@@ -376,7 +386,8 @@ static int gpio_pulse_writable_idx(const struct device *generic_gpio, const char
     }
 }
 
-static int gpio_pulse_start(uint16_t instance, uint16_t gpio_idx, uint32_t duration_us, uint8_t uuid) {
+static int gpio_pulse_start(uint16_t instance, uint16_t gpio_idx, uint32_t duration_us, uint8_t uuid,
+                            uint64_t *asserted_cycles) {
     const jerrycan_generic_gpio_context_t *context = jerrycan_generic_gpio_find(instance);
     if (context == NULL) {
         LOG_ERR("Failed to pulse GPIO over CAN: Invalid instance - %d", instance);
@@ -450,6 +461,13 @@ static int gpio_pulse_start(uint16_t instance, uint16_t gpio_idx, uint32_t durat
         gpio_pulse.last_cc = now;
 
         rc = gpio_pulse_arm(gpio_pulse_counter, MIN(total_ticks, gpio_pulse_max_hop(gpio_pulse_counter)));
+
+        /*
+            The asserted edge's stamp. It is taken after the counter read and the arm, not before: the alarm is
+            relative to the counter value read inside the arm, so any work between the edge and the arm would
+            lengthen the pulse. It is raw cycles, converted to board time by the caller outside this lock.
+        */
+        *asserted_cycles = board_clock_cycles();
     }
 
     if (rc != 0) {
@@ -469,11 +487,13 @@ static int gpio_pulse_start(uint16_t instance, uint16_t gpio_idx, uint32_t durat
 
 #else /* !GPIO_PULSE_SUPPORTED */
 
-static int gpio_pulse_start(uint16_t instance, uint16_t gpio_idx, uint32_t duration_us, uint8_t uuid) {
+static int gpio_pulse_start(uint16_t instance, uint16_t gpio_idx, uint32_t duration_us, uint8_t uuid,
+                            uint64_t *asserted_cycles) {
     ARG_UNUSED(instance);
     ARG_UNUSED(gpio_idx);
     ARG_UNUSED(duration_us);
     ARG_UNUSED(uuid);
+    ARG_UNUSED(asserted_cycles);
 
     LOG_ERR("Failed to pulse GPIO over CAN: This board has no gpio pulse counter");
 
@@ -490,11 +510,15 @@ static int jerrycan_generic_gpio_pulse_handler(const jerrycan_msg_t *msg) {
 
     LOG_INF("Received GPIOPulse message: instance=%d, gpio_idx=%d, duration_us=%u", instance, gpio_idx, duration_us);
 
-    const int rc = gpio_pulse_start(instance, gpio_idx, duration_us, uuid);
+    uint64_t asserted_cycles = 0;
+
+    const int rc = gpio_pulse_start(instance, gpio_idx, duration_us, uuid, &asserted_cycles);
     if (rc != 0) {
-        gpio_pulse_emit_status(instance, gpio_idx, duration_us, JERRYCAN_GPIO_PULSE_PHASE_REJECTED, rc, uuid);
+        gpio_pulse_emit_status(instance, gpio_idx, duration_us, JERRYCAN_GPIO_PULSE_PHASE_REJECTED, rc, uuid,
+                               JERRYCAN_TIMESTAMP_TX_QUEUE, jerrycan_board_time_us());
     } else {
-        gpio_pulse_emit_status(instance, gpio_idx, duration_us, JERRYCAN_GPIO_PULSE_PHASE_ASSERTED, 0, uuid);
+        gpio_pulse_emit_status(instance, gpio_idx, duration_us, JERRYCAN_GPIO_PULSE_PHASE_ASSERTED, 0, uuid,
+                               JERRYCAN_TIMESTAMP_PHYSICAL_START, jerrycan_cycles_to_board_time_us(asserted_cycles));
         jerrycan_generic_gpio_tx();
     }
 

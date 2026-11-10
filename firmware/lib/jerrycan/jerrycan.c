@@ -4,6 +4,13 @@
 #include <zephyr/drivers/can.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/slist.h>
+#include <zephyr/random/random.h>
+
+#include "board_clock.h"
+
+#if CONFIG_LIB_JERRYCAN_TIMING
+#include "timing_trailer.h"
+#endif
 
 static const struct device *can_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_canbus));
 static const struct device *gpio_dev = DEVICE_DT_GET_ANY(ll_generic_gpios);
@@ -12,8 +19,71 @@ LOG_MODULE_REGISTER(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
 static sys_slist_t can_rx_callbacks_list;
 
-CAN_MSGQ_DEFINE(jerrycan_rx_msgq, 10);
-K_MSGQ_DEFINE(jerrycan_tx_msgq, sizeof(jerrycan_msg_t), 150, 4);
+/*
+    Every received frame is stamped in the CAN RX interrupt, before the jerrycan thread
+    reaches it, so a TIME_SYNC request or a clap is timed when it arrived rather than
+    when the thread got round to it. One callback serves every filter: the FDCAN hands
+    a frame only to the first filter it matches, so a separate "timing" filter would
+    silently lose to the node filter.
+*/
+typedef struct {
+    uint64_t rx_time_us;
+    struct can_frame frame;
+} jerrycan_rx_item_t;
+
+/*
+    A queued message and what its timing trailer reports. Without timing there is no
+    trailer, so the item is the bare message and the queue costs what it did in v2.3.0.
+*/
+typedef struct {
+#if CONFIG_LIB_JERRYCAN_TIMING
+    uint64_t board_time_us;
+    uint8_t kind;
+    uint8_t flags;
+#endif
+    jerrycan_msg_t msg;
+} jerrycan_tx_item_t;
+
+K_MSGQ_DEFINE(jerrycan_rx_msgq, sizeof(jerrycan_rx_item_t), 10, 8);
+#if CONFIG_LIB_JERRYCAN_TIMING
+K_MSGQ_DEFINE(jerrycan_tx_msgq, sizeof(jerrycan_tx_item_t), 150, 8);
+#else
+BUILD_ASSERT(sizeof(jerrycan_tx_item_t) == sizeof(jerrycan_msg_t), "Without timing a TX queue item is the bare message");
+K_MSGQ_DEFINE(jerrycan_tx_msgq, sizeof(jerrycan_tx_item_t), 150, 4);
+#endif
+
+static uint32_t boot_id;
+static uint64_t current_rx_time_us;
+
+#if CONFIG_LIB_JERRYCAN_TIMING
+/* Messages jerrycan_tx_timed() could not queue. jerrycan_run() folds them into the trailer sequence. */
+static atomic_t tx_dropped;
+#endif
+
+/*
+    Board time is the board clock (board_clock.h) in whole microseconds. The conversion is one exact divide, which is
+    what the CAN RX interrupt should pay; board_clock.c asserts the whole-MHz core clock that makes it exact.
+*/
+uint64_t jerrycan_cycles_to_board_time_us(uint64_t cycles) { return board_clock_cycles_to_us(cycles); }
+
+uint64_t jerrycan_board_time_us(void) { return jerrycan_cycles_to_board_time_us(board_clock_cycles()); }
+
+uint32_t jerrycan_boot_id(void) { return boot_id; }
+
+uint64_t jerrycan_rx_time_us(void) { return current_rx_time_us; }
+
+static void jerrycan_rx_isr(const struct device *dev, struct can_frame *frame, void *user_data) {
+    ARG_UNUSED(dev);
+    ARG_UNUSED(user_data);
+
+    /* Stamp first: the copy below is not part of the arrival time */
+    const uint64_t rx_time_us = jerrycan_board_time_us();
+    const jerrycan_rx_item_t item = {.rx_time_us = rx_time_us, .frame = *frame};
+
+    if (k_msgq_put(&jerrycan_rx_msgq, &item, K_NO_WAIT) != 0) {
+        LOG_ERR("JerryCAN RX queue overflowed. Frame ID: 0x%x", frame->id);
+    }
+}
 
 // CAN_ID[10:0] = { MsgID[5:0], DeviceType[2:0], ModuleAddr[1:0] }
 // The combination of DeviceType and ModuleAddr uniquely identifies this device (NODE_ID)
@@ -64,6 +134,13 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
         [JERRYCAN_CMD_GPIO_PULSE_STATUS] = sizeof(jerrycan_cmd_gpio_pulse_status_t),
         [JERRYCAN_CMD_CAPABILITIES_REQUEST] = sizeof(jerrycan_cmd_capabilities_request_t),
         [JERRYCAN_CMD_CAPABILITIES_RESPONSE] = sizeof(jerrycan_cmd_capabilities_response_t),
+        [JERRYCAN_CMD_TIME_SYNC_REQUEST] = sizeof(jerrycan_cmd_time_sync_request_t),
+        [JERRYCAN_CMD_TIME_SYNC_RESPONSE] = sizeof(jerrycan_cmd_time_sync_response_t),
+        [JERRYCAN_CMD_SYNC_CLAP] = sizeof(jerrycan_cmd_sync_clap_t),
+        [JERRYCAN_CMD_SYNC_CLAP_OBSERVED] = sizeof(jerrycan_cmd_sync_clap_observed_t),
+        [JERRYCAN_CMD_SYNC_BARCODE] = sizeof(jerrycan_cmd_sync_barcode_t),
+        [JERRYCAN_CMD_ANALOG_BLOCK] = sizeof(jerrycan_cmd_analog_block_t),
+        [JERRYCAN_CMD_PWM_SET] = sizeof(jerrycan_cmd_pwm_set_t),
         [JERRYCAN_CMD_TONE] = sizeof(jerrycan_cmd_tone_t),
         [JERRYCAN_CMD_ANALOG_OUT] = sizeof(jerrycan_cmd_analog_out_t),
         [JERRYCAN_CMD_LOAD_CELL_READ] = sizeof(jerrycan_cmd_load_cell_read_t),
@@ -91,11 +168,40 @@ static uint8_t jerrycan_msg_get_payload_size(jerrycan_cmd_type_t msg_type) {
 // Add a jerrycan message to the TX queue- these messages will be processed by the main jerrycan_run() loop
 // This allows any thread or interrupt to generate an outgoing CAN message which will then be handled by the main task
 int jerrycan_tx(jerrycan_msg_t *msg, k_timeout_t timeout) {
+#if CONFIG_LIB_JERRYCAN_TIMING
+    return jerrycan_tx_timed(msg, JERRYCAN_TIMESTAMP_TX_QUEUE, 0, jerrycan_board_time_us(), timeout);
+#else
+    // No trailer to report a time in, so the clock is not read
+    return jerrycan_tx_timed(msg, JERRYCAN_TIMESTAMP_TX_QUEUE, 0, 0, timeout);
+#endif
+}
+
+int jerrycan_tx_timed(jerrycan_msg_t *msg, jerrycan_timestamp_kind_t kind, uint8_t flags, uint64_t board_time_us,
+                      k_timeout_t timeout) {
     static size_t failureCount = 0;
 
+#if CONFIG_LIB_JERRYCAN_TIMING
+    const jerrycan_tx_item_t item = {
+        .board_time_us = board_time_us,
+        .kind = (uint8_t)kind,
+        .flags = flags,
+        .msg = *msg,
+    };
+#else
+    // Without the trailer there is nowhere to report these
+    ARG_UNUSED(kind);
+    ARG_UNUSED(flags);
+    ARG_UNUSED(board_time_us);
+
+    const jerrycan_tx_item_t item = {.msg = *msg};
+#endif
+
     // Place message in queue
-    const int ret = k_msgq_put(&jerrycan_tx_msgq, msg, timeout);
+    const int ret = k_msgq_put(&jerrycan_tx_msgq, &item, timeout);
     if (ret != 0) {
+#if CONFIG_LIB_JERRYCAN_TIMING
+        atomic_inc(&tx_dropped);
+#endif
         if (!failureCount++) {
             LOG_ERR("jerrycan_tx failed to place message in queue: %d", ret);
         }
@@ -113,6 +219,16 @@ int jerrycan_tx(jerrycan_msg_t *msg, k_timeout_t timeout) {
 int jerrycan_run(k_timeout_t timeout) {
     static jerrycan_msg_t msg;
     static struct can_frame frame;
+    static jerrycan_rx_item_t rx_item;
+    static jerrycan_tx_item_t tx_item;
+#if CONFIG_LIB_JERRYCAN_TIMING
+    /*
+        Counts trailer-bearing frames and messages dropped because the TX queue was full,
+        so the host can tell a lost frame from a quiet board, including one lost before
+        it was queued.
+    */
+    static uint32_t trailer_sequence;
+#endif
     int ret;
 
     void confirm_image();
@@ -136,7 +252,8 @@ int jerrycan_run(k_timeout_t timeout) {
 
     // TX processing
     if (events[0].state == K_POLL_STATE_MSGQ_DATA_AVAILABLE) {
-        while (k_msgq_get(&jerrycan_tx_msgq, &msg, K_NO_WAIT) == 0) {
+        while (k_msgq_get(&jerrycan_tx_msgq, &tx_item, K_NO_WAIT) == 0) {
+            msg = tx_item.msg;
             uint8_t payload_size = jerrycan_msg_get_payload_size(msg.type);
             frame.id = can_id(msg.type);
 
@@ -149,6 +266,25 @@ int jerrycan_run(k_timeout_t timeout) {
                 memcpy(frame.data + payload_size, &msg.uuid, sizeof(msg.uuid));
                 payload_size += sizeof(msg.uuid);
             }
+
+#if CONFIG_LIB_JERRYCAN_TIMING
+            // Drops since the last dequeue leave a gap in the sequence, as a lost frame would
+            trailer_sequence += (uint32_t)atomic_clear(&tx_dropped);
+
+            const jerrycan_timing_t timing = {
+                .kind = tx_item.kind,
+                .flags = tx_item.flags,
+                .boot_id = boot_id,
+                .sequence = trailer_sequence,
+                .board_time_us = tx_item.board_time_us,
+            };
+            const size_t with_trailer =
+                jerrycan_timing_append_trailer(frame.data, payload_size, sizeof(frame.data), &timing);
+            if (with_trailer != payload_size) {
+                payload_size = (uint8_t)with_trailer;
+                trailer_sequence++;
+            }
+#endif
 
             frame.dlc = can_bytes_to_dlc(payload_size);
 
@@ -166,11 +302,17 @@ int jerrycan_run(k_timeout_t timeout) {
 
     // RX processing
     if (events[1].state == K_POLL_STATE_MSGQ_DATA_AVAILABLE) {
-        while (k_msgq_get(&jerrycan_rx_msgq, &frame, K_NO_WAIT) == 0) {
+        while (k_msgq_get(&jerrycan_rx_msgq, &rx_item, K_NO_WAIT) == 0) {
+            frame = rx_item.frame;
+            current_rx_time_us = rx_item.rx_time_us;
             msg.type = frame.id >> 5;
+            // Low 5 id bits: this board or 0x1F for host commands, the sender for board frames such as claps
+            msg.dst_id = frame.id & NODE_ID_MASK;
 
-            const uint8_t dst = frame.id & NODE_ID_MASK;
-            if (host_frame_hook != NULL && (dst == can_node_id || dst == NODE_ID_MASK)) {
+            // Only host frames feed the host-silence timer. A clap is a board frame accepted from any address, 0x1F
+            // and this board's own included, so the address alone cannot rule it out.
+            if (host_frame_hook != NULL && msg.type != JERRYCAN_CMD_SYNC_CLAP &&
+                (msg.dst_id == can_node_id || msg.dst_id == NODE_ID_MASK)) {
                 host_frame_hook();
             }
 
@@ -225,6 +367,9 @@ static int jerrycan_init() {
     // Initialize the linked list that will hold the callbacks to be called on RX frame
     sys_slist_init(&can_rx_callbacks_list);
 
+    // Drawn before any module can queue a frame, so every trailer of this boot carries it
+    boot_id = sys_rand32_get();
+
     // Read this device type and address from GPIOS
     can_node_id = get_can_node_id();
 
@@ -268,7 +413,7 @@ static int jerrycan_init() {
         .mask = NODE_ID_MASK,
     };
 
-    ret = can_add_rx_filter_msgq(can_dev, &jerrycan_rx_msgq, &jerrycan_rx_filter);
+    ret = can_add_rx_filter(can_dev, jerrycan_rx_isr, NULL, &jerrycan_rx_filter);
     if (ret < 0) {
         LOG_ERR("Failed to add CAN filter: %d", ret);
         return ret;
@@ -281,11 +426,26 @@ static int jerrycan_init() {
         .mask = NODE_ID_MASK,
     };
 
-    ret = can_add_rx_filter_msgq(can_dev, &jerrycan_rx_msgq, &jerrycan_broadcast_filter);
+    ret = can_add_rx_filter(can_dev, jerrycan_rx_isr, NULL, &jerrycan_broadcast_filter);
     if (ret < 0) {
         LOG_ERR("Failed to add CAN filter: %d", ret);
         return ret;
     }
+
+#if CONFIG_LIB_JERRYCAN_TIMING
+    // Claps are sent from the timekeeper's own address, so neither filter above sees them
+    const struct can_filter jerrycan_clap_filter = {
+        .flags = 0,
+        .id = (uint32_t)JERRYCAN_CMD_SYNC_CLAP << 5,
+        .mask = 0x3F << 5,
+    };
+
+    ret = can_add_rx_filter(can_dev, jerrycan_rx_isr, NULL, &jerrycan_clap_filter);
+    if (ret < 0) {
+        LOG_ERR("Failed to add CAN clap filter: %d", ret);
+        return ret;
+    }
+#endif
 
     return 0;
 }

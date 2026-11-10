@@ -9,6 +9,8 @@
 #include <zephyr/dt-bindings/dma/stm32_dma.h>
 #include <zephyr/logging/log.h>
 
+#include "board_clock.h"
+
 #define DT_DRV_COMPAT ll_tone_generator
 
 LOG_MODULE_REGISTER(ll_tone_generator, CONFIG_LL_TONE_GENERATOR_LOG_LEVEL);
@@ -97,6 +99,12 @@ typedef struct {
     bool initialized;
     bool enabled;
     unsigned int frequency_hz;
+    /*
+        board_clock_cycles() when the latest tone started; 0 before the first tone. For a frequency that has a
+        tone-output marker (5 and 6 kHz on the pellet) this is the marker edge the NI-DAQ records. For any other
+        frequency there is no marker edge, and it is the start of playback.
+    */
+    uint64_t start_cycles;
     struct dma_config dma_cfg;
     struct k_timer duration_timer;
 } ll_tone_generator_data_t;
@@ -342,6 +350,12 @@ int ll_tone_generator_play_tone(const struct device *dev, unsigned int frequency
         return ret;
     }
 
+    /*
+        For a frequency with a tone-output marker, the marker edge just set is what the NI-DAQ records as the
+        tone's start. Any other frequency has no marker edge, and this is the start of playback.
+    */
+    data->start_cycles = board_clock_cycles();
+
     /* Enable the audio amplifier */
     ret = gpio_pin_set_dt(&cfg->enable_pin, 1);
     if (ret != 0) {
@@ -465,6 +479,17 @@ uint32_t ll_tone_generator_get_frequency(const struct device *dev) {
     ll_tone_generator_data_t *data = dev->data;
 
     return data->frequency_hz;
+}
+
+/*
+    board_clock_cycles() when the latest tone started; 0 if no tone has started. For a frequency that has a
+    tone-output marker (5 and 6 kHz on the pellet) this is the marker edge the NI-DAQ records. For any other
+    frequency there is no marker edge, and it is the start of playback.
+*/
+uint64_t ll_tone_generator_get_start_cycles(const struct device *dev) {
+    const ll_tone_generator_data_t *data = dev->data;
+
+    return data->start_cycles;
 }
 
 #define TONE_OUTPUTS_DEFINE(idx)                                                                                   \
