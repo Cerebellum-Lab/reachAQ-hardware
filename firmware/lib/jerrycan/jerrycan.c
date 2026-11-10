@@ -92,6 +92,12 @@ static uint8_t can_node_id;
 
 static void (*host_frame_hook)(void);
 
+// Message types that a board sends and every other board hears, so an RX filter admits them from any address and the
+// low five id bits name the sender instead of the destination. They are not host frames: the host-frame hook must never
+// see one, because a sender at 0x1F or at this board's own address would pass its address test. Every type that
+// an any-address filter in jerrycan_init() admits must be listed here.
+static bool is_board_frame_type(uint8_t type) { return type == JERRYCAN_CMD_SYNC_CLAP; }
+
 static inline uint16_t can_id(jerrycan_cmd_type_t msg_type) { return (uint16_t)msg_type << 5 | can_node_id; }
 
 static uint8_t get_can_node_id() {
@@ -309,9 +315,9 @@ int jerrycan_run(k_timeout_t timeout) {
             // Low 5 id bits: this board or 0x1F for host commands, the sender for board frames such as claps
             msg.dst_id = frame.id & NODE_ID_MASK;
 
-            // Only host frames feed the host-silence timer. A clap is a board frame accepted from any address, 0x1F
-            // and this board's own included, so the address alone cannot rule it out.
-            if (host_frame_hook != NULL && msg.type != JERRYCAN_CMD_SYNC_CLAP &&
+            // Only host frames feed the host-silence timer. A board frame that a filter admits from any address, a
+            // clap for one, may carry 0x1F or this board's own address, so the address alone cannot rule it out.
+            if (host_frame_hook != NULL && !is_board_frame_type(msg.type) &&
                 (msg.dst_id == can_node_id || msg.dst_id == NODE_ID_MASK)) {
                 host_frame_hook();
             }
@@ -433,7 +439,10 @@ static int jerrycan_init() {
     }
 
 #if CONFIG_LIB_JERRYCAN_TIMING
-    // Claps are sent from the timekeeper's own address, so neither filter above sees them
+    // Claps are sent from the timekeeper's own address, so neither filter above sees them.
+    // This filter admits a type from any address. Every type admitted like that must be listed in
+    // is_board_frame_type(), or the host-silence hook counts it as host traffic when it comes from 0x1F or from this
+    // board's own address.
     const struct can_filter jerrycan_clap_filter = {
         .flags = 0,
         .id = (uint32_t)JERRYCAN_CMD_SYNC_CLAP << 5,
