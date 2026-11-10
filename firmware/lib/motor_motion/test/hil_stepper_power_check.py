@@ -67,6 +67,10 @@ FIXED_XYZ = 0x1C
 CAPABILITIES_REQUEST, CAPABILITIES_RESPONSE = 0x23, 0x24
 RSP_ACK = 0x30
 HEARTBEAT = 0x3F
+# Host commands this script never sends. They are here only so that HOST_ONLY_TYPES can name them.
+CFG_WRITE, GPIO_WRITE, LOAD_CELL_TARE = 0x05, 0x0B, 0x14
+DELAY, SERVO_ATTACH, SERVO_DETACH, TIME_SYNC_REQUEST = 0x1B, 0x1D, 0x1E, 0x1F
+GPIO_PULSE, PWM_SET = 0x21, 0x29
 
 # Payload size of every frame this script sends. The uuid byte follows the payload, so a short payload would put it
 # where the board does not look.
@@ -77,8 +81,15 @@ MOTION_TYPES = frozenset((STEPPER_MOVE, SERVO_MOVE, STEPPER_HOME, FIXED_XYZ))
 # carry uuid 0, which the script never uses for a command.
 ACKED_TYPES = MOTION_TYPES | {CAPABILITIES_REQUEST}
 # Frames only a host sends. Seeing one addressed to the board (or to everyone) means another host is driving it.
+# Any frame addressed to the board resets the host-silence timer, so a type belongs here if the pellet never sends it
+# itself: its own frames carry its address, and the check could not tell them from a host's. That leaves out HEARTBEAT
+# (the pellet replies with one), and GPIO_READ, TONE, RGB_LED and ANALOG_OUT, which a board sends as periodic status
+# (jerrycan/modules/gpio.c, tone.c, rgb_led.c, analog.c; the pellet has the first three). The socket does not receive
+# the script's own frames (no CAN_RAW_RECV_OWN_MSGS), so the script may send a type listed here.
 HOST_ONLY_TYPES = frozenset((ESTOP, STEPPER_MOVE, SERVO_MOVE, STEPPER_HOME, CFG_READ, BOOTLOADER_COMMAND,
-                             BOOTLOADER_DATA, FIXED_XYZ, CAPABILITIES_REQUEST))
+                             BOOTLOADER_DATA, FIXED_XYZ, CAPABILITIES_REQUEST,
+                             CFG_WRITE, GPIO_WRITE, LOAD_CELL_TARE, DELAY, SERVO_ATTACH, SERVO_DETACH,
+                             TIME_SYNC_REQUEST, GPIO_PULSE, PWM_SET))
 
 AXES = (0, 1, 2)
 STEPPER_MOVE_RELATIVE = 0x80  # abs_or_rel, bit 7 of the first payload byte; motor_id is bits 0-1, save is bit 2
