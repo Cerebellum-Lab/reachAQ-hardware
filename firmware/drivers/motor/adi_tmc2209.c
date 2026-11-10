@@ -34,6 +34,12 @@ typedef struct adi_tmc2209_data {
 
 #define SLEEP_DELAY() k_sleep(K_MSEC(10))
 
+// Written by init, and rewritten by adi_tmc2209_verify_configured() to prove the driver took them.
+#define DEFAULT_IRUN 10        // 9 => 353mA RMS current (nominal for these motors), but lower is better
+                               // Note: we have vsense set to ON here, so the value is effectively halved.
+#define DEFAULT_IHOLD 1        // Use as little current as possible in standstill to reduce heating.
+#define DEFAULT_IHOLDDELAY 15  // Use the greatest time because otherwise it's choppy at low speed.
+
 /**
  * @returns crc of `data[0 : size]` (Polynomial is x^8 + x^2 + x + 1.)
  */
@@ -585,11 +591,7 @@ static int adi_tmc2209_init(const struct device *dev) {
     }
 
     // Set IHOLD and IRUN according to our motor's characteristics.
-    const uint8_t default_irun = 10;        // 9 => 353mA RMS current (nominal for these motors), but lower is better
-                                            // Note: we have vsense set to ON here, so the value is effectively halved.
-    const uint8_t default_ihold = 1;        // Use as little current as possible in standstill to reduce heating.
-    const uint8_t default_iholddelay = 15;  // Use the greatest time because otherwise it's choppy at low speed.
-    ret = adi_tmc2209_set_ihold_irun(dev, default_ihold, default_irun, default_iholddelay);
+    ret = adi_tmc2209_set_ihold_irun(dev, DEFAULT_IHOLD, DEFAULT_IRUN, DEFAULT_IHOLDDELAY);
     if (ret < 0) {
         LOG_ERR("[Dev: %d] Failed (%d) to set irun", config->address, ret);
     }
@@ -641,6 +643,112 @@ static int adi_tmc2209_init(const struct device *dev) {
     }
 
     return ret;
+}
+
+int adi_tmc2209_verify_configured(const struct device *dev) {
+    const adi_tmc2209_config_t *config = dev->config;
+    adi_tmc2209_reg_t reg = {0};
+
+    // IHOLD_IRUN is write-only and adi_tmc2209_write() cannot report failure, so the driver counting
+    // the rewrite in IFCNT is the only proof that it heard us.
+    int ret = adi_tmc2209_read(dev, REG_IFCNT, &reg);
+    if (ret != 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to read IFCNT", config->address, ret);
+        return ret;
+    }
+    const uint8_t ifcnt_before = reg.as_uint32 & 0xFFU;
+
+    ret = adi_tmc2209_set_ihold_irun(dev, DEFAULT_IHOLD, DEFAULT_IRUN, DEFAULT_IHOLDDELAY);
+    if (ret != 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to rewrite IHOLD_IRUN", config->address, ret);
+        return -EIO;
+    }
+
+    ret = adi_tmc2209_read(dev, REG_IFCNT, &reg);
+    if (ret != 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to re-read IFCNT", config->address, ret);
+        return ret;
+    }
+    const uint8_t ifcnt_after = reg.as_uint32 & 0xFFU;
+
+    if ((uint8_t)(ifcnt_after - ifcnt_before) != 1U) {
+        LOG_ERR("[Dev: %d] IHOLD_IRUN write not counted: IFCNT %d -> %d, expected +1", config->address, ifcnt_before,
+                ifcnt_after);
+        return -EIO;
+    }
+
+    // Both bits are set by init and read 0 again after the driver resets.
+    ret = adi_tmc2209_read(dev, REG_GCONF, &reg);
+    if (ret != 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to read GCONF", config->address, ret);
+        return ret;
+    }
+    if (!reg.gconf.pdn_disable || !reg.gconf.mstep_reg_select) {
+        LOG_ERR("[Dev: %d] GCONF pdn_disable [%d] mstep_reg_select [%d], expected 1 and 1: driver reset",
+                config->address, (int)reg.gconf.pdn_disable, (int)reg.gconf.mstep_reg_select);
+        return -EIO;
+    }
+
+    // Init cleared GSTAT, so reset is set only if the driver reset since then. Reading does not clear it.
+    ret = adi_tmc2209_read(dev, REG_GSTAT, &reg);
+    if (ret != 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to read GSTAT", config->address, ret);
+        return ret;
+    }
+    if (reg.gstat.reset) {
+        LOG_ERR("[Dev: %d] GSTAT reset flag set: driver reset since init", config->address);
+        return -EIO;
+    }
+
+    return 0;
+}
+
+/**
+ * Log `name` at error level if `set`.
+ *
+ * @return 1 if `set`, otherwise 0.
+ */
+static int log_fault_flag(const adi_tmc2209_config_t *config, const char *name, const bool set) {
+    if (set) {
+        LOG_ERR("[Dev: %d] fault: %s", config->address, name);
+    }
+    return set ? 1 : 0;
+}
+
+void adi_tmc2209_log_fault(const struct device *dev) {
+    const adi_tmc2209_config_t *config = dev->config;
+    adi_tmc2209_reg_t drv_status = {0};
+    adi_tmc2209_reg_t gstat = {0};
+    int faults = 0;
+    bool read_ok = true;
+
+    int ret = adi_tmc2209_read(dev, REG_DRV_STATUS, &drv_status);
+    if (ret != 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to read DRV_STATUS", config->address, ret);
+        read_ok = false;
+    } else {
+        faults += log_fault_flag(config, "DRV_STATUS ot (overtemperature shutdown)", drv_status.drv_status.ot);
+        faults += log_fault_flag(config, "DRV_STATUS otpw (overtemperature prewarning)", drv_status.drv_status.otpw);
+        faults += log_fault_flag(config, "DRV_STATUS s2ga (short to ground, phase A)", drv_status.drv_status.s2ga);
+        faults += log_fault_flag(config, "DRV_STATUS s2gb (short to ground, phase B)", drv_status.drv_status.s2gb);
+        faults += log_fault_flag(config, "DRV_STATUS s2vsa (short to supply, phase A)", drv_status.drv_status.s2vsa);
+        faults += log_fault_flag(config, "DRV_STATUS s2vsb (short to supply, phase B)", drv_status.drv_status.s2vsb);
+    }
+
+    ret = adi_tmc2209_read(dev, REG_GSTAT, &gstat);
+    if (ret != 0) {
+        LOG_ERR("[Dev: %d] Failed (%d) to read GSTAT", config->address, ret);
+        read_ok = false;
+    } else {
+        faults += log_fault_flag(config, "GSTAT drv_err (shut down by overtemperature or short)", gstat.gstat.drv_err);
+        // DIAG is also raised by these two, and neither sets a DRV_STATUS flag.
+        faults += log_fault_flag(config, "GSTAT uv_cp (charge pump undervoltage)", gstat.gstat.uv_cp);
+        faults += log_fault_flag(config, "GSTAT reset (driver reset since init)", gstat.gstat.reset);
+    }
+
+    if (read_ok && faults == 0) {
+        LOG_WRN("[Dev: %d] no fault flag set in DRV_STATUS or GSTAT", config->address);
+    }
 }
 
 static struct adi_tmc2209_driver_api adi_tmc2209_driver_api = {

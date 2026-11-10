@@ -35,6 +35,7 @@
 #include "motor_common.h"
 #include "motor_motion.h"
 #include "motor_motion_workq.h"
+#include "stepper_power.h"
 
 LOG_MODULE_DECLARE(jerrycan, CONFIG_LIB_JERRYCAN_LOG_LEVEL);
 
@@ -210,7 +211,7 @@ static void jerrycan_servo_status_tx() {
         struct servo_work_context *context = find_servo_context_from_device(servo);
 
         if (context->motion_mode == MOTION_DONE) {
-            jerrycan_send_ack(context->uuid, 0);
+            jerrycan_send_ack(context->uuid, stepper_power_estop_active() ? -EPERM : 0);
             context->motion_mode = MOTION_IDLE;
         }
 

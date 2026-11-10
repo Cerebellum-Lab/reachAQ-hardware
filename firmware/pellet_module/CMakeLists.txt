@@ -13,6 +13,7 @@ project(pellet_module_firmware)
 
 set(SRCS
         src/main.c
+        src/fault_safety.c
 )
 
 target_sources(app PRIVATE ${SRCS})

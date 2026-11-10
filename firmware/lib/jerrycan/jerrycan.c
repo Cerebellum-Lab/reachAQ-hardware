@@ -20,6 +20,8 @@ K_MSGQ_DEFINE(jerrycan_tx_msgq, sizeof(jerrycan_msg_t), 150, 4);
 #define NODE_ID_MASK 0x1F
 static uint8_t can_node_id;
 
+static void (*host_frame_hook)(void);
+
 static inline uint16_t can_id(jerrycan_cmd_type_t msg_type) { return (uint16_t)msg_type << 5 | can_node_id; }
 
 static uint8_t get_can_node_id() {
@@ -166,6 +168,12 @@ int jerrycan_run(k_timeout_t timeout) {
     if (events[1].state == K_POLL_STATE_MSGQ_DATA_AVAILABLE) {
         while (k_msgq_get(&jerrycan_rx_msgq, &frame, K_NO_WAIT) == 0) {
             msg.type = frame.id >> 5;
+
+            const uint8_t dst = frame.id & NODE_ID_MASK;
+            if (host_frame_hook != NULL && (dst == can_node_id || dst == NODE_ID_MASK)) {
+                host_frame_hook();
+            }
+
             uint8_t msg_len = jerrycan_msg_get_payload_size(msg.type);
             memcpy(msg.payload, frame.data, msg_len);
             if (msg_len < sizeof(msg.payload)) {
@@ -208,6 +216,8 @@ void jerrycan_send_ack(const uint8_t uuid, const int error_code) {
 void jerrycan_register_rx_callback(jerrycan_rx_callback_t *callback) {
     sys_slist_append(&can_rx_callbacks_list, &callback->node);
 }
+
+void jerrycan_set_host_frame_hook(void (*hook)(void)) { host_frame_hook = hook; }
 
 static int jerrycan_init() {
     int ret;

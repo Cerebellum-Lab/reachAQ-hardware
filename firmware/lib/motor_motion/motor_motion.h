@@ -23,7 +23,15 @@ void stepper_motor_stop(const struct device *dev);
 void servo_motor_stop(const struct device *dev);
 
 /*
- * Stop all motors! Uses a static list of all motors to stop them, so is very fast.
+ * Stop every stepper that is moving: stop the DMA, disable the timer's output channel, stop its
+ * counter, cancel the table calculation and purge the block queue so the motor can move again.
+ * Steppers that are not moving are left untouched. Does not block. Returns a mask of the steppers
+ * stopped, bit n for stepper n.
+ */
+uint8_t steppers_stop_moving(void);
+
+/*
+ * Stop all motors that are moving! Uses a static list of all motors to stop them, so is very fast.
  */
 void motors_all_stop(void);
 

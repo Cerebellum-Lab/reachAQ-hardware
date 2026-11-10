@@ -32,13 +32,41 @@ void servo_motor_stop(const struct device *dev) { ll_servo_enable(dev, false); }
 static const struct device *const stepper_motors[] = {DT_FOREACH_STATUS_OKAY(ll_stepper, DT_GET_COMMA)};
 static const struct device *const servo_motors[] = {DT_FOREACH_STATUS_OKAY(ll_servo, DT_GET_COMMA)};
 
-void motors_all_stop(void) {
+uint8_t steppers_stop_moving(void) {
+    uint8_t stopped = 0;
+
     for (size_t i = 0; i < ARRAY_SIZE(stepper_motors); i++) {
+        struct stepper_work_context *context = find_stepper_context_from_device(stepper_motors[i]);
+
+        // stepper_motor_stop() marks the motor DONE, which makes the status loop ACK a stale uuid.
+        if (context == NULL || context->motion_mode != MOTION_IN_PROGESS) {
+            continue;
+        }
+
         stepper_motor_stop(stepper_motors[i]);
+        k_work_cancel_delayable(&context->calculation_work);
+        context->motion_calculation_done = true;
+        ll_motor_queue_stop(stepper_motors[i]);
+
+        stopped |= BIT(i);
     }
 
+    return stopped;
+}
+
+void motors_all_stop(void) {
+    steppers_stop_moving();
+
     for (size_t i = 0; i < ARRAY_SIZE(servo_motors); i++) {
-        servo_motor_stop(stepper_motors[i]);
+        const struct servo_work_context *context = find_servo_context_from_device(servo_motors[i]);
+
+        if (context == NULL || context->motion_mode != MOTION_IN_PROGESS) {
+            continue;
+        }
+
+        servo_motor_stop(servo_motors[i]);
+        servo_cancel_all_work(servo_motors[i]);
+        ll_motor_queue_stop(servo_motors[i]);
     }
 }
 

@@ -24,3 +24,10 @@ target_link_libraries(motor_motion_test
     PRIVATE
         m
 )
+
+add_executable(stepper_power_policy_test stepper_power_policy_test.c ../stepper_power_policy.c)
+
+target_include_directories(stepper_power_policy_test
+    PRIVATE
+        "../"
+)
