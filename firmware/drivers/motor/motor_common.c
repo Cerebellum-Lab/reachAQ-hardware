@@ -99,11 +99,17 @@ int ll_motor_start_dma(const struct device *dev) {
         return ret;
     }
 
-    // Generate an update to fetch the first value via DMA
-    LL_TIM_GenerateEvent_UPDATE(cfg->timer);
+    /* A stepper always gets the kick: a limit-switch stop leaves its counter running, and the forced update loads the
+     * first period at once. A running servo counter makes its own update events, and forcing one resets CNT
+     * mid-period: in PWM1 mode that restarts a high phase in progress instead of ending it, emitting one pulse of up
+     * to twice the intended width. So a servo is kicked only when its counter is stopped. */
+    if (cfg->stop_on_dma_complete || !LL_TIM_IsEnabledCounter(cfg->timer)) {
+        // Generate an update to fetch the first value via DMA
+        LL_TIM_GenerateEvent_UPDATE(cfg->timer);
 
-    // Enable the counter
-    LL_TIM_EnableCounter(cfg->timer);
+        // Enable the counter
+        LL_TIM_EnableCounter(cfg->timer);
+    }
 
     return 0;
 }
