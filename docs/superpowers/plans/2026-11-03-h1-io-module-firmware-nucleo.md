@@ -1,7 +1,5 @@
 # H1: IO-module firmware on a NUCLEO-G474RE — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Firmware for the IO module ("Balanced 32": 12 DI, 8 TTL out, 8 analog in, 4 power out), which is also the system timekeeper. It is developed against a NUCLEO-G474RE, so it is ready before the PCB exists.
 
 **Architecture:**
@@ -96,7 +94,7 @@ Reviewed by the user on 2026-11-03: decisions 1 (barcode from the update interru
   - **reachAQ stays closed while the IO module is on the bus** unless reachAQ's T1 tolerance is deployed. Today's reachAQ loses whole receive batches on a known type from a non-pellet address (spec §2).
 - **Generic-gpios callback sharing:** `ll,generic-gpios` adds one `gpio_callback` to every port it uses. That is safe only while it is the first callback added on each of those ports. Do not register a GPIO callback earlier in boot than `CONFIG_GPIO_INIT_PRIORITY`.
 - **Style:** `firmware/.clang-format`, 120 columns. Files are LF.
-- **Commits** end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Do not push or merge.
+- **Commits**: Do not push or merge.
 
 ## Review Focus
 
@@ -374,9 +372,7 @@ git commit -m "feat(jerrycan): rate limiter for GPIO change events
 
 Token bucket (rate, burst) that holds and merges changes past the cap and
 releases the latest one, flagged COALESCED when more than one was merged.
-Never reorders: a change offered while one is held joins it.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+Never reorders: a change offered while one is held joins it."
 ```
 
 ---

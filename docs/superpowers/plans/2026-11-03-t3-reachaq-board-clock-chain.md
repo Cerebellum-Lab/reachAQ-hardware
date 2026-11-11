@@ -1,7 +1,5 @@
 # T3: reachAQ board-clock robustness, per-board timing and the clock chain — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Make reachAQ safe for pellet firmware v2.4.0, which advertises `time_sync`, and give every board its own clock state. Then record the IO module's clap and barcode reports, and post-session compose pellet board time → IO-module time → NI-DAQ sample time, written to `alignment.json` with a tone cross-check as the accuracy evidence.
 
 **Architecture:**
@@ -36,7 +34,7 @@
   - Sync with a bundle whose base is `f7bda1da`. It is an ancestor of every branch here and present on the rig.
   - Iterate by scp'ing changed files into the rig worktree. Run the final test of each task on the committed state.
 - **Files** in the reachAQ working tree are CRLF. Preserve each file's endings.
-- **Commits** end with your harness-provided `Co-Authored-By` line. Do not push or merge.
+- **Commits**: Do not push or merge.
 
 **Shorthands:**
 
@@ -56,9 +54,7 @@ SYNC='git -C C:/Users/reynoben/Documents/reachAQ-clock-chain bundle create C:/Us
 
 ```bash
 git -C C:/Users/reynoben/Documents/reachAQ worktree add C:/Users/reynoben/Documents/reachAQ-clock-chain -b feat/io-timing-clock-chain feat/io-timing-host-tolerance
-git -C C:/Users/reynoben/Documents/reachAQ-clock-chain merge --no-ff feature-dev -m "Merge feature-dev into the clock-chain branch
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git -C C:/Users/reynoben/Documents/reachAQ-clock-chain merge --no-ff feature-dev -m "Merge feature-dev into the clock-chain branch"
 ```
 
 Expected: a clean merge. If it conflicts, STOP and report the conflicting paths.

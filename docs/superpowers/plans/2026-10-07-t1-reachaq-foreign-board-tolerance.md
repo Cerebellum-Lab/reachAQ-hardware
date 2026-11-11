@@ -1,7 +1,5 @@
 # T1: reachAQ foreign-board tolerance and sync message codec — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Let reachAQ share the CAN bus with boards other than the pellet board without losing pellet data, and teach it the new sync/IO message types (0x25-0x29) and capability bits, with no change to pellet handling.
 
 **Architecture:**
@@ -26,7 +24,6 @@
   - `PWM_SET = 0x29`, 7 B `<BHI` (channel, duty_permyriad, period_us)
 - New capability bits, exactly: `sync_listener = 1 << 4`, `timekeeper = 1 << 5`.
 - **No allowlist change in this plan.** The pellet `2.4.0` entry is added at that firmware's release, per the allowlist's own rule against predicting capabilities.
-- Every commit message ends with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - Test command, written as `$PYTEST` below: `conda run -n reachaq python -m pytest -p no:cacheprovider -q`, run from the worktree root. The repo's `conftest.py` puts each package's `src/` on `sys.path`, so the worktree's code is what gets tested.
 
 ---
@@ -243,9 +240,7 @@ git commit -m "fix(can): skip frames from boards reachAQ has no driver for
 
 One frame from a non-pellet address raised out of _addr2tgt and took the
 pellet frames read in the same batch with it. Translate them to nothing and
-say so once per address.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+say so once per address."
 ```
 
 ---
@@ -528,9 +523,7 @@ git add auto-trainer-device/src/autotrainer/device/socketcan_jerrycan.py auto-tr
 git commit -m "feat(can): decode the sync clap, barcode report and IO-module frames
 
 Adds 0x25-0x29 to the python-can codec, which also admits them through the
-receive filters. Only PWM_SET is host-originated, so it is the only one packed.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+receive filters. Only PWM_SET is host-originated, so it is the only one packed."
 ```
 
 ---
@@ -592,9 +585,7 @@ Expected: all PASS.
 
 ```bash
 git add auto-trainer-device/src/autotrainer/device/can_interface.py auto-trainer-device/tests/foreign_board_traffic_test.py
-git commit -m "feat(can): accept clock-chain frames from the pellet without warning
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "feat(can): accept clock-chain frames from the pellet without warning"
 ```
 
 ---
@@ -646,9 +637,7 @@ Expected: all PASS.
 
 ```bash
 git add tools/acquisition/model/firmware_compatibility.py tests/firmware_compatibility_test.py
-git commit -m "feat(firmware): name the sync_listener and timekeeper capabilities
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "feat(firmware): name the sync_listener and timekeeper capabilities"
 ```
 
 ---

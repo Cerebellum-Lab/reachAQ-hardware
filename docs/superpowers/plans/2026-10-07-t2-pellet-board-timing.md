@@ -1,7 +1,5 @@
 # T2: Board timing and pellet firmware v2.4.0 — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Give the pellet board the board-side half of reachAQ's timing contract: a µs board clock, a timing trailer on every frame with room, a TIME_SYNC responder, and a listener that reports CAN sync claps. All of it is additive and capability-gated, and released as pellet firmware v2.4.0.
 
 **Architecture:**
@@ -40,7 +38,6 @@
 - **Builds happen only on christielab10, in its designated checkout `~/Documents/reachAQ-hardware`.** Its west manifest is that checkout's own `firmware/west.yml`, so a worktree there cannot build. Record the checkout's starting ref in Task 0 and restore it in Task 6.
 - Firmware unit tests are host C only. A native_sim ztest cannot build in this workspace, because `drivers/motor/motor_common.c` compiles unconditionally against STM32 LL headers.
 - **Flashing the rig's pellet board requires explicit user approval at that moment** (Task 6), and the board is restored to the v2.3.0 release afterwards.
-- Every commit message ends with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 
 **Shorthands used below:**
 
@@ -381,9 +378,7 @@ git add software/libjerrycan/inc/jerrycan_timing.h software/libjerrycan/CMakeLis
 git commit -m "feat(jerrycan): pack the timing trailer reachAQ already decodes
 
 Plain C, so it is tested on the host against the exact bytes reachAQ's
-decoder expects.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+decoder expects."
 ```
 
 ---
@@ -552,9 +547,7 @@ Expected: both builds succeed with no `SIZE_CHECK` failure, and the host test pa
 
 ```bash
 git add software/libjerrycan/inc/jerrycan_types.h firmware/lib/jerrycan/jerrycan.c
-git commit -m "feat(jerrycan): define the time-sync, sync and IO-module messages
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "feat(jerrycan): define the time-sync, sync and IO-module messages"
 ```
 
 ---
@@ -904,9 +897,7 @@ git commit -m "feat(jerrycan): stamp frames on arrival and append the timing tra
 One RX callback serves every filter and stamps in the interrupt; the FDCAN
 gives a frame only to its first matching filter, so a second filter could
 never see a time-sync request. Behind CONFIG_LIB_JERRYCAN_TIMING, which only
-the pellet enables.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+the pellet enables."
 ```
 
 ---
@@ -1060,9 +1051,7 @@ git add firmware/lib/jerrycan/modules/timing.c firmware/lib/jerrycan/modules/cap
 git commit -m "feat(jerrycan): answer TIME_SYNC and report the sync claps a board hears
 
 Advertises timing_trailer, time_sync and sync_listener on boards built with
-CONFIG_LIB_JERRYCAN_TIMING.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+CONFIG_LIB_JERRYCAN_TIMING."
 ```
 
 ---
@@ -1354,9 +1343,7 @@ git add firmware/drivers/tone_generator firmware/drivers/pressure_sensor firmwar
 git commit -m "feat(jerrycan): stamp tone, pressure, pulse and state frames with when they happened
 
 Tone status carries the STIM marker edge the NI-DAQ records, pressure its ADC
-sample time, pulse status its two edges.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+sample time, pulse status its two edges."
 ```
 
 ---
@@ -1645,9 +1632,7 @@ Expected: `0`.
 git add firmware/lib/jerrycan/test/hil_timing_check.py
 git commit -m "test(jerrycan): <what the hardware run showed the checker needed>
 
-On christielab10 it measured: <paste the PASS lines>.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+On christielab10 it measured: <paste the PASS lines>."
 ```
 
 ---
@@ -1691,9 +1676,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ```bash
 git add docs/releases/v2.4.0.md
-git commit -m "docs: release notes for pellet firmware v2.4.0
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "docs: release notes for pellet firmware v2.4.0"
 ```
 
 Report:

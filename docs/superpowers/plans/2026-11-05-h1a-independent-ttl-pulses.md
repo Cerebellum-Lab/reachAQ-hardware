@@ -1,7 +1,5 @@
 # H1a: Independent timed pulses per TTL output — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Each of the IO module's 8 TTL outputs can run its own `GPIO_PULSE` at the same time. A second pulse on the *same* output is still refused with `-EBUSY`. The pellet and magnet keep one pulse board-wide.
 
 **Architecture:** Keep the one 1 MHz alarm channel the shared pulse code already uses (TIM16, `ll,gpio-pulse-counter`). Replace the single in-flight record in `gpio.c` with a small table of in-flight pulses, held in a pure helper with no Zephyr include, so it can be host-tested. The alarm is always armed for the soonest return-low edge, or for the longest allowed hop. No new timers and no wire changes.
@@ -27,7 +25,7 @@
 - **Style and builds:**
   - `firmware/.clang-format`, 120 columns, LF. Do not use GNU `sed -i`.
   - Builds and host tests run only on the rig, in its designated checkout, as in H1.
-  - Commits end with the harness-provided Co-Authored-By line. No push or merge. Never flash anything.
+  - No push or merge. Never flash anything.
 
 ## Review Focus
 
