@@ -34,6 +34,14 @@ typedef struct adi_tmc2209_data {
 
 #define SLEEP_DELAY() k_sleep(K_MSEC(10))
 
+/* All the drivers share one single-wire UART, and the CAN handlers on the main thread, the motor work queue and the
+ * shell can each reach it. The first two are cooperative and never yield mid-exchange, but the preemptible shell can,
+ * so this keeps datagrams from interleaving. adi_tmc2209_set_microstep() and the IFCNT check in
+ * adi_tmc2209_verify_configured() hold it across all their transfers; the read-modify-writes in init take it per
+ * access, which is enough because init runs before any other thread can reach the UART. k_mutex is recursive for its
+ * owner, so the held sequences can call the locked read and write. Thread context only, never from an ISR. */
+static K_MUTEX_DEFINE(adi_tmc2209_bus_lock);
+
 // Written by init, and rewritten by adi_tmc2209_verify_configured() to prove the driver took them.
 #define DEFAULT_IRUN 10        // 9 => 353mA RMS current (nominal for these motors), but lower is better
                                // Note: we have vsense set to ON here, so the value is effectively halved.
@@ -161,24 +169,21 @@ static int adi_tmc2209_write(const struct device *dev, const uint8_t reg_address
         .data = data,
         .crc = 0,  // appease warnings
     }};
+
+    k_mutex_lock(&adi_tmc2209_bus_lock, K_FOREVER);
     SLEEP_DELAY();
     store_crc(datagram.raw, sizeof(datagram.raw));
-    write_single_line_uart_and_flush_read(dev, datagram.raw, sizeof(datagram.raw));
+    // This only confirms the datagram went out on the wire (its echo came back); the IC doesn't acknowledge writes.
+    const int ret = write_single_line_uart_and_flush_read(dev, datagram.raw, sizeof(datagram.raw));
+    k_mutex_unlock(&adi_tmc2209_bus_lock);
 
-    return 0;
+    return ret;
 }
 
 /**
- * Read `data` from `reg_address` on `device`.
- *
- * @param dev Device handle; must not be NULL
- * @param reg_address
- * @param data must be 4 bytes long.
- *
- * @retval 0 on success
- * @retval -errno on error.
+ * The request/reply exchange of `adi_tmc2209_read`; the caller holds `adi_tmc2209_bus_lock`.
  */
-static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address, adi_tmc2209_reg_t *data) {
+static int adi_tmc2209_read_datagram(const struct device *dev, const uint8_t reg_address, adi_tmc2209_reg_t *data) {
     const adi_tmc2209_config_t *config = dev->config;
 
     if (data == NULL) {
@@ -225,6 +230,24 @@ static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address,
     data->as_uint32 = sys_be32_to_cpu(reply_datagram.fields.data.as_uint32);
 
     return 0;
+}
+
+/**
+ * Read `data` from `reg_address` on `device`.
+ *
+ * @param dev Device handle; must not be NULL
+ * @param reg_address
+ * @param data must be 4 bytes long.
+ *
+ * @retval 0 on success
+ * @retval -errno on error.
+ */
+static int adi_tmc2209_read(const struct device *dev, const uint8_t reg_address, adi_tmc2209_reg_t *data) {
+    k_mutex_lock(&adi_tmc2209_bus_lock, K_FOREVER);
+    const int ret = adi_tmc2209_read_datagram(dev, reg_address, data);
+    k_mutex_unlock(&adi_tmc2209_bus_lock);
+
+    return ret;
 }
 
 /**
@@ -413,7 +436,10 @@ int adi_tmc2209_set_ihold_irun(const struct device *dev, const uint8_t hold_curr
     return adi_tmc2209_write(dev, REG_IHOLD_IRUN, val);
 }
 
-int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per_fullstep) {
+/**
+ * The read-modify-write of `adi_tmc2209_set_microstep`; the caller holds `adi_tmc2209_bus_lock`.
+ */
+static int adi_tmc2209_set_mres(const struct device *dev, const uint32_t steps_per_fullstep) {
     const adi_tmc2209_config_t *config = dev->config;
     adi_tmc2209_reg_t val = {0};
     int ret = adi_tmc2209_read(dev, REG_CHOPCONF, &val);
@@ -460,6 +486,14 @@ int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per
 
     val.chopconf.mres = mres;
     ret = adi_tmc2209_write(dev, REG_CHOPCONF, val);
+    return ret;
+}
+
+int adi_tmc2209_set_microstep(const struct device *dev, const uint32_t steps_per_fullstep) {
+    k_mutex_lock(&adi_tmc2209_bus_lock, K_FOREVER);
+    const int ret = adi_tmc2209_set_mres(dev, steps_per_fullstep);
+    k_mutex_unlock(&adi_tmc2209_bus_lock);
+
     return ret;
 }
 
@@ -579,7 +613,7 @@ static int adi_tmc2209_init(const struct device *dev) {
     // Configure SEND_DELAY to avoid issues with other drivers.
     val.as_uint32 = 0;
     val.nodeconf.send_delay = SEND_DELAY;
-    adi_tmc2209_write(dev, REG_NODECONF, val);
+    ret = adi_tmc2209_write(dev, REG_NODECONF, val);
     if (ret < 0) {
         LOG_ERR("[Dev: %d] Failed (%d) to write nodeconf", config->address, ret);
     }
@@ -642,14 +676,20 @@ static int adi_tmc2209_init(const struct device *dev) {
         LOG_ERR("[Dev: %d] Failed (%d) to set pwmconf", config->address, ret);
     }
 
-    return ret;
+    // Every failure above is logged and init carries on. Init never failed on a write before writes reported their
+    // echo check, and it still doesn't: a failed init would leave the device not ready.
+    return 0;
 }
 
-int adi_tmc2209_verify_configured(const struct device *dev) {
+/**
+ * The checks of `adi_tmc2209_verify_configured`; the caller holds `adi_tmc2209_bus_lock`, so no other access can land
+ * between the two IFCNT reads.
+ */
+static int adi_tmc2209_check_configured(const struct device *dev) {
     const adi_tmc2209_config_t *config = dev->config;
     adi_tmc2209_reg_t reg = {0};
 
-    // IHOLD_IRUN is write-only and adi_tmc2209_write() cannot report failure, so the driver counting
+    // IHOLD_IRUN is write-only and adi_tmc2209_write() only reports that its echo came back, so the driver counting
     // the rewrite in IFCNT is the only proof that it heard us.
     int ret = adi_tmc2209_read(dev, REG_IFCNT, &reg);
     if (ret != 0) {
@@ -660,8 +700,8 @@ int adi_tmc2209_verify_configured(const struct device *dev) {
 
     ret = adi_tmc2209_set_ihold_irun(dev, DEFAULT_IHOLD, DEFAULT_IRUN, DEFAULT_IHOLDDELAY);
     if (ret != 0) {
-        LOG_ERR("[Dev: %d] Failed (%d) to rewrite IHOLD_IRUN", config->address, ret);
-        return -EIO;
+        // Log only: the datagram went out either way, and IFCNT below decides whether the driver took it.
+        LOG_ERR("[Dev: %d] IHOLD_IRUN rewrite failed its echo check (%d)", config->address, ret);
     }
 
     ret = adi_tmc2209_read(dev, REG_IFCNT, &reg);
@@ -701,6 +741,14 @@ int adi_tmc2209_verify_configured(const struct device *dev) {
     }
 
     return 0;
+}
+
+int adi_tmc2209_verify_configured(const struct device *dev) {
+    k_mutex_lock(&adi_tmc2209_bus_lock, K_FOREVER);
+    const int ret = adi_tmc2209_check_configured(dev);
+    k_mutex_unlock(&adi_tmc2209_bus_lock);
+
+    return ret;
 }
 
 /**

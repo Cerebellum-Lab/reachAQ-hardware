@@ -43,8 +43,8 @@ int adi_tmc2209_set_microstep(const struct device *dev, uint32_t steps_per_fulls
  * IHOLD_IRUN is write-only. Then requires GCONF pdn_disable and mstep_reg_select to still be set, and
  * the GSTAT reset flag to be clear. Clears nothing.
  *
- * Thread context only: every register access sleeps 10 ms. The driver has no locking, so the caller
- * must keep other accesses to the same UART out of the way.
+ * Thread context only: every register access sleeps 10 ms. Holds the driver's UART lock across all of
+ * its accesses, so no other access to the shared UART can land between the two IFCNT reads.
  *
  * @param dev ADI TMC2209 device to check.
  * @return 0 if configured, -EIO if the write was not counted or the driver reset, -errno on a read error.
