@@ -385,7 +385,7 @@ static void servo_work_calculation_handler(struct k_work *work) {
 
     // Entire buffer wasn't needed which indicates all the steps have been planned and no more calculations are required
     // If nothing was calculated, then the motor is already at the target position
-    if (ret < STEPPER_BUFFER_SIZE) {
+    if (ret < SERVO_BUFFER_SIZE) {
         context->motion_calculation_done = true;
     }
 
