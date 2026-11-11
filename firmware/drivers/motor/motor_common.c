@@ -142,6 +142,11 @@ void ll_motor_queue_stop(const struct device *dev) {
     const ll_motor_cfg_t *cfg = dev->config;
     const ll_motor_data_t *data = dev->data;
 
+    // With interrupts locked the DMA completion callback can't run inside dma_stop and reload the next queued block
+    // between the stop and the purge. Nothing here sleeps on this SoC: the STM32 DMA v2 channel's EN bit clears on the
+    // write, so dma_stop never reaches its k_sleep retry, and k_msgq_purge doesn't reschedule with interrupts locked.
+    const unsigned int key = irq_lock();
+
     // Stop first: the completion callback must not pull another block while the queue is purged.
     dma_stop(cfg->dma_dev, data->dma_channel);
 
@@ -152,6 +157,8 @@ void ll_motor_queue_stop(const struct device *dev) {
     }
 
     k_msgq_purge(cfg->msgq);
+
+    irq_unlock(key);
 }
 
 uint8_t ll_motor_get_id(const struct device *dev) {
