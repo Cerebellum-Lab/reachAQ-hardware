@@ -375,6 +375,11 @@ static void servo_work_calculation_handler(struct k_work *work) {
     struct k_work_delayable *dwork = k_work_delayable_from_work(work);
     struct servo_work_context *context = CONTAINER_OF(dwork, struct servo_work_context, calculation_work);
 
+    // The servo was stopped after this refill was scheduled; queuing a block now would restart the DMA.
+    if (context->motion_calculation_done) {
+        return;
+    }
+
     const ssize_t ret = motor_motion_servo_generate_displacement_table(context->buffers[context->current_buffer],
                                                                        SERVO_BUFFER_SIZE, &context->context);
     context->last_calculation_ret = ret;
@@ -385,7 +390,7 @@ static void servo_work_calculation_handler(struct k_work *work) {
 
     // Entire buffer wasn't needed which indicates all the steps have been planned and no more calculations are required
     // If nothing was calculated, then the motor is already at the target position
-    if (ret < STEPPER_BUFFER_SIZE) {
+    if (ret < SERVO_BUFFER_SIZE) {
         context->motion_calculation_done = true;
     }
 
@@ -403,14 +408,14 @@ size_t stepper_generate_table_for_homing(const struct stepper_work_context *cont
     const float seconds_per_pulse =
         1 / context->homing_velocity / context->motor_steps_per_revolution * context->context.min_step;
 
+    // At least one pulse: an empty block would never raise the event that queues the next one.
     size_t n_pulses = (size_t)floorf(slow_pulses_ms / 1000.0f / seconds_per_pulse);
+    n_pulses = CLAMP(n_pulses, 1, STEPPER_BUFFER_SIZE);
 
-    if (n_pulses > STEPPER_BUFFER_SIZE) {
-        n_pulses = STEPPER_BUFFER_SIZE;
-    }
-
+    // The timer's reload register is 16 bits: a longer interval would be truncated into a much shorter one.
+    const long ticks = MIN(lroundf(seconds_per_pulse / context->timer_increment), (long)UINT16_MAX);
     for (size_t i = 0; i < n_pulses; i++) {
-        buf[i] = lroundf(seconds_per_pulse / context->timer_increment);
+        buf[i] = (uint32_t)ticks;
     }
 
     return n_pulses;
@@ -419,6 +424,11 @@ size_t stepper_generate_table_for_homing(const struct stepper_work_context *cont
 static void stepper_work_calculation_handler(struct k_work *work) {
     struct k_work_delayable *dwork = k_work_delayable_from_work(work);
     struct stepper_work_context *context = CONTAINER_OF(dwork, struct stepper_work_context, calculation_work);
+
+    // The motor was stopped after this refill was scheduled; queuing a block now would restart the DMA.
+    if (context->motion_calculation_done) {
+        return;
+    }
 
     switch (context->move_control) {
         default:
@@ -711,6 +721,11 @@ int stepper_set_parameters(const struct device *dev, const float max_velocity, c
 }
 
 int stepper_save_fixed_location(struct stepper_work_context *context, const int motor_id, const float position, const bool is_absolute) {
+    if (!isfinite(position)) {
+        LOG_ERR("Refusing non-finite fixed position");
+        return -EINVAL;
+    }
+
     if (is_absolute) {
         context->fixed_position = position;
     } else {

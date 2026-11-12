@@ -113,12 +113,14 @@ static int jerrycan_tone_generator_write_handler(const jerrycan_msg_t *msg) {
         /* Grab tone generator instance */
         const struct device *tone_generator = contexts[idx].tone_generator;
 
-        contexts[idx].uuid = msg->uuid;
-
         /* Play tone with the specified parameters, printing error on failure */
         rc = ll_tone_generator_play_tone(tone_generator, frequency_hz, duration_ms);
         if (rc != 0) {
             LOG_ERR("Failed to write tone over CAN: Error playing tone - %d", rc);
+        } else {
+            // Only once the tone runs: the status below would see no time remaining and ACK this uuid with 0, and the
+            // dispatcher ACKs a failed command with its error.
+            contexts[idx].uuid = msg->uuid;
         }
 
         /* Transmit state immediately after starting tone */
