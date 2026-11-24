@@ -52,11 +52,13 @@ On the build rig, one-time setup is:
 tools/reachaq-firmware setup
 ```
 
-After committing and tagging a release, build firmware, build the updater, verify
-the embedded version, and create the flash-only bundle with one command:
+After committing and tagging a release, build firmware, sign it, build the
+updater, verify the embedded version and signature, and create the flash-only
+bundle with one command (the private key lives on the offline signing USB, never
+in a repository; see [docs/firmware-signing-keys.md](docs/firmware-signing-keys.md)):
 
 ```bash
-tools/reachaq-firmware release vX.Y.Z
+tools/reachaq-firmware release --signing-key <private key> vX.Y.Z
 ```
 
 For lower-level firmware details, see [firmware/README.md](firmware/README.md).

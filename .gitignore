@@ -44,3 +44,6 @@ dist/
 firmware/*/VERSION
 software/whiskerwire/whiskerwire/__about__.py
 software/libjerrycan/_version.py
+
+# Firmware signing private keys never belong in a repository.
+*.private.pem

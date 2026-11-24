@@ -163,11 +163,20 @@ The prompt should include `(reachaq-hardware-v1.2.5)`. A remaining Conda `(base)
 
 ## 5. Build firmware once
 
-Pellet:
+Pellet (needs the active public key; the private key never enters the build,
+see `docs\firmware-signing-keys.md`):
 
 ```powershell
 cd "$WorkspaceRoot\firmware\pellet_module"
-west build -p always --sysbuild -b cerebellumlab_pellet_module
+west build -p always --sysbuild -b cerebellumlab_pellet_module -- "-DSB_CONFIG_BOOT_SIGNATURE_KEY_FILE=\"C:\path\to\pellet-k2.public.pem\""
+```
+
+The pellet application is built unsigned. Sign it before flashing, with the
+signing USB mounted (imgtool asks for the passphrase twice):
+
+```powershell
+cd "$WorkspaceRoot"
+python tools\firmware_signing.py sign --build-dir firmware\pellet_module\build --key E:\pellet\pellet-k2.private.pem
 ```
 
 Magnet:
@@ -177,7 +186,7 @@ cd "$WorkspaceRoot\firmware\magnet_module"
 west build -p always --sysbuild -b cerebellumlab_magnet_module
 ```
 
-Signed applications:
+Signed applications (pellet only after the signing step):
 
 ```text
 firmware\pellet_module\build\pellet_module\zephyr\zephyr.signed.hex
