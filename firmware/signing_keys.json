@@ -3,6 +3,15 @@
   "description": "Firmware signing keys by public-key fingerprint (SHA-256 of the DER SubjectPublicKeyInfo). Only public fingerprints belong here; private keys never enter any repository. See docs/firmware-signing-keys.md.",
   "keys": [
     {
+      "id": "pellet-k2",
+      "board": "pellet_module",
+      "algorithm": "rsa-2048",
+      "fingerprint_sha256": "sha256:c2448b76fc91c970d450b26ea08fb5c314f9f116b5cc0f227e28571366f433a8",
+      "status": "active",
+      "created_on": "2026-11-24",
+      "reason": "Replaces pellet-k1, whose private key was public. Private key held offline by Ben Reynolds, with a second-site backup."
+    },
+    {
       "id": "pellet-k1",
       "board": "pellet_module",
       "algorithm": "rsa-2048",
