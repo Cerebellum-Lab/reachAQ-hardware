@@ -69,16 +69,20 @@ For a release, prefer the repository-root helper, which also builds the updater,
 verifies the tag-derived version, and packages the flash-only archive:
 
 ```bash
-tools/reachaq-firmware release vX.Y.Z
+tools/reachaq-firmware release --signing-key <private key on the signing USB> vX.Y.Z
 ```
 
-For a direct development build, the first build command remains:
+No signing key is kept in this repository. MCUboot is built with the active
+public key, the application is built unsigned and then signed with the private
+key held offline. See
+[docs/firmware-signing-keys.md](../docs/firmware-signing-keys.md).
 
-The first time building the project (or if you ever delete the `build` directory), run this command:
+For a direct development build, the first build command is (the quotes around
+the path are part of the value):
 
 ```bash
 cd firmware/pellet_module
-west build --sysbuild --board cerebellumlab_pellet_module -p
+west build --sysbuild --board cerebellumlab_pellet_module -p -- -DSB_CONFIG_BOOT_SIGNATURE_KEY_FILE=\"$REACHAQ_PELLET_SIGNING_PUBKEY\"
 ```
 
 Thereafter, this command is sufficient:
@@ -87,7 +91,12 @@ Thereafter, this command is sufficient:
 west build
 ```
 
-The resulting file is: `firmware/pellet_module/build/pellet_module/zephyr/zephyr.signed.bin`
+The application in `firmware/pellet_module/build/pellet_module/zephyr/zephyr.signed.bin`
+is unsigned until you sign it:
+
+```bash
+tools/reachaq-firmware sign --build-dir firmware/pellet_module/build --key <private key>
+```
 
 ### Building Magnet Module
 

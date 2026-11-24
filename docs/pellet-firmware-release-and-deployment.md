@@ -57,15 +57,18 @@ The small command front ends cover routine operation:
 ```bash
 # Designated build rig
 tools/reachaq-firmware setup
-tools/reachaq-firmware release v2.0.1
+tools/reachaq-firmware release --signing-key <private key on the signing USB> v2.0.1
 
 # Flash-only rig, from inside an extracted release bundle
 ./reachaq-update --2.0.1
 ```
 
 Additional build-rig commands are `reachaq-firmware build vX.Y.Z` for a
-build-only verification and `reachaq-firmware package vX.Y.Z` to package
-already-built outputs. The longer scripts remain available for diagnosis and
+build-only verification (unsigned output) and `reachaq-firmware package vX.Y.Z`
+to package already-built outputs, which refuses an image that does not verify
+against an active key. Every build needs `REACHAQ_PELLET_SIGNING_PUBKEY` (or
+`--public-key`); signing and key custody are in
+[firmware-signing-keys.md](firmware-signing-keys.md). The longer scripts remain available for diagnosis and
 as stable implementation entry points.
 
 ## Build rig: one-time setup
@@ -130,14 +133,19 @@ git add <reviewed-files>
 git commit -m "Describe the pellet firmware change"
 git tag -a v2.0.1 -m "Cerebellum Lab pellet firmware 2.0.1"
 
-tools/reachaq-firmware release v2.0.1
+export REACHAQ_PELLET_SIGNING_PUBKEY=~/.config/reachaq/signing/pellet-k2.public.pem
+tools/reachaq-firmware release \
+  --signing-key /media/$USER/SIGNING/pellet/pellet-k2.private.pem v2.0.1
+# unmount the signing USB
 
 git push origin main
 git push origin v2.0.1
 ```
 
-The release helper performs a pristine pellet firmware build, builds the host
-updater, verifies that `APP_VERSION_STRING` equals the tag, and creates:
+The release helper performs a pristine pellet firmware build with the public
+key, signs the application with the private key and verifies it against the
+key MCUboot embeds, builds the host updater, verifies that `APP_VERSION_STRING`
+equals the tag, records the signing key in `RELEASE-MANIFEST.txt`, and creates:
 
 ```text
 dist/reachaq-pellet-v2.0.1-linux-x86_64.tar.gz
@@ -185,13 +193,18 @@ west build \
   --sysbuild \
   --board cerebellumlab_pellet_module \
   --pristine always \
-  firmware/pellet_module
+  firmware/pellet_module \
+  -- -DSB_CONFIG_BOOT_SIGNATURE_KEY_FILE=\"$REACHAQ_PELLET_SIGNING_PUBKEY\"
+
+python tools/firmware_signing.py sign \
+  --build-dir firmware/pellet_module/build --key <private key>
 
 cmake -S . -B build -GNinja -DCMAKE_INSTALL_PREFIX="$PWD/tmp"
 cmake --build build --target jerrycan_updater
 ```
 
-Zephyr always calls its generated signed artifact `zephyr.signed.bin`. The
+Zephyr always calls its generated artifact `zephyr.signed.bin`, but straight
+out of the build it holds only a hash; the signing step rewrites it. The
 release helper copies that file to the unambiguous release name
 `pellet_module_fw_vX.Y.Z.bin`; renaming does not change the embedded version or
 signature.
@@ -370,7 +383,9 @@ inactive far beyond the normal 40-60 second window.
 ### Recovery boundary
 
 The release bundle updates the signed application through the existing
-bootloader. It does not replace MCUBoot. If the board no longer responds to
+bootloader. It does not replace MCUBoot, so it cannot move a board to a new
+signing key; that needs SWD (see
+[pellet-rekey-reflash-plan.md](pellet-rekey-reflash-plan.md)). If the board no longer responds to
 JerryCAN discovery or the updater cannot reach the bootloader, use the hardware
 debug/programming interface and the Zephyr `west flash` recovery process on the
 designated build rig.
