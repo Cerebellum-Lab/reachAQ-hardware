@@ -22,7 +22,7 @@ handling is in [firmware-signing-keys.md](firmware-signing-keys.md).
 
 | Board | Location | Now | Target |
 | --- | --- | --- | --- |
-| Rig pellet board | christielab10 | MCUboot `pellet-k1`; last qualification record 2.3.1 (2026-11-10). Read the version at the rig before starting. | MCUboot `pellet-k2` + re-key release |
+| Rig pellet board | christielab10 | MCUboot `pellet-k1`; last qualification record 2.3.1 (2026-11-10). Read the version at the rig before starting. | MCUboot `pellet-k2` + 2.4.0 |
 | Bench and spare pellet boards | Ben's bench | `pellet-k1` | Same, before any leaves the lab |
 | Any pellet board elsewhere (other rigs, collaborators) | List them first | `pellet-k1` | Same, or recall it |
 
@@ -34,10 +34,20 @@ version, who flashed it.
 1. Ben generates `pellet-k2`, stores the backup at the second site and registers
    the fingerprint in `firmware/signing_keys.json`
    ([firmware-signing-keys.md](firmware-signing-keys.md#generate-a-new-key-one-time-ben)).
-2. Merge this signing change into the line the next release comes from
-   (`integrate/pellet-v2.4.0` or `fix/pellet-v2.3.2`; the touched files are
-   identical on both, so it merges cleanly). Pick the re-key version: the next
-   unreleased number on that line, for example 2.4.0, or 2.3.2.
+2. **The re-key ships as 2.4.0** (Ben, 2026-11-23). Merge into
+   `integrate/pellet-v2.4.0` in this order. Both merges were checked with
+   `git merge-tree` on 2026-11-23 and have no conflicts.
+   1. `fix/pellet-v2.3.2`, so 2.4.0 carries the 2.3.2 fixes. 2.3.2 is never
+      tagged on its own.
+   2. `security/pellet-signing-keys`, after `pellet-k2` is registered as
+      active in `firmware/signing_keys.json`.
+
+   Then run the targeted tests (`tools/tests` and a pellet sysbuild with the
+   `pellet-k2` public key), and update `docs/releases/v2.4.0.md`: the
+   `pellet-k2` bootloader and the SWD visit, and the 2.3.2 fixes.
+
+   2.4.0's own open conditions still apply before tagging: the v1.3
+   qualification and the allowlist entry (step 4).
 3. Build and sign the release on the build host:
 
    ```bash
@@ -49,9 +59,18 @@ version, who flashed it.
    and the signed `firmware/pellet_module/build/pellet_module`, which the
    CAN-only release bundle does not contain. Record SHA-256 of
    `build/mcuboot/zephyr/zephyr.hex` and `build/pellet_module/zephyr/zephyr.signed.hex`.
-4. **Host first.** Add the version to `config/pellet-firmware-compatibility.yaml`
-   in reachAQ (feature-dev, then devel) with a limitation noting that it needs
-   the `pellet-k2` bootloader. Deploy it so the operator checkout on the rig,
+4. **Host first.** 2.4.0 advertises `time_sync`, and reachAQ v3.0.0 aborts in
+   `open()` on such a board. It needs reachAQ v3.0.1 or later: the board-clock
+   fit fix (T3) and the `feat/io-timing-clock-chain` merge, `e186fef5` and
+   `91052b37` on `origin/devel`. The rig's operator checkout,
+   `~/Documents/reachAQ` on `devel` at `fa7439bc` (v3.1.3, 2026-11-23), has
+   both. Check again on the day; any host that opens a 2.4.0 board must be at
+   least v3.0.1.
+   Add 2.4.0 to `config/pellet-firmware-compatibility.yaml`
+   in reachAQ (feature-dev, then devel) in the same change that deploys it to
+   the rig: its required and optional capabilities per `docs/releases/v2.4.0.md`,
+   and a limitation noting that it needs the `pellet-k2` bootloader. Until then
+   no 2.4.0 entry exists, on the rig or anywhere. Deploy it so the operator checkout on the rig,
    `~/Documents/reachAQ`, lists it. Run the pre-flight one-liner from reachAQ's
    `docs/acquisition/pellet-firmware-compatibility.md` through
    `conda run -n reachaq` and confirm it prints `~/Documents/reachAQ`. Do not
@@ -91,7 +110,11 @@ exec 9>/tmp/reachaq-rig-exclusive.lock && flock 9
    the signed image only because the release step overwrote it. Run
    `tools/reachaq-firmware verify --build-dir firmware/pellet_module/build`
    first if the build directory has been touched since.
-4. Remove the programmer and power-cycle the board.
+4. Remove the programmer and power-cycle the board. 2.4.0 includes the
+   storage-partition fix, so the first boot loses the stored settings once.
+   Before step 8, rewrite the configuration of all five motors (`x`, `y`,
+   `z`, `load` = servo 1, `cover` = servo 0), re-save the `FIXED_XYZ`
+   positions and home each axis.
 5. **Confirm the board boots the new image.** The updater's version query must
    report the re-key version as running.
 6. **Prove CAN updates still work** with the new key: run the new release
