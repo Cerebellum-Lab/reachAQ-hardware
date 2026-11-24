@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "description": "Firmware signing keys by public-key fingerprint (SHA-256 of the DER SubjectPublicKeyInfo). Only public fingerprints belong here; private keys never enter any repository. See docs/firmware-signing-keys.md.",
+  "keys": [
+    {
+      "id": "pellet-k1",
+      "board": "pellet_module",
+      "algorithm": "rsa-2048",
+      "fingerprint_sha256": "sha256:c969f75d179fe7a3dbc1d54b63a424a6c1d5bdfd3bf30316e00e04fbbbcb1142",
+      "status": "revoked",
+      "revoked_on": "2026-11-23",
+      "reason": "The private key was committed as firmware/pellet_module/pellet_module_key.pem in ff2a61b (2024-11-22) and is public in this repository and its upstream. Anyone can sign images for bootloaders that embed it."
+    },
+    {
+      "id": "magnet-k1",
+      "board": "magnet_module",
+      "algorithm": "rsa-2048",
+      "fingerprint_sha256": "sha256:a4ce9ace5526c270344741668ba8ec2670874920f923239946fa5e3b760b3283",
+      "status": "compromised",
+      "reason": "The private key is committed as firmware/magnet_module/magnet_module_key.pem (ff2a61b, 2024-11-22) and is public. The magnet module is not used by reachAQ and still builds with this key; do not ship magnet boards until it is replaced."
+    }
+  ]
+}

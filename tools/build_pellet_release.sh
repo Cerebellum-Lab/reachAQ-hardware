@@ -8,10 +8,13 @@ VENV_DIR="${REPO_ROOT}/firmware/.venv"
 BUILD_ONLY=0
 PACKAGE_ONLY=0
 VERSION=""
+PUBLIC_KEY="${REACHAQ_PELLET_SIGNING_PUBKEY:-}"
+SIGNING_KEY="${REACHAQ_PELLET_SIGNING_KEY:-}"
 
 usage() {
     cat <<'EOF'
-Usage: tools/build_pellet_release.sh [--build-only | --package-only] vX.Y.Z
+Usage: tools/build_pellet_release.sh [--build-only | --package-only]
+           [--public-key PATH] [--signing-key PATH] vX.Y.Z
 
 Build and package a tagged pellet-firmware release. With no mode option, the
 script builds firmware and updater, verifies the embedded version, and creates
@@ -20,6 +23,17 @@ a flash-only release bundle under dist/.
 Options:
   --build-only    Build and verify, but do not create a bundle.
   --package-only  Package already-built, version-verified outputs.
+  --public-key PATH
+                  Active pellet public key embedded in MCUboot. Default:
+                  $REACHAQ_PELLET_SIGNING_PUBKEY. Required to build.
+  --signing-key PATH
+                  Encrypted pellet private key, outside every repository
+                  (the mounted signing USB). Default: $REACHAQ_PELLET_SIGNING_KEY.
+                  Required for a full release; not used by --build-only.
+
+The application is built unsigned. A full release signs it with the private
+key (imgtool asks for the passphrase twice, once per image format) and every
+packaged image is verified against the key MCUboot embeds.
 
 Normal release builds require HEAD to be exactly at the requested Git tag and
 the tracked worktree to be clean. --package-only is intended for packaging an
@@ -34,6 +48,14 @@ while (($#)); do
             ;;
         --package-only)
             PACKAGE_ONLY=1
+            ;;
+        --public-key)
+            PUBLIC_KEY="${2:?--public-key needs a path}"
+            shift
+            ;;
+        --signing-key)
+            SIGNING_KEY="${2:?--signing-key needs a path}"
+            shift
             ;;
         -h|--help)
             usage
@@ -73,11 +95,24 @@ APP_VERSION_HEADER="${FIRMWARE_BUILD_DIR}/pellet_module/zephyr/include/generated
 UPDATER_BUILD_DIR="${REPO_ROOT}/build"
 UPDATER="${UPDATER_BUILD_DIR}/software/jerrycan_updater/jerrycan_updater"
 
+SIGNING_TOOL="${SCRIPT_DIR}/firmware_signing.py"
+
 if ((PACKAGE_ONLY == 0)); then
     if [[ ! -x "${VENV_DIR}/bin/west" || ! -x "${VENV_DIR}/bin/cmake" ]]; then
         echo "Build tools are missing. Run tools/setup_firmware_build_host.sh first." >&2
         exit 1
     fi
+
+    if [[ -z "${PUBLIC_KEY}" ]]; then
+        echo "No pellet public key. Pass --public-key or set REACHAQ_PELLET_SIGNING_PUBKEY." >&2
+        exit 1
+    fi
+    if ((BUILD_ONLY == 0)) && [[ -z "${SIGNING_KEY}" ]]; then
+        echo "A release needs the private key. Mount the signing USB and pass --signing-key" >&2
+        echo "or set REACHAQ_PELLET_SIGNING_KEY. Use --build-only for an unsigned build." >&2
+        exit 1
+    fi
+    "${VENV_DIR}/bin/python" "${SIGNING_TOOL}" check-public "${PUBLIC_KEY}"
 
     EXACT_TAG="$(git -C "${REPO_ROOT}" describe --tags --exact-match 2>/dev/null || true)"
     if [[ "${EXACT_TAG}" != "${VERSION}" ]]; then
@@ -104,7 +139,13 @@ if ((PACKAGE_ONLY == 0)); then
         --sysbuild \
         --board cerebellumlab_pellet_module \
         --pristine always \
-        "${REPO_ROOT}/firmware/pellet_module"
+        "${REPO_ROOT}/firmware/pellet_module" \
+        -- "-DSB_CONFIG_BOOT_SIGNATURE_KEY_FILE=\"${PUBLIC_KEY}\""
+
+    if ((BUILD_ONLY == 0)); then
+        "${VENV_DIR}/bin/python" "${SIGNING_TOOL}" sign \
+            --build-dir "${FIRMWARE_BUILD_DIR}" --key "${SIGNING_KEY}"
+    fi
 
     "${VENV_DIR}/bin/cmake" \
         -S "${REPO_ROOT}" \
@@ -134,8 +175,16 @@ fi
 echo "Verified pellet firmware ${EMBEDDED_VERSION}: ${FIRMWARE_IMAGE}"
 
 if ((BUILD_ONLY)); then
+    echo "Build-only output is unsigned and will not boot; sign it before flashing."
     exit 0
 fi
+
+if ! SIGNING_KEY_RECORD="$(PATH="${VENV_DIR}/bin:${PATH}" "${VENV_DIR}/bin/python" "${SIGNING_TOOL}" verify --build-dir "${FIRMWARE_BUILD_DIR}")"; then
+    echo "The pellet image is not signed by an active key; refusing to package it." >&2
+    exit 1
+fi
+echo "${SIGNING_KEY_RECORD}"
+SIGNING_KEY_ID="${SIGNING_KEY_RECORD#Verified against }"
 
 case "$(uname -m)" in
     x86_64)
@@ -183,6 +232,7 @@ Source repository: https://github.com/Cerebellum-Lab/reachAQ-hardware
 Source commit: ${SOURCE_COMMIT}
 Firmware: ${FIRMWARE_NAME}
 Updater: ${UPDATER_NAME}
+Signing key: ${SIGNING_KEY_ID}
 CAN interface: can0
 Nominal/data bitrates: 1000000/5000000 bit/s (CAN FD)
 Default pellet-board address: 0

@@ -16,6 +16,10 @@ Commands:
   build vX.Y.Z                    Build and verify without packaging
   package vX.Y.Z                  Package already-built verified outputs
   flash [flash options]           Run the repository flash helper directly
+  keygen --out-dir DIR --generation N
+                                  Create a new encrypted signing key pair outside every repository
+  sign --build-dir DIR --key PATH Sign a built image with the external private key
+  verify --build-dir DIR          Verify a build's signed images against its MCUboot key
   help                            Show this help
 
 Examples:
@@ -44,6 +48,18 @@ case "${COMMAND}" in
         ;;
     flash)
         exec "${SCRIPT_DIR}/flash_pellet_module.sh" "$@"
+        ;;
+    keygen|sign|verify)
+        VENV_BIN="${SCRIPT_DIR}/../firmware/.venv/bin"
+        PYTHON="python3"
+        if [[ -x "${VENV_BIN}/python" ]]; then
+            PYTHON="${VENV_BIN}/python"
+            export PATH="${VENV_BIN}:${PATH}"
+        fi
+        if [[ "${COMMAND}" == keygen ]]; then
+            COMMAND=generate
+        fi
+        exec "${PYTHON}" "${SCRIPT_DIR}/firmware_signing.py" "${COMMAND}" "$@"
         ;;
     help|-h|--help)
         usage
